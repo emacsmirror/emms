@@ -26,8 +26,6 @@
 ;; file system. You can retrieve single files or whole directories.
 ;; Also, this file offers the commands to play from these sources.
 
-;; TODO:
-
 ;;; Code:
 
 ;; Version control
@@ -92,7 +90,8 @@ user."
                                      t)))
   (if (file-directory-p file)
       (emms-source-directory file)
-    (list (emms-track 'file (expand-file-name file)))))
+    (emms-playlist-insert-track
+     (emms-track 'file (expand-file-name file)))))
 
 ;;;###autoload (autoload 'emms-play-directory "emms-source-file" t)
 ;;;###autoload (autoload 'emms-add-directory "emms-source-file" t)
@@ -104,9 +103,10 @@ from the user"
                                           emms-source-file-default-directory
                                           emms-source-file-default-directory
                                           t)))
-  (mapcar (lambda (file)
-            (emms-track 'file (expand-file-name file)))
-          (directory-files dir t (emms-source-file-regex))))
+  (mapc (lambda (file)
+          (emms-playlist-insert-track
+           (emms-track 'file (expand-file-name file))))
+        (directory-files dir t (emms-source-file-regex))))
 
 ;;;###autoload (autoload 'emms-play-directory-tree "emms-source-file" t)
 ;;;###autoload (autoload 'emms-add-directory-tree "emms-source-file" t)
@@ -118,11 +118,11 @@ value of `emms-source-file-default-directory'."
                                           emms-source-file-default-directory
                                           emms-source-file-default-directory
                                           t)))
-  (mapcar (lambda (file)
-            (emms-track 'file file))
-          (emms-source-file-directory-tree (expand-file-name dir)
-                                           (emms-source-file-regex))))
-
+  (mapc (lambda (file)
+          (emms-playlist-insert-track
+           (emms-track 'file file)))
+        (emms-source-file-directory-tree (expand-file-name dir)
+                                         (emms-source-file-regex))))
 
 ;;;###autoload (autoload 'emms-play-find "emms-source-file" t)
 ;;;###autoload (autoload 'emms-add-find "emms-source-file" t)
@@ -135,11 +135,13 @@ value of `emms-source-file-default-directory'."
                                           emms-source-file-default-directory
                                           t)
                 (read-from-minibuffer "Find files matching: ")))
-  (mapcar (lambda (file)
-            (emms-track 'file file))
-          (emms-source-file-directory-tree dir regex)))
+  (mapc (lambda (file)
+          (emms-playlist-insert-track
+           (emms-track 'file file)))
+        (emms-source-file-directory-tree dir regex)))
 
 
+;; FIXME! Does this work? -js
 ;;;###autoload (autoload 'emms-play-m3u-playlist "emms-source-file" t)
 ;;;###autoload (autoload 'emms-add-m3u-playlist "emms-source-file" t)
 (define-emms-source m3u-playlist (playlist)
@@ -219,7 +221,7 @@ may be supplied using `emms-source-file-gnu-find'."
 ;;;###autoload
 (defun emms-source-files (files)
   "An EMMS source for a list of FILES."
-  (apply #'append (mapcar #'emms-source-file files)))
+  (mapc #'emms-source-file files))
 
 ;;;###autoload
 (defun emms-source-dired ()
@@ -276,12 +278,12 @@ files) can play."
 (define-emms-source url (url)
   "An EMMS source for an URL - for example, for streaming."
   (interactive "sPlay URL: ")
-  (list (emms-track 'url url)))
+  (emms-playlist-track-insert (emms-track 'url url)))
 
 (define-emms-source playlist (playlist)
   "An EMMS source for streaming playlists (usually URLs ending in .pls."
   (interactive "sPlay URL: ")
-  (list (emms-track 'playlist playlist)))
+  (emms-playlist-track-insert (emms-track 'playlist playlist)))
   
 
 (provide 'emms-source-file)
