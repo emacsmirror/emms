@@ -1,0 +1,58 @@
+emms (1.4) unstable; urgency=low
+
+  * Depend alternatively on emacsen (Closes: #321493)
+
+ --
+
+emms (1.3) unstable; urgency=low
+
+  * Don't pass docstring to defvaralias due to XEmacs (Closes: #316583)
+
+ -- Jorgen Schaefer <forcer@debian.org>  Sat,  2 Jul 2005 05:34:57 +0200
+
+emms (1.2) unstable; urgency=low
+
+  * Use legacy function in emacs21 for `read-directory-name (Closes: #316486)
+  * Implements url parsing without url library (Closes: #314299)
+
+ -- Jorgen Schaefer <forcer@debian.org>  Fri,  1 Jul 2005 15:18:54 +0200
+
+emms (1.1-1) unstable; urgency=low
+
+  * New CVS checkout.
+  * Conflicts with emacs20 (Closes #306489).
+
+ -- Jorgen Schaefer <forcer@debian.org>  Sun, 29 May 2005 00:25:23 +0200
+
+emms (1.0-4) unstable; urgency=low
+
+  * New CVS checkout.
+
+ -- Jorgen Schaefer <forcer@debian.org>  Sun, 11 Jul 2004 03:48:28 +0200
+
+emms (1.0-3) unstable; urgency=low
+
+  * Standards-Version: 3.6.1 (no changes)
+  * Removed ChangeLog from debian/docs.
+  * XEmacs should compile now.
+  * Recommends: vorbis-tools, not ogg123. hmph.
+
+ -- Jorgen Schaefer <forcer@debian.org>  Sat,  3 Apr 2004 13:16:25 +0200
+
+emms (1.0-2) unstable; urgency=low
+
+  * Architecture: all
+  * Recommends: mpg321, ogg123 (Closes: #239525)
+  * Suggests: mp3info
+  * Build-depends: texinfo (Closes: #236953)
+  * emms-source-file.el: Don't throw an error when compiling if locate.el
+    is not available. (Closes: #237183)
+
+ -- Jorgen Schaefer <forcer@debian.org>  Tue,  9 Mar 2004 02:01:21 +0100
+
+emms (1.0-1) unstable; urgency=low
+
+  * Initial Release.
+
+ -- Jorgen Schaefer <forcer@debian.org>  Sat, 21 Feb 2004 05:23:17 +0100
+

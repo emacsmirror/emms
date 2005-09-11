@@ -1,0 +1,1255 @@
+\input texinfo   @c -*-texinfo-*-
+@c %**start of header
+@setfilename emms.info
+@settitle The Emms Manual 0.1.23
+@c %**end of header
+
+@c CVS info:
+@c $Revision: 1.24 $
+
+@c Maintainer comments:
+@c There is always work to do in a manual.
+
+@dircategory Emacs
+@direntry
+* Emms: (emms).           The Emacs Multimedia System
+@end direntry
+
+@copying
+ @copyright{} (c) 2004, 2005
+   Mario Domgoergen, Jorgen Schaefer, Yoni Rabkin
+@quotation
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.1 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.  A
+copy of the license is included in the section entitled "GNU Free
+Documentation License".
+@end quotation
+@end copying
+
+@c For printed material
+@titlepage
+@title The Emms Manual
+
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+@end titlepage
+
+@contents
+@c END For printed material
+
+@ifnottex
+@node Top, Copying, (dir), (dir)
+@top Emms Manual 0.1.21
+
+This is the Manual for the Emacs Multimedia System
+
+@menu
+* Copying::             The GNU General Public License gives you permission to
+                            redistribute Emms on certain terms; it also explains
+                            that there is no warranty.
+* The GNU FDL::         The license for this documentation.
+
+Starting out
+* Introduction::        Introduction to Emms
+* Installation::        How to install Emms on your System
+* Quick Setup::         Quick start in Emms
+* Configuration Example::     Bare bones configuration
+
+Emms basics
+* Basic Commands::      How to control Emms with ease
+* The Core File::       The inner core of Emms
+* Sources::             Sources for playlists-creation
+* Simple Players::      Some simple players
+
+Advanced Features
+* Info Tags::           More narrative track descriptions
+* The Playlist Buffer:: Interactive Playlist
+* Scoring::             Playing files based on their rating
+* Extending Emms::           How to define new players and modules
+* Streaming Audio::          Interface to streaming audio
+
+Indices
+* Concept Index::
+* Function Index::
+* Variable Index::
+* Keybinding Index::
+
+@detailmenu
+--- The Detailed Node Listing ---
+
+Here are some other nodes which are really inferiors of the ones
+already listed, mentioned here so you can get to them in one step:
+
+Installation
+* Compiling Emms::      Compiling Emms into Byte-Code
+
+Info Tags
+* Ogg Info::    Reading ogg info tags
+* MP3 Info::    Reading mp3 info tags
+@end detailmenu
+
+The Playlist Buffer
+* Playlist Buffer::     Browsing buffer known by other players
+* Playlist Popup::      Poping-up the playlist buffer
+* Playlist Manipulation::         Some playlist manipulation functions
+
+Extending Emms
+* New Player::  How to define a new player
+
+New Player
+* Simple Player for @command{play}:: Example player using @command{play}
+* More Complex Player:: Example of a complex player using @command{mpg321}
+@end menu
+
+@end ifnottex
+
+@c including the relevant licenses
+@include gpl.texi
+@include fdl.texi
+
+@node Introduction
+@chapter Introduction
+
+@cindex introduction
+
+Emms is the Emacs Multi-Media System. It tries to be a clean and small
+application to play multimedia files from Emacs using external
+players. Many of its ideas are derived from MpthreePlayer
+(http://www.nongnu.org/mp3player), but it tries to be more general and
+more clean.
+
+The basic functionality of Emms consists of three parts: The core, the
+sources, and the players.
+
+The core resides in emms.el, and provides a simple playlist and the
+basic functionality to use all the other features of Emms. It provides
+the common user commands and interfaces for other parts. It thinks in
+tracks, where a track is the combination of a type and a name - e.g.
+the track type 'file has a name that is the file name. Other track
+types are possible.
+
+To get to tracks, the core needs sources. The file emms-source-file.el
+provides simple sources to interact with the file system.
+
+When Emms finally has the sources in the playlist, it needs a player
+to play them. emms-player-simple.el defines a few useful players, and
+allows you to define your own in a very simple way.
+
+Emms is easy to customise by using the modules shipped with
+emms. @xref{Extending Emms}.
+
+Emms can also be customised by using `M-x customize'.
+
+@node Installation
+@chapter Installation
+
+@cindex installation
+
+You need to put all the .el files of emms in a directory in your
+load-path. For example, if you put all those files into ~/elisp/emms/,
+then in your ~/.emacs, you should do:
+
+@lisp
+(add-to-list 'load-path "~/elisp/emms/")
+@end lisp
+@noindent
+
+@menu
+* Compiling Emms::      Compiling Emms into Byte-Code
+@end menu
+
+@node Compiling Emms
+@section Compiling Emms
+
+@cindex compiling
+
+You can byte-compile Emms by first entering the directory containing the
+Emms source code, followed by invoking:
+
+@command{make}
+
+Which will byte compile Emms. You can then invoke:
+
+@command{make install}
+
+Which will install Emms into your Emacs directories (provided you have
+the appropriate permissions to do so on your system).
+
+Note that Emms is a light-weight and agile program, you can therefore
+run Emms just fine without byte compiling it.
+
+@node Quick Setup
+@chapter Quick setup
+
+Emms is quite simple to set up. For the most basic needs, you will
+just need the following line,
+
+@lisp
+(require 'emms)
+@end lisp
+@noindent
+
+which installs the core of Emms.
+
+Now we need to do some configuration.
+
+The Emms module `emms-default' provides the function `emms-setup',
+which is a way to quickly configure your Emms. You can add any number
+of directories which contain media. The first argument is the
+complexity level of the user interface. Here's an example:
+
+@lisp
+(require 'emms-default)
+(emms-setup 'tiny "directory")
+@end lisp
+
+Here is a list of the interface complexity options:
+
+@table @samp
+@item minimalistic
+Define the players and play directory but nothing more.
+@item tiny
+Features the pbi (playlist buffer interface).
+@item default
+Features info reading for MP3 and OGG files.
+@item advanced
+Features the tageditor and playlist manipulation.
+@item cvs
+Features playlist pop-up, pbi marking, mode-line, asynchronous loading
+of tags and (of course) the kitchen sink.
+@end table
+
+Now your configuration is done.
+
+The (optional) directory is used for
+`emms-source-file-default-directory', in case you were wondering.
+
+@node Configuration Example
+@chapter Configuration Example
+
+@cindex Configuration Example
+
+The following code fragment provides a minimal EMMS setup without
+using the layer of `emms-default'. It can maybe be used to better
+understand the internals of EMMS. You can see how EMMS needs to know
+about players (these are defined in `emms-player-simple') and about
+sources for tracks (trivial file system based sources, such as this
+`emms-directory-tree', are defined in `emms-source-file').
+
+@lisp
+(require 'emms-player-simple)
+(require 'emms-source-file)
+(setq emms-player-list '(emms-player-mpg321
+                         emms-player-ogg123
+                         emms-player-mplayer))
+@end lisp
+@noindent
+
+@node Basic Commands
+@chapter Basic Commands
+
+@cindex basic commands
+@cindex commands, basic
+
+Before you can use the interface commands, you need a playlist to
+start with. The following commands allow you to create or add to the
+current playlist from different sources:
+
+@defun emms-play-file file
+Play the single file @var{file}.
+@end defun
+@defun emms-add-file file
+Add the single file @var{file} to the playlist.
+@end defun
+@defun emms-play-directory dir
+Play the single directory @var{dir}.
+@end defun
+@defun emms-add-directory dir
+Add the single directory @var{dir} to the playlist.
+@end defun
+@defun emms-play-directory-tree dir
+Play the entire directory tree of which @var{dir} is the top directory.
+@end defun
+@defun emms-add-directory-tree dir
+Add the entire directory tree of which @var{dir} is the top directory.
+@end defun
+@defun emms-play-url url
+Play streaming audio from @var{url}.
+@end defun
+@defun emms-add-url url
+Add the streaming audio station at @var{url} to the playlist.
+@end defun
+@defun emms-play-m3u-playlist playlist
+Play the M3U (XMMS) playlist from the file @var{playlist}.
+@end defun
+@defun emms-add-m3u-playlist playlist
+Add an M3U (XMMS) playlist to Emms from the file @var{playlist}.
+@end defun
+@defun emms-play-find dir regexp
+Search for files in @var{dir} matching @var{regexp} to play.
+@end defun
+@defun emms-add-find dir regexp
+Search for files in @var{dir} matching @var{regexp} to add.
+@end defun
+
+The basic functionality of Emms is just to play music without being
+noticed. It provides a few commands to skip the current track and
+such, but other than that it doesn't show up. Emms provides the
+following basic user commands (which you might want to bind to
+keystrokes):
+
+@defun emms-start
+Start playing the current playlist
+@end defun
+@defun emms-stop
+Stop playing
+@end defun
+@defun emms-next
+Go to the next track in the playlist
+@end defun
+@defun emms-previous
+Go to the previous track in the playlist
+@end defun
+@defun emms-shuffle
+Shuffle the playlist
+@end defun
+@defun emms-show &optional insertp
+Describe the current Emms track in the minibuffer. If @var{insertp} is
+non-nil, insert the description into the current buffer instead.
+@end defun
+
+@node The Core File
+@chapter The Core File
+
+The file @file{emms.el} provides all basic functions for playing
+music, generating a playlist and defining player.
+
+@defopt emms-source-list
+A list of sources Emms can get tracks from.
+@lisp
+(setq emms-source-list '((emms-source-directory-tree \"~/media\")))
+@end lisp
+@noindent
+@end defopt
+@defopt emms-player-list
+A list of players Emms can use. You need to set this in order to play
+files. Unless you use @file{emms-player-simple} you have to define a
+player with @command{emms-define-player} first.
+@end defopt
+@defopt emms-show-format
+The format to use for @command{emms-show}. The only argument %s is the
+string returned by @command{emms-track-description}
+@end defopt
+@defopt emms-repeat-playlist
+Non-nil for repeating the playlist after playing the last track.
+@end defopt
+@defopt emms-track-description-function
+A function to be called to give a nice, user-friendly description of
+the track passed to it as an argument.
+@end defopt
+@defopt emms-sort-lessp-function
+A function that compares two tracks, and returns non-nil if the first
+track should be sorted before the second (see `sort').
+@end defopt
+@defopt emms-playlist-changed-hook
+A hook run when the playlist of Emms has changed.
+@end defopt
+@defopt emms-playlist-current-changed-hook
+A hook run when the current track in the playlist of Emms has
+changed.
+@end defopt
+@defopt emms-player-started-hook
+A hook run when an Emms player started playing.
+@end defopt
+@defopt emms-player-stopped-hook
+A hook run when an Emms player stopped playing.
+@end defopt
+
+@defun emms-next-noerror
+Play the next track in the playlist, but don't signal an error when
+we're at the end. This should be called when no player is playing.
+This is a suitable function to put in @var{emms-player-stopped-hook}.
+@end defun
+@defun emms-sort
+Sort the playlist.
+@end defun
+@defun emms-sort-track-name-less-p a b
+Return non-nil if the track name of @var{a} is before @var{b}.
+@end defun
+@defun emms-track type name
+Create a track with type @var{type} and name @var{name}.
+@end defun
+@defun emms-track-type track
+Return the type of @var{track}.
+@end defun
+@defun emms-track-name track
+Return the name of @var{track}.
+@end defun
+@defun emms-track-get name track &optional inexistent
+Return the value of @var{name} for @var{track}. If there is no value, return
+@var{inexistent} (or nil if not given).
+@end defun
+@defun emms-track-set track name value
+Set the value of @var{name} for @var{track} to @var{value}.
+@end defun
+@defun emms-track-description track
+A simple function to give a user-readable description of @var{track}.
+If it's a file track, it's just the filename.
+Else it's the type and the name with a colon in between.
+@end defun
+@defun emms-playlist-current
+Return a description of the currently playing track.
+This uses @var{emms-track-description-function}.
+@end defun
+@defun emms-playlist-current-track
+Return the currently playing track.
+@end defun
+@defun emms-playlist-get n
+Return a description of the @var{n}th entry of the current playlist.
+This uses `emms-track-description-function'
+@end defun
+@defun emms-playlist-get-track n
+Return the @var{n}th track of the current playlist.
+@end defun
+@defun emms-playlist-set-playlist new
+Set the playlist to @var{new}.
+This runs `emms-playlist-changed-hook'.
+@end defun
+@defun emms-playlist-get-playlist
+Return the current playlist.
+@end defun
+@defun emms-playlist-set-current n
+Set the current track in the playlist to @var{n} (a number).
+This runs `emms-playlist-current-changed-hook'.
+@end defun
+@defun emms-playlist-get-current
+Return the number of the current track, or nil if the playlist is
+empty.
+@end defun
+@defun emms-playlist-next
+Advance the current track to the next entry in the playlist and
+return non-nil. Return nil if there is no next track.
+@end defun
+@defun emms-playlist-previous
+Set the current track to the previous entry in the playlist and
+return non-nil. Return nil if there is no previous track.
+@end defun
+@defun emms-playlist-add seq &optional idx
+Add each track of the sequence @var{seq} to the current playlist.
+Insert at @var{idx}, which defaults to the end.
+@end defun
+@defun emms-playlist-remove idx
+Remove track at @var{idx} from playlist.
+@end defun
+@defun emms-playlist-shuffle
+Shuffle the current playlist.
+@end defun
+@defun emms-playlist-sort
+Sort the current playlist according to `emms-sort-lessp-function'
+@end defun
+@defun emms-playlist-shuffle-vector vector
+Shuffle @var{vector}.
+@end defun
+@defun emms-playlist-sort-vector vector
+Sort @var{vector} according to `emms-sort-lessp-function'.
+@end defun
+@defun emms-source-play lis
+Play the tracks returned by @var{lis}.
+@end defun
+@defun emms-player-for track
+Return the player which is responsible for @var{track}, or nil if
+there is none.
+@end defun
+@defun emms-player-start track
+Start playing @var{track}.
+@end defun
+@defun emms-player-stop
+Stop the currently playing player.
+@end defun
+@defun emms-player-stopped
+Declare that the current player has finished playing.
+This should only be called by a player.
+@end defun
+
+@node Sources
+@chapter Sources
+
+@cindex sources
+
+@defopt emms-source-file-default-directory
+The default directory to look for media files.
+@end defopt
+
+@defun emms-play-find
+Play all files in @var{emms-source-file-default-directory} that match
+a specific regular expression.
+@end defun
+@defun emms-play-dired
+Play marked files from the current dired buffer
+@end defun
+@defun emms-play-playlist
+Play all files from a playlist file.
+@end defun
+@defun emms-source-file &optional file
+An Emms source for a single file - either @var{file}, or queried from the
+user.
+@end defun
+@defun emms-source-files files
+An Emms source for a list of @var{files}.
+@end defun
+@defun emms-source-directory &optional dir
+An Emms source for a whole directory tree - either @var{dir}, or queried
+from the user
+@end defun
+@defun emms-source-directory-tree & optional dir
+An Emms source for multiple directory trees - either @var{dir}, or the
+value of @var{emms-source-file-default-directory}.
+@end defun
+@defun emms-source-find &optional dir regex
+An Emms source that will find files in @var{dir} or
+@var{emms-source-file-default-directory} that match @var{regexp}.
+@end defun
+@defun emms-source-file-directory-tree &optional dir
+Return a list of all files under @var{dir} that match @var{regex}.
+@end defun
+@defun emms-source-playlist-file file
+Return all files from playlist @var{file}.
+@end defun
+@defun emms-source-dired
+Play all marked files of a dired buffer
+@end defun
+@defun emms-source-file-regex
+Return a regexp that matches everything any player (that supports
+files) can play.
+@end defun
+@defun emms-save-playlist filename
+Export the current playlist as to @var{filename}.  See also
+@command{emms-source-playlist-file}.
+@end defun
+@defun emms-locate
+Search for REGEXP and display the results in a locate buffer
+@end defun
+
+@node Simple Players
+@chapter Simple Players
+
+@cindex players, simple
+
+@defmac define-emms-simple-player
+Returns a simple player with the use of emms-define-player.
+NAME is used to construct the name of the function like
+emms-player-NAME. REGEX must be a regexp that matches the
+filenames the player can play. COMMAND specifies the command line
+argument to call the player and ARGS are the command line
+arguments.
+@end defmac
+
+@defun emms-player-simple-stop
+Stop the currently playing process, if indeed there is one
+@end defun
+@defun emms-player-simple-start
+Starts a process playing FILENAME using the specified CMDNAME with
+the specified PARAMS.
+@end defun
+@defun emms-player-simple-sentinel
+Sentinel for determining the end of process
+@end defun
+
+@node Info Tags
+@chapter Info Tags
+
+@cindex track information
+
+The file @file{emms-info.el} provides an interface for different
+methods of reading info about the files that Emms is playing, and
+displaying it.
+
+To create a method for retrieving info about a file, you create an
+object like this:
+
+@lisp
+(define-emms-info-method emms-info-mp3info
+  :providep 'emms-info-mp3info-providep
+  :get 'emms-info-mp3info-get
+  :set 'emms-info-mp3info-set)
+@end lisp
+@noindent
+
+Then you register it with emms-info, by adding it to
+@var{emms-info-methods-list}.
+
+If you wish to use 'emms-info-mp3info' you will need the mp3info
+program which is available at http://www.ibiblio.org/mp3info/.
+Otherwise Emms will display an error when you attempt to access MP3
+info.
+
+@lisp
+(add-to-list 'emms-info-methods-list 'emms-info-mp3info)
+@end lisp
+@noindent
+
+There are already two predefined methods for retrieving info
+
+@menu
+* Ogg Info::    Reading ogg info tags
+* MP3 Info::    Reading mp3 info tags
+@end menu
+
+@defun emms-info-get-cached track
+Return cached info for the track @var{track}, nil of no cache.
+@end defun
+@defun emms-info-set-cached
+Set cached info for @var{track} to @var{info}
+@end defun
+@defun emms-info-method-for track
+Return an info-method suitable for @var{track}.
+@end defun
+@defun emms-info-get track &optional dont-use-cached
+Return an emms-info structure representing the track @var{track}.
+if @var{dont-USE-CACHED} is non-nil, then always read from the file.
+@end defun
+@defun emms-info-get-multiple callback tracks &optional dont-use-cached
+Asynchronously get all info tags from the tracks in the listlaw
+@var{tracks}. For each file, call @var{callback} with the track and the info
+structure.
+@end defun
+@defun emms-info-set track info
+Set the info of the file @var{track} to the emms-info structure @var{info}.
+@end defun
+@defun emms-info-file-info-song-artist track
+Returns a description of @var{track}, build from it's comments.
+
+If @var{emms-info-methods-list} indicates how to retrieve special info
+about it, use this. Otherwise returns the name alone.
+@end defun
+
+@defopt emms-info-methods-list
+List of info-methods. You need to set this!
+@end defopt
+@defopt emms-info-cache
+Boolean value, indicating whether or not to use a cache for
+info-structures.
+@end defopt
+@defopt emms-info-get-multiple-idletime
+The number of seconds emacs should be idle to get the next info.
+Increase this if emacs becomes unresponsive when building the
+playlist.
+@end defopt
+
+@node Ogg Info
+@section Ogg Info
+The file @file{emms-info-ogg.el} provides an interface to retrieving
+comments from ogg-files, using Lawrence Mitchells ogg-comment.el.
+
+To activate, put something like this in your ~/.emacs:
+
+@lisp
+(require 'emms-info-ogg)
+(add-to-list 'emms-player-alist
+             '("\\.ogg$" . emms-info-ogg-comments))
+@end lisp
+@noindent
+
+Of course, you'll also need a player if you want to actually play the
+files.
+
+@defun emms-info-ogg-comment-providep
+Return non-nil if this info-method provides info for the track.
+@end defun
+@defun emms-info-ogg-get-comment
+@end defun
+@defun emms-info-ogg-comment-get
+Retrieve an emms-info structure as an ogg-comment
+@end defun
+
+@node MP3 Info
+@section MP3 Info
+
+This code has been adapted from code found in mp3player.el, written by
+Jean-Philippe Theberge @email{jphiltheberge@@videotron.ca}, Mario Domgoergen
+@email{kanaldrache@@gmx.de} and Jorgen Schäfer @email{forcer@@forcix.cx}
+
+To activate this method for getting info, use something like:
+
+@lisp
+(require 'emms-info-mp3info)
+(add-to-list 'emms-info-methods-alist
+             '("\\.mp3$" . emms-info-mp3info))
+@end lisp
+@noindent
+
+Of course, you'll also need a player if you want to actually play the
+files.
+
+@defun emms-info-mp3info-providep
+Return non-nil if this info-method provides info for the track.
+@end defun
+@defun emms-info-mp3info-set track info
+Set the id3v1 tag of file @var{track} to id3info @var{info}, using the
+@var{mp3info-program}.
+@end defun
+@defun emms-info-mp3info-get track
+Get the id3v1 tag of file @var{track}, using the mp3info-program and
+return an emms-info structure representing it.
+@end defun
+
+@defopt emms-info-mp3info-program-name
+*The name/path of the mp3info-program.
+@end defopt
+
+@node The Playlist Buffer
+@chapter The Playlist Buffer
+@cindex playlist buffer
+
+@menu
+* Playlist Buffer::     Browsing buffer known by other players
+* Playlist Popup::      Poping-up the playlist buffer
+* Playlist Manipulation::         Some playlist manipulation functions
+@end menu
+
+@node Playlist Buffer
+@section Playlist buffer
+
+@table @code
+@findex emms-pbi
+@item emms-pbi
+Switch to playlist buffer
+
+The playlist-buffer *Playlist* will be created and put into
+emms-pbi-mode, which give you some usefull keybinings
+@end table
+
+@table @kbd
+@item ?
+@kindex ? (Emms-pbi)
+@findex describe-mode
+Describe the keybindings
+@item <mouse-2>
+@kindex <mouse-2> (Emms-pbi)
+@findex emms-pbi-play-current-line
+Play the current line
+@item RET
+@kindex RET (Emms-pbi)
+@findex emms-pbi-play-current-line
+Play the current line
+@item q
+@kindex q
+@findex bury-buffer
+@item Q
+@kindex Q
+@findex emms-pbi-quit
+Stops emms and kill the playlist buffer
+@item f
+@kindex f
+@findex emms-pbi-show-current-line
+Show the trackname on current line
+@item s
+@kindex s
+@findex emms-stop
+Stop Emms
+@item C-y
+@kindex C-y
+@findex emms-pbi-yank
+Yank a filename from @var{emms-kill-ring} into the playlist.
+@item C-k
+@kindex C-k
+@findex emms-pbi-kill-line
+Kill the current line from the playlist.
+
+Send the filename to the @var{emms-kill-ring}. Make sure hooks that regenerate
+the entire playlist aren't run.
+@item c
+@kindex c
+@findex emms-pbi-recenter
+Center on current playing track
+@item p
+@kindex p
+@findex emms-previous
+Play the previous track in the playlist.
+@item n
+@kindex n
+@findex emms-next
+Play the next track in the playlist.
+This might behave funny in @var{emms-player-stopped-hook}, use
+@var{emms-next-noerror} instead for that.
+@item C-x C-s
+@kindex C-x C-s
+@findex emms-pbi-export-playlist
+Export the current playlist as to FILENAME. See also:
+@var{emms-pbi-import-playlist}.
+@end table
+
+Prior versions of emms-pbi had their own linenumbering functions. But
+these functions were either error prone or very slow. And besides
+there was already a emacs mode that does exactly the same: setnu.el So
+we remove the linenumbering functions in favour of setnu. You can get
+setnu from @url{http://www.wonderworks.com/download/setnu.el}. To get
+line numbers just put the following code in your @file{~/.emacs} and put
+setnu.el somewhere on your loadpath:
+
+@lisp
+(require 'setnu)
+(add-hook 'emms-pbi-after-build-hook (lambda (setnu-mode 1)))
+@end lisp
+
+@defun emms-pbi
+Turn on emms-playlist if prefix argument ARG is a positive integer,
+off otherwise.
+@end defun
+@defun emms-pbi-shorten-entry-to-max-length
+Cut off an entry-text to make sure it's no longer than
+`emms-pbi-playlist-entry-max-length' characters long.
+@end defun
+@defun emms-pbi-entry-info-updated
+Update the track-entry based on the info
+@end defun
+@defun emms-pbi-rebuild-playlist-buffer
+This function rebuilds the playlist-buffer if necessary.
+@end defun
+@defun emms-pbi-build-playlist-buffer
+Build a playlist-buffer based on the current playlist.
+@end defun
+@defun emms-pbi-insert-tag
+Insert the TRACK tag at point.
+The tag is automatically shortened by
+@command{emms-pbi-shorten-entry-to-max-length'}.
+@end defun
+@defun emms-pbi-insert-entry
+Insert an entry in the playlist
+@end defun
+@defun emms-pbi-async-alternative-text filename
+Generates a single replacement-text for @var{filename}, to be
+displayed in the playlist while the info is being loaded.
+@end defun
+@defun emms-pbi-update-current-face
+Updates the file line with the current-face
+@end defun
+@defun emms-pbi-add-properties-current-line
+Adds the correct faces and other properties to the current line
+@end defun
+@defun emms-pbi-play-current-line
+Play the current line
+@end defun
+@defun emms-pbi-show-current-line
+Show filename and info for track on current line.
+@end defun
+@defun emms-pbi-export-playlist filename
+Export the current playlist as to @var{filename}.
+@end defun
+@defun emms-pbi-quit
+Stops emms and kill the playlist buffer
+@end defun
+@defun emms-pbi-kill-line
+Kill the current line from the playlist.
+
+Send the filename to @var{emms-kill-ring}. Make sure hooks that
+regenerate the entire playlist aren't run.
+@end defun
+@defun emms-pbi-yank
+Yank a filename from `kill-ring' into the playlist.
+@end defun
+@defun emms-pbi-return-current-line-index
+Return the index position in the playlist of the current line.
+@end defun
+@defun emms-pbi-recenter
+Center on current playing track
+@end defun
+
+@defopt emms-pbi-playlist-entry-generate-function
+The function to call for generating a single item of the
+playlist. This will be called with a string argument FILENAME, and
+should return the text to be inserted in the playlist.
+@end defopt
+@defopt emms-pbi-playlist-entry-max-length
+The maximum length of an entry in the playlist. If this is nil, the
+entire string provided by `emms-track-description-function'.  will be
+used. Beware, the output of that function is cut off to fit the
+max-length before running `emms-pbi-playlist-entry-generate-function'.
+@end defopt
+@defopt emms-pbi-async-alternative-text-function
+The function to call for generating the replacement-text for a
+playlist-item, while the info is lazy-loading. This will be called
+with a string argument FILENAME, and should return the text to be
+processed by emms-pbi-playlist-entry-generate-function.
+@end defopt
+@defopt emms-pbi-playlist-buffer-name
+Name of the buffer to use as a playlist-buffer
+@end defopt
+@defopt emms-pbi-load-info-async
+Whether or not to use emms-info.el's features for async loading
+info. Defaults to t when emms-info is available, and nil otherwise.
+@end defopt
+@defopt emms-pbi-after-build-hook
+Hook that is run after the playlist buffer is built.
+That might be usefull to change the playlist buffer before the
+buffer is set read-only.
+@end defopt
+@defopt emms-pbi-current-line-face-changed-hook
+Hook that is called when the face of the current line changes.
+@end defopt
+@defopt emms-pbi-manually-change-song-hook
+Hook that is called when the song is manually changed.
+@end defopt
+
+@node Playlist Popup
+@section Playlist Popup
+
+The emms-pbi-popup module makes it easy to popup the playlist buffer
+and restore the old window configuration after choosing a new track.
+
+This module defines the following functions:
+
+@table @code
+@findex emms-pbi-popup-playlist
+@item emms-pbi-popup-playlist
+Popup Playlist buffer
+
+After changing manually the track with @command{emms-pbi-play-current-line} the
+old window configuration is restored. It might be useful to bind that
+function to a global-key in your .emacs, for example:
+
+@lisp
+(global-set-key (kbd "<f3>") 'emms-pbi-popup-playlist)
+@end lisp
+
+@end table
+
+@node Playlist Manipulation
+@section Playlist Manipulation
+
+The file @file{emms-pl-manip} offers various advanced playlist-manipulations functions for
+Emms.
+
+Basically just load up this file, and check out some of these
+functions.
+
+@defun vector-sort vec pred &optional beg end
+Sort a vector @var{vec}, using the predicate @var{pred}, and return the new
+vector. If @var{beg} and @var{end} are specified, sort only this subrange.
+
+@var{pred} is called with 2 elements and should return true, if the first is
+less than the other.
+@end defun
+@defun emms-pl-manip-sort by pred
+Sorts the Emms-playlist, by applying @var{by} as a function to each
+filename in the list, and then comparing the results with @var{pred}.
+@end defun
+@defun emms-pl-manip-sort-by-filename
+
+@end defun
+@defun emms-pl-manip-sort-by-name
+
+@end defun
+@defun emms-pl-manip-sort-by-info-artist
+Sort the playlist, using
+@end defun
+@defun emms-playlist-reshuffle
+Reshuffle the playlist.
+@end defun
+
+@node Scoring
+@chapter Scoring
+
+Scoring allows you to assign scores to individual files and play media
+according to your mood.
+
+When you load @file{emms-score}, you are set to a default mood 'emms-default-mood'
+A mood is a one word string describing how you feel (like "funny",
+"tired", "aggressive"...)  Each mood have is own set of scoring rules.
+
+You can change your mood with M-x @command{emms-score-change-mood}
+
+Every music file start with a default score of 0 the command
+emms-score-up-current and emms-score-down-current modify the score of
+the file you are currently listening by 1 In addition, skipping a file
+(with emms-skip) automatically score the file down.
+
+With scoring on (this mean the variable @var{emms-use-scoring} is t), emms
+will compare the score of the file with your tolerance to decide if it
+is played or not.
+
+The default tolerance level is 0 (or the variable
+@var{emms-score-min-score}).  This mean files with a score of 0 or more will
+be played and files with a score of -1 or less will be skipped.
+
+You can change the tolerance (by 1) with
+@command{emms-score-lower-tolerance} and @command{emms-score-be-more-tolerant}.
+
+@table @code
+@findex emms-score
+@item emms-score
+Activate scoring
+@findex emms-score-change-mood
+@item emms-score-change-mood
+Change current mood
+@findex emms-score-up-current
+@item emms-score-up-current
+Score up the current track
+@findex emms-score-down-current
+@item emms-score-down-current
+Score down the current track
+@findex emms-score-up-file-on-line
+@item emms-score-up-file-on-line
+Score up file on line
+@findex emms-score-down-file-on-line
+@item emms-score-down-file-on-line
+Score down file on line
+@findex emms-score-be-more-tolerant
+@item emms-score-be-more-tolerant
+Lower minimum score
+@findex emms-score-lower-tolerance
+@item emms-score-lower-tolerance
+Raise minimum score
+@end table
+
+@node Extending Emms
+@chapter Extending Emms
+
+@cindex new players
+@cindex defining players
+@cindex new players, defining
+
+Emms introduces a high abstraction layer for playing music so you can
+customise a lot of things to morph Emms into @emph{your} media player.
+
+@menu
+* New Player::  How to define a new player
+@end menu
+
+@node New Player
+@section New Player
+
+The file @file{emms-player-simple.el} defines some easy players to
+start with, but it shouldn't be hard to provide a function for your
+favourite player. We will start with an easy example that shows how
+we can use the @command{play} command under Unix to play our WAV files.
+
+@menu
+* Simple Player for @command{play}:: An example player using @command{play}
+* More Complex Player:: Example of a complex player using @command{mpg321}
+@end menu
+
+@node Simple Player for @command{play}
+@subsection Simple Player for @command{play}
+
+Play is a very easy command line player for various format. If you
+want your emms to play WAV files just put the following lines in you
+@file{.emacs}:
+
+@lisp
+(require 'emms-player-simple)
+(define-emms-simple-player play "\\.wav$" "play")
+@end lisp
+@noindent
+
+Huh! Wasn't that easy?
+
+The macro function @command{define-emms-simple-player} takes a minimum
+of three arguments. The first argument (@emph{play} in our example)
+defines the name of the player. It's used to name the player
+functions. The second is a regexp, that defines which files to play
+with our player. @emph{\\.wav$} matches any filename ending with a dot
+and the string wav. The last argument is the actual command line
+command we use to play our files. You can also add the path but we
+just assume that the command is in your path. All arguments you add to
+these three are optional. They define the command line arguments you
+want to add to your argument. If you want to hear the wav file of
+your favourite artist in the most possible volume use the following
+line:
+
+@lisp
+(require 'emms-player-simple)
+(define-emms-simple-player play "\\artist-*.wav$" "play" "--volume=100")
+@end lisp
+@noindent
+
+Please notice that you have to add the arguments as strings!
+
+The command line tool you use for @command{define-emms-simple-player}
+has to take one song as argument and stop after playing that
+particular song. For any other concept you will need to customise
+emms a bit more...
+
+@node More Complex Player
+@subsection More Complex Player
+
+The most players you use will be simple players so you don't need to
+read this chapter. But if you are curious how you can use (almost) every
+player in emms read further...
+
+In this chapter we will use mpg321 to construct a player that
+actually can pause a track, restart it and show rest time. We won't
+implement all of that, but after that chapter you will know how to
+define it.
+
+The command @command{define-emms-simple-player} is just a abstraction
+layer for @command{define-emms-player}, which is a little bit more
+complicated but much more powerful!
+
+@lisp
+(define-emms-player "emms-mpg321-remote"
+  :start 'emms-mpg321-remote-start
+  :stop 'emms-mpg321-remote-stop
+  :playablep 'emms-mpg321-remote-playable-p)
+@end lisp
+@noindent
+
+So, that almost all! @command{define-emms-player} takes a minimum of
+three arguments. The first is the name of the player. The rest are
+methods with functions to call. Three methods are required: start,
+stop and playable. Start says Emms how to start a track (sic!), stop
+how to stop a player and playablep should return non-nil if the
+player can play the track.
+
+So we just need these three functions to get our mpg321-remote:
+
+First we code the start function. We will check if there's a open
+process and start one otherwise. Then we send a string to the process
+with the filename and set a filter.
+
+@lisp
+(defun emms-mpg321-remote-start ()
+  (unless (get-process "mpg321-remote")
+    (setq emms-mpg321-remote-process
+	  (start-process "mpg321-remote-process"
+			 "*mpg321*" "mpg321" "-R" "abc"))
+  (process-send-string "mpg321-remote-process"
+		       (concat "l " (emms-track-name track)))
+  (set-process-filter emms-mpg321-remote-process 'emms-mpg321-remote-filter)))
+@end lisp
+@noindent
+
+We need the filter, as mpg321-remote won't quit after playing the
+track as the simple player do. We wait until the process send the
+output ``@@P 0'' (the signal of mpg321 that the song ended) to the
+filter and call emms-mpg321-remote-stop.
+
+@lisp
+(defun emms-mpg321-remote-filter (process output)
+  (when (string-match "@@P 0" output)
+    (emms-mpg321-remote-stop)))
+@end lisp
+@noindent
+
+@command{emms-mpg321-remote-stop} won't do anything interesting. It
+just test if there are other files to play and close the process otherwise.
+
+@lisp
+(defun emms-mpg321-remote-stop ()
+  (unless emms-playlist
+    (process-send-string "mpg321-remote-process" "Q\n"))
+@end lisp
+@noindent
+
+And to make that a playable example i also added
+@command{emms-mpg321-remote-playablep}, which i just really steal
+from @file{emms-player-simple.el}
+
+@lisp
+(defun emms-mpg321-remote-playablep (track)
+       "Return non-nil when we can play this track."
+       (and (eq 'file (emms-track-type track))
+@end lisp
+@noindent
+
+Now we have a ready player and we could add commands like
+@command{emms-mpg321-remote-pause} for example.
+
+@node Streaming Audio
+@chapter Streaming Audio
+
+@cindex streaming audio
+@cindex internet radio
+
+Emms provides a friendly interface for managing and playing streaming
+audio in addition to the Emms playlist interface. The interface is
+defined in the @file{emms-streams.el} package and can be loaded by
+invoking:
+
+@lisp
+(require 'emms-streams)
+@end lisp
+
+Enter the emms-streams interface by invoking M-x
+@command{emms-streams}. The emms-streams interface comes with a
+built-in, eclectic list of streaming audio channels from thoughout the
+Web. Emms can of-course play other streams than the ones listed by
+default, you are free to remove any or all of them and add your
+own.@footnote{If you enjoy a particular streaming audio station on the
+Web and think that it belongs in the default list, please send us a
+link and we will gladly add it!}
+
+The following is a list of the key-bindings for the emms-streams
+interface:
+
+@table @kbd
+@item RET
+@kindex RET (emms-streams)
+@vindex emms-stream-default-action
+Perform the default action when you press RET in the EMMS Stream
+interface.  Can be either ``add'' or ``play''. The default is ``add'',
+which adds the station under point to the Emms playlist. When
+@var{emms-stream-default-action} is ``play'' then Emms will play the
+streaming audio channel under point.
+@item q
+@kindex q (emms-streams)
+@findex emms-stream-quit
+Quit the emms-streams interface.
+@item a
+@kindex a (emms-streams)
+@findex emms-stream-add-bookmark
+Add a bookmark to a streaming audio URL to the list.
+@item d
+@kindex d (emms-streams)
+@findex emms-stream-delete-bookmark
+Remove a bookmark to a streaming audio URL from the list.
+@item e
+@kindex e (emms-streams)
+@findex emms-stream-edit-bookmark
+Edit the details of the bookmark under point.
+@item h
+@kindex h (emms-streams)
+@findex describe-mode
+Describe the emms-streams mode.
+@item n
+@kindex n (emms-streams)
+@findex emms-stream-next-line
+Move to the next line in the emms-streams buffer (same as C-n).
+@item p
+@kindex p (emms-streams)
+@findex emms-stream-previous-line
+Move to the previous line in the emms-streams buffer (same as C-p).
+@item s
+@kindex s (emms-streams)
+@findex emms-stream-save-bookmarks-file
+Save the bookmarks in the emms-streams interface to disk. The
+bookmarks will be to the location designated in the variable
+@var{emms-stream-bookmarks-file}.
+@item i
+@kindex i (emms-streams)
+@findex emms-stream-info-bookmark
+Return information about the streaming audio at the URL of the
+bookmark under point. Note that this will only work if the
+`emms-stream-info' has already been loaded.
+@end table
+
+@node Concept Index
+@unnumbered Concept Index
+@printindex cp
+
+@node Function Index
+@unnumbered Function Index
+@printindex fn
+
+@node Variable Index
+@unnumbered Variable Index
+@printindex vr
+
+@node Keybinding Index
+@unnumbered Keybinding Index
+@printindex ky
+
+@bye
