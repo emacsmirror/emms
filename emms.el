@@ -208,7 +208,9 @@ This is a good function to put in `emms-player-finished-hook'."
   (cond (emms-repeat-track
 	 (emms-start))
 	((condition-case nil
-             (emms-playlist-select-next)
+             (progn
+               (emms-playlist-select-next)
+               t)
            (t nil))
 	 (emms-start))
         (t
