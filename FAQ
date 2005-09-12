@@ -15,5 +15,5 @@ A: Increase `emms-player-delay' until it works.
    so it starts a new one. But in reality, the player has not yet
    freed the audio device, so the next player gets an error when
    trying to play.
-   Thes best way to fix this by using ALSA or other sound systems which
+   The best way to fix this by using ALSA or other sound systems which
    allow concurrent access.
