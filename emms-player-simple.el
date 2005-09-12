@@ -80,6 +80,8 @@ to call the player and ARGS are the command line arguements."
        ,(concat "*A player for EMMS.")
        :type '(cons symbol alist))
      (emms-player-set ,player-name 'regex ,regex)
+     (emms-player-set ,player-name 'pause 'emms-player-simple-pause)
+     (emms-player-set ,player-name 'resume 'emms-player-simple-resume)
      (defun ,start (track)
        "Start the player process."
        (emms-player-simple-start (emms-track-name track)
@@ -122,6 +124,16 @@ the specified PARAMS."
   (when (or (eq (process-status proc) 'exit)
             (eq (process-status proc) 'signal))
     (emms-player-stopped)))
+
+(defun emms-player-simple-pause ()
+  "Pause the player by sending a SIGSTOP."
+  (signal-process (get-process emms-player-simple-process-name)
+                  'SIGSTOP))
+
+(defun emms-player-simple-resume ()
+  "Resume the player by sending a SIGCONT."
+  (signal-process (get-process emms-player-simple-process-name)
+                  'SIGCONT))
 
 (define-emms-simple-player mpg321 '(file url) "\\.[mM][pP][23]$" "mpg321")
 (define-emms-simple-player ogg123 '(file) (regexp-opt '(".ogg" ".OGG" ".FLAC" ".flac")) "ogg123")
