@@ -138,6 +138,10 @@ the specified PARAMS."
 (define-emms-simple-player mpg321 '(file url) "\\.[mM][pP][23]$" "mpg321")
 (define-emms-simple-player ogg123 '(file) (regexp-opt '(".ogg" ".OGG" ".FLAC" ".flac")) "ogg123")
 (define-emms-simple-player speexdec '(file) "\\.[sS][pP][xX]$" "speexdec")
+(define-emms-simple-player gstreamer '(file)
+  (regexp-opt '(".[mM][pP]3" ".[oO][gG][gG]" ".[mM][oO][dD]" ".[fF][lL][aA][cC]"
+                ".[xX][mM]" ".[iI][tT]" ".[fF][tT]"))
+  "gst-wrapper" "alsasink")
 
 (provide 'emms-player-simple)
 ;;; emms-player-simple.el ends here
