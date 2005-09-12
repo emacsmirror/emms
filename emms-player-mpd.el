@@ -82,7 +82,6 @@
 ;; added immediately after clearing the mpd playlist.
 
 (require 'emms-player-simple)
-(require 'emms-player-extensions)
 
 (defvar emms-player-mpd-paused-p nil
   "Whether the sound is paused.")
