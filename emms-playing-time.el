@@ -104,7 +104,7 @@ e.g., display 02:37 instead of 02:37/05:49.")
 	 (sec (% emms-playing-time 60))
 	 ;; How to adapt `emms-info-format-info' here?
 	 (struct
-	  (emms-info-get (emms-playlist-current-track)))
+	  (emms-info-get (emms-playlist-selected-track)))
 	 (total-min-only
 	  (when struct (emms-info-playing-time-min struct)))
 	 (total-sec-only
