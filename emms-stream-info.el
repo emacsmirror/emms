@@ -691,11 +691,11 @@ Optional argument CONT boolean."
 
 ;; Users. You can never tell what they are going to use as input.
 (defun emms-stream-info-input-sanity (&optional urlstring)
-  (let ((type (emms-track-type (emms-playlist-current-track))))
+  (let ((type (emms-track-type (emms-playlist-selected-track))))
     (cond ((null urlstring)
 	   (if (or (equal type 'playlist)
 		   (equal type 'url))
-	       (emms-track-name (emms-playlist-current-track))))
+	       (emms-track-name (emms-playlist-selected-track))))
 	  ((not (stringp urlstring))
 	   (error "URL must be in string format"))
 	  ((stringp url) urlstring))))
