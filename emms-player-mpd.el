@@ -1,4 +1,4 @@
-;; emms-mpd.el --- MusicPD support for EMMS
+;; emms-player-mpd.el --- MusicPD support for EMMS
 
 ;; Copyright (C) 2005  Free Software Foundation, Inc.
 
@@ -84,10 +84,10 @@
 (require 'emms-player-simple)
 (require 'emms-player-extensions)
 
-(defvar emms-mpd-paused-p nil
+(defvar emms-player-mpd-paused-p nil
   "Whether the sound is paused.")
 
-(defun emms-mpd-get-supported-regexp ()
+(defun emms-player-mpd-get-supported-regexp ()
   "Returns a regexp of file extensions that MusicPD supports,
 or nil if we cannot figure it out."
   (let ((out (split-string (shell-command-to-string "mpd --version")
@@ -106,9 +106,9 @@ or nil if we cannot figure it out."
                          "\\|")
               "\\)\\'"))))
 
-(defvar emms-mpd-supported-regexp
+(defvar emms-player-mpd-supported-regexp
   ;; Use a sane default, just in case
-  (or (emms-mpd-get-supported-regexp)
+  (or (emms-player-mpd-get-supported-regexp)
       "\\.\\(m3u\\|ogg\\|flac\\|mp3\\|wav\\|mod\\|aac\\)\\'")
   "Formats supported by MusicPD Client.")
 
@@ -124,7 +124,7 @@ leave it set to nil."
   :group 'emms-player-mpd)
 
 (define-emms-simple-player mpd '(file url playlist)
-  emms-mpd-supported-regexp "mpc")
+  emms-player-mpd-supported-regexp "mpc")
 
 (emms-player-set emms-player-mpd
                  'pause
@@ -175,7 +175,7 @@ This handles both m3u and pls type playlists."
 (defun emms-player-mpd-play ()
   "Play whatever is in the current MusicPD playlist."
   (shell-command-to-string (concat emms-player-mpd-command-name " play"))
-  (setq emms-mpd-paused-p nil))
+  (setq emms-player-mpd-paused-p nil))
 
 (defun emms-player-mpd-start (track)
   "Starts a process playing TRACK."
@@ -193,17 +193,17 @@ This handles both m3u and pls type playlists."
   "Stop the currently playing song."
   (interactive)
   (shell-command-to-string (concat emms-player-mpd-command-name " stop"))
-  (setq emms-mpd-paused-p nil))
+  (setq emms-player-mpd-paused-p nil))
 
 (defun emms-player-mpd-pause ()
   "Pause the currently playing song."
   (interactive)
-  (if emms-mpd-paused-p
+  (if emms-player-mpd-paused-p
       (progn
         (shell-command-to-string (concat emms-player-mpd-command-name " play"))
-        (setq emms-mpd-paused-p nil))
+        (setq emms-player-mpd-paused-p nil))
     (shell-command-to-string (concat emms-player-mpd-command-name " pause"))
-    (setq emms-mpd-paused-p t)))
+    (setq emms-player-mpd-paused-p t)))
 
 (defun emms-player-mpd-seek (sec)
   "Seek backward or forward by SEC seconds, depending on sign of SEC."
@@ -222,13 +222,13 @@ This handles both m3u and pls type playlists."
   "Move forward by one track in MusicPD's internal playlist."
   (interactive)
   (shell-command-to-string (concat emms-player-mpd-command-name " next"))
-  (setq emms-mpd-paused-p nil))
+  (setq emms-player-mpd-paused-p nil))
 
 (defun emms-player-mpd-previous ()
   "Move backward by one track in MusicPD's internal playlist."
   (interactive)
   (shell-command-to-string (concat emms-player-mpd-command-name " previous"))
-  (setq emms-mpd-paused-p nil))
+  (setq emms-player-mpd-paused-p nil))
 
 ;; A "Now Playing" function -- I don't know how to integrate this into
 ;; emms-show.
@@ -244,6 +244,6 @@ This handles both m3u and pls type playlists."
                (not (string-match "\\`\\(volume\\|error\\):" np)))
       np)))
 
-(provide 'emms-mpd)
+(provide 'emms-player-mpd)
 
-;;; emms-mpd.el ends here
+;;; emms-player-mpd.el ends here
