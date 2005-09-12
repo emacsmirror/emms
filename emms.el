@@ -227,7 +227,7 @@ This is a good function to put in `emms-player-finished-hook'."
              (progn
                (emms-playlist-select-next)
                t)
-           (t nil))
+           (error nil))
 	 (emms-start))
         (t
 	 (message "No next track in playlist"))))
@@ -413,7 +413,8 @@ used, and the contents removed."
       (error "No next track"))
     (when (not (emms-playlist-track-at next))
       (setq next (next-single-property-change next 'emms-track)))
-    (when (not next)
+    (when (or (not next)
+              (= next (point-max)))
       (error "No next track"))
     (goto-char next)))
 
@@ -439,7 +440,7 @@ used, and the contents removed."
                      (when (not (emms-playlist-track-at (point)))
                        (emms-playlist-next))
                      (point))
-                 (t
+                 (error
                   nil))))
     (if first
         (goto-char first)
@@ -452,7 +453,7 @@ used, and the contents removed."
                     (goto-char (point-max))
                     (emms-playlist-previous)
                     (point))
-                (t
+                (error
                  nil))))
     (if last
         (goto-char last)
@@ -517,11 +518,11 @@ used, and the contents removed."
           (progn
             (condition-case nil
                 (emms-playlist-next)
-              (t
+              (error
                (when emms-repeat-playlist
                  (emms-playlist-first))))
             (emms-playlist-select (point)))
-        (t
+        (error
          (error "No next track in playlist"))))))
 
 (defun emms-playlist-select-previous ()
@@ -536,11 +537,11 @@ used, and the contents removed."
           (progn
             (condition-case nil
                 (emms-playlist-previous)
-              (t
+              (error
                (when emms-repeat-playlist
                  (emms-playlist-last))))
             (emms-playlist-select (point)))
-        (t
+        (error
          (error "No previous track in playlist"))))))
 
 (defun emms-playlist-select-first ()
