@@ -56,25 +56,40 @@ ogg-comments.el"
 (defun emms-info-ogg-comment-providep (track)
   "Return non-nil if this info-method provides info for the track."
   (if (and track (emms-track-name track)
-	   (string-match "\\.ogg$" (emms-track-name track)))
+           (string-match "\\.ogg$" (emms-track-name track)))
       t
     nil))
 
 (defun emms-info-ogg-get-comment (field info)
   (let ((comment (cadr (assoc field (cadr info)))))
     (if comment
-	comment
+        comment
       "")))
+
 
 (defun emms-info-ogg-comment-get (track)
   "Retrieve an emms-info strucutre as an ogg-comment"
-  (let ((info (oggc-read-header (emms-track-name track))))
+  (let ((info (oggc-read-header (emms-track-name track)))
+        (file (emms-track-get track 'name)))
+    (with-temp-buffer
+      (call-process "ogginfo" nil t nil file)
+      (goto-char (point-min))
+      (re-search-forward "Playback length: \\([0-9]*\\)m:\\([0-9]*\\)")
+      (let ((minutes (string-to-int (match-string 1)))
+	    (seconds (string-to-int (match-string 2))))
+	(setq ptime-total (+ (* minutes 60) seconds)
+	      ptime-min minutes
+	      ptime-sec seconds)))
+    
     (make-emms-info :title (emms-info-ogg-get-comment "title" info)
 		    :artist (emms-info-ogg-get-comment "artist" info)
 		    :album (emms-info-ogg-get-comment "album" info)
 		    :note (emms-info-ogg-get-comment "comment" info)
 		    :year (emms-info-ogg-get-comment "date" info)
 		    :genre (emms-info-ogg-get-comment "genre" info)
+		    :playing-time ptime-total
+		    :playing-time-min ptime-min
+		    :playing-time-sec ptime-sec
 		    :file (emms-track-name track))))
 
 (provide 'emms-info-ogg)
