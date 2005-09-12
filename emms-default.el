@@ -54,6 +54,7 @@ always work, unless you get very unlucky with a CVS-build."
   (require 'emms)			; minimalistic
   (require 'emms-source-file)
   (require 'emms-player-simple)
+  (require 'emms-player-mplayer)
   (setq emms-player-list
 	'(emms-player-mpg321 emms-player-ogg123 emms-player-mplayer-playlist emms-player-mplayer)
 	emms-source-file-default-directory directory)
@@ -114,9 +115,6 @@ always work, unless you get very unlucky with a CVS-build."
 	  ;; 	    (add-hook 'emms-pbi-after-build-hook
 	  ;; 		      (lambda ()
 	  ;; 			(setnu-mode 1)))))))))
-
-	  ;; pause, seek
-	  (require 'emms-player-extensions)
 
 	  ;; display lyrics
 	  (require 'emms-lyrics)

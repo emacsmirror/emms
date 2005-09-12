@@ -37,7 +37,6 @@
 (require 'emms-info)
 (require 'emms-info-mp3info)
 (require 'emms-player-simple)
-(require 'emms-player-extensions)
 
 ;;; Customizations
 (defvar emms-playing-time-display-p t
