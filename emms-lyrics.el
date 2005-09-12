@@ -65,7 +65,6 @@
 (require 'emms)
 (require 'emms-player-simple)
 (require 'emms-source-file)
-(require 'emms-player-extensions)
 
 ;;; User Customizations
 (defvar emms-lyrics-display-p t
