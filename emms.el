@@ -768,14 +768,14 @@ This should only be done by the current player itself."
        (t
         (error "Player does not know how to pause"))))
     (setq emms-player-paused-p nil)
-    (run-hooks emms-player-paused-hook))
+    (run-hooks 'emms-player-paused-hook))
    (t
     (let ((pause (emms-player-get emms-player-playing-p 'pause)))
       (if pause
           (funcall pause)
         (error "Player does not know how to pause")))
     (setq emms-player-paused-p t)
-    (run-hooks emms-player-paused-hook))))
+    (run-hooks 'emms-player-paused-hook))))
 
 (defun emms-player-seek (seconds)
   "Seek the current player by SECONDS seconds.
