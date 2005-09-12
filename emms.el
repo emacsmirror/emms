@@ -648,7 +648,10 @@ See emms-source-file.el for some examples."
 
 (defun emms-source-add (source &rest args)
   "Add the tracks of SOURCE at the current position in the playlist."
-  (apply 'emms-playlist-insert-source source args))
+  (apply 'emms-playlist-insert-source source args)
+  (with-current-emms-playlist
+    (when (not emms-playlist-selected-marker)
+      (emms-playlist-select-first))))
 
 ;;; User-defined playlists
 ;;; FIXME: These should be called "combined sources"
