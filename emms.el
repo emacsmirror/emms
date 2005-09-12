@@ -100,6 +100,16 @@ songs, increase this number."
   :type 'number
   :group 'emms)
 
+(defcustom emms-shuffle-function 'emms-shuffle-all
+  "*The function to use for shuffling the playlist."
+  :type 'function
+  :group 'emms)
+
+(defcustom emms-sort-function 'emms-sort-all
+  "*The function to use for sorting the playlist."
+  :type 'function
+  :group 'emms)
+
 (defcustom emms-sort-lessp-function 'emms-sort-track-name-less-p
   "*Function for comparing two EMMS tracks.
 The function should return non-nil if and only if the first track
@@ -279,14 +289,32 @@ This function uses `emms-show-format' to format the current track."
       (message "%s" string))))
 
 (defun emms-shuffle ()
-  "Shuffle the EMMS playlist."
+  "Shuffle the current playlist.
+This uses `emms-shuffle-function'."
   (interactive)
-  (emms-playlist-shuffle))
+  (call-interactively emms-shuffle-function))
+
+(defun emms-shuffle-all ()
+  "Shuffle the whole playlist.
+This is a suitable value for `emms-shuffle-function'."
+  (interactive)
+  (with-current-emms-playlist
+    (emms-playlist-shuffle (point-min)
+                           (point-max))))
 
 (defun emms-sort ()
-  "Sort the EMMS playlist."
+  "Sort the current playlist.
+This uses `emms-shuffle-function'."
   (interactive)
-  (emms-playlist-sort))
+  (call-interactively emms-sort-function))
+
+(defun emms-sort-all ()
+  "Sort the whole playlist.
+This is a suitable value for `emms-sort-function'."
+  (interactive)
+  (with-current-emms-playlist
+    (emms-playlist-sort (point-min)
+                        (point-max))))
 
 (defun emms-toggle-repeat-playlist ()
   "Toggle whether emms repeats the playlist after it is done.
@@ -579,18 +607,69 @@ This uses `emms-playlist-insert-track-function'."
       (apply source args)
       (run-hooks emms-playlist-source-inserted-hook))))
 
-;;; FIXME!
-(defun emms-playlist-shuffle (&optional beg end)
-  "Shuffle the playlist between BEG and END."
-  nil)
+(defun emms-playlist-shuffle (beg end)
+  "Shuffle the tracks in the current buffer between BEG and END."
+  (interactive "r")
+  (save-excursion
+    (goto-char beg)
+    (let* ((tracks (vconcat (emms-playlist-extract-tracks beg end)))
+           (len (length tracks))
+           (i 0))
+      (emms-shuffle-vector tracks)
+      (while (< i len)
+        (emms-playlist-insert-track (aref tracks i))
+        (setq i (1+ i))))))
 
-;;; FIXME!
-(defun emms-playlist-sort (&optional beg end)
-  "Sort the playlist between BEG and END.
-This uses `emms-sort-lessp-function'."
-  ;; That exists!
-  nil)
+(defun emms-playlist-sort (beg end)
+  "Sort the tracks in the current buffer between BEG and END."
+  (interactive "r")
+  (save-excursion
+    (goto-char beg)
+    (mapc 'emms-playlist-insert-track
+          (sort (emms-playlist-extract-tracks beg end)
+                emms-sort-lessp-function))))
 
+(defun emms-playlist-extract-tracks (beg end)
+  "Return a list of tracks between BEG and END, and delete them."
+  (let* ((beg (if (emms-playlist-track-at beg)
+                  (car (emms-property-region beg 'emms-track))
+                beg))
+         (end (if (emms-playlist-track-at end)
+                  (cdr (emms-property-region beg 'emms-track))
+                end))
+         (tracks (emms-playlist-tracks-in-region beg end)))
+    (delete-region beg end)
+    tracks))
+
+(defun emms-playlist-tracks-in-region (beg end)
+  "Return all tracks between BEG and END."
+  (let ((tracks nil)
+        (donep nil))
+    (save-restriction
+      (narrow-to-region beg end)
+      (condition-case nil
+          (emms-playlist-first)
+        (error
+         (setq donep t)))
+      (while (not donep)
+        (setq tracks (cons (emms-playlist-track-at (point))
+                           tracks))
+        (condition-case nil
+            (emms-playlist-next)
+          (error
+           (setq donep t)))))
+    tracks))
+
+(defun emms-shuffle-vector (vector)
+  "Shuffle VECTOR."
+  (let ((i (- (length vector) 1)))
+    (while (>= i 0)
+      (let* ((r (random (1+ i)))
+             (old (aref vector r)))
+        (aset vector r (aref vector i))
+        (aset vector i old))
+      (setq i (- i 1))))
+  vector)
 
 
 ;;; Sources
@@ -666,7 +745,8 @@ See emms-source-file.el for some examples."
                     (cdr source)))
            ,sources)
      ,(when shufflep
-        '(emms-playlist-shuffle))))
+        '(emms-playlist-shuffle (point-min)
+                                (point-max)))))
 
 
 ;;; Players
