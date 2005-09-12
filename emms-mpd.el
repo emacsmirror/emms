@@ -213,8 +213,8 @@ This handles both m3u and pls type playlists."
                                            (if (> sec 0) "+" "")
                                            sec)))
   ;; Taking our cue from emms-player-mplayer-seek
-  (when (fboundp 'emms-lyric-seek)
-    (emms-lyric-seek sec)))
+  (when (fboundp 'emms-lyrics-seek)
+    (emms-lyrics-seek sec)))
 
 ;; Not currently used by the API (to my knowledge), but I make use of
 ;; these to advance my playlists.
