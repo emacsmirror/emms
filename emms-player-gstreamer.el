@@ -55,4 +55,4 @@
   (signal-process (shell-command-to-string "pgrep gst-launch") 'SIGCONT)
   (setq emms-gstreamer-paused-p nil))
 
-(provide 'emms-gstreamer)
+(provide 'emms-player-gstreamer)
