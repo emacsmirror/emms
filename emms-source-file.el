@@ -278,12 +278,12 @@ files) can play."
 (define-emms-source url (url)
   "An EMMS source for an URL - for example, for streaming."
   (interactive "sPlay URL: ")
-  (emms-playlist-track-insert (emms-track 'url url)))
+  (emms-playlist-insert-track (emms-track 'url url)))
 
 (define-emms-source playlist (playlist)
   "An EMMS source for streaming playlists (usually URLs ending in .pls."
   (interactive "sPlay URL: ")
-  (emms-playlist-track-insert (emms-track 'playlist playlist)))
+  (emms-playlist-insert-track (emms-track 'playlist playlist)))
   
 
 (provide 'emms-source-file)
