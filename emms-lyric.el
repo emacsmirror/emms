@@ -152,7 +152,7 @@ looking up in `emms-lyric-dir'."
 	emms-lyric-pause-time nil
 	emms-lyric-elapsed-time 0)
   (when (and emms-lyric-display-p
-	     (let ((file (cdaddr (emms-playlist-current-track))))
+	     (let ((file (cdaddr (emms-playlist-selected-track))))
 	       (emms-lyric-read-file
 		(replace-regexp-in-string
 		 (file-name-extension file) "lrc" file))))
