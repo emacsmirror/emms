@@ -119,7 +119,7 @@ always work, unless you get very unlucky with a CVS-build."
 	  (require 'emms-player-extensions)
 
 	  ;; display lyrics
-	  (require 'emms-lyric)
+	  (require 'emms-lyrics)
 
 	  ;; display playing-time
 	  (require 'emms-playing-time))))))
