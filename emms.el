@@ -348,7 +348,8 @@ used, and the contents removed."
 (defmacro with-current-emms-playlist (&rest body)
   "Run BODY with the current buffer being the current playlist buffer."
   `(progn
-     (when (not emms-playlist-buffer)
+     (when (or (not emms-playlist-buffer)
+               (not (buffer-live-p emms-playlist-buffer)))
        (emms-playlist-clear))
      (with-current-buffer emms-playlist-buffer
        ,@body)))
@@ -534,15 +535,17 @@ This uses `emms-playlist-insert-track-function'."
       (apply source args)
       (run-hooks emms-playlist-source-inserted-hook))))
 
+;;; FIXME!
 (defun emms-playlist-shuffle (&optional beg end)
   "Shuffle the playlist between BEG and END."
-  ...)
+  nil)
 
+;;; FIXME!
 (defun emms-playlist-sort (&optional beg end)
   "Sort the playlist between BEG and END.
 This uses `emms-sort-lessp-function'."
   ;; That exists!
-  ...)
+  nil)
 
 
 
