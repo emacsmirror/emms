@@ -250,6 +250,14 @@ This is a good function to put in `emms-player-finished-hook'."
   (emms-playlist-select-previous)
   (emms-start))
 
+(defun emms-random ()
+  "Jump to a random track."
+  (interactive)
+  (when emms-player-playing-p
+    (emms-stop))
+  (emms-playlist-select-random)
+  (emms-start))
+
 (defun emms-pause ()
   "Pause the current player."
   (interactive)
@@ -571,6 +579,32 @@ used, and the contents removed."
             (emms-playlist-select (point)))
         (error
          (error "No previous track in playlist"))))))
+
+(defun emms-playlist-select-random ()
+  "Select a random track in the playlist."
+  (with-current-emms-playlist
+    ;; FIXME: This is rather inefficient.
+    (save-excursion
+      (let ((track-indices nil)
+            (donep nil))
+        (condition-case nil
+            (progn
+              (emms-playlist-first)
+              (setq track-indices (cons (point)
+                                        track-indices)))
+          (error
+           (setq donep t)))
+        (while (not donep)
+          (condition-case nil
+              (progn
+                (emms-playlist-next)
+                (setq track-indices (cons (point)
+                                          track-indices)))
+            (error
+             (setq donep t))))
+        (setq track-indices (vconcat track-indices))
+        (emms-playlist-select (aref track-indices
+                                    (random (length track-indices))))))))
 
 (defun emms-playlist-select-first ()
   "Select the first track in the playlist."
