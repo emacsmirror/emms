@@ -66,7 +66,7 @@ static char *note[] = {
           emms-mode-line-icon-before-format
           (propertize "NP:" 'display emms-mode-line-icon-image-cache)
           (format emms-mode-line-format (emms-info-file-info-song-artist
-                          (emms-playlist-current-track)))))
+                          (emms-playlist-selected-track)))))
 
 (setq emms-mode-line-mode-line-function 'emms-mode-line-icon-function)
 
