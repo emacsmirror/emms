@@ -124,7 +124,8 @@ the specified PARAMS."
     (emms-player-stopped)))
 
 (define-emms-simple-player mpg321 '(file url) "\\.[mM][pP][23]$" "mpg321")
-(define-emms-simple-player ogg123 '(file) (regexp-opt '(".ogg" ".OGG" ".FLAC" ".flac" )) "ogg123")
+(define-emms-simple-player ogg123 '(file) (regexp-opt '(".ogg" ".OGG" ".FLAC" ".flac")) "ogg123")
+(define-emms-simple-player speexdec '(file) "\\.[sS][pP][xX]$" "speexdec")
 
 (provide 'emms-player-simple)
 ;;; emms-player-simple.el ends here
