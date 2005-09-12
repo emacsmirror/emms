@@ -125,10 +125,6 @@ the specified PARAMS."
 
 (define-emms-simple-player mpg321 '(file url) "\\.[mM][pP][23]$" "mpg321")
 (define-emms-simple-player ogg123 '(file) (regexp-opt '(".ogg" ".OGG" ".FLAC" ".flac" )) "ogg123")
-(define-emms-simple-player mplayer-playlist '(playlist) "http://" "mplayer" "-playlist")
-(define-emms-simple-player mplayer '(file url)
-  (regexp-opt '(".ogg" ".mp3" ".wav" ".mpg" ".mpeg" ".wmv" ".wma" ".mov" ".avi" ".divx" ".ogm" ".asf" ".mkv" "http://")) "mplayer")
-
 
 (provide 'emms-player-simple)
 ;;; emms-player-simple.el ends here
