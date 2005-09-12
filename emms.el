@@ -168,8 +168,24 @@ the latter, only when the player actually finishes playing a track."
   :type 'hook
   :options '(emms-next-noerror))
 
+(defcustom emms-player-paused-hook nil
+  "*Hook run when a player is paused or resumed.
+Use `emms-player-paused-p' to find the current state."
+  :group 'emms
+  :type 'hook)
+
+(defcustom emms-player-seeked-functions nil
+  "*Functions called when a player is seeking.
+The functions are called with a single argument, the amount of
+seconds the player did seek."
+  :group 'emms
+  :type 'hook)
+
 (defvar emms-player-playing-p nil
   "The currently playing EMMS player, or nil.")
+
+(defvar emms-player-paused-p nil
+  "Whether the current player is paused or not.")
 
 
 ;;; User Interface
@@ -223,6 +239,33 @@ This is a good function to put in `emms-player-finished-hook'."
     (emms-stop))
   (emms-playlist-select-previous)
   (emms-start))
+
+(defun emms-pause ()
+  "Pause the current player."
+  (interactive)
+  (when emms-player-playing-p
+    (emms-player-pause)))
+
+(defun emms-seek (seconds)
+  "Seek the current player SECONDS seconds.
+This can be a floating point number for sub-second fractions.
+It can also be negative to seek backwards."
+  (interactive "nSeconds to seek: ")
+  (if emms-player-playing-p
+      (emms-player-seek seconds)
+    (error "Nothing playing right now")))
+
+(defun emms-seek-forward ()
+  "Seek ten seconds forward."
+  (interactive)
+  (when emms-player-playing-p
+    (emms-player-seek 10)))
+
+(defun emms-seek-backward ()
+  "Seek ten seconds backward."
+  (interactive)
+  (when emms-player-playing-p
+    (emms-player-seek -10)))
 
 (defun emms-show (&optional insertp)
   "Describe the current EMMS track in the minibuffer.
@@ -705,6 +748,43 @@ This should only be done by the current player itself."
       (run-hooks 'emms-player-stopped-hook)
     (sleep-for emms-player-delay)
     (run-hooks 'emms-player-finished-hook)))
+
+(defun emms-player-pause ()
+  "Pause the current EMMS player."
+  (cond
+   ((not emms-player-playing-p)
+    (error "Can't pause player, nothing is playing"))
+   (emms-player-paused-p
+    (let ((resume (emms-player-get emms-player-playing-p 'resume))
+          (pause (emms-player-get emms-player-playing-p 'pause)))
+      (cond
+       (resume
+        (funcall resume))
+       (pause
+        (funcall pause))
+       (t
+        (error "Player does not know how to pause"))))
+    (setq emms-player-paused-p nil)
+    (run-hooks emms-player-paused-hook))
+   (t
+    (let ((pause (emms-player-get emms-player-playing-p 'pause)))
+      (if pause
+          (funcall pause)
+        (error "Player does not know how to pause")))
+    (setq emms-player-paused-p t)
+    (run-hooks emms-player-paused-hook))))
+
+(defun emms-player-seek (seconds)
+  "Seek the current player by SECONDS seconds.
+This can be a floating point number for fractions of a second,
+or negative to seek backwards."
+  (if (not emms-player-playing-p)
+      (error "Can't seek player, nothing playing right now")
+    (let ((seek (emms-player-get emms-player-playing-p 'seek)))
+      (if (not seek)
+          (error "Player does not know how to seek")
+        (funcall seek)
+        (run-hook-with-args emms-player-seeked-functions seconds)))))
 
 
 ;;; Dictionaries
