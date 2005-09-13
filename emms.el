@@ -100,12 +100,12 @@ songs, increase this number."
   :type 'number
   :group 'emms)
 
-(defcustom emms-shuffle-function 'emms-shuffle-all
+(defcustom emms-playlist-shuffle-function 'emms-playlist-simple-shuffle
   "*The function to use for shuffling the playlist."
   :type 'function
   :group 'emms)
 
-(defcustom emms-sort-function 'emms-sort-all
+(defcustom emms-playlist-sort-function 'emms-playlist-simple-sort
   "*The function to use for sorting the playlist."
   :type 'function
   :group 'emms)
@@ -298,50 +298,17 @@ This function uses `emms-show-format' to format the current track."
 
 (defun emms-shuffle ()
   "Shuffle the current playlist.
-This uses `emms-shuffle-function'."
-  (interactive)
-  (call-interactively emms-shuffle-function))
-
-(defun emms-shuffle-all ()
-  "Shuffle the whole playlist.
-This is a suitable value for `emms-shuffle-function'."
+This uses `emms-playlist-shuffle-function'."
   (interactive)
   (with-current-emms-playlist
-    (let ((current nil))
-      (when emms-player-playing-p
-        (setq current (emms-playlist-selected-track))
-        (goto-char emms-playlist-selected-marker)
-        (emms-playlist-kill-track))
-      (emms-playlist-shuffle (point-min)
-                             (point-max))
-      (if current
-          (progn
-            (goto-char (point-min))
-            (emms-playlist-insert-track current))
-        (emms-playlist-first)))
-    (goto-char (point-max))))
+    (funcall emms-playlist-shuffle-function)))
 
 (defun emms-sort ()
   "Sort the current playlist.
-This uses `emms-shuffle-function'."
-  (interactive)
-  (call-interactively emms-sort-function))
-
-(defun emms-sort-all ()
-  "Sort the whole playlist.
-This is a suitable value for `emms-sort-function'."
+This uses `emms-playlist-shuffle-function'."
   (interactive)
   (with-current-emms-playlist
-    (let ((current (emms-playlist-selected-track)))
-      (emms-playlist-sort (point-min)
-                          (point-max))
-      (let ((pos (text-property-any (point-min)
-                                    (point-max)
-                                    'emms-track current)))
-        (if pos
-            (emms-playlist-select pos)
-          (emms-playlist-first))))
-    (goto-char (point-max))))
+    (funcall emms-playlist-sort-function)))
 
 (defun emms-toggle-repeat-playlist ()
   "Toggle whether emms repeats the playlist after it is done.
@@ -522,27 +489,13 @@ used, and the contents removed."
     (kill-region (car region)
                  (cdr region))))
 
-(defun emms-property-region (pos prop)
-  "Return a pair of the beginning and end of the property PROP at POS."
-  (let ((beg nil)
-        (end nil))
-    (save-excursion
-      (goto-char pos)
-      (while (and (not (bobp))
-                  (get-text-property (point)
-                                     prop))
-        (backward-char))
-      (when (not (get-text-property (point)
-                                    prop))
-        (forward-char))
-      (setq beg (point))
-      (goto-char pos)
-      (while (and (not (eobp))
-                  (get-text-property (point)
-                                     prop))
-        (forward-char))
-      (setq end (point)))
-    (cons beg end)))
+(defun emms-playlist-delete-track ()
+  "Delete the track at point."
+  (when (not (emms-playlist-track-at (point)))
+    (error "No track at point"))
+  (let ((region (emms-property-region (point) 'emms-track)))
+    (delete-region (car region)
+                   (cdr region))))
 
 ;;; Track selection
 (defun emms-playlist-selected-track ()
@@ -647,12 +600,6 @@ used, and the contents removed."
 This uses `emms-playlist-insert-track-function'."
   (funcall emms-playlist-insert-track-function track))
 
-(defun emms-playlist-simple-insert-track (track)
-  "Insert the long description of TRACK at point."  
-  (insert (propertize (emms-track-description track)
-                      'emms-track track)
-          "\n"))
-
 (defun emms-playlist-insert-source (source &rest args)
   "Insert tracks from SOURCE, supplying ARGS as arguments."
   (with-current-emms-playlist
@@ -661,38 +608,6 @@ This uses `emms-playlist-insert-track-function'."
                         (point))
       (apply source args)
       (run-hooks emms-playlist-source-inserted-hook))))
-
-(defun emms-playlist-shuffle (beg end)
-  "Shuffle the tracks in the current buffer between BEG and END."
-  (save-excursion
-    (goto-char beg)
-    (let* ((tracks (vconcat (emms-playlist-extract-tracks beg end)))
-           (len (length tracks))
-           (i 0))
-      (emms-shuffle-vector tracks)
-      (while (< i len)
-        (emms-playlist-insert-track (aref tracks i))
-        (setq i (1+ i))))))
-
-(defun emms-playlist-sort (beg end)
-  "Sort the tracks in the current buffer between BEG and END."
-  (save-excursion
-    (goto-char beg)
-    (mapc 'emms-playlist-insert-track
-          (sort (emms-playlist-extract-tracks beg end)
-                emms-sort-lessp-function))))
-
-(defun emms-playlist-extract-tracks (beg end)
-  "Return a list of tracks between BEG and END, and delete them."
-  (let* ((beg (if (emms-playlist-track-at beg)
-                  (car (emms-property-region beg 'emms-track))
-                beg))
-         (end (if (emms-playlist-track-at end)
-                  (cdr (emms-property-region beg 'emms-track))
-                end))
-         (tracks (emms-playlist-tracks-in-region beg end)))
-    (delete-region beg end)
-    tracks))
 
 (defun emms-playlist-tracks-in-region (beg end)
   "Return all tracks between BEG and END."
@@ -713,6 +628,76 @@ This uses `emms-playlist-insert-track-function'."
            (setq donep t)))))
     tracks))
 
+;;; Simple playlist buffer
+(defun emms-playlist-simple-insert-track (track)
+  "Insert the description of TRACK at point."
+  (insert (propertize (emms-track-description track)
+                      'emms-track track)
+          "\n"))
+
+(defun emms-playlist-simple-shuffle ()
+  "Shuffle the whole playlist buffer."
+  (let ((current nil))
+    (when emms-player-playing-p
+      (setq current (emms-playlist-selected-track))
+      (goto-char emms-playlist-selected-marker)
+      (emms-playlist-delete-track))
+    (let* ((tracks (vconcat (emms-playlist-tracks-in-region (point-min)
+                                                            (point-max))))
+           (len (length tracks))
+           (i 0))
+      (delete-region (point-min)
+                     (point-max))
+      (run-hooks 'emms-playlist-cleared-hook)
+      (emms-shuffle-vector tracks)
+      (when current
+        (emms-playlist-insert-track current))
+      (while (< i len)
+        (emms-playlist-insert-track (aref tracks i))
+        (setq i (1+ i))))
+    (emms-playlist-select-first)
+    (goto-char (point-max))))
+
+(defun emms-playlist-simple-sort ()
+  "Sort the whole playlist buffer."
+  (let ((current (emms-playlist-selected-track))
+        (tracks (emms-playlist-tracks-in-region (point-min)
+                                                (point-max))))
+    (delete-region (point-min)
+                   (point-max))
+    (run-hooks 'emms-playlist-cleared-hook)
+    (mapc 'emms-playlist-insert-track
+          (sort tracks emms-sort-lessp-function))
+    (let ((pos (text-property-any (point-min)
+                                  (point-max)
+                                  'emms-track current)))
+      (if pos
+          (emms-playlist-select pos)
+        (emms-playlist-first)))))
+
+;;; Helper functions
+(defun emms-property-region (pos prop)
+  "Return a pair of the beginning and end of the property PROP at POS."
+  (let ((beg nil)
+        (end nil))
+    (save-excursion
+      (goto-char pos)
+      (while (and (not (bobp))
+                  (get-text-property (point)
+                                     prop))
+        (backward-char))
+      (when (not (get-text-property (point)
+                                    prop))
+        (forward-char))
+      (setq beg (point))
+      (goto-char pos)
+      (while (and (not (eobp))
+                  (get-text-property (point)
+                                     prop))
+        (forward-char))
+      (setq end (point)))
+    (cons beg end)))
+
 (defun emms-shuffle-vector (vector)
   "Shuffle VECTOR."
   (let ((i (- (length vector) 1)))
@@ -723,6 +708,8 @@ This uses `emms-playlist-insert-track-function'."
         (aset vector i old))
       (setq i (- i 1))))
   vector)
+
+
 
 
 ;;; Sources
