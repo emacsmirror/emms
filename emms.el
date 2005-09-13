@@ -552,11 +552,12 @@ used, and the contents removed."
                    (point-min)))
       (condition-case nil
           (progn
-            (condition-case nil
-                (emms-playlist-next)
-              (error
-               (when emms-repeat-playlist
-                 (emms-playlist-first))))
+            (if emms-repeat-playlist
+                (condition-case nil
+                    (emms-playlist-next)
+                  (error
+                   (emms-playlist-first)))
+              (emms-playlist-next))
             (emms-playlist-select (point)))
         (error
          (error "No next track in playlist"))))))
@@ -571,11 +572,12 @@ used, and the contents removed."
                    (point-max)))
       (condition-case nil
           (progn
-            (condition-case nil
-                (emms-playlist-previous)
-              (error
-               (when emms-repeat-playlist
-                 (emms-playlist-last))))
+            (if emms-repeat-playlist
+                (condition-case nil
+                    (emms-playlist-previous)
+                  (error
+                   (emms-playlist-last)))
+              (emms-playlist-previous))
             (emms-playlist-select (point)))
         (error
          (error "No previous track in playlist"))))))
