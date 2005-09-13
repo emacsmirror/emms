@@ -314,7 +314,7 @@ This is a suitable value for `emms-shuffle-function'."
         (emms-playlist-kill-track))
       (emms-playlist-shuffle (point-min)
                              (point-max))
-      (if emms-player-playing-p
+      (if current
           (progn
             (goto-char (point-min))
             (emms-playlist-insert-track current))
