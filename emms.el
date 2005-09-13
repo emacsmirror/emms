@@ -132,6 +132,11 @@ sorts before the second (see `sort')."
   :group 'emms
   :type 'function)
 
+(defcustom emms-playlist-delete-track-function 'emms-playlist-simple-delete-track
+  "*A function to delete the track at point in the playlist buffer."
+  :group 'emms
+  :type 'function)
+
 (defcustom emms-playlist-source-inserted-hook nil
   "*Hook run when a source got inserted into the playlist.
 The buffer is narrowed to the new tracks."
@@ -483,11 +488,7 @@ used, and the contents removed."
 
 (defun emms-playlist-delete-track ()
   "Delete the track at point."
-  (when (not (emms-playlist-track-at (point)))
-    (error "No track at point"))
-  (let ((region (emms-property-region (point) 'emms-track)))
-    (delete-region (car region)
-                   (cdr region))))
+  (funcall emms-playlist-delete-track-function))
 
 ;;; Track selection
 (defun emms-playlist-selected-track ()
@@ -626,6 +627,14 @@ This uses `emms-playlist-insert-track-function'."
   (insert (propertize (emms-track-description track)
                       'emms-track track)
           "\n"))
+
+(defun emms-playlist-simple-delete-track ()
+  "Delete the track at point."
+  (when (not (emms-playlist-track-at (point)))
+    (error "No track at point"))
+  (let ((region (emms-property-region (point) 'emms-track)))
+    (delete-region (car region)
+                   (cdr region))))
 
 (defun emms-playlist-simple-shuffle ()
   "Shuffle the whole playlist buffer."
