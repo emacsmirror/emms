@@ -5,7 +5,7 @@
 @c %**end of header
 
 @c CVS info:
-@c $Revision: 1.24 $
+@c $Revision: 1.25 $
 
 @c Maintainer comments:
 @c There is always work to do in a manual.
@@ -1041,7 +1041,7 @@ want your emms to play WAV files just put the following lines in you
 
 @lisp
 (require 'emms-player-simple)
-(define-emms-simple-player play "\\.wav$" "play")
+(define-emms-simple-player play '(file) "\\.wav$" "play")
 @end lisp
 @noindent
 
@@ -1062,7 +1062,7 @@ line:
 
 @lisp
 (require 'emms-player-simple)
-(define-emms-simple-player play "\\artist-*.wav$" "play" "--volume=100")
+(define-emms-simple-player play '(file) "\\artist-*.wav$" "play" "--volume=100")
 @end lisp
 @noindent
 
