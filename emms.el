@@ -664,7 +664,6 @@ This uses `emms-playlist-insert-track-function'."
 
 (defun emms-playlist-shuffle (beg end)
   "Shuffle the tracks in the current buffer between BEG and END."
-  (interactive "r")
   (save-excursion
     (goto-char beg)
     (let* ((tracks (vconcat (emms-playlist-extract-tracks beg end)))
@@ -677,7 +676,6 @@ This uses `emms-playlist-insert-track-function'."
 
 (defun emms-playlist-sort (beg end)
   "Sort the tracks in the current buffer between BEG and END."
-  (interactive "r")
   (save-excursion
     (goto-char beg)
     (mapc 'emms-playlist-insert-track
