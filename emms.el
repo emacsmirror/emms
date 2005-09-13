@@ -481,14 +481,6 @@ used, and the contents removed."
         (goto-char last)
       (error "No last track"))))
 
-(defun emms-playlist-kill-track ()
-  "Kill the track at point."
-  (when (not (emms-playlist-track-at (point)))
-    (error "No track at point"))
-  (let ((region (emms-property-region (point) 'emms-track)))
-    (kill-region (car region)
-                 (cdr region))))
-
 (defun emms-playlist-delete-track ()
   "Delete the track at point."
   (when (not (emms-playlist-track-at (point)))
