@@ -639,6 +639,7 @@ This uses `emms-playlist-insert-track-function'."
 (defun emms-playlist-simple-shuffle ()
   "Shuffle the whole playlist buffer."
   (let ((current nil))
+    (widen)
     (when emms-player-playing-p
       (setq current (emms-playlist-selected-track))
       (goto-char emms-playlist-selected-marker)
@@ -661,6 +662,7 @@ This uses `emms-playlist-insert-track-function'."
 
 (defun emms-playlist-simple-sort ()
   "Sort the whole playlist buffer."
+  (widen)
   (let ((current (emms-playlist-selected-track))
         (tracks (emms-playlist-tracks-in-region (point-min)
                                                 (point-max))))
