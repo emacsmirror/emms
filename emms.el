@@ -307,8 +307,19 @@ This uses `emms-shuffle-function'."
 This is a suitable value for `emms-shuffle-function'."
   (interactive)
   (with-current-emms-playlist
-    (emms-playlist-shuffle (point-min)
-                           (point-max))))
+    (let ((current nil))
+      (when emms-player-playing-p
+        (setq current (emms-playlist-selected-track))
+        (goto-char emms-playlist-selected-marker)
+        (emms-playlist-kill-track))
+      (emms-playlist-shuffle (point-min)
+                             (point-max))
+      (if emms-player-playing-p
+          (progn
+            (goto-char (point-min))
+            (emms-playlist-insert-track current))
+        (emms-playlist-first)))
+    (goto-char (point-max))))
 
 (defun emms-sort ()
   "Sort the current playlist.
@@ -321,8 +332,16 @@ This uses `emms-shuffle-function'."
 This is a suitable value for `emms-sort-function'."
   (interactive)
   (with-current-emms-playlist
-    (emms-playlist-sort (point-min)
-                        (point-max))))
+    (let ((current (emms-playlist-selected-track)))
+      (emms-playlist-sort (point-min)
+                          (point-max))
+      (let ((pos (text-property-any (point-min)
+                                    (point-max)
+                                    'emms-track current)))
+        (if pos
+            (emms-playlist-select pos)
+          (emms-playlist-first))))
+    (goto-char (point-max))))
 
 (defun emms-toggle-repeat-playlist ()
   "Toggle whether emms repeats the playlist after it is done.
