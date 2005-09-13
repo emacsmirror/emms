@@ -38,9 +38,9 @@
 ;;; Code:
 
 ;; $Id: emms.el,v 1.63 2005/08/18 13:52:23 forcer Exp $
-(defvar emms-version "1.5 $Revision: 1.63 $"
+(defvar emms-version "1.5"
   "EMMS version string.")
-;; FIXME: 1.4 will be 2.0 eventually
+;; FIXME: 1.5 will be 2.0 eventually
 
 
 ;;; User Customization
@@ -774,7 +774,7 @@ See emms-source-file.el for some examples."
       (emms-playlist-select-first))))
 
 ;;; User-defined playlists
-;;; FIXME: These should be called "combined sources"
+;;; FIXME: Shuffle is bogus here! (because of narrowing)
 (defmacro define-emms-combined-source (name shufflep sources)
   "Define a `emms-play-X' and `emms-add-X' function for SOURCES."
   `(define-emms-source ,name ()
@@ -785,7 +785,9 @@ See emms-source-file.el for some examples."
                     (cdr source)))
            ,sources)
      ,(when shufflep
-        '(emms-shuffle))))
+        '(save-restriction
+           (widen)
+           (emms-shuffle)))))
 
 
 ;;; Players
