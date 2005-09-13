@@ -785,8 +785,7 @@ See emms-source-file.el for some examples."
                     (cdr source)))
            ,sources)
      ,(when shufflep
-        '(emms-playlist-shuffle (point-min)
-                                (point-max)))))
+        '(emms-shuffle))))
 
 
 ;;; Players
