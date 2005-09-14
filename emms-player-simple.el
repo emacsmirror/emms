@@ -135,12 +135,33 @@ the specified PARAMS."
   (signal-process (get-process emms-player-simple-process-name)
                   'SIGCONT))
 
-(define-emms-simple-player mpg321 '(file url) "\\.[mM][pP][23]$" "mpg321")
-(define-emms-simple-player ogg123 '(file) (regexp-opt '(".ogg" ".OGG" ".FLAC" ".flac")) "ogg123")
-(define-emms-simple-player speexdec '(file) "\\.[sS][pP][xX]$" "speexdec")
+(defun emms-player-simple-regexp (&rest extensions)
+  "Return a regexp matching all EXTENSIONS, case-insensitively."
+  (concat "\\.\\("
+          (mapconcat (lambda (extension)
+                       (mapconcat (lambda (char)
+                                    (let ((u (upcase char))
+                                          (d (downcase char)))
+                                      (if (= u d)
+                                          (format "%c" char)
+                                        (format "[%c%c]" u d))))
+                                  extension
+                                  ""))
+                     extensions
+                     "\\|")
+          "\\)\\'"))
+
+(define-emms-simple-player mpg321 '(file url)
+  (emms-player-simple-regexp "mp3" "mp2")
+  "mpg321")
+(define-emms-simple-player ogg123 '(file)
+  (emms-player-simple-regexp "ogg" "flac")
+  "ogg123")
+(define-emms-simple-player speexdec '(file)
+  (emms-player-simple-regexp "spx")
+  "speexdec")
 (define-emms-simple-player gstreamer '(file)
-  (regexp-opt '(".mp3" ".ogg" ".mod" ".flac" ".xm" ".it" ".ft"
-                ".MP3" ".OGG" ".MOD" ".FLAC" ".XM" ".IT" ".FT"))
+  (emms-player-simple-regexp "mp3" "ogg" "mod" "flac" "xm" "it" "ft")
   "gst-wrapper" "alsasink")
 
 (provide 'emms-player-simple)
