@@ -23,14 +23,11 @@
 ;;; Commentary:
 
 ;; This package enables you to play music files and display lyrics
-;; synchronically! :-) It requires `emms-player-extensions'.
+;; synchronically! :-)
 
 ;; Put this file into your load-path and the following into your
 ;; ~/.emacs:
 ;;             (require 'emms-lyrics)
-
-;; Take a look at the "User Customizable" part for possible personal
-;; customizations.
 
 ;;; Change Log:
 
@@ -58,7 +55,7 @@
 
 ;;; Code:
 
-(defvar emms-lyrics-version "0.4 $Revision: 1.14 $"
+(defvar emms-lyrics-version "0.5 $Revision: 1.14 $"
   "EMMS lyric version string.")
 ;; $Id: emms-lyric.el,v 1.14 2005/08/25 13:03:02 xwl Exp $
 
@@ -66,24 +63,47 @@
 (require 'emms-player-simple)
 (require 'emms-source-file)
 
-;;; User Customizations
-(defvar emms-lyrics-display-p t
-  "Whether to diplay lyrics or not.")
+;;; User Customization
 
-(defvar emms-lyrics-display-on-modeline t
-  "Display lyrics on mode line.")
+(defgroup emms-lyrics nil
+  "Lyrics module for EMMS."
+  :group 'emms)
 
-(defvar emms-lyrics-display-on-minibuffer nil
-  "Display lyrics on minibuffer.")
+(defcustom emms-lyrics-display-p t
+  "If non-nil, will diplay lyrics."
+  :type 'boolean
+  :group 'emms-lyrics)
 
-(defvar emms-lyrics-dir ""
-  "The directory of local lyric files. `emms-lyrics-find-lyric' will look
-for lyrics in current directory and here.")
+(defcustom emms-lyrics-display-on-modeline t
+  "If non-nil, display lyrics on mode line. See also
+`emms-lyrics-display-p'."
+  :type 'boolean
+  :group 'emms-lyrics)
 
-(defvar emms-lyrics-display-format " %s "
-  "Format for displaying lyric on mode-line.")
+(defcustom emms-lyrics-display-on-minibuffer nil
+  "If non-nil, display lyrics on minibuffer. See also
+`emms-lyrics-display-p'."
+  :type 'boolean
+  :group 'emms-lyrics)
 
-;;; Variables
+(defcustom emms-lyrics-dir ""
+  "Local lyrics repository. `emms-lyrics-find-lyric' will look
+for lyrics in current directory and this directory."
+  :type 'string
+  :group 'emms-lyrics)
+
+(defcustom emms-lyrics-display-format " %s "
+  "Format for displaying lyrics."
+  :type 'string
+  :group 'emms-lyrics)
+
+(defcustom emms-lyrics-mode-hook nil
+  "Normal hook run after entering Emms Lyric mode."
+  :type 'hook
+  :group 'emms-lyrics)
+
+;;; Emms Lyrics
+
 (defvar emms-lyrics-alist nil
   "a list of the form: '((time0 lyric0) (time1 lyric1)...)). In short,
 at time-i, display lyric-i.")
@@ -103,18 +123,15 @@ at time-i, display lyric-i.")
 (defvar emms-lyrics-mode-line-string ""
   "current lyric.")
 
-;;; emms lyric control
-
 (defun emms-lyrics-read-file (file)
   "Read a lyric file(LRC format). File should end up with \".lrc\", its
-contents look like:
+contents look like one of the following:
 
     [1:39]I love you, Emacs!
     [00:39]I love you, Emacs!
     [00:39.67]I love you, Emacs!
 
-To find FILE, first look up in current directory, if not found, continue
-looking up in `emms-lyrics-dir'."
+To find FILE, will look up in current directory and `emms-lyrics-dir'."
   (when emms-lyrics-display-p
     (unless (file-exists-p file)
       (setq file (emms-lyrics-find-lyric file)))
@@ -269,7 +286,7 @@ display."
 	     emms-lyrics-alist)
     (when emms-lyrics-display-on-modeline
       (emms-lyrics-mode-line)
-      (setq emms-lyrics-mode-line-string 
+      (setq emms-lyrics-mode-line-string
 	    (format emms-lyrics-display-format lyric))
       (force-mode-line-update))
     (when emms-lyrics-display-on-minibuffer
@@ -294,6 +311,19 @@ a valid `emms-lyrics-dir'."
 
 ;;; emms-lyrics-mode
 
+(define-derived-mode emms-lyrics-mode nil "Emms Lyric"
+  "Major mode for creating lyric files.
+\\{emms-lyrics-mode-map}"
+  (run-hooks 'emms-lyrics-mode-hook))
+
+(defvar emms-lyrics-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map "p" 'emms-lyrics-previous-line)
+    (define-key map "n" 'emms-lyrics-next-line)
+    (define-key map "i" 'emms-lyrics-insert-time)
+    map)
+  "Keymap for `emms-lyrics-mode'.")
+
 (defun emms-lyrics-insert-time ()
   "Insert lyric time in the form: [01:23.21], then goto the
 beginning of next line."
@@ -317,23 +347,6 @@ beginning of next line."
   "Goto the beginning of previous line."
   (interactive)
   (forward-line -1))
-
-(defvar emms-lyrics-mode-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map "p" 'emms-lyrics-previous-line)
-    (define-key map "n" 'emms-lyrics-next-line)
-    (define-key map "i" 'emms-lyrics-insert-time)
-    map)
-  "Keymap for `emms-lyrics-mode'.")
-
-(defvar emms-lyrics-mode-hook nil
-  "Normal hook run when entering Emms Lyric mode.")
-
-(define-derived-mode emms-lyrics-mode nil "Emms Lyric"
-  "Major mode for creating lyric files.
-\\{emms-lyrics-mode-map}"
-  (run-hooks 'emms-lyrics-mode-hook))
-
 
 (provide 'emms-lyrics)
 
