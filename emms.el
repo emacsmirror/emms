@@ -400,6 +400,21 @@ Otherwise, return the type and the name with a colon in between."
   "The marker for the currently selected track.")
 (make-variable-buffer-local 'emms-playlist-selected-marker)
 
+(defun emms-playlist-set-playlist-buffer (&optional buffer)
+  "Set the current playlist buffer."
+  (interactive "bNew playlist buffer: ")
+  (setq emms-playlist-buffer (or (get-buffer buffer)
+                                 (current-buffer))))
+
+(defun emms-playlist-new ()
+  "Create a new playlist buffer."
+  (interactive)
+  (let ((buf (get-buffer emms-playlist-buffer-name)))
+    (when buf
+      (with-current-buffer buf
+        (rename-buffer (generate-new-buffer-name emms-playlist-buffer-name))))
+    (emms-playlist-clear)))
+
 (defun emms-playlist-clear ()
   "Clear the current playlist.
 If a buffer named `emms-playlist-buffer-name' exists, this is
