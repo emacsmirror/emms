@@ -74,6 +74,33 @@
 (defconst oggc-version "$Revision: 1.5 $"
   "Ogg-comment's version number.")
 
+(defmacro with-part-of-file (file-spec &rest body)
+  "Execute BODY in a buffer containing part of FILE.
+
+BEG and END are as `insert-file-contents' (q.v.).
+
+\(fn (FILE &optional BEG END) &rest BODY)"
+  (let (file beg end)
+    (setq file (pop file-spec))
+    (and file-spec (setq beg (pop file-spec)))
+    (and file-spec (setq end (pop file-spec)))
+    `(with-temp-buffer
+       (insert-file-contents-literally ,file nil ,beg ,end)
+       (goto-char (point-min))
+       ,@body)))
+
+(defmacro aif (test-form then &rest else)
+  "Like `if', but with `it' bound to the result of TEST-FORM.
+`it' is accessible in the THEN and ELSE clauses.
+
+Warning, non-hygienic by design.
+
+\(fn TEST-FORM THEN &rest ELSE)"
+  `(let ((it ,test-form))
+     (if it
+         ,then
+       ,@else)))
+
 (defun oggc-split-comment (comment)
   "Split Ogg COMMENT into a (name, value) pair.
 
@@ -238,33 +265,6 @@ COMMENTS should be an alist of the form:
   "Show a pretty printed representation of the Ogg Comments in FILE."
   (interactive "FFile: ")
   (oggc-pretty-print-header (oggc-read-header file)))
-
-(defmacro with-part-of-file (file-spec &rest body)
-  "Execute BODY in a buffer containing part of FILE.
-
-BEG and END are as `insert-file-contents' (q.v.).
-
-\(fn (FILE &optional BEG END) &rest BODY)"
-  (let (file beg end)
-    (setq file (pop file-spec))
-    (and file-spec (setq beg (pop file-spec)))
-    (and file-spec (setq end (pop file-spec)))
-    `(with-temp-buffer
-       (insert-file-contents-literally ,file nil ,beg ,end)
-       (goto-char (point-min))
-       ,@body)))
-
-(defmacro aif (test-form then &rest else)
-  "Like `if', but with `it' bound to the result of TEST-FORM.
-`it' is accessible in the THEN and ELSE clauses.
-
-Warning, non-hygienic by design.
-
-\(fn TEST-FORM THEN &rest ELSE)"
-  `(let ((it ,test-form))
-     (if it
-         ,then
-       ,@else)))
 
 (provide 'ogg-comment)
 
