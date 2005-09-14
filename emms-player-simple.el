@@ -163,6 +163,11 @@ the specified PARAMS."
 (define-emms-simple-player gstreamer '(file)
   (emms-player-simple-regexp "mp3" "ogg" "mod" "flac" "xm" "it" "ft")
   "gst-wrapper" "alsasink")
+(define-emms-simple-player mikmod '(file)
+  (emms-player-simple-regexp ".669" ".amf" ".dsm" ".far" ".gdm" ".it"
+                             ".imf" ".mod" ".med" ".mtm" ".okt" ".s3m"
+                             ".stm" ".stx" ".ult" ".apun" ".xm" ".mod")
+  "mikmod" "-q")
 
 (provide 'emms-player-simple)
 ;;; emms-player-simple.el ends here
