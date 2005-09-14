@@ -167,7 +167,7 @@ the specified PARAMS."
   (emms-player-simple-regexp ".669" ".amf" ".dsm" ".far" ".gdm" ".it"
                              ".imf" ".mod" ".med" ".mtm" ".okt" ".s3m"
                              ".stm" ".stx" ".ult" ".apun" ".xm" ".mod")
-  "mikmod" "-q")
+  "mikmod" "-q" "-p" "1" "-X")
 
 (provide 'emms-player-simple)
 ;;; emms-player-simple.el ends here
