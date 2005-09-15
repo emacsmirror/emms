@@ -238,17 +238,6 @@ files) can play."
              emms-player-list
              "\\|"))
 
-;; Really don't know where to put this, but as the functions for
-;; important and playing a playlist are in ths file i suppose it a
-;; good place for it.
-
-(defun emms-save-playlist (filename)
-  "Export the current playlist as to FILENAME. See also:
-`emms-pbi-import-playlist'."
-  (interactive "FFile to save playlist as: ")
-  (with-temp-file filename
-    (mapc (lambda (elt) (insert (cdr (assoc 'name elt)) "\n")) emms-playlist)))
-
 ;; emms-locate should be part of a once to be emms-dired, with maybe
 ;; file rename after tag functions and so on, but till then i park it
 ;; here... :)
