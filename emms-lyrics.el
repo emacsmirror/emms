@@ -229,7 +229,7 @@ To find FILE, will look up in current directory and `emms-lyrics-dir'."
       (setq emms-player-paused-p paused-orig))
     (emms-lyrics-set-timer)))
 
-(add-hook 'emms-player-seeked-hook 'emms-lyrics-seek)
+(add-hook 'emms-player-seeked-functions 'emms-lyrics-seek)
 
 (defun emms-lyrics-toggle-display-on-minibuffer ()
   "Toggle display lyric on minibbufer."
