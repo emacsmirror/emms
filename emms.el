@@ -793,7 +793,8 @@ See emms-source-file.el for some examples."
   "Add the tracks of SOURCE at the current position in the playlist."
   (apply 'emms-playlist-insert-source source args)
   (with-current-emms-playlist
-    (when (not emms-playlist-selected-marker)
+    (when (or (not emms-playlist-selected-marker)
+              (not (marker-position emms-playlist-selected-marker)))
       (emms-playlist-select-first))))
 
 ;;; User-defined playlists
