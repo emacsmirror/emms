@@ -926,8 +926,8 @@ or negative to seek backwards."
     (let ((seek (emms-player-get emms-player-playing-p 'seek)))
       (if (not seek)
           (error "Player does not know how to seek")
-        (funcall seek)
-        (run-hook-with-args emms-player-seeked-functions seconds)))))
+        (funcall seek seconds)
+        (run-hook-with-args 'emms-player-seeked-functions seconds)))))
 
 
 ;;; Dictionaries
