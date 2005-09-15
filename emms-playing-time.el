@@ -94,7 +94,7 @@ e.g., display 02:37 instead of 02:37/05:49.")
     (when (< emms-playing-time 0)	; back to start point
       (setq emms-playing-time 0))))
 
-(add-hook 'emms-player-seeked-hook 'emms-playing-time-seek)
+(add-hook 'emms-player-seeked-functions 'emms-playing-time-seek)
 
 (defun emms-playing-time-display ()
   "Display playing time on the mode line."
