@@ -400,6 +400,10 @@ Otherwise, return the type and the name with a colon in between."
   "The marker for the currently selected track.")
 (make-variable-buffer-local 'emms-playlist-selected-marker)
 
+(defvar emms-playlist-buffer-p nil
+  "Non-nil when the current buffer is an EMMS playlist.")
+(make-variable-buffer-local 'emms-playlist-buffer-p)
+
 (defun emms-playlist-set-playlist-buffer (&optional buffer)
   "Set the current playlist buffer."
   (interactive "bNew playlist buffer: ")
@@ -427,6 +431,7 @@ used, and the contents removed."
                        (point-max)))
       (when (not (eq major-mode emms-playlist-default-major-mode))
         (funcall emms-playlist-default-major-mode))
+      (setq emms-playlist-buffer-p t)
       (run-hooks 'emms-playlist-cleared-hook))
     (setq emms-playlist-buffer buf)))
 
