@@ -410,30 +410,33 @@ Otherwise, return the type and the name with a colon in between."
   (setq emms-playlist-buffer (or (get-buffer buffer)
                                  (current-buffer))))
 
-(defun emms-playlist-new ()
-  "Create a new playlist buffer."
+(defun emms-playlist-new (&optional name)
+  "Create a new playlist buffer.
+The buffer is named NAME, but made unique. NAME defaults to
+`emms-playlist-buffer-name'.
+If called interactively, the new buffer is also selected."
   (interactive)
-  (let ((buf (get-buffer emms-playlist-buffer-name)))
-    (when buf
-      (with-current-buffer buf
-        (rename-buffer (generate-new-buffer-name emms-playlist-buffer-name))))
-    (emms-playlist-clear)))
+  (let ((buf (generate-new-buffer (or name
+                                      emms-playlist-buffer-name))))
+    (with-current-buffer buf
+      (when (not (eq major-mode emms-playlist-default-major-mode))
+        (funcall emms-playlist-default-major-mode))
+      (setq emms-playlist-buffer-p t))
+    (when (called-interactively-p)
+      (switch-to-buffer buf))
+    buf))
 
 (defun emms-playlist-clear ()
   "Clear the current playlist.
-If a buffer named `emms-playlist-buffer-name' exists, this is
-used, and the contents removed."
-  (let ((buf (get-buffer-create emms-playlist-buffer-name)))
-    (with-current-buffer buf
+If no playlist exists, a new one is generated."
+  (if (not emms-playlist-buffer)
+      (setq emms-playlist-buffer (emms-playlist-new))
+    (with-current-buffer emms-playlist-buffer
       (let ((inhibit-read-only t))
         (widen)
         (delete-region (point-min)
                        (point-max)))
-      (when (not (eq major-mode emms-playlist-default-major-mode))
-        (funcall emms-playlist-default-major-mode))
-      (setq emms-playlist-buffer-p t)
-      (run-hooks 'emms-playlist-cleared-hook))
-    (setq emms-playlist-buffer buf)))
+      (run-hooks 'emms-playlist-cleared-hook))))
 
 (defmacro with-current-emms-playlist (&rest body)
   "Run BODY with the current buffer being the current playlist buffer."
