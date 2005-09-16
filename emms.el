@@ -448,6 +448,34 @@ If no playlist exists, a new one is generated."
        ,@body)))
 (put 'with-current-emms-playlist 'lisp-indent-function 0)
 
+;;; Saving playlists.
+
+(defun emms-playlist-save (playlist filename)
+  "Save a playlist"
+  (interactive "bPlaylist buffer name : 
+FFile to save playlist as: ")
+  (let ((tracklist  '())
+        (buffer  (find-file-noselect filename)))
+    (condition-case nil
+        (with-current-buffer playlist
+          (save-excursion
+            (emms-playlist-first)
+            (while (emms-playlist-track-at)
+              (add-to-list 'tracklist (emms-playlist-track-at) t)
+              (emms-playlist-next))))
+      (error ""))
+    ;; tracklist complete, let's write it !
+    (set-buffer buffer)
+    (erase-buffer)
+    (prin1 tracklist buffer)
+    (insert "\n")
+    (save-buffer)
+    (kill-buffer buffer)))
+
+(defun emms-playlist-save-active (filename)
+  (interactive "FFile to save playlist as: ")
+  (emms-save-playlist emms-playlist-buffer filename))
+
 ;;; Point movement within the playlist buffer.
 
 (defun emms-playlist-track-at (&optional pos)
