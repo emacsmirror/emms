@@ -279,7 +279,7 @@ of the saved playlist inside."
 (defun emms-playlist-mode-go (&optional pl-buffer)
   (interactive)
   (when (null pl-buffer) 
-    (setq pl-buffer emms-playlist-buffer-name)
+    (setq pl-buffer emms-playlist-buffer)
     (when (not pl-buffer)
       (setq pl-buffer (emms-playlist-new))))
   (switch-to-buffer pl-buffer)
