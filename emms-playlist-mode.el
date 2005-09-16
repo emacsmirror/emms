@@ -1,30 +1,12 @@
 ;;; emms-playlist-mode.el --- Playlist mode for Emms.
 
 ;;; Copyright Yoni Rabkin under the GNU General Public License.
+;;; This file is a part of the Emacs Multimedia system.
 
 ;;; Commentary:
 ;;;
-;;; Jorgen has the following to say about playlist-mode:
-;;;
-;;; Playlist Mode
-;;; =============
-;;; This should be a file named emms-playlist-mode.el, providing said
-;;; mode, which is a suitable value for `emms-playlist-default-major-mode'.
-;;;
-;;; The mode should probably set `emms-playlist-buffer-name' and
-;;; `emms-playlist-insert-track-function', and add something to
-;;; `emms-playlist-selection-changed-hook' and
-;;; `emms-playlist-cleared-hook'.
-;;;
-;;; When this is done, emms-pbi.el, emms-pbi-filter.el,
-;;; emms-pbi-mark.el, emms-pbi-popup.el and emms-pl-manip.el can be
-;;; removed.
-;;;
-;;; ...and when Jorgen says (require 'jump) we say how-high.el.
-;;;
 ;;; I'm designing this as a method of displaying and manipulating the
 ;;; different Emms playlist buffers defined by the user.
-;;;
 
 ;;; Feature requests:
 ;;;
@@ -33,8 +15,9 @@
 ;;;
 ;;; (2) Add emms-info support which re-writes the track titles.
 ;;;
-;;; (3) Add multi-line formatting and arbitrary comment entry (via a
-;;;     null-track type [Lukhas]?).
+;;; (3) Add multi-line formatting and arbitrary comment entry.
+;;;
+;;; (4) Font-locking for unselected tracks via overlays.
 
 ;;; --------------------------------------------------------
 ;;; Variables
@@ -44,6 +27,9 @@
   "Emms playlist mode hook.")
 
 (defvar emms-playlist-mode-selected-overlay-marker nil)
+
+(make-variable-buffer-local
+ 'emms-playlist-mode-selected-overlay-marker)
 
 ;; Is this needed at all?
 (defvar emms-playlist-mode-prepend-show-string
@@ -235,6 +221,20 @@
 	  'emms-playlist-mode-overlay-selected)
 
 ;;; --------------------------------------------------------
+;;; Playlists
+;;; --------------------------------------------------------
+
+(defun emms-playlist-buffers ()
+  "Return a list of EMMS playlist buffers."
+  (let ((lis nil))
+    (mapc (lambda (buf)
+            (with-current-buffer buf
+              (when emms-playlist-buffer-p
+                (setq lis (cons buf lis)))))
+          (buffer-list))
+    lis))
+
+;;; --------------------------------------------------------
 ;;; Entry
 ;;; --------------------------------------------------------
 
@@ -266,11 +266,6 @@
   "A major mode for Emms playlists."
   (interactive)
   (kill-all-local-variables)  
-
-  ;; Even though Stefan Monnier warns against this, in this case I
-  ;; know what I'm doing.
-  (make-variable-buffer-local
-   'emms-playlist-mode-selected-overlay-marker)
 
   (use-local-map emms-playlist-mode-map)
   (setq major-mode 'emms-playlist-mode
