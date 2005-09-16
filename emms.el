@@ -788,6 +788,7 @@ See emms-source-file.el for some examples."
   (let ((source-name (intern (format "emms-source-%s" name)))
         (source-play (intern (format "emms-play-%s" name)))
         (source-add (intern (format "emms-add-%s" name)))
+        (source-insert (intern (format "emms-insert-%s" name)))
         (docstring "A source of tracks for EMMS.")
         (interactive nil)
         (call-args (delete '&rest
@@ -810,7 +811,11 @@ See emms-source-file.el for some examples."
        (defun ,source-add ,arglist
          ,docstring
          ,interactive
-         (emms-source-add ',source-name ,@call-args)))))
+         (emms-source-add ',source-name ,@call-args))
+       (defun ,source-insert ,arglist
+         ,docstring
+         ,interactive
+         (emms-source-insert ',source-name ,@call-args)))))
 
 (defun emms-source-play (source &rest args)
   "Play the tracks of SOURCE, after first clearing the EMMS playlist."
@@ -827,6 +832,12 @@ See emms-source-file.el for some examples."
     (when (or (not emms-playlist-selected-marker)
               (not (marker-position emms-playlist-selected-marker)))
       (emms-playlist-select-first))))
+
+(defun emms-source-insert (source &rest args)
+  "Insert the tracks from SOURCE in the current buffer."
+  (if (not emms-playlist-buffer-p)
+      (error "Not in an EMMS playlist buffer")
+    (apply emms-playlist-insert-source source args)))
 
 ;;; User-defined playlists
 ;;; FIXME: Shuffle is bogus here! (because of narrowing)
