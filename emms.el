@@ -306,14 +306,16 @@ This function uses `emms-show-format' to format the current track."
 This uses `emms-playlist-shuffle-function'."
   (interactive)
   (with-current-emms-playlist
-    (funcall emms-playlist-shuffle-function)))
+    (save-excursion
+      (funcall emms-playlist-shuffle-function))))
 
 (defun emms-sort ()
   "Sort the current playlist.
 This uses `emms-playlist-shuffle-function'."
   (interactive)
   (with-current-emms-playlist
-    (funcall emms-playlist-sort-function)))
+    (save-excursion
+      (funcall emms-playlist-sort-function))))
 
 (defun emms-toggle-repeat-playlist ()
   "Toggle whether emms repeats the playlist after it is done.
@@ -827,8 +829,10 @@ See emms-source-file.el for some examples."
 
 (defun emms-source-add (source &rest args)
   "Add the tracks of SOURCE at the current position in the playlist."
-  (apply 'emms-playlist-insert-source source args)
   (with-current-emms-playlist
+    (save-excursion
+      (goto-char (point-max))
+      (apply 'emms-playlist-insert-source source args))
     (when (or (not emms-playlist-selected-marker)
               (not (marker-position emms-playlist-selected-marker)))
       (emms-playlist-select-first))))
