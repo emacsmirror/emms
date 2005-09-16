@@ -507,6 +507,11 @@ If no playlist exists, a new one is generated."
       (save-buffer)
       (kill-buffer (current-buffer)))))
 
+(defun emms-playlist-save-active-as-m3u (filename)
+  "Save the active EMMS playlist in m3u format."
+  (interactive "FFile to save playlist as: ")
+  (emms-playlist-save-as-m3u emms-playlist-buffer filename))
+
 ;;; Point movement within the playlist buffer.
 
 (defun emms-playlist-track-at (&optional pos)
