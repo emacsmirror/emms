@@ -452,25 +452,25 @@ If no playlist exists, a new one is generated."
 
 (defun emms-playlist-save (playlist filename)
   "Save a playlist"
-  (interactive "bPlaylist buffer name : 
-FFile to save playlist as: ")
-  (let ((tracklist  '())
-        (buffer  (find-file-noselect filename)))
+  (interactive "bPlaylist buffer name: \nFFile to save playlist as: ")
+  (let ((tracklist '()))
     (condition-case nil
         (with-current-buffer playlist
           (save-excursion
             (emms-playlist-first)
             (while (emms-playlist-track-at)
-              (add-to-list 'tracklist (emms-playlist-track-at) t)
+              (setq tracklist (cons (emms-playlist-track-at)
+                                    tracklist))
               (emms-playlist-next))))
-      (error ""))
+      (error nil))
+    (setq tracklist (nreverse tracklist))
     ;; tracklist complete, let's write it !
-    (set-buffer buffer)
-    (erase-buffer)
-    (prin1 tracklist buffer)
-    (insert "\n")
-    (save-buffer)
-    (kill-buffer buffer)))
+    (with-current-buffer (find-file-noselect filename)
+      (erase-buffer)
+      (prin1 tracklist (current-buffer))
+      (insert "\n")
+      (save-buffer)
+      (kill-buffer (current-buffer)))))
 
 (defun emms-playlist-save-active (filename)
   (interactive "FFile to save playlist as: ")
