@@ -274,9 +274,8 @@ This is a good function to put in `emms-player-finished-hook'."
 This can be a floating point number for sub-second fractions.
 It can also be negative to seek backwards."
   (interactive "nSeconds to seek: ")
-  (if emms-player-playing-p
-      (emms-player-seek seconds)
-    (error "Nothing playing right now")))
+  (emms-ensure-player-playing-p)
+  (emms-player-seek seconds))
 
 (defun emms-seek-forward ()
   "Seek ten seconds forward."
@@ -339,6 +338,11 @@ See  `emms-repeat-track'."
   "Return non-nil if the track name of A sorts before B."
   (string< (emms-track-name a)
            (emms-track-name b)))
+
+(defun emms-ensure-player-playing-p ()
+  "Raise an error if no player is playing right now."
+  (when (not emms-player-playing-p)
+    (error "No EMMS player playing right now")))
 
 
 ;;; Tracks
