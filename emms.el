@@ -477,7 +477,7 @@ If no playlist exists, a new one is generated."
 (defun emms-playlist-save-active (filename)
   "Save the active EMMS playlist in native format."
   (interactive "FFile to save playlist as: ")
-  (emms-save-playlist emms-playlist-buffer filename))
+  (emms-playlist-save emms-playlist-buffer filename))
 
 (defun emms-playlist-save-as-m3u (playlist filename)
   "Save a playlist in .m3u format."
