@@ -478,6 +478,33 @@ If no playlist exists, a new one is generated."
   (interactive "FFile to save playlist as: ")
   (emms-save-playlist emms-playlist-buffer filename))
 
+(defun emms-playlist-save-as-m3u (playlist filename)
+  (interactive "bPlaylist buffer name: \nFFile to save playlist as: ")
+  (let ((tracklist '()))
+    (condition-case nil
+        (with-current-buffer playlist
+          (save-excursion
+            (emms-playlist-first)
+            (while (emms-playlist-track-at)
+              (setq tracklist (cons (emms-playlist-track-at)
+                                    tracklist))
+              (emms-playlist-next))))
+      (error nil))
+    (setq tracklist (nreverse tracklist))
+    ;; tracklist complete, let's write it !
+    (with-current-buffer (find-file-noselect filename)
+      (erase-buffer)
+      (insert "#EXTM3U\n")
+      (mapc (lambda (track)
+              (let ((info (emms-info-get track)))
+                (insert "#EXTINF:")
+                (insert (emms-info-playing-time info) ",")
+                (insert (emms-info-artist info) " - " (emms-info-title info) "\n")
+                (insert (emms-track-get track 'name) "\n")))
+            tracklist)
+      (save-buffer)
+      (kill-buffer (current-buffer)))))
+
 ;;; Point movement within the playlist buffer.
 
 (defun emms-playlist-track-at (&optional pos)
