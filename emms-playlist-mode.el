@@ -235,6 +235,41 @@
     lis))
 
 ;;; --------------------------------------------------------
+;;; Saving/Restoring
+;;; --------------------------------------------------------
+
+(defun emms-playlist-mode-save-buffer (buffer filename)
+  "Saves a playlist buffer in a file, including annotations."
+  (interactive "bPlaylist buffer to save: \nFFile to save buffer as: ")
+  (with-current-buffer (find-file-noselect filename)
+    (erase-buffer)
+    (prin1 (with-current-buffer buffer 
+             (buffer-string))
+           (current-buffer))
+    (save-buffer)
+    (kill-buffer (current-buffer))))
+
+(defun emms-playlist-mode-open-buffer (filename)
+  "Opens a previously saved playlist buffer.
+
+It creates a buffer called \"filename\", and restore the contents
+of the saved playlist inside."
+  (interactive "fFile: ")
+  (let* ((s)
+         (buffer (find-file-noselect filename))
+         (name   (buffer-name buffer)))
+    (with-current-buffer buffer
+      (setq s (read (buffer-string))))
+    (kill-buffer buffer)
+    (with-current-buffer (get-buffer-create name)
+      (insert s))))
+
+(defun emms-playlist-mode-save-active-buffer (filename)
+  "Saves the active playlist buffer to a file."
+  (interactive "FFile to save playlist buffer as: ")
+  (emms-playlist-mode-save-buffer emms-playlist-buffer filename))
+
+;;; --------------------------------------------------------
 ;;; Entry
 ;;; --------------------------------------------------------
 
