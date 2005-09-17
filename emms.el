@@ -683,7 +683,8 @@ If no playlist exists, a new one is generated."
 (defun emms-playlist-insert-track (track)
   "Insert TRACK at the current position into the playlist.
 This uses `emms-playlist-insert-track-function'."
-  (funcall emms-playlist-insert-track-function track))
+  (let ((inhibit-read-only t))
+    (funcall emms-playlist-insert-track-function track)))
 
 (defun emms-playlist-insert-source (source &rest args)
   "Insert tracks from SOURCE, supplying ARGS as arguments."
