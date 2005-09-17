@@ -72,7 +72,7 @@
     (set-keymap-parent emms-playlist-mode-map text-mode-map)
     (define-key emms-playlist-mode-map (kbd "n") 'emms-next)
     (define-key emms-playlist-mode-map (kbd "p") 'emms-previous)
-    (define-key emms-playlist-mode-map (kbd "C-x C-s") 'emms-playlist-save)
+    (define-key emms-playlist-mode-map (kbd "C-x C-s") 'emms-playlist-save-buffer)
     (define-key emms-playlist-mode-map (kbd "C-k") 'emms-playlist-mode-kill-track)
     (define-key emms-playlist-mode-map (kbd "d") 'emms-playlist-mode-kill-track)
     (define-key emms-playlist-mode-map (kbd "s") 'emms-stop)
