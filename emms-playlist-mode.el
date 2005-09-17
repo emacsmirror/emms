@@ -7,13 +7,17 @@
 ;;;
 ;;; I'm designing this as a method of displaying and manipulating the
 ;;; different Emms playlist buffers defined by the user.
-
+;;;
+;;; Emms developer's motto: 
+;;; "When forcer say (require 'jump) we (how-high-p)"
+;;;
 ;;; Feature requests:
 ;;;
 ;;; (1) Lukhas wants `emms-list-playlist-buffers' to list all the
 ;;;     playlist buffers.
 ;;;
 ;;; (2) Add emms-info support which re-writes the track titles.
+;;;     This will be implemented externally [forcer].
 ;;;
 ;;; (3) Add multi-line formatting and arbitrary comment entry.
 ;;;
@@ -81,8 +85,7 @@
     (define-key emms-playlist-mode-map (kbd "C-k") 'emms-playlist-mode-kill-track)
     (define-key emms-playlist-mode-map (kbd "d") 'emms-playlist-mode-kill-track)
     (define-key emms-playlist-mode-map (kbd "s") 'emms-stop)
-    (define-key emms-playlist-mode-map (kbd "f") 'emms-playlist-mode-show-current-track)
-    (define-key emms-playlist-mode-map (kbd "F") 'emms-playlist-mode-show-current-track-clean)
+    (define-key emms-playlist-mode-map (kbd "f") 'emms-show)
     (define-key emms-playlist-mode-map (kbd "RET") 'emms-playlist-mode-play-current-track)
     (define-key emms-playlist-mode-map (kbd "q") 'bury-buffer)
     (define-key emms-playlist-mode-map (kbd "<mouse-2>") 'emms-playlist-mode-play-current-track)
@@ -91,7 +94,7 @@
     (define-key emms-playlist-mode-map (kbd "M->") 'emms-playlist-mode-last)
     (define-key emms-playlist-mode-map (kbd "C-n") 'emms-playlist-mode-select-next)
     (define-key emms-playlist-mode-map (kbd "C-p") 'emms-playlist-mode-select-previous)
-    (define-key emms-playlist-mode-map (kbd "r") 'emms-playlist-mode-play-random)
+    (define-key emms-playlist-mode-map (kbd "r") 'emms-random)
     emms-playlist-mode-map)
   "Keymap for emms-playlist-mode.")
 
@@ -103,12 +106,6 @@
      (interactive)
      (,fun)))
 
-(defmacro emms-playlist-mode-when-playing-p (&rest body)
-  `(lambda ()
-     (if emms-player-playing-p
-	 ,@body
-       (error "No track is currently playing"))))
-  
 (emms-playlist-mode-move-wrapper emms-playlist-mode-first 
 				 emms-playlist-first)
 
@@ -121,31 +118,29 @@
 (emms-playlist-mode-move-wrapper emms-playlist-mode-select-previous
 				 emms-playlist-previous)
 
-(emms-playlist-mode-move-wrapper emms-playlist-mode-select-random
-				 emms-playlist-select-random)
+;; (emms-playlist-mode-move-wrapper emms-playlist-mode-select-random
+;; 				 emms-playlist-select-random)
 
-(defun emms-playlist-mode-play-random ()
-  (interactive)
-  (emms-stop)
-  (emms-playlist-mode-select-random)
-  (emms-start))
+;; (defun emms-playlist-mode-play-random ()
+;;   (interactive)
+;;   (emms-stop)
+;;   (emms-playlist-mode-select-random)
+;;   (emms-start))
 
-(defun emms-playlist-mode-show-current-track ()
-  (interactive)
-  (funcall
-   (emms-playlist-mode-when-playing-p
-    (message "%s %s"
-	     emms-playlist-mode-prepend-show-string
-	     (emms-track-description 
-	      (emms-playlist-selected-track))))))
+;; (defun emms-playlist-mode-show-current-track ()
+;;   (interactive)
+;;   (emms-ensure-player-playing-p)
+;;   (message "%s %s"
+;; 	   emms-playlist-mode-prepend-show-string
+;; 	   (emms-track-description 
+;; 	    (emms-playlist-selected-track))))
 
-(defun emms-playlist-mode-show-current-track-clean ()
-  (interactive)
-  (funcall
-   (emms-playlist-mode-when-playing-p
-    (message "%s"
-	     (emms-track-description 
-	      (emms-playlist-selected-track))))))
+;; (defun emms-playlist-mode-show-current-track-clean ()
+;;   (interactive)
+;;   (emms-ensure-player-playing-p)
+;;   (message "%s"
+;; 	   (emms-track-description 
+;; 	    (emms-playlist-selected-track))))
 
 (defun emms-playlist-mode-selected-at ()
   (eq (emms-playlist-track-at) 
@@ -294,7 +289,8 @@ of the saved playlist inside."
   (when emms-playlist-selected-marker
     (emms-playlist-mode-overlay-selected)
     (goto-char (or emms-playlist-mode-selected-overlay-marker
-		   (point-min)))))
+		   (point-min))))
+  (setq buffer-read-only t))
 
 ;;;###autoload
 (defun emms-playlist-mode ()
