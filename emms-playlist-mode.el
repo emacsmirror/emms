@@ -86,6 +86,7 @@
     (define-key emms-playlist-mode-map (kbd "d") 'emms-playlist-mode-kill-track)
     (define-key emms-playlist-mode-map (kbd "s") 'emms-stop)
     (define-key emms-playlist-mode-map (kbd "f") 'emms-show)
+    (define-key emms-playlist-mode-map (kbd "c") 'emms-playlist-mode-center-current)
     (define-key emms-playlist-mode-map (kbd "RET") 'emms-playlist-mode-play-current-track)
     (define-key emms-playlist-mode-map (kbd "q") 'bury-buffer)
     (define-key emms-playlist-mode-map (kbd "<mouse-2>") 'emms-playlist-mode-play-current-track)
@@ -118,29 +119,10 @@
 (emms-playlist-mode-move-wrapper emms-playlist-mode-select-previous
 				 emms-playlist-previous)
 
-;; (emms-playlist-mode-move-wrapper emms-playlist-mode-select-random
-;; 				 emms-playlist-select-random)
-
-;; (defun emms-playlist-mode-play-random ()
-;;   (interactive)
-;;   (emms-stop)
-;;   (emms-playlist-mode-select-random)
-;;   (emms-start))
-
-;; (defun emms-playlist-mode-show-current-track ()
-;;   (interactive)
-;;   (emms-ensure-player-playing-p)
-;;   (message "%s %s"
-;; 	   emms-playlist-mode-prepend-show-string
-;; 	   (emms-track-description 
-;; 	    (emms-playlist-selected-track))))
-
-;; (defun emms-playlist-mode-show-current-track-clean ()
-;;   (interactive)
-;;   (emms-ensure-player-playing-p)
-;;   (message "%s"
-;; 	   (emms-track-description 
-;; 	    (emms-playlist-selected-track))))
+(defun emms-playlist-mode-center-current ()
+  (interactive)
+  (goto-char (or emms-playlist-mode-selected-overlay-marker
+		 (point-min))))
 
 (defun emms-playlist-mode-selected-at ()
   (eq (emms-playlist-track-at) 
