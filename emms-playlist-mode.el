@@ -250,18 +250,14 @@ of the saved playlist inside."
 ;;; Entry
 ;;; --------------------------------------------------------
 
-;; FIXME: everything is wrong here, implement non-twisted logic and an
-;; interactive manner of selecting/creating a different playlist to
-;; the current/default one.
-(defun emms-playlist-mode-go (&optional pl-buffer)
+(defun emms-playlist-mode-go ()
   (interactive)
-  (when (null pl-buffer) 
-    (setq pl-buffer emms-playlist-buffer)
-    (when (not pl-buffer)
-      (setq pl-buffer (emms-playlist-new))))
-  (switch-to-buffer pl-buffer)
-  (unless (eq major-mode 'emms-playlist-mode)
-    (emms-playlist-mode)))
+  (if (null emms-playlist-buffer)
+      (error "No current Emms buffer")
+    (switch-to-buffer emms-playlist-buffer)
+    (when (and (not (eq major-mode 'emms-playlist-mode))
+	       emms-playlist-buffer-p)
+      (emms-playlist-mode))))
 
 (defun emms-playlist-mode-startup ()
   (unless (or emms-playlist-selected-marker
