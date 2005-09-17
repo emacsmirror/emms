@@ -8,7 +8,7 @@
 ;;; I'm designing this as a method of displaying and manipulating the
 ;;; different Emms playlist buffers defined by the user.
 ;;;
-;;; Emms developer's motto: 
+;;; Emms developer's motto:
 ;;; "When forcer say (require 'jump) we (how-high-p)"
 ;;;
 ;;; Feature requests:
@@ -16,12 +16,11 @@
 ;;; (1) Lukhas wants `emms-list-playlist-buffers' to list all the
 ;;;     playlist buffers.
 ;;;
-;;; (2) Add emms-info support which re-writes the track titles.
-;;;     This will be implemented externally [forcer].
+;;; (2) Add multi-line formatting and arbitrary comment entry.
 ;;;
-;;; (3) Add multi-line formatting and arbitrary comment entry.
-;;;
-;;; (4) Font-locking for unselected tracks via overlays.
+;;; (3) Font-locking for unselected tracks via overlays.
+
+;;; Code:
 
 ;;; --------------------------------------------------------
 ;;; Variables
@@ -30,14 +29,12 @@
 (defvar emms-playlist-mode-hook nil
   "Emms playlist mode hook.")
 
-(defvar emms-playlist-mode-selected-overlay-marker nil)
+(defvar emms-playlist-mode-selected-overlay-marker nil
+  "Marker for last selected track.  Use for updating the display.")
 
+;; The marker is unique for each playlist buffer
 (make-variable-buffer-local
  'emms-playlist-mode-selected-overlay-marker)
-
-;; Is this needed at all?
-(defvar emms-playlist-mode-prepend-show-string
-  "Now Playling:")
 
 (defgroup emms-playlist-mode nil
   "*The Emacs Multimedia System playlist mode."
@@ -45,32 +42,26 @@
   :group 'multimedia)
 
 ;;; --------------------------------------------------------
-;;; Faces and font locking
+;;; Faces
 ;;; --------------------------------------------------------
 
-;; change the eye-gouging colors before release
 (defface emms-playlist-track-face
   '((((class color) (background dark))
-     :background "yellow")
+     :foreground "bisque1" )
     (((type tty) (class mono))
      :inverse-video t)
-    (t :background "red"))
-  "Basic face for highlighting the selected track."
+    (t :background "Blue"))
+  "Basic face for highlighting tracks in a playlist buffer."
   :group 'emms-playlist-mode)
 
 (defface emms-playlist-selected-face
   '((((class color) (background dark))
-     :background "blue1")
+     :foreground "SteelBlue3")
     (((type tty) (class mono))
      :inverse-video t)
     (t :background "blue3"))
-  "Basic face for highlighting the region of the track."
+  "Basic face for highlighting the selected track."
   :group 'emms-playlist-mode)
-
-;; FIXME: automatic font-locking does not work. See below.
-(defvar emms-playlist-mode-font-lock-keywords
-  '(("\\(.*\\)" (1 emms-playlist-track-face)))
-  "Keyword highlighting specification for `emms-playlist-mode'.")
 
 ;;; --------------------------------------------------------
 ;;; Keys
@@ -97,38 +88,45 @@
     (define-key emms-playlist-mode-map (kbd "C-p") 'emms-playlist-mode-select-previous)
     (define-key emms-playlist-mode-map (kbd "r") 'emms-random)
     emms-playlist-mode-map)
-  "Keymap for emms-playlist-mode.")
+  "Keymap for `emms-playlist-mode'.")
 
 ;; We will add to this wrapper boundry checking as needed later.
 (defmacro emms-playlist-mode-move-wrapper (name fun)
+  "Create a function NAME which is an `interactive' version of FUN.
+
+NAME should be a symbol.
+FUN should be a function."
   `(defun ,name ()
      ,(format "Interactive wrapper around `%s' for playlist-mode."
 	      fun)
      (interactive)
      (,fun)))
 
-(emms-playlist-mode-move-wrapper emms-playlist-mode-first 
+(emms-playlist-mode-move-wrapper emms-playlist-mode-first
 				 emms-playlist-first)
 
-(emms-playlist-mode-move-wrapper emms-playlist-mode-last 
+(emms-playlist-mode-move-wrapper emms-playlist-mode-last
 				 emms-playlist-last)
 
-(emms-playlist-mode-move-wrapper emms-playlist-mode-select-next 
+(emms-playlist-mode-move-wrapper emms-playlist-mode-select-next
 				 emms-playlist-next)
 
 (emms-playlist-mode-move-wrapper emms-playlist-mode-select-previous
 				 emms-playlist-previous)
 
 (defun emms-playlist-mode-center-current ()
+  "Move point to the currently selected track."
   (interactive)
   (goto-char (or emms-playlist-mode-selected-overlay-marker
 		 (point-min))))
 
 (defun emms-playlist-mode-selected-at ()
-  (eq (emms-playlist-track-at) 
+  "Return t if point is currently on the selected track."
+  (eq (emms-playlist-track-at)
       (emms-playlist-selected-track)))
 
 (defun emms-playlist-mode-play-current-track ()
+  "Start playing track at point."
   (interactive)
   (emms-playlist-select (point))
   (when emms-player-playing-p
@@ -138,9 +136,10 @@
 ;; The logic for killing tracks in an interactive manner is
 ;; suprisingly annoying
 (defun emms-playlist-mode-kill-track ()
+  "Kill the track at point."
   (interactive)
   (let ((region (emms-property-region (point) 'emms-track)))
-    (cond ((not (emms-playlist-track-at)) 
+    (cond ((not (emms-playlist-track-at))
 	   (kill-line 1))	     ; Purposfully kills only one line
 	  ((and (not (emms-playlist-mode-selected-at))
 		(emms-playlist-track-at))
@@ -166,26 +165,32 @@
 ;;; --------------------------------------------------------
 
 (defun emms-playlist-mode-overlay-track (start end face)
+  "Place the overlay starting at START and ending at END over FACE.
+
+START and END should points.
+FACE should be a... face."
   (let ((o (make-overlay start end)))
-    (overlay-put o 'track t)
     (overlay-put o 'face face)))
 
 (defun emms-playlist-mode-overlay-at (face)
+  "Place an overlay the current line using FACE.
+
+FACE should be a valid face."
   (let ((o (make-overlay (point-at-bol) (point-at-eol))))
-    (overlay-put o 'track t)
     (overlay-put o 'face face)))
 
 ;; Selected track overlaying track in constant time.
 (defun emms-playlist-mode-overlay-selected ()
+  "Place an overlay over the currently selected track."
   (unless (null emms-playlist-mode-selected-overlay-marker)
     (save-excursion
       (goto-char emms-playlist-mode-selected-overlay-marker)
-      (remove-overlays (point) 
+      (remove-overlays (point)
 		       (point-at-eol))))
   (save-excursion
     (goto-char emms-playlist-selected-marker)
-    (setq emms-playlist-mode-selected-overlay-marker 
-	  (point-marker)) 
+    (setq emms-playlist-mode-selected-overlay-marker
+	  (point-marker))
     (emms-playlist-mode-overlay-at
      'emms-playlist-selected-face))
   nil)
@@ -220,7 +225,7 @@
   (interactive "bPlaylist buffer to save: \nFFile to save buffer as: ")
   (with-current-buffer (find-file-noselect filename)
     (erase-buffer)
-    (prin1 (with-current-buffer buffer 
+    (prin1 (with-current-buffer buffer
              (buffer-string))
            (current-buffer))
     (save-buffer)
@@ -251,6 +256,7 @@ of the saved playlist inside."
 ;;; --------------------------------------------------------
 
 (defun emms-playlist-mode-go ()
+  "Switch to the current emms-playlist buffer and use emms-playlist-mode."
   (interactive)
   (if (null emms-playlist-buffer)
       (error "No current Emms buffer")
@@ -260,6 +266,7 @@ of the saved playlist inside."
       (emms-playlist-mode))))
 
 (defun emms-playlist-mode-startup ()
+  "Instigate emms-playlist-mode on the current buffer."
   (unless (or emms-playlist-selected-marker
 	      emms-player-playing-p)
     (emms-stop)
@@ -274,16 +281,11 @@ of the saved playlist inside."
 (defun emms-playlist-mode ()
   "A major mode for Emms playlists."
   (interactive)
-  (kill-all-local-variables)  
+  (kill-all-local-variables)
 
   (use-local-map emms-playlist-mode-map)
   (setq major-mode 'emms-playlist-mode
 	mode-name "Emms-Playlist")
-
-  ;; FIXME: *automatic* font-locking does not work and I have no idea
-  ;; why. Anyone who wants to fix it is more than welcomed to it.
-  (set (make-local-variable 'font-lock-defaults)
-       '(emms-playlist-mode-font-lock-keywords))
 
   (emms-playlist-mode-startup)
 
@@ -291,4 +293,4 @@ of the saved playlist inside."
 
 (provide 'emms-playlist-mode)
 
-;;; emms-playlist-mode.el ends here.
+;;; emms-playlist-mode.el ends here
