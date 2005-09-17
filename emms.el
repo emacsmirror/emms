@@ -294,8 +294,10 @@ It can also be negative to seek backwards."
 If INSERTP is non-nil, insert the description into the current buffer instead.
 This function uses `emms-show-format' to format the current track."
   (interactive "P")
-  (let ((string (format emms-show-format (emms-track-description
-                                          (emms-playlist-selected-track)))))
+  (let ((string (if emms-player-playing-p
+                    (format emms-show-format (emms-track-description
+                                              (emms-playlist-selected-track)))
+                  "Nothing playing right now")))
     (if insertp
         (insert string)
       (message "%s" string))))
