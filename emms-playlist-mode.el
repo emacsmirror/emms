@@ -47,7 +47,7 @@
 
 (defface emms-playlist-track-face
   '((((class color) (background dark))
-     :foreground "bisque1" )
+     :foreground "DarkSeaGreen")
     (((type tty) (class mono))
      :inverse-video t)
     (t :background "Blue"))
@@ -165,13 +165,17 @@ FUN should be a function."
 ;;; Overlay
 ;;; --------------------------------------------------------
 
-(defun emms-playlist-mode-overlay-track (start end face)
+(defun emms-playlist-mode-overlay-face (ovly face priority)
+  (overlay-put ovly 'face face)
+  (overlay-put ovly 'priority priority))
+
+(defun emms-playlist-mode-overlay-track (start end face priority)
   "Place the overlay starting at START and ending at END over FACE.
 
 START and END should points.
 FACE should be a... face."
   (let ((o (make-overlay start end)))
-    (overlay-put o 'face face)))
+    (emms-playlist-mode-overlay-face o face priority)))
 
 (defun emms-playlist-mode-overlay-at (face)
   "Place an overlay the current line using FACE.
@@ -184,22 +188,28 @@ FACE should be a valid face."
   ;; point-mix/max because -insert-source narrows the world
   (emms-playlist-mode-overlay-track (point-min) 
 				    (point-max)
-				    'emms-playlist-track-face))
+				    'emms-playlist-track-face
+				    1))
 
-;; Selected track overlaying track in constant time.
 (defun emms-playlist-mode-overlay-selected ()
   "Place an overlay over the currently selected track."
   (unless (null emms-playlist-mode-selected-overlay-marker)
     (save-excursion
       (goto-char emms-playlist-mode-selected-overlay-marker)
-      (remove-overlays (point)
-		       (point-at-eol))))
+      (remove-overlays (point-at-bol)
+		       (point-at-eol))
+      (emms-playlist-mode-overlay-track (point-at-bol)
+					(point-at-eol)
+					'emms-playlist-track-face
+					2)))
   (save-excursion
     (goto-char emms-playlist-selected-marker)
     (setq emms-playlist-mode-selected-overlay-marker
 	  (point-marker))
-    (emms-playlist-mode-overlay-at
-     'emms-playlist-selected-face))
+    (emms-playlist-mode-overlay-track (point-at-bol)
+				      (point-at-eol)
+				      'emms-playlist-selected-face
+				      3))
   nil)
 
 ;;; --------------------------------------------------------
@@ -220,10 +230,10 @@ FACE should be a valid face."
   "Return a list of EMMS playlist buffers."
   (let ((lis nil))
     (mapc (lambda (buf)
-            (with-current-buffer buf
-              (when emms-playlist-buffer-p
-                (setq lis (cons buf lis)))))
-          (buffer-list))
+	    (with-current-buffer buf
+	      (when emms-playlist-buffer-p
+		(setq lis (cons buf lis)))))
+	  (buffer-list))
     lis))
 
 ;;; --------------------------------------------------------
@@ -236,8 +246,8 @@ FACE should be a valid face."
   (with-current-buffer (find-file-noselect filename)
     (erase-buffer)
     (prin1 (with-current-buffer buffer
-             (buffer-string))
-           (current-buffer))
+	     (buffer-string))
+	   (current-buffer))
     (save-buffer)
     (kill-buffer (current-buffer))))
 
@@ -248,8 +258,8 @@ It creates a buffer called \"filename\", and restore the contents
 of the saved playlist inside."
   (interactive "fFile: ")
   (let* ((s)
-         (buffer (find-file-noselect filename))
-         (name   (buffer-name buffer)))
+	 (buffer (find-file-noselect filename))
+	 (name   (buffer-name buffer)))
     (with-current-buffer buffer
       (setq s (read (buffer-string))))
     (kill-buffer buffer)
