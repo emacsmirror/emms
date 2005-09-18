@@ -114,9 +114,9 @@
   (concat emms-stream-info-char-alter-regexp "+")
   "Regular expression for metainformation headers.")
 
-(defconst emms-stream-info-playlist-regexp
+(defconst emms-stream-info-streamlist-regexp
   "\\(^http://.*\\)\\|^File.=\\(http://.*\\)"
-  "Regular expression for playlist URLs.")
+  "Regular expression for streamlist URLs.")
 
 ;; When t output debugging info
 (defconst emms-stream-info-debugging nil
@@ -158,10 +158,10 @@ and songtitle information. This string specifies an alternate
 format for those stations.")
 
 (defconst emms-stream-info-pls-regexp ".*\.pls"
-  "Regular expression for a .pls playlist file.")
+  "Regular expression for a .pls streamlist file.")
 
 (defconst emms-stream-info-m3u-regexp ".*\.m3u"
-  "Regular expression for a .m3u playlist file.")
+  "Regular expression for a .m3u streamlist file.")
 
 (defvar emms-stream-info-url nil
   "Server URL.")
@@ -172,8 +172,8 @@ format for those stations.")
 (defvar emms-stream-info-found nil
   "Results of our search.")
 
-(defvar emms-stream-info-playlist-found nil
-  "Results of our playlist search.")
+(defvar emms-stream-info-streamlist-found nil
+  "Results of our streamlist search.")
 
 (defvar emms-stream-info-procname "emms-stream-info-process"
   "Name of network connection process.")
@@ -198,8 +198,8 @@ functions use 'emms-stream-info-return-hook'.")
 (defvar emms-stream-info-title-flag nil
   "Non-nil means title information has been captured.")
 
-(defvar emms-stream-info-playlist-flag nil
-  "Non-nil means playlist information has been captured.")
+(defvar emms-stream-info-streamlist-flag nil
+  "Non-nil means streamlist information has been captured.")
 
 (defvar emms-stream-info-request-string nil
   "String sent to streaming audio server.")
@@ -270,7 +270,7 @@ trye at index 2 means continue to next connection.")
 (defun emms-stream-info-continue-p ()
   (aref emms-stream-info-state-bv 2))
 
-(defun emms-stream-info-playlist-type (str)
+(defun emms-stream-info-streamlist-type (str)
   (if (stringp str)
       (cond ((string-match emms-stream-info-pls-regexp str)
 	     'pls)
@@ -335,12 +335,12 @@ not output a message and only return a string."
 
 (defun emms-stream-info-continue ()
   (emms-stream-info-unset-continue)
-  (if emms-stream-info-playlist-found
-      (emms-stream-info-get emms-stream-info-playlist-found
+  (if emms-stream-info-streamlist-found
+      (emms-stream-info-get emms-stream-info-streamlist-found
 			    (emms-stream-info-message-p)
 			    (emms-stream-info-insert-p)
 			    nil)
-    (error "No playlist found at URL")))
+    (error "No streamlist found at URL")))
 
 ;; Useful
 (defun list-to-string (l)
@@ -480,16 +480,16 @@ Argument STR Quanta of data."
 
     ;; Too many nested conditions
     (if (emms-stream-info-set-continue)
-	(unless emms-stream-info-playlist-flag
+	(unless emms-stream-info-streamlist-flag
 	  (goto-char (point-min))
 	  (if (re-search-forward  
-	       emms-stream-info-playlist-regexp
+	       emms-stream-info-streamlist-regexp
 	       (point-max) t)
 	      (progn
-		(setq emms-stream-info-playlist-found
+		(setq emms-stream-info-streamlist-found
 		      (or (match-string-no-properties 1)
 			  (match-string-no-properties 2)))
-		(setq emms-stream-info-playlist-flag t))))))
+		(setq emms-stream-info-streamlist-flag t))))))
 
   ;; Be chatty at the user
   (if emms-stream-info-verbose
@@ -502,8 +502,8 @@ Argument STR Quanta of data."
   (if (or (> emms-stream-info-downloaded emms-stream-info-max) ; maxed out?
 	  ;; Captured header and title info?
 	  (and emms-stream-info-header-flag emms-stream-info-title-flag)
-	  ;; Captured playlist info?
-	  emms-stream-info-playlist-flag)
+	  ;; Captured streamlist info?
+	  emms-stream-info-streamlist-flag)
       (emms-stream-info-kill-process proc)))
 
 ;; Closing the connection proves to be the most difficult part of the
@@ -590,8 +590,8 @@ server at URLSTRING."
   (setq emms-stream-info-title-flag nil)	 ; forget title flag
   (setq emms-stream-info-header-flag nil)	 ; forget header flag
   (setq emms-stream-info-found nil)		 ; forget output
-  (setq emms-stream-info-playlist-found nil)     ; forget playlist
-  (setq emms-stream-info-playlist-flag nil)      ; forget playlist
+  (setq emms-stream-info-streamlist-found nil)     ; forget streamlist
+  (setq emms-stream-info-streamlist-flag nil)      ; forget streamlist
   (setq emms-stream-info-read-inhibit t)         ; do not read output
 
   ;; Reset state machine
@@ -693,7 +693,7 @@ Optional argument CONT boolean."
 (defun emms-stream-info-input-sanity (&optional urlstring)
   (let ((type (emms-track-type (emms-playlist-selected-track))))
     (cond ((null urlstring)
-	   (if (or (equal type 'playlist) ;; FIXME-PLS
+	   (if (or (equal type 'streamlist)
 		   (equal type 'url))
 	       (emms-track-name (emms-playlist-selected-track))))
 	  ((not (stringp urlstring))
@@ -706,9 +706,9 @@ Return a formatted message.
 URLSTRING should be a string."
   (interactive)
   (let ((url (emms-stream-info-input-sanity urlstring)))
-    (cond ((equal (emms-stream-info-playlist-type url) 'pls)
+    (cond ((equal (emms-stream-info-streamlist-type url) 'pls)
 	   (emms-stream-info-get url t nil t))
-	  ((equal (emms-stream-info-playlist-type url) 'm3u)
+	  ((equal (emms-stream-info-streamlist-type url) 'm3u)
 	   (emms-stream-info-get url t nil t))
 	  (t (emms-stream-info-get url t)))))
 
@@ -719,9 +719,9 @@ Insert a formatted message at point.
 URLSTRING should be a string."
   (interactive)
   (let ((url (emms-stream-info-input-sanity urlstring)))
-    (cond ((equal (emms-stream-info-playlist-type url) 'pls)
+    (cond ((equal (emms-stream-info-streamlist-type url) 'pls)
 	   (emms-stream-info-get url nil t t))
-	  ((equal (emms-stream-info-playlist-type url) 'm3u)
+	  ((equal (emms-stream-info-streamlist-type url) 'm3u)
 	   (emms-stream-info-get url nil t t))
 	  (t (emms-stream-info-get url nil t)))))
 

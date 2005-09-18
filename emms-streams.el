@@ -59,29 +59,29 @@ Can be either \"add\" or \"play\". The default is \"add\".")
 ;; direct IP, otherwite it's a stream playlist
 (defvar emms-stream-default-list
  '(("SomaFM: Beatblender"
-    "http://www.somafm.com/beatblender.pls" 1 playlist) ;; FIXME-PLS
+    "http://www.somafm.com/beatblender.pls" 1 streamlist)
    ("SomaFM: Secret Agent"
-    "http://www.somafm.com/secretagent.pls" 1 playlist) ;; FIXME-PLS
+    "http://www.somafm.com/secretagent.pls" 1 streamlist)
    ("SomaFM: Groove Salad"
-    "http://www.somafm.com/groovesalad.pls" 1 playlist) ;; FIXME-PLS
+    "http://www.somafm.com/groovesalad.pls" 1 streamlist)
    ("SomaFM: Drone Zone"
-    "http://www.somafm.com/dronezone.pls" 1 playlist) ;; FIXME-PLS
+    "http://www.somafm.com/dronezone.pls" 1 streamlist)
    ("SomaFM: Tag's Trance"
-    "http://www.somafm.com/tagstrance.pls" 1 playlist) ;; FIXME-PLS
+    "http://www.somafm.com/tagstrance.pls" 1 streamlist)
    ("Digitally Imported, Trance"
-    "http://www.digitallyimported.com/mp3/trance.pls" 1 playlist) ;; FIXME-PLS
+    "http://www.digitallyimported.com/mp3/trance.pls" 1 streamlist)
    ("Digitally Imported, Deephouse"
-    "http://www.digitallyimported.com/mp3/deephouse.pls" 1 playlist) ;; FIXME-PLS
+    "http://www.digitallyimported.com/mp3/deephouse.pls" 1 streamlist)
    ("Digitally Imported, Mostly Classical"
-    "http://www.digitallyimported.com/mp3/classical.pls" 1 playlist) ;; FIXME-PLS
+    "http://www.digitallyimported.com/mp3/classical.pls" 1 streamlist)
    ("Digitally Imported, Chillout"
-    "http://www.digitallyimported.com/mp3/chillout.pls" 1 playlist) ;; FIXME-PLS
+    "http://www.digitallyimported.com/mp3/chillout.pls" 1 streamlist)
    ("Digitally Imported, Drum and Bass"
-    "http://www.digitallyimported.com/mp3/drumandbass.pls" 1 playlist) ;; FIXME-PLS
+    "http://www.digitallyimported.com/mp3/drumandbass.pls" 1 streamlist)
    ("Philosomatika, Goa-Trance"
-    "http://www.philosomatika.com/Philosomatika.pls" 1 playlist) ;; FIXME-PLS
+    "http://www.philosomatika.com/Philosomatika.pls" 1 streamlist)
    ("Drum and Bass Radio, BassDrive"
-    "http://www.bassdrive.com/BassDrive.m3u" 1 playlist) ;; FIXME-PLS
+    "http://www.bassdrive.com/BassDrive.m3u" 1 streamlist)
    ("Flaresound, Jazzmusique"
     "http://64.236.34.196:80/stream/1016" 1 url)
    ("Flaresound, Jazzmusique"
@@ -89,17 +89,17 @@ Can be either \"add\" or \"play\". The default is \"add\".")
    ("Flaresound, L'Electric"
     "http://www.bp6.com:8002" 1 url)
    ("Stangs Garage, Eclectic"
-    "http://www.stangsgarage.com/listen.pls" 1 playlist) ;; FIXME-PLS
+    "http://www.stangsgarage.com/listen.pls" 1 streamlist)
    ("DNA Lounge, Live"
-    "http://www.dnalounge.com/audio/128.m3u" 1 playlist) ;; FIXME-PLS
+    "http://www.dnalounge.com/audio/128.m3u" 1 streamlist)
    ("Virgin Radio, The Groove"
-    "http://www.smgradio.com/core/audio/ogg/live.pls?service=grbb" 1 playlist) ;; FIXME-PLS
+    "http://www.smgradio.com/core/audio/ogg/live.pls?service=grbb" 1 streamlist)
    ("Virgin Radio, Virgin Classic"
-    "http://www.smgradio.com/core/audio/ogg/live.pls?service=vcbb" 1 playlist) ;; FIXME-PLS
+    "http://www.smgradio.com/core/audio/ogg/live.pls?service=vcbb" 1 streamlist)
    ("Virgin Radio, Virgin 1215AM"
-    "http://www.smgradio.com/core/audio/ogg/live.pls?service=vrbb" 1 playlist) ;; FIXME-PLS
+    "http://www.smgradio.com/core/audio/ogg/live.pls?service=vrbb" 1 streamlist)
    ("WCPE, Classical Music"
-    "http://www.ibiblio.org/wcpe/wcpe.pls" 1 playlist))) ;; FIXME-PLS
+    "http://www.ibiblio.org/wcpe/wcpe.pls" 1 streamlist)))
 
 (defvar emms-stream-mode-map
   (let ((map (make-keymap)))
@@ -288,7 +288,7 @@ Don't forget to run `emms-stream-save-bookmarks-file' after !"
   (interactive "sName of the bookmark: 
 sURL: 
 nFeed descriptor: 
-SType (url or playlist): ") ;; FIXME-PLS ?
+SType (url or streamlist): ")
   (let* ((line     (emms-stream-line-number-at-pos (point)))
          (index    (+ (/ line 2) 1)))
     (setq emms-stream-list (insert-at index (list name url fd type) emms-stream-list))
@@ -316,7 +316,7 @@ Don't forget to save your modifications !"
                                          (emms-stream-url bookmark)))
          (fd       (read-from-minibuffer "Feed Descriptor: "
                                          (int-to-string (emms-stream-fd bookmark))))
-         (type     (read-from-minibuffer "Type (url or playlist): " ;; FIXME-PLS ?
+         (type     (read-from-minibuffer "Type (url or streamlist): "
                                          (format "%s" (emms-stream-type bookmark)))))
     (emms-stream-delete-bookmark)
     (emms-stream-add-bookmark name url (string-to-int fd) type)))
@@ -435,11 +435,11 @@ about it, use this. Otherwise returns the name alone."
   (eval-when-compile (require 'emms-info)) ; appease byte-compiler
   (add-to-list 'emms-info-methods-list 'emms-info-playlist)
   (defun emms-info-playlist-providep (track)
-    (if (eq (emms-track-type track) 'playlist) ;; FIXME-PLS
+    (if (eq (emms-track-type track) 'streamlist)
         t
       nil))
-  (define-emms-info-method emms-info-playlist  ;; FIXME-PLS ?
-    :providep 'emms-info-playlist-providep ;; FIXME-PLS ?
+  (define-emms-info-method emms-info-streamlist  ;; FIXME-PLS ?
+    :providep 'emms-info-streamlist-providep ;; FIXME-PLS ?
     :get 'emms-info-url-get))
 
 (provide 'emms-streams)
