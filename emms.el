@@ -694,7 +694,7 @@ This uses `emms-playlist-insert-track-function'."
       (narrow-to-region (point)
                         (point))
       (apply source args)
-      (run-hooks emms-playlist-source-inserted-hook))))
+      (run-hooks 'emms-playlist-source-inserted-hook))))
 
 (defun emms-playlist-tracks-in-region (beg end)
   "Return all tracks between BEG and END."
