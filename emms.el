@@ -209,7 +209,7 @@ seconds the player did seek."
   "Start playing the current track in the EMMS playlist."
   (interactive)
   (unless emms-player-playing-p
-    (emms-player-start (emms-playlist-selected-track))))
+    (emms-player-start (emms-playlist-current-selected-track))))
 
 (defun emms-stop ()
   "Stop any current EMMS playback."
@@ -224,7 +224,7 @@ so use `emms-next-noerror' in that case."
   (interactive)
   (when emms-player-playing-p
     (emms-stop))
-  (emms-playlist-select-next)
+  (emms-playlist-current-select-next)
   (emms-start))
 
 (defun emms-next-noerror ()
@@ -240,7 +240,7 @@ This is a good function to put in `emms-player-finished-hook'."
 	 (emms-start))
 	((condition-case nil
              (progn
-               (emms-playlist-select-next)
+               (emms-playlist-current-select-next)
                t)
            (error nil))
 	 (emms-start))
@@ -252,7 +252,7 @@ This is a good function to put in `emms-player-finished-hook'."
   (interactive)
   (when emms-player-playing-p
     (emms-stop))
-  (emms-playlist-select-previous)
+  (emms-playlist-current-select-previous)
   (emms-start))
 
 (defun emms-random ()
@@ -295,8 +295,9 @@ If INSERTP is non-nil, insert the description into the current buffer instead.
 This function uses `emms-show-format' to format the current track."
   (interactive "P")
   (let ((string (if emms-player-playing-p
-                    (format emms-show-format (emms-track-description
-                                              (emms-playlist-selected-track)))
+                    (format emms-show-format
+                            (emms-track-description
+                             (emms-playlist-current-selected-track)))
                   "Nothing playing right now")))
     (if insertp
         (insert string)
@@ -412,9 +413,25 @@ Otherwise, return the type and the name with a colon in between."
   "Non-nil when the current buffer is an EMMS playlist.")
 (make-variable-buffer-local 'emms-playlist-buffer-p)
 
+(defun emms-playlist-ensure-playlist-buffer ()
+  "Throw an error if we're on in a playlist-buffer."
+  (when (not emms-playlist-buffer-p)
+    (error "Not an EMMS playlist buffer")))
+
+(defmacro with-current-emms-playlist (&rest body)
+  "Run BODY with the current buffer being the current playlist buffer."
+  `(progn
+     (when (or (not emms-playlist-buffer)
+               (not (buffer-live-p emms-playlist-buffer)))
+       (emms-playlist-current-clear))
+     (with-current-buffer emms-playlist-buffer
+       ,@body)))
+(put 'with-current-emms-playlist 'lisp-indent-function 0)
+
 (defun emms-playlist-set-playlist-buffer (&optional buffer)
   "Set the current playlist buffer."
   (interactive "bNew playlist buffer: ")
+  (emms-playlist-ensure-playlist-buffer)
   (setq emms-playlist-buffer (or (get-buffer buffer)
                                  (current-buffer))))
 
@@ -434,28 +451,360 @@ If called interactively, the new buffer is also selected."
       (switch-to-buffer buf))
     buf))
 
-(defun emms-playlist-clear ()
+(defun emms-playlist-current-clear ()
   "Clear the current playlist.
-If no playlist exists, a new one is generated."
+If no current playlist exists, a new one is generated."
   (if (or (not emms-playlist-buffer)
           (not (buffer-live-p emms-playlist-buffer)))
       (setq emms-playlist-buffer (emms-playlist-new))
     (with-current-buffer emms-playlist-buffer
-      (let ((inhibit-read-only t))
+      (emms-playlist-clear))))
+
+(defun emms-playlist-clear ()
+  "Clear the current buffer.
+If no playlist exists, a new one is generated."
+  (emms-playlist-ensure-playlist-buffer)
+  (let ((inhibit-read-only t))
         (widen)
         (delete-region (point-min)
                        (point-max)))
-      (run-hooks 'emms-playlist-cleared-hook))))
+      (run-hooks 'emms-playlist-cleared-hook))
 
-(defmacro with-current-emms-playlist (&rest body)
-  "Run BODY with the current buffer being the current playlist buffer."
-  `(progn
-     (when (or (not emms-playlist-buffer)
-               (not (buffer-live-p emms-playlist-buffer)))
-       (emms-playlist-clear))
-     (with-current-buffer emms-playlist-buffer
-       ,@body)))
-(put 'with-current-emms-playlist 'lisp-indent-function 0)
+;;; Point movement within the playlist buffer.
+
+(defun emms-playlist-track-at (&optional pos)
+  "Return the track at POS (point if not given), or nil if none."
+  (emms-playlist-ensure-playlist-buffer)
+  (get-text-property (or pos (point))
+                     'emms-track))
+
+(defun emms-playlist-next ()
+  "Move to the next track in the current buffer."
+  (emms-playlist-ensure-playlist-buffer)
+  (let ((next (next-single-property-change (point)
+                                           'emms-track)))
+    (when (not next)
+      (error "No next track"))
+    (when (not (emms-playlist-track-at next))
+      (setq next (next-single-property-change next 'emms-track)))
+    (when (or (not next)
+              (= next (point-max)))
+      (error "No next track"))
+    (goto-char next)))
+
+(defun emms-playlist-previous ()
+  "Move to the previous track in the current buffer."
+  (emms-playlist-ensure-playlist-buffer)
+  (let ((prev (previous-single-property-change (point)
+                                               'emms-track)))
+    (when (not prev)
+      (error "No previous track"))
+    (when (not (get-text-property prev 'emms-track))
+      (setq prev (or (previous-single-property-change prev 'emms-track)
+                     (point-min))))
+    (when (or (not prev)
+              (not (get-text-property prev 'emms-track)))
+      (error "No previous track"))
+    (goto-char prev)))
+
+(defun emms-playlist-first ()
+  "Move to the first track in the current buffer."
+  (emms-playlist-ensure-playlist-buffer)
+  (let ((first (condition-case nil
+                   (save-excursion
+                     (goto-char (point-min))
+                     (when (not (emms-playlist-track-at (point)))
+                       (emms-playlist-next))
+                     (point))
+                 (error
+                  nil))))
+    (if first
+        (goto-char first)
+      (error "No first track"))))
+
+(defun emms-playlist-last ()
+  "Move to the last track in the current buffer."
+  (emms-playlist-ensure-playlist-buffer)
+  (let ((last (condition-case nil
+                  (save-excursion
+                    (goto-char (point-max))
+                    (emms-playlist-previous)
+                    (point))
+                (error
+                 nil))))
+    (if last
+        (goto-char last)
+      (error "No last track"))))
+
+(defun emms-playlist-delete-track ()
+  "Delete the track at point."
+  (emms-playlist-ensure-playlist-buffer)
+  (funcall emms-playlist-delete-track-function))
+
+;;; Track selection
+(defun emms-playlist-selected-track ()
+  "Return the currently selected track."
+  (emms-playlist-ensure-playlist-buffer)
+  (when emms-playlist-selected-marker
+    (emms-playlist-track-at emms-playlist-selected-marker)))
+
+(defun emms-playlist-current-selected-track ()
+  "Return the currently selected track in the current playlist."
+  (with-current-emms-playlist
+    (emms-playlist-selected-track)))
+
+(defun emms-playlist-select (pos)
+  "Select the track at POS."
+  (emms-playlist-ensure-playlist-buffer)
+  (when (not (emms-playlist-track-at pos))
+    (error "No track at position %s" pos))
+  (when (not emms-playlist-selected-marker)
+    (setq emms-playlist-selected-marker (make-marker)))
+  (set-marker emms-playlist-selected-marker pos)
+  (run-hooks 'emms-playlist-selection-changed-hook))
+
+(defun emms-playlist-select-next ()
+  "Select the next track in the current buffer."
+  (emms-playlist-ensure-playlist-buffer)
+  (save-excursion
+    (goto-char (if (and emms-playlist-selected-marker
+                        (marker-position emms-playlist-selected-marker))
+                   emms-playlist-selected-marker
+                 (point-min)))
+    (condition-case nil
+        (progn
+          (if emms-repeat-playlist
+              (condition-case nil
+                  (emms-playlist-next)
+                (error
+                 (emms-playlist-first)))
+            (emms-playlist-next))
+          (emms-playlist-select (point)))
+      (error
+       (error "No next track in playlist")))))
+
+(defun emms-playlist-current-select-next ()
+  "Select the next track in the current playlist."
+  (with-current-emms-playlist
+    (emms-playlist-select-next)))
+
+(defun emms-playlist-select-previous ()
+  "Select the previous track in the current buffer."
+  (emms-playlist-ensure-playlist-buffer)
+  (save-excursion
+    (goto-char (if (and emms-playlist-selected-marker
+                        (marker-position emms-playlist-selected-marker))
+                   emms-playlist-selected-marker
+                 (point-max)))
+    (condition-case nil
+        (progn
+          (if emms-repeat-playlist
+              (condition-case nil
+                  (emms-playlist-previous)
+                (error
+                 (emms-playlist-last)))
+            (emms-playlist-previous))
+          (emms-playlist-select (point)))
+      (error
+       (error "No previous track in playlist")))))
+
+(defun emms-playlist-current-select-previous ()
+  "Select the previous track in the current playlist."
+  (with-current-emms-playlist
+    (emms-playlist-select-previous)))
+
+(defun emms-playlist-select-random ()
+  "Select a random track in the current buffer."
+  (emms-playlist-ensure-playlist-buffer)
+  ;; FIXME: This is rather inefficient.
+  (save-excursion
+    (let ((track-indices nil)
+          (donep nil))
+      (condition-case nil
+          (progn
+            (emms-playlist-first)
+            (setq track-indices (cons (point)
+                                      track-indices)))
+        (error
+         (setq donep t)))
+      (while (not donep)
+        (condition-case nil
+            (progn
+              (emms-playlist-next)
+              (setq track-indices (cons (point)
+                                        track-indices)))
+          (error
+           (setq donep t))))
+      (setq track-indices (vconcat track-indices))
+      (emms-playlist-select (aref track-indices
+                                  (random (length track-indices)))))))
+
+(defun emms-playlist-current-select-random ()
+  "Select a random track in the current playlist."
+  (with-current-emms-playlist
+    (emms-playlist-select-random)))
+
+(defun emms-playlist-select-first ()
+  "Select the first track in the current buffer."
+  (emms-playlist-ensure-playlist-buffer)
+  (save-excursion
+    (emms-playlist-first)
+    (emms-playlist-select (point))))
+
+(defun emms-playlist-current-select-first ()
+  "Select the first track in the current playlist."
+  (with-current-emms-playlist
+    (emms-playlist-select-first)))
+
+(defun emms-playlist-select-last ()
+  "Select the last track in the current buffer."
+  (emms-playlist-ensure-playlist-buffer)
+  (save-excursion
+    (emms-playlist-last)
+    (emms-playlist-select (point))))
+
+(defun emms-playlist-current-select-last ()
+  "Select the last track in the current playlist."
+  (with-current-emms-playlist
+    (emms-playlist-select-last)))
+
+;;; Playlist manipulation
+(defun emms-playlist-insert-track (track)
+  "Insert TRACK at the current position into the playlist.
+This uses `emms-playlist-insert-track-function'."
+  (emms-playlist-ensure-playlist-buffer)
+  (let ((inhibit-read-only t))
+    (funcall emms-playlist-insert-track-function track)))
+
+(defun emms-playlist-insert-source (source &rest args)
+  "Insert tracks from SOURCE, supplying ARGS as arguments."
+  (emms-playlist-ensure-playlist-buffer)
+  (save-restriction
+    (narrow-to-region (point)
+                      (point))
+    (apply source args)
+    (run-hooks 'emms-playlist-source-inserted-hook)))
+
+(defun emms-playlist-current-insert-source (source &rest args)
+  "Insert tracks from SOURCE in the current playlist.
+This is supplying ARGS as arguments to the source."
+  (with-current-emms-playlist
+    (apply 'emms-playlist-insert-source source args)))
+
+(defun emms-playlist-tracks-in-region (beg end)
+  "Return all tracks between BEG and END."
+  (emms-playlist-ensure-playlist-buffer)
+  (let ((tracks nil)
+        (donep nil))
+    (save-restriction
+      (narrow-to-region beg end)
+      (condition-case nil
+          (emms-playlist-first)
+        (error
+         (setq donep t)))
+      (while (not donep)
+        (setq tracks (cons (emms-playlist-track-at (point))
+                           tracks))
+        (condition-case nil
+            (emms-playlist-next)
+          (error
+           (setq donep t)))))
+    tracks))
+
+;;; Simple playlist buffer
+(defun emms-playlist-simple-insert-track (track)
+  "Insert the description of TRACK at point."
+  (emms-playlist-ensure-playlist-buffer)
+  (insert (propertize (emms-track-description track)
+                      'emms-track track)
+          "\n"))
+
+(defun emms-playlist-simple-delete-track ()
+  "Delete the track at point."
+  (emms-playlist-ensure-playlist-buffer)
+  (when (not (emms-playlist-track-at (point)))
+    (error "No track at point"))
+  (let ((region (emms-property-region (point) 'emms-track)))
+    (delete-region (car region)
+                   (cdr region))))
+
+(defun emms-playlist-simple-shuffle ()
+  "Shuffle the whole playlist buffer."
+  (emms-playlist-ensure-playlist-buffer)
+  (let ((current nil))
+    (widen)
+    (when emms-player-playing-p
+      (setq current (emms-playlist-selected-track))
+      (goto-char emms-playlist-selected-marker)
+      (emms-playlist-delete-track))
+    (let* ((tracks (vconcat (emms-playlist-tracks-in-region (point-min)
+                                                            (point-max))))
+           (len (length tracks))
+           (i 0))
+      (delete-region (point-min)
+                     (point-max))
+      (run-hooks 'emms-playlist-cleared-hook)
+      (emms-shuffle-vector tracks)
+      (when current
+        (emms-playlist-insert-track current))
+      (while (< i len)
+        (emms-playlist-insert-track (aref tracks i))
+        (setq i (1+ i))))
+    (emms-playlist-select-first)
+    (goto-char (point-max))))
+
+(defun emms-playlist-simple-sort ()
+  "Sort the whole playlist buffer."
+  (emms-playlist-ensure-playlist-buffer)
+  (widen)
+  (let ((current (emms-playlist-selected-track))
+        (tracks (emms-playlist-tracks-in-region (point-min)
+                                                (point-max))))
+    (delete-region (point-min)
+                   (point-max))
+    (run-hooks 'emms-playlist-cleared-hook)
+    (mapc 'emms-playlist-insert-track
+          (sort tracks emms-sort-lessp-function))
+    (let ((pos (text-property-any (point-min)
+                                  (point-max)
+                                  'emms-track current)))
+      (if pos
+          (emms-playlist-select pos)
+        (emms-playlist-first)))))
+
+;;; Helper functions
+(defun emms-property-region (pos prop)
+  "Return a pair of the beginning and end of the property PROP at POS."
+  (let ((beg nil)
+        (end nil))
+    (save-excursion
+      (goto-char pos)
+      (while (and (not (bobp))
+                  (get-text-property (point)
+                                     prop))
+        (backward-char))
+      (when (not (get-text-property (point)
+                                    prop))
+        (forward-char))
+      (setq beg (point))
+      (goto-char pos)
+      (while (and (not (eobp))
+                  (get-text-property (point)
+                                     prop))
+        (forward-char))
+      (setq end (point)))
+    (cons beg end)))
+
+(defun emms-shuffle-vector (vector)
+  "Shuffle VECTOR."
+  (let ((i (- (length vector) 1)))
+    (while (>= i 0)
+      (let* ((r (random (1+ i)))
+             (old (aref vector r)))
+        (aset vector r (aref vector i))
+        (aset vector i old))
+      (setq i (- i 1))))
+  vector)
 
 ;;; Saving playlists.
 
@@ -519,294 +868,6 @@ If no playlist exists, a new one is generated."
   (interactive "FFile to save playlist as: ")
   (emms-playlist-save-as-m3u emms-playlist-buffer filename))
 
-;;; Point movement within the playlist buffer.
-
-(defun emms-playlist-track-at (&optional pos)
-  "Return the track at POS (point if not given), or nil if none."
-  (get-text-property (or pos (point))
-                     'emms-track))
-
-(defun emms-playlist-next ()
-  "Move to the next track in the current buffer."
-  (let ((next (next-single-property-change (point)
-                                           'emms-track)))
-    (when (not next)
-      (error "No next track"))
-    (when (not (emms-playlist-track-at next))
-      (setq next (next-single-property-change next 'emms-track)))
-    (when (or (not next)
-              (= next (point-max)))
-      (error "No next track"))
-    (goto-char next)))
-
-(defun emms-playlist-previous ()
-  "Move to the previous track in the current buffer."
-  (let ((prev (previous-single-property-change (point)
-                                               'emms-track)))
-    (when (not prev)
-      (error "No previous track"))
-    (when (not (get-text-property prev 'emms-track))
-      (setq prev (or (previous-single-property-change prev 'emms-track)
-                     (point-min))))
-    (when (or (not prev)
-              (not (get-text-property prev 'emms-track)))
-      (error "No previous track"))
-    (goto-char prev)))
-
-(defun emms-playlist-first ()
-  "Move to the first track in the current buffer."
-  (let ((first (condition-case nil
-                   (save-excursion
-                     (goto-char (point-min))
-                     (when (not (emms-playlist-track-at (point)))
-                       (emms-playlist-next))
-                     (point))
-                 (error
-                  nil))))
-    (if first
-        (goto-char first)
-      (error "No first track"))))
-
-(defun emms-playlist-last ()
-  "Move to the last track in the current buffer."
-  (let ((last (condition-case nil
-                  (save-excursion
-                    (goto-char (point-max))
-                    (emms-playlist-previous)
-                    (point))
-                (error
-                 nil))))
-    (if last
-        (goto-char last)
-      (error "No last track"))))
-
-(defun emms-playlist-delete-track ()
-  "Delete the track at point."
-  (funcall emms-playlist-delete-track-function))
-
-;;; Track selection
-(defun emms-playlist-selected-track ()
-  "Return the currently selected track."
-  (with-current-emms-playlist
-    (when emms-playlist-selected-marker
-      (emms-playlist-track-at emms-playlist-selected-marker))))
-
-(defun emms-playlist-select (pos)
-  "Select the track at POS."
-  (when (not (emms-playlist-track-at pos))
-    (error "No track at position %s" pos))
-  (when (not emms-playlist-selected-marker)
-    (setq emms-playlist-selected-marker (make-marker)))
-  (set-marker emms-playlist-selected-marker pos)
-  (run-hooks 'emms-playlist-selection-changed-hook))
-
-(defun emms-playlist-select-next ()
-  "Select the next track in the playlist."
-  (with-current-emms-playlist
-    (save-excursion
-      (goto-char (if (and emms-playlist-selected-marker
-                          (marker-position emms-playlist-selected-marker))
-                     emms-playlist-selected-marker
-                   (point-min)))
-      (condition-case nil
-          (progn
-            (if emms-repeat-playlist
-                (condition-case nil
-                    (emms-playlist-next)
-                  (error
-                   (emms-playlist-first)))
-              (emms-playlist-next))
-            (emms-playlist-select (point)))
-        (error
-         (error "No next track in playlist"))))))
-
-(defun emms-playlist-select-previous ()
-  "Select the previous track in the playlist."
-  (with-current-emms-playlist
-    (save-excursion
-      (goto-char (if (and emms-playlist-selected-marker
-                          (marker-position emms-playlist-selected-marker))
-                     emms-playlist-selected-marker
-                   (point-max)))
-      (condition-case nil
-          (progn
-            (if emms-repeat-playlist
-                (condition-case nil
-                    (emms-playlist-previous)
-                  (error
-                   (emms-playlist-last)))
-              (emms-playlist-previous))
-            (emms-playlist-select (point)))
-        (error
-         (error "No previous track in playlist"))))))
-
-(defun emms-playlist-select-random ()
-  "Select a random track in the playlist."
-  (with-current-emms-playlist
-    ;; FIXME: This is rather inefficient.
-    (save-excursion
-      (let ((track-indices nil)
-            (donep nil))
-        (condition-case nil
-            (progn
-              (emms-playlist-first)
-              (setq track-indices (cons (point)
-                                        track-indices)))
-          (error
-           (setq donep t)))
-        (while (not donep)
-          (condition-case nil
-              (progn
-                (emms-playlist-next)
-                (setq track-indices (cons (point)
-                                          track-indices)))
-            (error
-             (setq donep t))))
-        (setq track-indices (vconcat track-indices))
-        (emms-playlist-select (aref track-indices
-                                    (random (length track-indices))))))))
-
-(defun emms-playlist-select-first ()
-  "Select the first track in the playlist."
-  (with-current-emms-playlist
-    (save-excursion
-      (emms-playlist-first)
-      (emms-playlist-select (point)))))
-
-(defun emms-playlist-select-last ()
-  "Select the last track in the playlist."
-  (with-current-emms-playlist
-    (save-excursion
-      (emms-playlist-last)
-      (emms-playlist-select (point)))))
-
-;;; Playlist manipulation
-(defun emms-playlist-insert-track (track)
-  "Insert TRACK at the current position into the playlist.
-This uses `emms-playlist-insert-track-function'."
-  (let ((inhibit-read-only t))
-    (funcall emms-playlist-insert-track-function track)))
-
-(defun emms-playlist-insert-source (source &rest args)
-  "Insert tracks from SOURCE, supplying ARGS as arguments."
-  (with-current-emms-playlist
-    (save-restriction
-      (narrow-to-region (point)
-                        (point))
-      (apply source args)
-      (run-hooks 'emms-playlist-source-inserted-hook))))
-
-(defun emms-playlist-tracks-in-region (beg end)
-  "Return all tracks between BEG and END."
-  (let ((tracks nil)
-        (donep nil))
-    (save-restriction
-      (narrow-to-region beg end)
-      (condition-case nil
-          (emms-playlist-first)
-        (error
-         (setq donep t)))
-      (while (not donep)
-        (setq tracks (cons (emms-playlist-track-at (point))
-                           tracks))
-        (condition-case nil
-            (emms-playlist-next)
-          (error
-           (setq donep t)))))
-    tracks))
-
-;;; Simple playlist buffer
-(defun emms-playlist-simple-insert-track (track)
-  "Insert the description of TRACK at point."
-  (insert (propertize (emms-track-description track)
-                      'emms-track track)
-          "\n"))
-
-(defun emms-playlist-simple-delete-track ()
-  "Delete the track at point."
-  (when (not (emms-playlist-track-at (point)))
-    (error "No track at point"))
-  (let ((region (emms-property-region (point) 'emms-track)))
-    (delete-region (car region)
-                   (cdr region))))
-
-(defun emms-playlist-simple-shuffle ()
-  "Shuffle the whole playlist buffer."
-  (let ((current nil))
-    (widen)
-    (when emms-player-playing-p
-      (setq current (emms-playlist-selected-track))
-      (goto-char emms-playlist-selected-marker)
-      (emms-playlist-delete-track))
-    (let* ((tracks (vconcat (emms-playlist-tracks-in-region (point-min)
-                                                            (point-max))))
-           (len (length tracks))
-           (i 0))
-      (delete-region (point-min)
-                     (point-max))
-      (run-hooks 'emms-playlist-cleared-hook)
-      (emms-shuffle-vector tracks)
-      (when current
-        (emms-playlist-insert-track current))
-      (while (< i len)
-        (emms-playlist-insert-track (aref tracks i))
-        (setq i (1+ i))))
-    (emms-playlist-select-first)
-    (goto-char (point-max))))
-
-(defun emms-playlist-simple-sort ()
-  "Sort the whole playlist buffer."
-  (widen)
-  (let ((current (emms-playlist-selected-track))
-        (tracks (emms-playlist-tracks-in-region (point-min)
-                                                (point-max))))
-    (delete-region (point-min)
-                   (point-max))
-    (run-hooks 'emms-playlist-cleared-hook)
-    (mapc 'emms-playlist-insert-track
-          (sort tracks emms-sort-lessp-function))
-    (let ((pos (text-property-any (point-min)
-                                  (point-max)
-                                  'emms-track current)))
-      (if pos
-          (emms-playlist-select pos)
-        (emms-playlist-first)))))
-
-;;; Helper functions
-(defun emms-property-region (pos prop)
-  "Return a pair of the beginning and end of the property PROP at POS."
-  (let ((beg nil)
-        (end nil))
-    (save-excursion
-      (goto-char pos)
-      (while (and (not (bobp))
-                  (get-text-property (point)
-                                     prop))
-        (backward-char))
-      (when (not (get-text-property (point)
-                                    prop))
-        (forward-char))
-      (setq beg (point))
-      (goto-char pos)
-      (while (and (not (eobp))
-                  (get-text-property (point)
-                                     prop))
-        (forward-char))
-      (setq end (point)))
-    (cons beg end)))
-
-(defun emms-shuffle-vector (vector)
-  "Shuffle VECTOR."
-  (let ((i (- (length vector) 1)))
-    (while (>= i 0)
-      (let* ((r (random (1+ i)))
-             (old (aref vector r)))
-        (aset vector r (aref vector i))
-        (aset vector i old))
-      (setq i (- i 1))))
-  vector)
-
-
 
 
 ;;; Sources
@@ -863,9 +924,9 @@ See emms-source-file.el for some examples."
 (defun emms-source-play (source &rest args)
   "Play the tracks of SOURCE, after first clearing the EMMS playlist."
   (emms-stop)
-  (emms-playlist-clear)
-  (apply 'emms-playlist-insert-source source args)
-  (emms-playlist-select-first)
+  (emms-playlist-current-clear)
+  (apply 'emms-playlist-current-insert-source source args)
+  (emms-playlist-current-select-first)
   (emms-start))
 
 (defun emms-source-add (source &rest args)
@@ -873,7 +934,7 @@ See emms-source-file.el for some examples."
   (with-current-emms-playlist
     (save-excursion
       (goto-char (point-max))
-      (apply 'emms-playlist-insert-source source args))
+      (apply 'emms-playlist-current-insert-source source args))
     (when (or (not emms-playlist-selected-marker)
               (not (marker-position emms-playlist-selected-marker)))
       (emms-playlist-select-first))))
@@ -882,7 +943,7 @@ See emms-source-file.el for some examples."
   "Insert the tracks from SOURCE in the current buffer."
   (if (not emms-playlist-buffer-p)
       (error "Not in an EMMS playlist buffer")
-    (apply emms-playlist-insert-source source args)))
+    (apply 'emms-playlist-current-insert-source source args)))
 
 ;;; User-defined playlists
 ;;; FIXME: Shuffle is bogus here! (because of narrowing)
