@@ -243,8 +243,10 @@ of the saved playlist inside."
     (with-current-buffer buffer
       (setq s (read (buffer-string))))
     (kill-buffer buffer)
-    (with-current-buffer (get-buffer-create name)
-      (insert s))))
+    (with-current-buffer (emms-playlist-new name)
+      (insert s)
+      (emms-playlist-first)
+      (emms-playlist-select (point)))))
 
 (defun emms-playlist-mode-save-active-buffer (filename)
   "Saves the active playlist buffer to a file."
