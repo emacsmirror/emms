@@ -17,8 +17,6 @@
 ;;;     playlist buffers.
 ;;;
 ;;; (2) Arbitrary comment entry with color overlays.
-;;;
-;;; (3) Font-locking for unselected tracks via overlays.
 
 ;;; Code:
 
@@ -176,13 +174,6 @@ START and END should points.
 FACE should be a... face."
   (let ((o (make-overlay start end)))
     (emms-playlist-mode-overlay-face o face priority)))
-
-(defun emms-playlist-mode-overlay-at (face)
-  "Place an overlay the current line using FACE.
-
-FACE should be a valid face."
-  (let ((o (make-overlay (point-at-bol) (point-at-eol))))
-    (overlay-put o 'face face)))
 
 (defun emms-playlist-mode-overlay-unselected ()
   ;; point-mix/max because -insert-source narrows the world
