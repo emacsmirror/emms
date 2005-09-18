@@ -693,7 +693,7 @@ Optional argument CONT boolean."
 (defun emms-stream-info-input-sanity (&optional urlstring)
   (let ((type (emms-track-type (emms-playlist-selected-track))))
     (cond ((null urlstring)
-	   (if (or (equal type 'playlist)
+	   (if (or (equal type 'playlist) ;; FIXME-PLS
 		   (equal type 'url))
 	       (emms-track-name (emms-playlist-selected-track))))
 	  ((not (stringp urlstring))
