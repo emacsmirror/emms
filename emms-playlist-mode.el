@@ -280,10 +280,11 @@ of the saved playlist inside."
 
 (defun emms-playlist-mode-startup ()
   "Instigate emms-playlist-mode on the current buffer."
-  (unless (or emms-playlist-selected-marker
-	      emms-player-playing-p)
+  (when (not (or emms-playlist-selected-marker
+		 emms-player-playing-p))
     (emms-stop)
-    (emms-playlist-select-first))
+    (when emms-playlist-buffer-p
+      (emms-playlist-select-first)))
   (when emms-playlist-selected-marker
     (emms-playlist-mode-overlay-selected)
     (goto-char (or emms-playlist-mode-selected-overlay-marker
