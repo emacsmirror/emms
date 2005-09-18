@@ -431,9 +431,11 @@ Otherwise, return the type and the name with a colon in between."
 (defun emms-playlist-set-playlist-buffer (&optional buffer)
   "Set the current playlist buffer."
   (interactive "bNew playlist buffer: ")
-  (emms-playlist-ensure-playlist-buffer)
-  (setq emms-playlist-buffer (or (get-buffer buffer)
-                                 (current-buffer))))
+  (let ((buf (or (get-buffer buffer)
+                 (current-buffer))))
+    (with-current-buffer buf
+      (emms-playlist-ensure-playlist-buffer))
+    (setq emms-playlist-buffer buf)))
 
 (defun emms-playlist-new (&optional name)
   "Create a new playlist buffer.
