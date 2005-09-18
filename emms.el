@@ -419,13 +419,15 @@ Otherwise, return the type and the name with a colon in between."
     (error "Not an EMMS playlist buffer")))
 
 (defmacro with-current-emms-playlist (&rest body)
-  "Run BODY with the current buffer being the current playlist buffer."
+  "Run BODY with the current buffer being the current playlist buffer.
+This also disables any read-onliness of the current buffer."
   `(progn
      (when (or (not emms-playlist-buffer)
                (not (buffer-live-p emms-playlist-buffer)))
        (emms-playlist-current-clear))
      (with-current-buffer emms-playlist-buffer
-       ,@body)))
+       (let ((inhibit-read-only t))
+         ,@body))))
 (put 'with-current-emms-playlist 'lisp-indent-function 0)
 
 (defun emms-playlist-set-playlist-buffer (&optional buffer)
