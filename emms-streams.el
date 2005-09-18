@@ -431,16 +431,17 @@ about it, use this. Otherwise returns the name alone."
 
 (setq emms-track-initialize-functions '(emms-stream-add-data-to-track))
 
-(when (featurep 'emms-info)
-  (eval-when-compile (require 'emms-info)) ; appease byte-compiler
-  (add-to-list 'emms-info-methods-list 'emms-info-playlist)
-  (defun emms-info-playlist-providep (track)
-    (if (eq (emms-track-type track) 'streamlist)
-        t
-      nil))
-  (define-emms-info-method emms-info-streamlist  ;; FIXME-PLS ?
-    :providep 'emms-info-streamlist-providep ;; FIXME-PLS ?
-    :get 'emms-info-url-get))
+;; emms-info-playlist is no more, anyone wish to fix this (Lukhas).
+;; (when (featurep 'emms-info)
+;;   (eval-when-compile (require 'emms-info)) ; appease byte-compiler
+;;   (add-to-list 'emms-info-methods-list 'emms-info-playlist)
+;;   (defun emms-info-playlist-providep (track)
+;;     (if (eq (emms-track-type track) 'streamlist)
+;;         t
+;;       nil))
+;;   (define-emms-info-method emms-info-streamlist  ;; FIXME-PLS ?
+;;     :providep 'emms-info-streamlist-providep ;; FIXME-PLS ?
+;;     :get 'emms-info-url-get))
 
 (provide 'emms-streams)
 ;;; emms-streams.el ends here
