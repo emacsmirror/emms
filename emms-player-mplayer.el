@@ -36,7 +36,7 @@
 		".rm" ".rmvb" ".mp4"))
   "mplayer")
 
-(define-emms-simple-player mplayer-playlist '(playlist)
+(define-emms-simple-player mplayer-playlist '(streamlist)
   "http://"
   "mplayer" "-playlist")
 
