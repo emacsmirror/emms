@@ -44,9 +44,9 @@ of the version you have installed.
 All possible values for the LEVEL, are:
 
 `cvs' -- Everything and no guarantees
-`advanced' -- info, pbi, tageditor
+`advanced' -- info, playlist-mode, tageditor
 `default' -- info and the playlist-buffer-interface.
-`tiny' -- basic and pbi
+`tiny' -- basic and playlist-mode
 `minimalistic' -- No bells and whistles, no info, no interfaces. M-x
 emms-next RET and such, as well as a single player. This should almost
 always work, unless you get very unlucky with a CVS-build."
@@ -64,10 +64,11 @@ always work, unless you get very unlucky with a CVS-build."
     (ding))
 
   (unless (equal level 'minimalistic)	; tiny
-    (require 'emms-pbi)
+    (require 'emms-playlist-mode)
+    (setq emms-playlist-default-major-mode 'emms-playlist-mode)
 
     (unless (equal level 'tiny)		; default
-      ;; must be default, advanced or cvs, include the pbi and the info
+      ;; must be default, advanced or cvs, include the playlist-mode and the info
       (require 'emms-info)
       (require 'emms-info-mp3info)
       (setq emms-info-methods-list '(emms-info-mp3info))
@@ -82,18 +83,10 @@ always work, unless you get very unlucky with a CVS-build."
 
       (unless (equal level 'default)	; advanced
 	;; + tageditor.
-	(require 'emms-tageditor)
-	(emms-tageditor-pbi-mode 1)
-
-        ;; and pl-manip
-        (require 'emms-pl-manip)
+	;;(require 'emms-tageditor)
+	;;(emms-tageditor-pbi-mode 1)
 
 	(unless (equal level 'advanced)	; cvs
-	  (require 'emms-pbi-mark)
-	  (emms-pbi-mark 1)
-	  (emms-tageditor-pbi-mark-mode 1)
-	  (require 'emms-pbi-popup)
-
           ;; load the mode-line
           (require 'emms-mode-line)
           (emms-mode-line 1)
