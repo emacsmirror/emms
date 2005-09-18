@@ -269,6 +269,7 @@ files) can play."
   (interactive "sPlay URL: ")
   (emms-playlist-insert-track (emms-track 'url url)))
 
+;; FIXME-PLS
 (define-emms-source playlist (playlist)
   "An EMMS source for streaming playlists (usually URLs ending in .pls."
   (interactive "sPlay URL: ")
