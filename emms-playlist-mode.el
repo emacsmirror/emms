@@ -255,7 +255,8 @@ of the saved playlist inside."
       (setq s (read (buffer-string))))
     (kill-buffer buffer)
     (with-current-buffer (emms-playlist-new name)
-      (insert s)
+      (let ((inhibit-read-only t))
+        (insert s))
       (emms-playlist-first)
       (emms-playlist-select (point)))))
 
