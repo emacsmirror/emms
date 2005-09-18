@@ -1,11 +1,11 @@
 ;;; emms-stream-info.el --- Show what is currently playing on a
 ;;; streaming audio station.
 
-;; Copyright (C) 2004  Yoni Rabkin Katzenell <yoni-r@actcom.com>
+;; Copyright (C) 2004, 2005 Yoni Rabkin Katzenell <yoni-r@actcom.com>
 ;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License
-;; as published by the Free Software Foundation; either version 2
-;; of the License, or (at your option) any later version.
+;; modify it under the terms of the GNU General Public License as
+;; published by the Free Software Foundation; either version 2 of the
+;; License, or (at your option) any later version.
 
 ;; This program is distributed in the hope that it will be useful,
 ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -590,8 +590,8 @@ server at URLSTRING."
   (setq emms-stream-info-title-flag nil)	 ; forget title flag
   (setq emms-stream-info-header-flag nil)	 ; forget header flag
   (setq emms-stream-info-found nil)		 ; forget output
-  (setq emms-stream-info-streamlist-found nil)     ; forget streamlist
-  (setq emms-stream-info-streamlist-flag nil)      ; forget streamlist
+  (setq emms-stream-info-streamlist-found nil)	 ; forget streamlist
+  (setq emms-stream-info-streamlist-flag nil)	 ; forget streamlist
   (setq emms-stream-info-read-inhibit t)         ; do not read output
 
   ;; Reset state machine
@@ -689,16 +689,21 @@ Optional argument CONT boolean."
       (unless (process-sentinel proc)
 	(error "No process sentinel")))))
 
-;; Users. You can never tell what they are going to use as input.
+;; Should be phased out.
+;; (defun emms-stream-info-input-sanity (&optional urlstring)
+;;   (let ((type (emms-track-type (emms-playlist-selected-track))))
+;;     (cond ((null urlstring)
+;; 	   (if (or (equal type 'streamlist)
+;; 		   (equal type 'url))
+;; 	       (emms-track-name (emms-playlist-selected-track))))
+;; 	  ((not (stringp urlstring))
+;; 	   (error "URL must be in string format"))
+;; 	  ((stringp url) urlstring))))
+
 (defun emms-stream-info-input-sanity (&optional urlstring)
-  (let ((type (emms-track-type (emms-playlist-selected-track))))
-    (cond ((null urlstring)
-	   (if (or (equal type 'streamlist)
-		   (equal type 'url))
-	       (emms-track-name (emms-playlist-selected-track))))
-	  ((not (stringp urlstring))
-	   (error "URL must be in string format"))
-	  ((stringp url) urlstring))))
+  (if (stringp urlstring)
+      urlstring
+    (error "URL must be in string format")))
 
 (defun emms-stream-info-message (&optional urlstring)
   "Get information from streaming audio server at URLSTRING.

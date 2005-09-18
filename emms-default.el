@@ -109,6 +109,12 @@ always work, unless you get very unlucky with a CVS-build."
 	  ;; 		      (lambda ()
 	  ;; 			(setnu-mode 1)))))))))
 
+	  ;; streaming audio interface
+	  (require 'emms-streams)
+
+	  ;; streaming audio information
+	  (require 'emms-stream-info)
+
 	  ;; display lyrics
 	  (require 'emms-lyrics)
 
