@@ -16,7 +16,7 @@
 ;;; (1) Lukhas wants `emms-list-playlist-buffers' to list all the
 ;;;     playlist buffers.
 ;;;
-;;; (2) Add multi-line formatting and arbitrary comment entry.
+;;; (2) Arbitrary comment entry with color overlays.
 ;;;
 ;;; (3) Font-locking for unselected tracks via overlays.
 
@@ -138,7 +138,8 @@ FUN should be a function."
 (defun emms-playlist-mode-kill-track ()
   "Kill the track at point."
   (interactive)
-  (let ((region (emms-property-region (point) 'emms-track)))
+  (let ((region (emms-property-region (point) 'emms-track))
+	(inhibit-read-only t))
     (cond ((not (emms-playlist-track-at))
 	   (kill-line 1))	     ; Purposfully kills only one line
 	  ((and (not (emms-playlist-mode-selected-at))
@@ -179,6 +180,12 @@ FACE should be a valid face."
   (let ((o (make-overlay (point-at-bol) (point-at-eol))))
     (overlay-put o 'face face)))
 
+(defun emms-playlist-mode-overlay-unselected ()
+  ;; point-mix/max because -insert-source narrows the world
+  (emms-playlist-mode-overlay-track (point-min) 
+				    (point-max)
+				    'emms-playlist-track-face))
+
 ;; Selected track overlaying track in constant time.
 (defun emms-playlist-mode-overlay-selected ()
   "Place an overlay over the currently selected track."
@@ -198,6 +205,9 @@ FACE should be a valid face."
 ;;; --------------------------------------------------------
 ;;; Hooks
 ;;; --------------------------------------------------------
+
+(add-hook 'emms-playlist-source-inserted-hook
+	  'emms-playlist-mode-overlay-unselected)
 
 (add-hook 'emms-playlist-selection-changed-hook
 	  'emms-playlist-mode-overlay-selected)
