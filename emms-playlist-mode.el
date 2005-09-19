@@ -76,7 +76,6 @@
     (define-key emms-playlist-mode-map (kbd "s") 'emms-stop)
     (define-key emms-playlist-mode-map (kbd "f") 'emms-show)
     (define-key emms-playlist-mode-map (kbd "c") 'emms-playlist-mode-center-current)
-    (define-key emms-playlist-mode-map (kbd "C") 'emms-playlist-clear)
     (define-key emms-playlist-mode-map (kbd "RET") 'emms-playlist-mode-play-current-track)
     (define-key emms-playlist-mode-map (kbd "q") 'bury-buffer)
     (define-key emms-playlist-mode-map (kbd "<mouse-2>") 'emms-playlist-mode-play-current-track)
@@ -178,7 +177,7 @@ FACE should be a... face."
 
 (defun emms-playlist-mode-overlay-unselected ()
   ;; point-mix/max because -insert-source narrows the world
-  (emms-playlist-mode-overlay-track (point-min)
+  (emms-playlist-mode-overlay-track (point-min) 
 				    (point-max)
 				    'emms-playlist-track-face
 				    1))
