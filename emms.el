@@ -458,6 +458,7 @@ If called interactively, the new buffer is also selected."
 (defun emms-playlist-current-clear ()
   "Clear the current playlist.
 If no current playlist exists, a new one is generated."
+  (interactive)
   (if (or (not emms-playlist-buffer)
           (not (buffer-live-p emms-playlist-buffer)))
       (setq emms-playlist-buffer (emms-playlist-new))
