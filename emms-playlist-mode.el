@@ -72,8 +72,7 @@
     (define-key emms-playlist-mode-map (kbd "p") 'emms-previous)
     (define-key emms-playlist-mode-map (kbd "C-x C-s") 'emms-playlist-mode-save-buffer)
     (define-key emms-playlist-mode-map (kbd "C-k") 'emms-playlist-mode-kill-track)
-    (define-key emms-playlist-mode-map (kbd "C-y") 
-      #'(lambda () (interactive) (emms-playlist-mode-insert-last-killed-track kill-ring)))
+    (define-key emms-playlist-mode-map (kbd "C-y") 'emms-playlist-mode-insert-last-killed)
     (define-key emms-playlist-mode-map (kbd "d") 'emms-playlist-mode-kill-track)
     (define-key emms-playlist-mode-map (kbd "s") 'emms-stop)
     (define-key emms-playlist-mode-map (kbd "f") 'emms-show)
@@ -134,16 +133,16 @@ FUN should be a function."
     (emms-stop))
   (emms-start))
 
-(defun emms-playlist-mode-insert-last-killed-track (ring)
-  (if (null ring)
-      (error "No last killed track")
-    (let ((track nil))
-      (with-temp-buffer
-	(insert (car ring))
-	(setq track (get-text-property (point-min) 'emms-track)))
-      (if track
-	  (emms-playlist-insert-track track)
-	(emms-playlist-mode-insert-last-killed-track (cdr ring))))))
+(defun emms-playlist-mode-insert-last-killed ()
+  (interactive)
+  (let ((inhibit-read-only t)
+	(track nil))
+    (with-temp-buffer
+      (yank)
+      (setq track (get-text-property (point-min) 'emms-track)))
+    (if track
+	(funcall emms-playlist-insert-track-function track)
+      (error "No playlist info to yank"))))
 
 ;; The logic for killing tracks in an interactive manner is
 ;; suprisingly annoying
@@ -153,7 +152,7 @@ FUN should be a function."
   (let ((region (emms-property-region (point) 'emms-track))
 	(inhibit-read-only t))
     (cond ((not (emms-playlist-track-at))
-	   (kill-line 1))
+	   (kill-line 1) (current-kill 1))
 	  ((and (not (emms-playlist-mode-selected-at))
 		(emms-playlist-track-at))
 	   (kill-region (car region)
@@ -283,17 +282,16 @@ of the saved playlist inside."
 ;;; Overshadowing functions
 ;;; --------------------------------------------------------
 
-(defun emms-playlist-mode-insert-track-function (track)
+(defun emms-playlist-mode-insert-track (track)
   "Insert the description of TRACK at point."
   (emms-playlist-ensure-playlist-buffer)
   (insert (propertize (emms-track-description track)
                       'emms-track track))
-  (emms-playlist-mode-overlay-track (car (emms-property-region (point-at-bol) 
-							       'emms-track))
-				    (cdr (emms-property-region (point-at-bol) 
-							       'emms-track))
-				    'emms-playlist-track-face
-				    1)
+  (let ((p (emms-property-region (point-at-bol) 'emms-track)))
+    (emms-playlist-mode-overlay-track (car p)
+				      (cdr p)
+				      'emms-playlist-track-face
+				      1))
   (insert "\n"))
 
 (defun emms-playlist-mode-update-track-function ()
@@ -306,7 +304,7 @@ of the saved playlist inside."
     (delete-region (car track-region)
                    ;; 1+ For the \n
                    (1+ (cdr track-region)))
-    (emms-playlist-mode-insert-track-function track)))
+    (emms-playlist-mode-insert-track track)))
 
 ;;; --------------------------------------------------------
 ;;; Entry
@@ -346,7 +344,7 @@ of the saved playlist inside."
 	mode-name "Emms-Playlist")
 
   (setq emms-playlist-insert-track-function
-        'emms-playlist-mode-insert-track-function)
+        'emms-playlist-mode-insert-track)
   (setq emms-playlist-update-track-function
         'emms-playlist-mode-update-track-function)
   ;; Not used yet
