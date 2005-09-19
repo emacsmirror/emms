@@ -39,9 +39,6 @@
   :prefix "emms-playlist-mode-"
   :group 'multimedia)
 
-(setq emms-playlist-insert-track-function
-      'emms-playlist-mode-insert-track-function)
-
 ;;; --------------------------------------------------------
 ;;; Faces
 ;;; --------------------------------------------------------
@@ -73,7 +70,7 @@
     (set-keymap-parent emms-playlist-mode-map text-mode-map)
     (define-key emms-playlist-mode-map (kbd "n") 'emms-next)
     (define-key emms-playlist-mode-map (kbd "p") 'emms-previous)
-    (define-key emms-playlist-mode-map (kbd "C-x C-s") 'emms-playlist-save-buffer)
+    (define-key emms-playlist-mode-map (kbd "C-x C-s") 'emms-playlist-mode-save-buffer)
     (define-key emms-playlist-mode-map (kbd "C-k") 'emms-playlist-mode-kill-track)
     (define-key emms-playlist-mode-map (kbd "C-y") 
       #'(lambda () (interactive) (emms-playlist-mode-insert-last-killed-track kill-ring)))
@@ -131,6 +128,7 @@ FUN should be a function."
 (defun emms-playlist-mode-play-current-track ()
   "Start playing track at point."
   (interactive)
+  (emms-playlist-set-playlist-buffer)
   (emms-playlist-select (point))
   (when emms-player-playing-p
     (emms-stop))
@@ -220,16 +218,6 @@ FACE should be a... face."
   nil)
 
 ;;; --------------------------------------------------------
-;;; Hooks
-;;; --------------------------------------------------------
-
-;; (add-hook 'emms-playlist-source-inserted-hook
-;; 	  'emms-playlist-mode-overlay-unselected)
-
-(add-hook 'emms-playlist-selection-changed-hook
-	  'emms-playlist-mode-overlay-selected)
-
-;;; --------------------------------------------------------
 ;;; Playlists
 ;;; --------------------------------------------------------
 
@@ -272,9 +260,19 @@ of the saved playlist inside."
     (kill-buffer buffer)
     (with-current-buffer (emms-playlist-new name)
       (let ((inhibit-read-only t))
-        (insert s))
+        (insert s)
+        (condition-case nil
+            (progn
+              (emms-playlist-first)
+              (emms-playlist-update-track)
+              (while t
+                (emms-playlist-next)
+                (emms-playlist-update-track)))
+          (error
+           nil)))
       (emms-playlist-first)
-      (emms-playlist-select (point)))))
+      (emms-playlist-select (point))
+      (switch-to-buffer (current-buffer)))))
 
 (defun emms-playlist-mode-save-active-buffer (filename)
   "Saves the active playlist buffer to a file."
@@ -297,7 +295,18 @@ of the saved playlist inside."
 				    'emms-playlist-track-face
 				    1)
   (insert "\n"))
-	  
+
+(defun emms-playlist-mode-update-track-function ()
+  "Update the track display at point."
+  (emms-playlist-ensure-playlist-buffer)
+  (let ((track-region (emms-property-region (point-at-bol)
+                                            'emms-track))
+        (track (get-text-property (point-at-bol)
+                                  'emms-track)))
+    (delete-region (car track-region)
+                   ;; 1+ For the \n
+                   (1+ (cdr track-region)))
+    (emms-playlist-mode-insert-track-function track)))
 
 ;;; --------------------------------------------------------
 ;;; Entry
@@ -335,6 +344,16 @@ of the saved playlist inside."
   (use-local-map emms-playlist-mode-map)
   (setq major-mode 'emms-playlist-mode
 	mode-name "Emms-Playlist")
+
+  (setq emms-playlist-insert-track-function
+        'emms-playlist-mode-insert-track-function)
+  (setq emms-playlist-update-track-function
+        'emms-playlist-mode-update-track-function)
+  ;; Not used yet
+  ;; (setq emms-playlist-delete-track-function
+  ;;       ...)
+  (add-hook 'emms-playlist-selection-changed-hook
+            'emms-playlist-mode-overlay-selected)
 
   (emms-playlist-mode-startup)
 
