@@ -53,9 +53,7 @@
 
 (defun emms-mode-line-playlist-current ()
   "Format the currently playing song"
-  (format emms-mode-line-format 
-	  (emms-track-description 
-	   (emms-playlist-current-selected-track))))
+  (format emms-mode-line-format (emms-track-description (emms-playlist-selected-track))))
 
 (defvar emms-mode-line-initial-titlebar frame-title-format)
 
