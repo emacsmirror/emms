@@ -39,6 +39,9 @@
   :prefix "emms-playlist-mode-"
   :group 'multimedia)
 
+(setq emms-playlist-insert-track-function
+      'emms-playlist-mode-insert-track-function)
+
 ;;; --------------------------------------------------------
 ;;; Faces
 ;;; --------------------------------------------------------
@@ -220,8 +223,8 @@ FACE should be a... face."
 ;;; Hooks
 ;;; --------------------------------------------------------
 
-(add-hook 'emms-playlist-source-inserted-hook
-	  'emms-playlist-mode-overlay-unselected)
+;; (add-hook 'emms-playlist-source-inserted-hook
+;; 	  'emms-playlist-mode-overlay-unselected)
 
 (add-hook 'emms-playlist-selection-changed-hook
 	  'emms-playlist-mode-overlay-selected)
@@ -277,6 +280,24 @@ of the saved playlist inside."
   "Saves the active playlist buffer to a file."
   (interactive "FFile to save playlist buffer as: ")
   (emms-playlist-mode-save-buffer emms-playlist-buffer filename))
+
+;;; --------------------------------------------------------
+;;; Overshadowing functions
+;;; --------------------------------------------------------
+
+(defun emms-playlist-mode-insert-track-function (track)
+  "Insert the description of TRACK at point."
+  (emms-playlist-ensure-playlist-buffer)
+  (insert (propertize (emms-track-description track)
+                      'emms-track track))
+  (emms-playlist-mode-overlay-track (car (emms-property-region (point-at-bol) 
+							       'emms-track))
+				    (cdr (emms-property-region (point-at-bol) 
+							       'emms-track))
+				    'emms-playlist-track-face
+				    1)
+  (insert "\n"))
+	  
 
 ;;; --------------------------------------------------------
 ;;; Entry
