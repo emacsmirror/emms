@@ -72,6 +72,8 @@
     (define-key emms-playlist-mode-map (kbd "p") 'emms-previous)
     (define-key emms-playlist-mode-map (kbd "C-x C-s") 'emms-playlist-save-buffer)
     (define-key emms-playlist-mode-map (kbd "C-k") 'emms-playlist-mode-kill-track)
+    (define-key emms-playlist-mode-map (kbd "C-y") 
+      #'(lambda () (interactive) (emms-playlist-mode-insert-last-killed-track kill-ring)))
     (define-key emms-playlist-mode-map (kbd "d") 'emms-playlist-mode-kill-track)
     (define-key emms-playlist-mode-map (kbd "s") 'emms-stop)
     (define-key emms-playlist-mode-map (kbd "f") 'emms-show)
@@ -131,6 +133,17 @@ FUN should be a function."
     (emms-stop))
   (emms-start))
 
+(defun emms-playlist-mode-insert-last-killed-track (ring)
+  (if (null ring)
+      (error "No last killed track")
+    (let ((track nil))
+      (with-temp-buffer
+	(insert (car ring))
+	(setq track (get-text-property (point-min) 'emms-track)))
+      (if track
+	  (emms-playlist-insert-track track)
+	(emms-playlist-mode-insert-last-killed-track (cdr ring))))))
+
 ;; The logic for killing tracks in an interactive manner is
 ;; suprisingly annoying
 (defun emms-playlist-mode-kill-track ()
@@ -139,7 +152,7 @@ FUN should be a function."
   (let ((region (emms-property-region (point) 'emms-track))
 	(inhibit-read-only t))
     (cond ((not (emms-playlist-track-at))
-	   (kill-line 1))	     ; Purposfully kills only one line
+	   (kill-line 1))
 	  ((and (not (emms-playlist-mode-selected-at))
 		(emms-playlist-track-at))
 	   (kill-region (car region)
@@ -177,7 +190,7 @@ FACE should be a... face."
 
 (defun emms-playlist-mode-overlay-unselected ()
   ;; point-mix/max because -insert-source narrows the world
-  (emms-playlist-mode-overlay-track (point-min) 
+  (emms-playlist-mode-overlay-track (point-min)
 				    (point-max)
 				    'emms-playlist-track-face
 				    1))

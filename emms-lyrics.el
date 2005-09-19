@@ -168,7 +168,8 @@ To find FILE, will look up in current directory and `emms-lyrics-dir'."
 	emms-lyrics-pause-time nil
 	emms-lyrics-elapsed-time 0)
   (when (and emms-lyrics-display-p
-	     (let ((file (cdaddr (emms-playlist-selected-track))))
+	     emms-lyrics-alist
+	     (let ((file (cdaddr (emms-playlist-current-selected-track))))
 	       (emms-lyrics-read-file
 		(replace-regexp-in-string
 		 (file-name-extension file) "lrc" file))))
@@ -179,8 +180,7 @@ To find FILE, will look up in current directory and `emms-lyrics-dir'."
 (defun emms-lyrics-stop ()
   "Stop displaying lyrics."
   (interactive)
-  (when (and emms-lyrics-display-p
-	     emms-lyrics-alist)
+  (when (and emms-lyrics-alist)
     (cancel-function-timers 'emms-lyrics-display)
     (if (or (not emms-player-paused-p)
 	    emms-player-stopped-p)
