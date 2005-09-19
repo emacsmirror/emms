@@ -131,11 +131,21 @@ sorts before the second (see `sort')."
   "*A function to insert a track into the playlist buffer."
   :group 'emms
   :type 'function)
+(make-variable-buffer-local 'emms-playlist-insert-track-function)
+
+(defcustom emms-playlist-update-track-function 'emms-playlist-simple-update-track
+  "*A function to update the track at point.
+This is called when the track information changed. This also
+shouldn't assume that the track has been inserted before."
+  :group 'emms
+  :type 'function)
+(make-variable-buffer-local 'emms-playlist-insert-track-function)
 
 (defcustom emms-playlist-delete-track-function 'emms-playlist-simple-delete-track
   "*A function to delete the track at point in the playlist buffer."
   :group 'emms
   :type 'function)
+(make-variable-buffer-local 'emms-playlist-delete-track-function)
 
 (defcustom emms-playlist-source-inserted-hook nil
   "*Hook run when a source got inserted into the playlist.
@@ -433,8 +443,9 @@ This also disables any read-onliness of the current buffer."
 (defun emms-playlist-set-playlist-buffer (&optional buffer)
   "Set the current playlist buffer."
   (interactive "bNew playlist buffer: ")
-  (let ((buf (or (get-buffer buffer)
-                 (current-buffer))))
+  (let ((buf (if buffer
+                 (get-buffer buffer)
+               (current-buffer))))
     (with-current-buffer buf
       (emms-playlist-ensure-playlist-buffer))
     (setq emms-playlist-buffer buf)))
@@ -679,8 +690,13 @@ If no playlist exists, a new one is generated."
   "Insert TRACK at the current position into the playlist.
 This uses `emms-playlist-insert-track-function'."
   (emms-playlist-ensure-playlist-buffer)
-  (let ((inhibit-read-only t))
-    (funcall emms-playlist-insert-track-function track)))
+  (funcall emms-playlist-insert-track-function track))
+
+(defun emms-playlist-update-track ()
+  "Update TRACK at point.
+This uses `emms-playlist-update-track-function'."
+  (emms-playlist-ensure-playlist-buffer)
+  (funcall emms-playlist-update-track-function))
 
 (defun emms-playlist-insert-source (source &rest args)
   "Insert tracks from SOURCE, supplying ARGS as arguments."
@@ -721,9 +737,16 @@ This is supplying ARGS as arguments to the source."
 (defun emms-playlist-simple-insert-track (track)
   "Insert the description of TRACK at point."
   (emms-playlist-ensure-playlist-buffer)
-  (insert (propertize (emms-track-description track)
-                      'emms-track track)
-          "\n"))
+  (let ((inhibit-read-only t))
+    (insert (propertize (emms-track-description track)
+                        'emms-track track)
+            "\n")))
+
+(defun emms-playlist-simple-update-track ()
+  "Update the track at point.
+Since we don't do anything special with the track anyways, just
+ignore this."
+  nil)
 
 (defun emms-playlist-simple-delete-track ()
   "Delete the track at point."
