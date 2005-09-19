@@ -72,7 +72,7 @@
     (define-key emms-playlist-mode-map (kbd "p") 'emms-previous)
     (define-key emms-playlist-mode-map (kbd "C-x C-s") 'emms-playlist-mode-save-buffer)
     (define-key emms-playlist-mode-map (kbd "C-k") 'emms-playlist-mode-kill-track)
-    (define-key emms-playlist-mode-map (kbd "C-y") 'emms-playlist-mode-insert-last-killed)
+    (define-key emms-playlist-mode-map (kbd "C-y") 'emms-playlist-mode-yank)
     (define-key emms-playlist-mode-map (kbd "d") 'emms-playlist-mode-kill-track)
     (define-key emms-playlist-mode-map (kbd "s") 'emms-stop)
     (define-key emms-playlist-mode-map (kbd "f") 'emms-show)
@@ -133,15 +133,16 @@ FUN should be a function."
     (emms-stop))
   (emms-start))
 
-(defun emms-playlist-mode-insert-last-killed ()
+(defun emms-playlist-mode-yank ()
   (interactive)
   (let ((inhibit-read-only t)
 	(track nil))
     (with-temp-buffer
       (yank)
       (setq track (get-text-property (point-min) 'emms-track)))
-    (if track
-	(funcall emms-playlist-insert-track-function track)
+    (if track			   ; if -> cond when non-tracks arrive
+	(progn (funcall emms-playlist-insert-track-function track)
+	       (forward-line -1))
       (error "No playlist info to yank"))))
 
 ;; The logic for killing tracks in an interactive manner is
