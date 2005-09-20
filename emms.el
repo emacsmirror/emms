@@ -488,7 +488,6 @@ If no playlist exists, a new one is generated."
       (run-hooks 'emms-playlist-cleared-hook))
 
 ;;; Point movement within the playlist buffer.
-
 (defun emms-playlist-track-at (&optional pos)
   "Return the track at POS (point if not given), or nil if none."
   (emms-playlist-ensure-playlist-buffer)
@@ -733,6 +732,25 @@ This is supplying ARGS as arguments to the source."
            (setq donep t)))))
     tracks))
 
+(defun emms-playlist-track-updated (track)
+  "Update TRACK in all playlist buffers."
+  (mapc (lambda (buf)
+          (with-current-buffer buf
+            (when emms-playlist-buffer-p
+              (save-excursion
+                (let ((beg (point-min))
+                      (pos (text-property-any (point-min) (point-max)
+                                              'emms-track track)))
+                  (while pos
+                    (goto-char pos)
+                    (emms-playlist-update-track)
+                    (setq beg (1+ pos)
+                          pos (text-property-any beg (point-max)
+                                                 'emms-track
+                                                 track))))))))
+        (buffer-list))
+  t)
+
 ;;; Simple playlist buffer
 (defun emms-playlist-simple-insert-track (track)
   "Insert the description of TRACK at point."
@@ -972,7 +990,7 @@ See emms-source-file.el for some examples."
   "Insert the tracks from SOURCE in the current buffer."
   (if (not emms-playlist-buffer-p)
       (error "Not in an EMMS playlist buffer")
-    (apply 'emms-playlist-current-insert-source source args)))
+    (apply 'emms-playlist-insert-source source args)))
 
 ;;; User-defined playlists
 ;;; FIXME: Shuffle is bogus here! (because of narrowing)
