@@ -25,7 +25,7 @@
 
 ;;; Code:
 
-(defvar later-do-version "0.2 (2004-02-09)"
+(defvar later-do-version "0.2emms1 (2005-09-20)"
   "Version string of later-do.")
 
 (defgroup later-do nil
