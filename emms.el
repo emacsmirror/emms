@@ -270,7 +270,7 @@ This is a good function to put in `emms-player-finished-hook'."
   (interactive)
   (when emms-player-playing-p
     (emms-stop))
-  (emms-playlist-select-random)
+  (emms-playlist-current-select-random)
   (emms-start))
 
 (defun emms-pause ()
