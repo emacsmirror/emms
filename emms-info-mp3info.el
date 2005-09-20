@@ -49,7 +49,7 @@ external mp3info program"
   :type 'string
   :group 'emms-info-mp3info)
 
-(defcustom emms-info-mp3findo-arguments
+(defcustom emms-info-mp3find-arguments
   `("-p" ,(concat "info-artist=%a\\n"
                   "info-title=%t\\n"
                   "info-album=%l\\n"
@@ -72,7 +72,7 @@ This is a useful element for `emms-info-functions'."
                           emms-info-mp3info-program-name
                           nil t nil
                           (emms-track-name track)
-                          emms-info-mp3findo-arguments))
+                          emms-info-mp3find-arguments))
         (goto-char (point-min))
         (while (looking-at "^\\([^=]+\\)=\\(.*\\)$")
           (emms-track-set track
