@@ -75,9 +75,11 @@ This is a useful element for `emms-info-functions'."
                           emms-info-mp3find-arguments))
         (goto-char (point-min))
         (while (looking-at "^\\([^=]+\\)=\\(.*\\)$")
-          (emms-track-set track
-                          (intern (match-string 1))
-                          (match-string 2))
+          (let ((name (intern (match-string 1)))
+                (value (match-string 2)))
+            (when (> (length value)
+                     0)
+              (emms-track-set track name value)))
           (forward-line 1))))))
 
 (provide 'emms-info-mp3info)
