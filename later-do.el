@@ -64,9 +64,10 @@ empty."
     (setq later-do-timer (run-with-timer later-do-interval
                                          nil
                                          'later-do-timer))
-    (apply (caar later-do-list)
-           (cdar later-do-list))
-    (setq later-do-list (cdr later-do-list))))
+    (let ((fun (caar later-do-list))
+          (args (cdar later-do-list)))
+      (setq later-do-list (cdr later-do-list))
+      (apply fun args))))
 
 (provide 'later-do)
 ;;; later-do.el ends here
