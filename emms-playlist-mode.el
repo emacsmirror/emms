@@ -298,14 +298,16 @@ of the saved playlist inside."
 (defun emms-playlist-mode-update-track-function ()
   "Update the track display at point."
   (emms-playlist-ensure-playlist-buffer)
-  (let ((track-region (emms-property-region (point-at-bol)
-                                            'emms-track))
-        (track (get-text-property (point-at-bol)
-                                  'emms-track)))
-    (delete-region (car track-region)
-                   ;; 1+ For the \n
-                   (1+ (cdr track-region)))
-    (emms-playlist-mode-insert-track track)))
+  (let ((inhibit-read-only t))
+    (let ((track-region (emms-property-region (point-at-bol)
+                                              'emms-track))
+          (track (get-text-property (point-at-bol)
+                                    'emms-track)))
+      (save-excursion
+        (delete-region (car track-region)
+                       ;; 1+ For the \n
+                       (1+ (cdr track-region)))
+        (emms-playlist-mode-insert-track track)))))
 
 ;;; --------------------------------------------------------
 ;;; Entry
