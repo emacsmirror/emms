@@ -25,7 +25,7 @@
 
 ;;; Code:
 
-(defvar later-do-version "0.2emms1 (2005-09-20)"
+(defvar later-do-version "0.2emms2 (2005-09-20)"
   "Version string of later-do.")
 
 (defgroup later-do nil
@@ -61,13 +61,14 @@ sequence it was added."
 empty."
   (if (null later-do-list)
       (setq later-do-timer nil)
-    (setq later-do-timer (run-with-timer later-do-interval
-                                         nil
-                                         'later-do-timer))
     (let ((fun (caar later-do-list))
           (args (cdar later-do-list)))
       (setq later-do-list (cdr later-do-list))
-      (apply fun args))))
+      (unwind-protect
+          (apply fun args)
+        (setq later-do-timer (run-with-timer later-do-interval
+                                             nil
+                                             'later-do-timer))))))
 
 (provide 'later-do)
 ;;; later-do.el ends here
