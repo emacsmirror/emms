@@ -1,182 +1,101 @@
-;;; emms-info.el --- Info system for EMMS 
+;;; emms-info.el --- Retrieving track information
 
-;; Copyright (C) 2003  Free Software Foundation, Inc.
+;; Copyright (C) 2005  Jorgen Schaefer
 
-;; Author: Ulrik Jensen <terryp@daimi.au.dk>
-;; Keywords: 
+;; Author: Jorgen Schaefer <forcer@forcix.cx>
 
-;; This file is free software; you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation; either version 2, or (at your option)
-;; any later version.
+;; This program is free software; you can redistribute it and/or
+;; modify it under the terms of the GNU General Public License
+;; as published by the Free Software Foundation; either version 2
+;; of the License, or (at your option) any later version.
 
-;; This file is distributed in the hope that it will be useful,
+;; This program is distributed in the hope that it will be useful,
 ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;; GNU General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with GNU Emacs; see the file COPYING. If not, write to the
-;; Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
-;; Boston, MA 02110-1301 USA
+;; along with this program; if not, write to the Free Software
+;; Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+;; 02110-1301  USA
 
 ;;; Commentary:
 
-;; This file provides an interface for different methods of reading
-;; info about the files that EMMS is playing, and displaying it.
-
-;; To create a method for retrieving info about a file, you create an
-;; object like this:
-
-;; (define-emms-info-method emms-info-mp3info
-;;   :providep 'emms-info-mp3info-providep
-;;   :get 'emms-info-mp3info-get
-;;   :set 'emms-info-mp3info-set)
-
-;; Then you register it with emms-info, by adding it to
-;; `emms-info-methods-list'.
-
-;; (add-to-list 'emms-info-methods-list 'emms-info-ogg-comment)
+;; This EMMS module provides a way to add information for a track.
+;; This can use an ID3 or OGG comment like syntax.
 
 ;;; Code:
+
 (require 'emms)
+(require 'later-do)
 
-(eval-when-compile (require 'cl))
-
-(defvar emms-info-version "0.2 $Revision: 1.16 $"
-  "EMMS info version string.")
-;; $Id: emms-info.el,v 1.16 2005/08/12 17:59:30 xwl Exp $
-
-;; Customizations
 (defgroup emms-info nil
-  "*Info system for EMMS"
-  :prefix "emms-info-"
+  "*Track information. ID3, OGG, etc."
   :group 'emms)
 
-(defgroup emms-info-methods nil
-  "*Methods to get info for EMMS-info"
-  :group 'emms-info
-  :prefix "emms-info-")
+(defcustom emms-info-auto-update t
+  "*Non-nil when EMMS should update track information if the file changes.
+This will cause hard drive activity on track loading. If this is
+too annoying for you, set this variable to nil."
+  :type 'boolean
+  :group 'emms-info)
 
-(defcustom emms-info-methods-list nil
-  "List of info-methods. You need to set this."
-  :group 'emms-info
-  :type '(repeat function))
+(defcustom emms-info-asynchronously t
+  "*Non-nil when track information should be loaded asynchronously.
+This requires `later-do', which should come with EMMS."
+  :type 'boolean
+  :group 'emms-info)
 
-;; Caching
-(defcustom emms-info-cache t
-  "Boolean value, indicating whether or not to use a cache for
-info-structures."
-  :group 'emms-info
-  :type 'boolean)
+(defcustom emms-info-functions nil
+  "*Functions which add information to tracks.
+Each is called with a track as argument."
+  :type 'hook
+  :group 'emms-info)
 
-(defcustom emms-info-format '("%s - %s" (emms-info-artist emms-info-title))
-  "Format the info string.
-The first element of the list is a string with typical format
-instructions, the cdr is a list of functions that get called with
-the struct as argument."
-  :type '(list string (repeat sexp))
-  :group 'emms-pbi)
+(defvar emms-info-asynchronous-tracks 0
+  "Number of tracks we're waiting for to be done.")
 
-(defvar emms-info-cache-hash-table nil
-  "A hash-table storing the cached info.
+(defun emms-info-initialize-track (track)
+  "Initialize TRACK with emms-info information.
+This is a suitable value for `emms-track-initialize-functions'."
+  (if (not emms-info-asynchronously)
+      (emms-info-really-initialize-track track)
+    (setq emms-info-asynchronous-tracks (1+ emms-info-asynchronous-tracks))
+    (later-do 'emms-info-really-initialize-track track)))
 
-Uses tracks as keys and the emms-info structures as
-values.")
+(defun emms-info-really-initialize-track (track)
+  "Really initialize TRACK.
+Return t when the track got changed."
+  (let ((track-mtime (emms-track-get track 'info-mtime))
+        (file-mtime (when emms-info-auto-update
+                      (emms-info-track-file-mtime track))))
+    (when (or (not track-mtime)
+              (when emms-info-auto-update
+                (<= track-mtime
+                    file-mtime)))
+      (run-hook-with-args 'emms-info-functions
+                          track)
+      (emms-track-set track 'info-mtime file-mtime)
+      (emms-playlist-track-updated track)
+      (when emms-info-asynchronously
+        (setq emms-info-asynchronous-tracks (1- emms-info-asynchronous-tracks))
+        (when (zerop emms-info-asynchronous-tracks)
+          (message "EMMS: All track information loaded.")))
+      t)))
 
- ;; The structure for info about files:
-(defstruct emms-info title artist album note year genre file
-  playing-time playing-time-min playing-time-sec)
+(defun emms-info-track-file-mtime (track)
+  "Return the mtime of the file of TRACK, if any.
+Return zero otherwise."
+  (if (eq (emms-track-type track)
+          'file)
+      (nth 5 (file-attributes (emms-track-name track)))
+    0))
 
-;; Interface
-(defmacro define-emms-info-method (name &rest alist)
-  `(defun ,name (action)
-     (plist-get ',(mapcar (lambda (keyword)
-                            (if (not (keywordp keyword))
-                                (cadr keyword)
-                              (intern (substring (symbol-name keyword) 1))))
-                          alist)
-                action)))
+(defun emms-info-track-description (track)
+  "Return a description of the current track."
+  (format "%s - %s"
+          (emms-track-get track 'info-artist)
+          (emms-track-get track 'info-title)))
 
-;; Methods for the cache
-(defun emms-info-get-cached (track)
-  "Return cached info for the track TRACK, nil of no cache."
-  (if emms-info-cache-hash-table
-      (gethash track emms-info-cache-hash-table nil)
-    nil))
-
-(defun emms-info-set-cached (track info)
-  "Set cached info for TRACK to INFO"
-  (unless emms-info-cache-hash-table
-    ;; No hash-table yet, create one
-    (setq emms-info-cache-hash-table (make-hash-table :test 'equal)))
-  (puthash track info emms-info-cache-hash-table))
-
-;; Retrieve 
-(defun emms-info-method-for (track)
-  "Return an info-method suitable for TRACK."
-  (unless emms-info-methods-list 
-    (error "There are no info-methods defined at all. You should customize `emms-info-methods-alist'."))
-  ;; find an info-method capable of providing info for this file
-  (let ((curmethod emms-info-methods-list))
-    (while (and curmethod
-		(not (funcall (funcall (car curmethod) 'providep) track)))
-      (setq curmethod (cdr curmethod)))
-    (when curmethod
-      (car curmethod))))
-
-(defun emms-info-get (track &optional dont-use-cached)
-  "Return an emms-info structure representing the track TRACK.
-if DONT-USE-CACHED is non-nil, then always read from the file."
-  ;; extend with methods for caching
-  (let ((method (emms-info-method-for track))
-	(cached (emms-info-get-cached track)))
-    (if (or dont-use-cached (not emms-info-cache) (not cached))
-	;; read from the file
-	(when method
-	  (let ((readinfo (funcall (funcall method 'get) track)))
-	    (when emms-info-cache
-	      ;; save the cache
-	      (emms-info-set-cached track readinfo))
-	    ;; return the read version
-	    readinfo))
-      ;; else just use the cached
-      cached)))
-
-(defun emms-info-set (track info)
-  "Set the info of the file TRACK to the emms-info structure INFO."
-  (let ((method (emms-info-method-for track)))
-    (when method
-      (when emms-info-cache
-	(emms-info-set-cached track info))
-      (funcall (funcall method 'set) track info))))
-
-(defun emms-info-format-info (format struct)
-  "Take FORMAT and format it with STRUCT.
-For the formaz of FORMAT see `emms-info-format')"
-  (apply 'format (car format) 
-	 (mapcar (lambda (func) 
-		   (funcall func struct)) 
-		 (cadr format))))
-
-;; Functions suitable as values of
-;; `emms-playlist-get-file-name-function':
-
-(defun emms-info-file-info-song-artist (track)
-  "Returns a description of TRACK, build from it's comments.
-
-If `emms-info-methods-list' indicates how to retrieve special info
-about it, use this. Otherwise returns the name alone."
-  (if (not (and track (emms-track-name track)))
-      "Invalid track!"
-    (if (emms-info-method-for track)
-	;; read the info
-	(let ((info (emms-info-get track)))
-	  (if (and info (not (string= (emms-info-artist info) "")) (not (string= (emms-info-title info) "")))
-	      (concat (emms-info-artist info)  " - " (emms-info-title info))
-	    (file-name-sans-extension (file-name-nondirectory (emms-track-name track)))))
-      ;; we can't read info for this file, default to the name
-      (file-name-sans-extension (file-name-nondirectory (emms-track-name track))))))
-    
 (provide 'emms-info)
 ;;; emms-info.el ends here
