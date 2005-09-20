@@ -71,15 +71,15 @@ always work, unless you get very unlucky with a CVS-build."
       ;; must be default, advanced or cvs, include the playlist-mode and the info
       (require 'emms-info)
       (require 'emms-info-mp3info)
-      (setq emms-info-methods-list '(emms-info-mp3info))
+      (add-to-list 'emms-info-functions 'emms-info-mp3info)
 
       ;; ogg-info might fail!
       (ignore-errors
 	(require 'emms-info-ogg)
-	(add-to-list 'emms-info-methods-list 'emms-info-ogg-comment))
+	(add-to-list 'emms-info-functions 'emms-info-ogg-comment))
 
       ;; setup info
-      (setq emms-track-description-function 'emms-info-file-info-song-artist)
+      (setq emms-track-description-function 'emms-info-track-description)
 
       (unless (equal level 'default)	; advanced
 	;; + tageditor.
@@ -92,17 +92,7 @@ always work, unless you get very unlucky with a CVS-build."
           (emms-mode-line 1)
           (emms-mode-line-blank)
 
-	  ;; load emms-info-later-do, but ignore problems (since
-	  ;; later-do.el might not be available on this system)
-	  (ignore-errors
-	    (require 'emms-info-later-do)
-	    (emms-info-later-do-mode 1)
-	    (add-hook 'emms-info-later-do-read-info-functions
-		      (lambda (track)
-                        (when (get-buffer emms-pbi-playlist-buffer-name)
-                          (emms-pbi-entry-update-track track)))))
-
-	  ;; try using setnu
+          ;; try using setnu
 	  ;; (ignore-errors
 	  ;; 	    (require 'setnu)
 	  ;; 	    (add-hook 'emms-pbi-after-build-hook
