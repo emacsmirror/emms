@@ -429,7 +429,8 @@ about it, use this. Otherwise returns the name alone."
 (defun emms-stream-add-data-to-track (track)
   (emms-track-set track 'metadata emms-stream-last-stream))
 
-(setq emms-track-initialize-functions '(emms-stream-add-data-to-track))
+(add-to-list 'emms-track-initialize-functions
+             'emms-stream-add-data-to-track)
 
 ; (when (featurep 'emms-info)
 ;   (eval-when-compile (require 'emms-info)) ; appease byte-compiler
