@@ -2,7 +2,8 @@
 
 ;; Copyright (C) 2003  Free Software Foundation, Inc.
 
-;; Author: Ulrik Jensen <terryp@daimi.au.dk>
+;; Authors: Ulrik Jensen <terryp@daimi.au.dk>, Yoni Rabkin
+;; <yonirabkin@member.fsf.org> 
 ;; Keywords: ogg, emms, info
 
 ;; This file is free software; you can redistribute it and/or modify
@@ -48,17 +49,24 @@ ogg-comments.el"
   :group 'emms-info-methods
   :prefix "emms-info-ogg-")
 
-;; Doesn't implement set yet
-(define-emms-info-method emms-info-ogg-comment
-  :providep 'emms-info-ogg-comment-providep
-  :get 'emms-info-ogg-comment-get)
+(defcustom emms-info-ogginfo-program-name "ogginfo"
+  "*The name/path of the ogginfo tag program."
+  :type 'string
+  :group 'emms-info-ogginfo)
 
-(defun emms-info-ogg-comment-providep (track)
-  "Return non-nil if this info-method provides info for the track."
-  (if (and track (emms-track-name track)
-           (string-match "\\.ogg$" (emms-track-name track)))
-      t
-    nil))
+(defcustom emms-info-mp3find-arguments
+  `("-p" ,(concat "info-artist=%a\\n"
+                  "info-title=%t\\n"
+                  "info-album=%l\\n"
+                  "info-tracknum=%n\\n"
+                  "info-year=%y\\n"
+                  "info-genre=%g\\n"
+                  "info-note=%c\\n"
+                  "info-playing-time=%S\\n"))
+  "The argument to pass to `emms-info-mp3info-program-name'.
+This should be a list of info-flag=value lines."
+  :type '(repeat string)
+  :group 'emms-info-mp3info)
 
 (defun emms-info-ogg-get-comment (field info)
   (let ((comment (cadr (assoc field (cadr info)))))
@@ -66,9 +74,8 @@ ogg-comments.el"
         comment
       "")))
 
-
-(defun emms-info-ogg-comment-get (track)
-  "Retrieve an emms-info strucutre as an ogg-comment"
+(defun emms-info-ogg (track)
+  "Retrieve an emms-info structure as an ogg-comment"
   (let ((info (oggc-read-header (emms-track-name track)))
         (file (emms-track-get track 'name)))
     (with-temp-buffer
@@ -80,17 +87,17 @@ ogg-comments.el"
 	(setq ptime-total (+ (* minutes 60) seconds)
 	      ptime-min minutes
 	      ptime-sec seconds)))
-    
-    (make-emms-info :title (emms-info-ogg-get-comment "title" info)
-		    :artist (emms-info-ogg-get-comment "artist" info)
-		    :album (emms-info-ogg-get-comment "album" info)
-		    :note (emms-info-ogg-get-comment "comment" info)
-		    :year (emms-info-ogg-get-comment "date" info)
-		    :genre (emms-info-ogg-get-comment "genre" info)
-		    :playing-time ptime-total
-		    :playing-time-min ptime-min
-		    :playing-time-sec ptime-sec
-		    :file (emms-track-name track))))
+
+    (emms-track-set track 'info-title (emms-info-ogg-get-comment "title" info))
+    (emms-track-set track 'info-artist (emms-info-ogg-get-comment "artist" info))
+    (emms-track-set track 'info-album (emms-info-ogg-get-comment "album" info))
+    (emms-track-set track 'info-note (emms-info-ogg-get-comment "comment" info))
+    (emms-track-set track 'info-year (emms-info-ogg-get-comment "date" info))
+    (emms-track-set track 'info-genre (emms-info-ogg-get-comment "genre" info))
+    (emms-track-set track 'info-playing-time ptime-total)
+    (emms-track-set track 'info-playing-time-min ptime-min)
+    (emms-track-set track 'info-playing-time-sec ptime-sec)
+    (emms-track-set track 'info-file (emms-track-name track))))
 
 (provide 'emms-info-ogg)
 ;;; emms-info-ogg.el ends here

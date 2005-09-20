@@ -73,11 +73,9 @@ always work, unless you get very unlucky with a CVS-build."
       (add-to-list 'emms-track-initialize-functions 'emms-info-initialize-track)
       (require 'emms-info-mp3info)
       (add-to-list 'emms-info-functions 'emms-info-mp3info)
-
-      ;; ogg-info might fail!
-      ;; (ignore-errors
-      ;;  (require 'emms-info-ogg)
-      ;;  (add-to-list 'emms-info-functions 'emms-info-ogg-comment))
+      (ignore-errors
+	(require 'emms-info-ogg)
+	(add-to-list 'emms-info-functions 'emms-info-ogg))
 
       ;; setup info
       (setq emms-track-description-function 'emms-info-track-description)
