@@ -744,10 +744,12 @@ This is supplying ARGS as arguments to the source."
                   (while pos
                     (goto-char pos)
                     (emms-playlist-update-track)
-                    (setq beg (1+ pos)
-                          pos (text-property-any beg (point-max)
-                                                 'emms-track
-                                                 track))))))))
+                    (setq pos (text-property-any
+                               (next-single-property-change (point)
+                                                           'emms-track)
+                               (point-max)
+                               'emms-track
+                               track))))))))
         (buffer-list))
   t)
 
