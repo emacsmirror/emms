@@ -1,9 +1,10 @@
 ;;; emms-info-ogg.el --- ogg-comment.el info-interface for EMMS
 
-;; Copyright (C) 2003  Free Software Foundation, Inc.
+;; Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
 
-;; Authors: Ulrik Jensen <terryp@daimi.au.dk>, Yoni Rabkin
-;; <yonirabkin@member.fsf.org> 
+;; Authors: Yoni Rabkin <yonirabkin@member.fsf.org>, Ulrik Jensen
+;; <terryp@daimi.au.dk>
+
 ;; Keywords: ogg, emms, info
 
 ;; This file is free software; you can redistribute it and/or modify
@@ -29,7 +30,7 @@
 ;; To activate, put something like this in your ~/.emacs:
 
 ;; (require 'emms-info-ogg)
-;; (add-to-list 'emms-info-methods-list 'emms-info-ogg-comment)
+;; (add-to-list 'emms-info-methods-list 'emms-info-ogg)
 
 ;; You'll of course need to also have a player if you want to actually
 ;; play the files.
@@ -53,20 +54,6 @@ ogg-comments.el"
   "*The name/path of the ogginfo tag program."
   :type 'string
   :group 'emms-info-ogginfo)
-
-(defcustom emms-info-mp3find-arguments
-  `("-p" ,(concat "info-artist=%a\\n"
-                  "info-title=%t\\n"
-                  "info-album=%l\\n"
-                  "info-tracknum=%n\\n"
-                  "info-year=%y\\n"
-                  "info-genre=%g\\n"
-                  "info-note=%c\\n"
-                  "info-playing-time=%S\\n"))
-  "The argument to pass to `emms-info-mp3info-program-name'.
-This should be a list of info-flag=value lines."
-  :type '(repeat string)
-  :group 'emms-info-mp3info)
 
 (defun emms-info-ogg-get-comment (field info)
   (let ((comment (cadr (assoc field (cadr info)))))
