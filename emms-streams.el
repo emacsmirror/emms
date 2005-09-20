@@ -379,9 +379,9 @@ Don't forget to save your modifications !"
     (message "Default action is now play")))
 
 ;; info part
-(define-emms-info-method emms-info-url
-   :providep 'emms-info-url-providep
-   :get 'emms-info-url-get)
+; (define-emms-info-method emms-info-url
+;    :providep 'emms-info-url-providep
+;    :get 'emms-info-url-get)
 ;;   :set 'emms-info-url-set)
 
 ;; A way to get the last element.  it is either the only one, or the
@@ -396,20 +396,20 @@ Don't forget to save your modifications !"
       t
     nil))
 
-(defun emms-info-url-get (track)
-  (make-emms-info
-   :title (emms-stream-url (emms-track-get track 'metadata))
-   :artist (emms-stream-name (emms-track-get track 'metadata))
-   :album " "
-   :note " "
-   :year " "
-   :genre " "
-   :file (emms-stream-url (emms-track-get track 'metadata))))
+; (defun emms-info-url-get (track)
+;   (make-emms-info
+;    :title (emms-stream-url (emms-track-get track 'metadata))
+;    :artist (emms-stream-name (emms-track-get track 'metadata))
+;    :album " "
+;    :note " "
+;    :year " "
+;    :genre " "
+;    :file (emms-stream-url (emms-track-get track 'metadata))))
 
 ;; Then you register it with emms-info, by adding it to
 ;; `emms-info-methods-list'.
 
-(add-to-list 'emms-info-methods-list 'emms-info-url)
+; (add-to-list 'emms-info-methods-list 'emms-info-url)
 
 (defun emms-info-file-info-song-artist (track)
   "Returns a description of TRACK, build from its comments.
@@ -431,16 +431,16 @@ about it, use this. Otherwise returns the name alone."
 
 (setq emms-track-initialize-functions '(emms-stream-add-data-to-track))
 
-(when (featurep 'emms-info)
-  (eval-when-compile (require 'emms-info)) ; appease byte-compiler
-  (add-to-list 'emms-info-methods-list 'emms-info-streamlist)
-  (defun emms-info-streamlist-providep (track)
-    (if (eq (emms-track-type track) 'streamlist)
-        t
-      nil))
-  (define-emms-info-method emms-info-streamlist  ;; FIXME-PLS ?
-    :providep 'emms-info-streamlist-providep ;; FIXME-PLS ?
-    :get 'emms-info-url-get))
+; (when (featurep 'emms-info)
+;   (eval-when-compile (require 'emms-info)) ; appease byte-compiler
+;   (add-to-list 'emms-info-methods-list 'emms-info-streamlist)
+;   (defun emms-info-streamlist-providep (track)
+;     (if (eq (emms-track-type track) 'streamlist)
+;         t
+;       nil))
+;   (define-emms-info-method emms-info-streamlist  ;; FIXME-PLS ?
+;     :providep 'emms-info-streamlist-providep ;; FIXME-PLS ?
+;     :get 'emms-info-url-get))
 
 (provide 'emms-streams)
 ;;; emms-streams.el ends here
