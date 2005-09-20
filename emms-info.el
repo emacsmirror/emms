@@ -93,9 +93,11 @@ Return zero otherwise."
 
 (defun emms-info-track-description (track)
   "Return a description of the current track."
-  (format "%s - %s"
-          (emms-track-get track 'info-artist)
-          (emms-track-get track 'info-title)))
+  (let ((artist (emms-track-get track 'info-artist))
+        (title (emms-track-get track 'info-title)))
+    (if (and artist title)
+        (format "%s - %s" artist title)
+      (emms-track-simple-description track))))
 
 (provide 'emms-info)
 ;;; emms-info.el ends here
