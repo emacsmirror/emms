@@ -1,13 +1,11 @@
 ;;; emms-scores.el --- Scoring system for mp3player
-;; Author & Maintainer: Jean-Philippe Theberge (jphiltheberge@videotron.ca)
-;; version :
-(defconst emms-scores-version "1.92 $Revision: 1.4 $")
-;; $Id: emms-score.el,v 1.4 2004/02/17 09:01:49 kanaldrache Exp $
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Copyright (c) 1/me think he smoke too much marijuana in it's yong years998 - 1999 Free Software Foundation, Inc.
-;;
-;; This file is not part of GNU Emacs. :-(
-;;
+
+;; Copyright (C) 2003, 2004, 2005
+
+;; Authors: Jean-Philippe Theberge <jphiltheberge@videotron.ca>, Yoni
+;;          Rabkin <yonirabkin@member.fsf.org>
+;; Keywords: emms, mp3, mpeg, multimedia
+
 ;; This file is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
 ;; the Free Software Foundation; either version 2, or (at your option)
@@ -17,9 +15,9 @@
 ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;; GNU General Public License for more details.
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
+
+;;; Commentary:
+
 ;; NOTE: This is experimental stuff - comments welcome!  There
 ;; shouldn't worky anything in that file... scores aren't saved, they
 ;; even don't have any consequence on playing order and there's just
@@ -36,7 +34,7 @@
 ;; You can change your mood with M-x emms-score-change-mood.
 ;;
 ;; Every music file start with a default score of 0 the command
-;; emms-score-up-current and emms-score-down-current modify the
+;; emms-score-up-playing and emms-score-down-playing modify the
 ;; score of the file you are curently listening by 1 In addition,
 ;; skipping a file (with emms-skip) automaticaly score the file
 ;; down.
@@ -54,10 +52,6 @@
 ;; emms-score-be-more-tolerant
 
 ;;; Code:
-
-(defvar emms-score-version "0.2 $Revision: 1.4 $"
-  "EMMS score version string.")
-;; $Id: emms-score.el,v 1.4 2004/02/17 09:01:49 kanaldrache Exp $
 
 (defvar emms-scores-list nil)
 (defvar emms-score-current-mood 'default)
@@ -79,7 +73,6 @@ The score hash is automatically saved."
   (emms-score-save-hash)
   (setq emms-score-current-mood (intern (downcase mood))))
 
-
 (defun emms-score-save-hash ()
   "Save score hash in `emms-score-file'."
   (interactive)
@@ -87,11 +80,11 @@ The score hash is automatically saved."
     (make-directory (file-name-directory emms-score-file)))
   (with-temp-file emms-score-file
     (let ((standard-output (current-buffer)))
-	  (insert "(")
-	  (maphash (lambda (key value)
-		     (prin1 (cons key value)))
-		   emms-score-hash)
-	  (insert ")"))))
+      (insert "(")
+      (maphash (lambda (key value)
+		 (prin1 (cons key value)))
+	       emms-score-hash)
+      (insert ")"))))
 
 (defun emms-score-load-hash ()
   "Load score hash from `emms-score-file'."
@@ -113,25 +106,26 @@ The score hash is automatically saved."
 	     (plist-put sp emms-score-current-mood (+ sc score)) 
 	     emms-score-hash)
     (message "New score is %s" (+ score sc))))
-  
-(defun emms-score-up-current ()
-  (interactive)
-  (emms-score-change-score 1 (emms-playlist-current)))
 
-(defun emms-score-down-current ()
+(defun emms-score-up-playing ()
   (interactive)
-  (emms-score-change-score -1 (emms-playlist-current)))
+  (if emms-player-playing-p
+      (emms-score-change-score 1 (emms-playlist-current-selected-track))
+    (error "No track currently playing")))
+
+(defun emms-score-down-playing ()
+  (interactive)
+  (if emms-player-playing-p
+      (emms-score-change-score -1 (emms-playlist-current-selected-track))
+    (error "No track currently playing")))
 
 (defun emms-score-up-file-on-line ()
   (interactive)
-  (let ((idx (1- (count-lines (point-min) (point-at-eol)))))
-    (emms-score-change-score 1 (emms-track-name (emms-playlist-get-track idx)))))
-	
+  (emms-score-change-score 1 (emms-playlist-current-selected-track)))
+
 (defun emms-score-down-file-on-line ()
   (interactive)
-  (let ((idx (1- (count-lines (point-min) (point-at-eol)))))
-    (emms-score-change-score -1 (emms-track-name (emms-playlist-get-track idx)))))
-	
+  (emms-score-change-score -1 (emms-playlist-current-selected-track)))
 
 (defun emms-score (arg)
   "Turn on emms-score if prefix argument ARG is a positive integer,
@@ -154,7 +148,7 @@ This is a suitable function to put in `emms-player-stopped-hook'."
   (when emms-player-playing-p
     (error "A track is already playing."))  
   (if (emms-playlist-next) 
-      (if (emms-score-check-score (emms-playlist-current))
+      (if (emms-score-check-score (emms-playlist-current-selected-track))
 	  (emms-start)
 	(emms-score-next-noerror))
     (message "No track in playlist that matches your score anymore")))

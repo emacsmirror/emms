@@ -44,16 +44,11 @@
   "EMMS info ogg version string.")
 ;; $Id: emms-info-ogg.el,v 1.14 2005/07/09 11:56:00 forcer Exp $
 
-(defgroup emms-info-ogg-comments nil
+(defgroup emms-info-ogg nil
   "An EMMS-info method for getting/setting ogg-comments, using
 ogg-comments.el"
   :group 'emms-info-methods
   :prefix "emms-info-ogg-")
-
-(defcustom emms-info-ogginfo-program-name "ogginfo"
-  "*The name/path of the ogginfo tag program."
-  :type 'string
-  :group 'emms-info-ogginfo)
 
 (defun emms-info-ogg-get-comment (field info)
   (let ((comment (cadr (assoc field (cadr info)))))
@@ -63,28 +58,30 @@ ogg-comments.el"
 
 (defun emms-info-ogg (track)
   "Retrieve an emms-info structure as an ogg-comment"
-  (let ((info (oggc-read-header (emms-track-name track)))
-        (file (emms-track-get track 'name)))
-    (with-temp-buffer
-      (call-process "ogginfo" nil t nil file)
-      (goto-char (point-min))
-      (re-search-forward "Playback length: \\([0-9]*\\)m:\\([0-9]*\\)")
-      (let ((minutes (string-to-int (match-string 1)))
-	    (seconds (string-to-int (match-string 2))))
-	(setq ptime-total (+ (* minutes 60) seconds)
-	      ptime-min minutes
-	      ptime-sec seconds)))
+  (when (and (eq 'file (emms-track-type track))
+             (string-match "\\.[Oo][Gg][Gg]\\'" (emms-track-name track)))
+    (let ((info (oggc-read-header (emms-track-name track)))
+	  (file (emms-track-get track 'name)))
+      (with-temp-buffer
+	(call-process "ogginfo" nil t nil file)
+	(goto-char (point-min))
+	(re-search-forward "Playback length: \\([0-9]*\\)m:\\([0-9]*\\)")
+	(let ((minutes (string-to-int (match-string 1)))
+	      (seconds (string-to-int (match-string 2))))
+	  (setq ptime-total (+ (* minutes 60) seconds)
+		ptime-min minutes
+		ptime-sec seconds)))
 
-    (emms-track-set track 'info-title (emms-info-ogg-get-comment "title" info))
-    (emms-track-set track 'info-artist (emms-info-ogg-get-comment "artist" info))
-    (emms-track-set track 'info-album (emms-info-ogg-get-comment "album" info))
-    (emms-track-set track 'info-note (emms-info-ogg-get-comment "comment" info))
-    (emms-track-set track 'info-year (emms-info-ogg-get-comment "date" info))
-    (emms-track-set track 'info-genre (emms-info-ogg-get-comment "genre" info))
-    (emms-track-set track 'info-playing-time ptime-total)
-    (emms-track-set track 'info-playing-time-min ptime-min)
-    (emms-track-set track 'info-playing-time-sec ptime-sec)
-    (emms-track-set track 'info-file (emms-track-name track))))
+      (emms-track-set track 'info-title (emms-info-ogg-get-comment "title" info))
+      (emms-track-set track 'info-artist (emms-info-ogg-get-comment "artist" info))
+      (emms-track-set track 'info-album (emms-info-ogg-get-comment "album" info))
+      (emms-track-set track 'info-note (emms-info-ogg-get-comment "comment" info))
+      (emms-track-set track 'info-year (emms-info-ogg-get-comment "date" info))
+      (emms-track-set track 'info-genre (emms-info-ogg-get-comment "genre" info))
+      (emms-track-set track 'info-playing-time ptime-total)
+      (emms-track-set track 'info-playing-time-min ptime-min)
+      (emms-track-set track 'info-playing-time-sec ptime-sec)
+      (emms-track-set track 'info-file (emms-track-name track)))))
 
 (provide 'emms-info-ogg)
 ;;; emms-info-ogg.el ends here
