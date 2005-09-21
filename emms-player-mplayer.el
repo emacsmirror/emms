@@ -44,6 +44,11 @@
 		 'pause
 		 'emms-player-mplayer-pause)
 
+;;; Pause is also resume for mplayer
+(emms-player-set emms-player-mplayer
+                 'resume
+                 nil)
+
 (emms-player-set emms-player-mplayer
 		 'seek
 		 'emms-player-mplayer-seek)
