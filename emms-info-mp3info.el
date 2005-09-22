@@ -80,7 +80,11 @@ This is a useful element for `emms-info-functions'."
                 (value (match-string 2)))
             (when (> (length value)
                      0)
-              (emms-track-set track name value)))
+              (emms-track-set track
+                              name
+                              (if (eq name 'info-playing-time)
+                                  (string-to-number value)
+                                value))))
           (forward-line 1))))))
 
 (provide 'emms-info-mp3info)
