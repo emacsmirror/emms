@@ -102,10 +102,9 @@ e.g., display 02:37 instead of 02:37/05:49.")
   (let* ((min (/ emms-playing-time 60))
 	 (sec (% emms-playing-time 60))
 	 (total-playing-time
-	  (or (string-to-int
-	       (emms-track-get
-		(emms-playlist-current-selected-track)
-		'info-playing-time))
+	  (or (emms-track-get
+	       (emms-playlist-current-selected-track)
+	       'info-playing-time)
 	      0))
 	 (total-min-only (/ total-playing-time 60))
 	 (total-sec-only (% total-playing-time 60)))
