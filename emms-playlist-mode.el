@@ -345,7 +345,8 @@ of the saved playlist inside."
 
   (use-local-map emms-playlist-mode-map)
   (setq major-mode 'emms-playlist-mode
-	mode-name "Emms-Playlist")
+	mode-name "Emms-Playlist"
+        emms-playlist-buffer-p t)
 
   (setq emms-playlist-insert-track-function
         'emms-playlist-mode-insert-track)
