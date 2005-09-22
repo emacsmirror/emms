@@ -316,7 +316,8 @@ of the saved playlist inside."
 (defun emms-playlist-mode-go ()
   "Switch to the current emms-playlist buffer and use emms-playlist-mode."
   (interactive)
-  (if (null emms-playlist-buffer)
+  (if (or (null emms-playlist-buffer)
+          (not (buffer-live-p emms-playlist-buffer)))
       (error "No current Emms buffer")
     (switch-to-buffer emms-playlist-buffer)
     (when (and (not (eq major-mode 'emms-playlist-mode))
