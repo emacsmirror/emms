@@ -101,22 +101,22 @@ e.g., display 02:37 instead of 02:37/05:49.")
   (setq emms-playing-time (1+ emms-playing-time))
   (let* ((min (/ emms-playing-time 60))
 	 (sec (% emms-playing-time 60))
-	 ;; How to adapt `emms-info-format-info' here?
-	 (struct
-	  (emms-info-get (emms-playlist-selected-track)))
-	 (total-min-only
-	  (when struct (emms-info-playing-time-min struct)))
-	 (total-sec-only
-	  (when struct (emms-info-playing-time-sec struct))))
+	 (total-playing-time
+	  (or (string-to-int
+	       (emms-track-get
+		(emms-playlist-current-selected-track)
+		'info-playing-time))
+	      0))
+	 (total-min-only (/ total-playing-time 60))
+	 (total-sec-only (% total-playing-time 60)))
     (setq emms-playing-time-string
 	  (format
 	   emms-playing-time-display-format
 	   (replace-regexp-in-string
 	    " " "0"
 	    (if (or emms-playing-time-display-short-p
-		    ;; unable to get total time info
-		    (not total-min-only)
-		    (not total-sec-only))
+		    ;; unable to get total playing-time
+		    (eq total-playing-time 0))
 		(format "%2d:%2d" min sec)
 	      (format "%2d:%2d/%2s:%2s"
 		      min sec total-min-only total-sec-only)))))
