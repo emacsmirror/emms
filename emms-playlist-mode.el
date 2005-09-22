@@ -49,7 +49,7 @@
     (((type tty) (class mono))
      :inverse-video t)
     (t :background "Blue"))
-  "Basic face for highlighting tracks in a playlist buffer."
+  "Face for the tracks in a playlist buffer."
   :group 'emms-playlist-mode)
 
 (defface emms-playlist-selected-face
@@ -58,7 +58,7 @@
     (((type tty) (class mono))
      :inverse-video t)
     (t :background "blue3"))
-  "Basic face for highlighting the selected track."
+  "Face for highlighting the selected track."
   :group 'emms-playlist-mode)
 
 ;;; --------------------------------------------------------
@@ -216,21 +216,7 @@ FACE should be a... face."
 				      'emms-playlist-selected-face
 				      3))
   nil)
-
-;;; --------------------------------------------------------
-;;; Playlists
-;;; --------------------------------------------------------
-
-(defun emms-playlist-buffers ()
-  "Return a list of EMMS playlist buffers."
-  (let ((lis nil))
-    (mapc (lambda (buf)
-	    (with-current-buffer buf
-	      (when emms-playlist-buffer-p
-		(setq lis (cons buf lis)))))
-	  (buffer-list))
-    lis))
-
+		  
 ;;; --------------------------------------------------------
 ;;; Saving/Restoring
 ;;; --------------------------------------------------------
