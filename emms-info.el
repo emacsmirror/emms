@@ -24,6 +24,18 @@
 ;; This EMMS module provides a way to add information for a track.
 ;; This can use an ID3 or OGG comment like syntax.
 
+;; The code will add info symbols to the track. The following symbols
+;; are defined:
+
+;; info-artist - string naming the artist
+;; info-title - string naming the title of the song
+;; info-album - string naming the album
+;; info-tracknum - string(?) naming the track number
+;; info-year - string naming the year
+;; info-note - string of free-form entry
+;; info-genre - string naming the genre
+;; info-playing-time - number giving the seconds of playtime
+
 ;;; Code:
 
 (require 'emms)
