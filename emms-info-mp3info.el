@@ -44,6 +44,11 @@
 external mp3info program"
   :group 'emms-info)
 
+(defcustom emms-info-mp3info-coding-system 'latin-1
+  "*Coding system used in the output of mp3info."
+  :type 'coding-system
+  :group 'emms-info-mp3info)
+
 (defcustom emms-info-mp3info-program-name "mp3info"
   "*The name/path of the mp3info tag program."
   :type 'string
@@ -69,11 +74,13 @@ This is a useful element for `emms-info-functions'."
   (when (and (eq 'file (emms-track-type track))
              (string-match "\\.[Mm][Pp]3\\'" (emms-track-name track)))
     (with-temp-buffer
-      (when (zerop (apply 'call-process
-                          emms-info-mp3info-program-name
-                          nil t nil
-                          (emms-track-name track)
-                          emms-info-mp3find-arguments))
+      (when (zerop
+             (let ((coding-system-for-read emms-info-mp3info-coding-system))
+               (apply 'call-process
+                      emms-info-mp3info-program-name
+                      nil t nil
+                      (emms-track-name track)
+                      emms-info-mp3find-arguments)))
         (goto-char (point-min))
         (while (looking-at "^\\([^=]+\\)=\\(.*\\)$")
           (let ((name (intern (match-string 1)))
