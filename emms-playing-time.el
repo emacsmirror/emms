@@ -39,23 +39,35 @@
 (require 'emms-player-simple)
 
 ;;; Customizations
-(defvar emms-playing-time-display-p t
-  "Whether to display playing time on mode line or not.")
 
-(defvar emms-playing-time-display-short-p nil
-  "Only display elapsed time, don't display total playing time,
-e.g., display 02:37 instead of 02:37/05:49.")
+(defgroup emms-playing-time nil
+  "Playing-time module for EMMS."
+  :group 'emms)
 
-(defvar emms-playing-time-display-format " %s "
-  "String used for displaying playing time on mode-line.")
+(defcustom emms-playing-time-display-p t
+  "If non-nil, will diplay playing-time on mode-line."
+  :type 'boolean
+  :group 'emms-playing-time)
 
-;;; Variables
+(defcustom emms-playing-time-display-short-p nil
+  "If non-nil, only display elapsed time, don't display total
+playing time. e.g., display 02:37 instead of 02:37/05:49. You
+should enable `emms-playing-time-display-p' first, though."
+  :type 'boolean
+  :group 'emms-playing-time)
+
+(defcustom emms-playing-time-display-format " %s "
+  "Format used for displaying playing time."
+  :type 'string
+  :group 'emms-playing-time)
+
+;;; Emms playing time
+
 (defvar emms-playing-time 0
   "How long has EMMS run up to now.")
 
 (defvar emms-playing-time-string "")
 
-;;; Functions
 (defun emms-playing-time-start ()
   "Get ready for display playing time."
   (when emms-playing-time-display-p
