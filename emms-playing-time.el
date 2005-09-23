@@ -1,8 +1,8 @@
 ;;; emms-playing-time.el --- Display emms playing time on mode line
 
-;; Copyright (C) 2005 William XWL
+;; Copyright (C) 2005 William Xu
 
-;; Author: William XWL <william.xwl@gmail.com>
+;; Author: William Xu <william.xwl@gmail.com>
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -25,7 +25,10 @@
 
 ;; Put this file into your load-path and the following into your
 ;; ~/.emacs:
-;;   (require 'emms-playing-time)
+;;              (require 'emms-playing-time)
+;;
+;; Then either `M-x emms-playing-time-enable' or add
+;; (emms-playing-time-enable) in your .emacs to enable.
 
 ;;; Code:
 
@@ -44,11 +47,6 @@
   "Playing-time module for EMMS."
   :group 'emms)
 
-(defcustom emms-playing-time-display-p t
-  "If non-nil, will diplay playing-time on mode-line."
-  :type 'boolean
-  :group 'emms-playing-time)
-
 (defcustom emms-playing-time-display-short-p nil
   "If non-nil, only display elapsed time, don't display total
 playing time. e.g., display 02:37 instead of 02:37/05:49. You
@@ -63,6 +61,9 @@ should enable `emms-playing-time-display-p' first, though."
 
 ;;; Emms playing time
 
+(defvar emms-playing-time-display-p nil
+  "Whether emms playing time is enabled or not")
+
 (defvar emms-playing-time 0
   "How long has EMMS run up to now.")
 
@@ -70,43 +71,62 @@ should enable `emms-playing-time-display-p' first, though."
 
 (defun emms-playing-time-start ()
   "Get ready for display playing time."
-  (when emms-playing-time-display-p
-    (setq emms-playing-time 0)
-    (emms-playing-time-mode-line)
-    (run-at-time t 1 'emms-playing-time-display)))
-
-(add-hook 'emms-player-started-hook 'emms-playing-time-start)
+  (setq emms-playing-time 0)
+  (emms-playing-time-mode-line)
+  (run-at-time t 1 'emms-playing-time-display))
 
 (defun emms-playing-time-stop ()
   "Remove playing time on the mode line."
-  (when emms-playing-time-display-p
-    (if (or (not emms-player-paused-p)
-	    emms-player-stopped-p)
-	(progn
-	  (setq emms-playing-time-string "")
-	  (force-mode-line-update)))
-    (cancel-function-timers 'emms-playing-time-display)))
-
-(add-hook 'emms-player-stopped-hook 'emms-playing-time-stop)
-(add-hook 'emms-player-finished-hook 'emms-playing-time-stop)
+  (if (or (not emms-player-paused-p)
+	  emms-player-stopped-p)
+      (progn
+	(setq emms-playing-time-string "")
+	(force-mode-line-update)))
+  (cancel-function-timers 'emms-playing-time-display))
 
 (defun emms-playing-time-pause ()
   "Pause playing time."
-  (when emms-playing-time-display-p
-    (if emms-player-paused-p
-	(emms-playing-time-stop)
-      (run-at-time t 1 'emms-playing-time-display))))
-
-(add-hook 'emms-player-paused-hook 'emms-playing-time-pause)
+  (if emms-player-paused-p
+      (emms-playing-time-stop)
+    (run-at-time t 1 'emms-playing-time-display)))
 
 (defun emms-playing-time-seek (sec)
   "Seek forward or backward SEC playing time."
-  (when emms-playing-time-display-p
-    (setq emms-playing-time (+ emms-playing-time sec))
-    (when (< emms-playing-time 0)	; back to start point
-      (setq emms-playing-time 0))))
+  (setq emms-playing-time (+ emms-playing-time sec))
+  (when (< emms-playing-time 0)		; back to start point
+    (setq emms-playing-time 0)))
 
-(add-hook 'emms-player-seeked-functions 'emms-playing-time-seek)
+(defun emms-playing-time-enable ()
+  "Enable displaying emms playing time on mode line."
+  (interactive)
+  (setq emms-playing-time-display-p t)
+  (add-hook 'emms-player-started-hook     'emms-playing-time-start)
+  (add-hook 'emms-player-stopped-hook     'emms-playing-time-stop)
+  (add-hook 'emms-player-finished-hook    'emms-playing-time-stop)
+  (add-hook 'emms-player-paused-hook      'emms-playing-time-pause)
+  (add-hook 'emms-player-seeked-functions 'emms-playing-time-seek)
+  (message "Displaying emms playing time enabled."))
+
+(defun emms-playing-time-disable ()
+  "Disable displaying emms playing time on mode line."
+  (interactive)
+  (setq emms-playing-time-display-p nil)
+  (emms-playing-time-stop)
+  (remove-hook 'emms-player-started-hook     'emms-playing-time-start)
+  (remove-hook 'emms-player-stopped-hook     'emms-playing-time-stop)
+  (remove-hook 'emms-player-finished-hook    'emms-playing-time-stop)
+  (remove-hook 'emms-player-paused-hook      'emms-playing-time-pause)
+  (remove-hook 'emms-player-seeked-functions 'emms-playing-time-seek)
+  (message "Displaying emms playing time disabled."))
+
+(defun emms-playing-time-toggle ()
+  "Toggle displaying emms playing time on mode line."
+  (interactive)
+  (setq emms-playing-time-display-p
+	(not emms-playing-time-display-p))
+  (if emms-playing-time-display-p
+      (emms-playing-time-enable)
+    (emms-playing-time-disable)))
 
 (defun emms-playing-time-display ()
   "Display playing time on the mode line."
