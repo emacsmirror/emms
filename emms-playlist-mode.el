@@ -13,10 +13,7 @@
 ;;;
 ;;; Feature requests:
 ;;;
-;;; (1) Lukhas wants `emms-list-playlist-buffers' to list all the
-;;;     playlist buffers.
-;;;
-;;; (2) Arbitrary comment entry with color overlays.
+;;; (1) Arbitrary comment entry with color overlays.
 
 ;;; Code:
 
