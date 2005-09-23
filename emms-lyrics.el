@@ -168,8 +168,10 @@ To find FILE, will look up in current directory and `emms-lyrics-dir'."
 	emms-lyrics-pause-time nil
 	emms-lyrics-elapsed-time 0)
   (when (and emms-lyrics-display-p
-	     emms-lyrics-alist
-	     (let ((file (cdaddr (emms-playlist-current-selected-track))))
+	     (let ((file
+		    (emms-track-get
+		     (emms-playlist-current-selected-track)
+		     'name)))
 	       (emms-lyrics-read-file
 		(replace-regexp-in-string
 		 (file-name-extension file) "lrc" file))))
