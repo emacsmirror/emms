@@ -1,11 +1,8 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename emms.info
-@settitle The Emms Manual 0.1.23
+@settitle The Emms Manual
 @c %**end of header
-
-@c CVS info:
-@c $Revision: 1.25 $
 
 @c Maintainer comments:
 @c There is always work to do in a manual.
@@ -17,7 +14,7 @@
 
 @copying
  @copyright{} (c) 2004, 2005
-   Mario Domgoergen, Jorgen Schaefer, Yoni Rabkin
+   Yoni Rabkin, Jorgen Schaefer, Mario Domgoergen
 @quotation
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.1 or
@@ -42,10 +39,11 @@ Documentation License".
 
 @ifnottex
 @node Top, Copying, (dir), (dir)
-@top Emms Manual 0.1.21
+@top Emms Manual
 
 This is the Manual for the Emacs Multimedia System
-
+@c FIXME: This is the last thing that needs to be done after the
+@c manual is fixed.
 @menu
 * Copying::             The GNU General Public License gives you permission to
                             redistribute Emms on certain terms; it also explains
@@ -67,7 +65,6 @@ Emms basics
 Advanced Features
 * Info Tags::           More narrative track descriptions
 * The Playlist Buffer:: Interactive Playlist
-* Scoring::             Playing files based on their rating
 * Extending Emms::           How to define new players and modules
 * Streaming Audio::          Interface to streaming audio
 
@@ -93,8 +90,6 @@ Info Tags
 
 The Playlist Buffer
 * Playlist Buffer::     Browsing buffer known by other players
-* Playlist Popup::      Poping-up the playlist buffer
-* Playlist Manipulation::         Some playlist manipulation functions
 
 Extending Emms
 * New Player::  How to define a new player
@@ -138,10 +133,9 @@ When Emms finally has the sources in the playlist, it needs a player
 to play them. emms-player-simple.el defines a few useful players, and
 allows you to define your own in a very simple way.
 
-Emms is easy to customise by using the modules shipped with
-emms. @xref{Extending Emms}.
-
-Emms can also be customised by using `M-x customize'.
+The way Emms works is easy to customize with your own code or by using
+`M-x customize'. It is possible to extend Emms with the extra modules
+shipped with Emms. @xref{Extending Emms}.
 
 @node Installation
 @chapter Installation
@@ -207,7 +201,7 @@ complexity level of the user interface. Here's an example:
 @end lisp
 
 Here is a list of the interface complexity options:
-
+@c FIXME: what is actually included with emms-defaults for each level?
 @table @samp
 @item minimalistic
 Define the players and play directory but nothing more.
@@ -239,6 +233,11 @@ about players (these are defined in `emms-player-simple') and about
 sources for tracks (trivial file system based sources, such as this
 `emms-directory-tree', are defined in `emms-source-file').
 
+@c FIXME: variable setting examlpes (with a M-x
+@c cust... mention).
+
+@c FIXME: add link to ``simple players'' section with for an example of defining custome players.
+
 @lisp
 (require 'emms-player-simple)
 (require 'emms-source-file)
@@ -257,7 +256,7 @@ sources for tracks (trivial file system based sources, such as this
 Before you can use the interface commands, you need a playlist to
 start with. The following commands allow you to create or add to the
 current playlist from different sources:
-
+@c FIXME: go over all these first, then add new ones
 @defun emms-play-file file
 Play the single file @var{file}.
 @end defun
@@ -323,7 +322,7 @@ non-nil, insert the description into the current buffer instead.
 
 @node The Core File
 @chapter The Core File
-
+@c FIXME: go over all these first, then add new ones
 The file @file{emms.el} provides all basic functions for playing
 music, generating a playlist and defining player.
 
@@ -482,7 +481,7 @@ This should only be called by a player.
 @defopt emms-source-file-default-directory
 The default directory to look for media files.
 @end defopt
-
+@c FIXME: go over all these first, then add new ones
 @defun emms-play-find
 Play all files in @var{emms-source-file-default-directory} that match
 a specific regular expression.
@@ -546,7 +545,7 @@ filenames the player can play. COMMAND specifies the command line
 argument to call the player and ARGS are the command line
 arguments.
 @end defmac
-
+@c FIXME: add example section with a simple player definition.
 @defun emms-player-simple-stop
 Stop the currently playing process, if indeed there is one
 @end defun
@@ -597,7 +596,7 @@ There are already two predefined methods for retrieving info
 * Ogg Info::    Reading ogg info tags
 * MP3 Info::    Reading mp3 info tags
 @end menu
-
+@c FIXME: check that these still exist
 @defun emms-info-get-cached track
 Return cached info for the track @var{track}, nil of no cache.
 @end defun
@@ -639,6 +638,7 @@ Increase this if emacs becomes unresponsive when building the
 playlist.
 @end defopt
 
+@c FIXME: update this to emms-info-ogginfo.el
 @node Ogg Info
 @section Ogg Info
 The file @file{emms-info-ogg.el} provides an interface to retrieving
@@ -665,6 +665,7 @@ Return non-nil if this info-method provides info for the track.
 Retrieve an emms-info structure as an ogg-comment
 @end defun
 
+@c FIXME: update this for the latest version of mp3info
 @node MP3 Info
 @section MP3 Info
 
@@ -704,12 +705,12 @@ return an emms-info structure representing it.
 @chapter The Playlist Buffer
 @cindex playlist buffer
 
+@c FIXME: maybe a re-write?
 @menu
 * Playlist Buffer::     Browsing buffer known by other players
-* Playlist Popup::      Poping-up the playlist buffer
-* Playlist Manipulation::         Some playlist manipulation functions
 @end menu
 
+@c FIXME: update this with the new keymap.
 @node Playlist Buffer
 @section Playlist buffer
 
@@ -782,19 +783,7 @@ Export the current playlist as to FILENAME. See also:
 @var{emms-pbi-import-playlist}.
 @end table
 
-Prior versions of emms-pbi had their own linenumbering functions. But
-these functions were either error prone or very slow. And besides
-there was already a emacs mode that does exactly the same: setnu.el So
-we remove the linenumbering functions in favour of setnu. You can get
-setnu from @url{http://www.wonderworks.com/download/setnu.el}. To get
-line numbers just put the following code in your @file{~/.emacs} and put
-setnu.el somewhere on your loadpath:
-
-@lisp
-(require 'setnu)
-(add-hook 'emms-pbi-after-build-hook (lambda (setnu-mode 1)))
-@end lisp
-
+@c FIXME: update these as well.
 @defun emms-pbi
 Turn on emms-playlist if prefix argument ARG is a positive integer,
 off otherwise.
@@ -894,116 +883,96 @@ Hook that is called when the face of the current line changes.
 Hook that is called when the song is manually changed.
 @end defopt
 
-@node Playlist Popup
-@section Playlist Popup
+@c FIXME: what is the fate of these? I'll comment them out for the
+@c time being.
 
-The emms-pbi-popup module makes it easy to popup the playlist buffer
-and restore the old window configuration after choosing a new track.
+@c @node Playlist Manipulation
+@c @section Playlist Manipulation
 
-This module defines the following functions:
+@c The file @file{emms-pl-manip} offers various advanced playlist-manipulations functions for
+@c Emms.
 
-@table @code
-@findex emms-pbi-popup-playlist
-@item emms-pbi-popup-playlist
-Popup Playlist buffer
+@c Basically just load up this file, and check out some of these
+@c functions.
 
-After changing manually the track with @command{emms-pbi-play-current-line} the
-old window configuration is restored. It might be useful to bind that
-function to a global-key in your .emacs, for example:
+@c @defun vector-sort vec pred &optional beg end
+@c Sort a vector @var{vec}, using the predicate @var{pred}, and return the new
+@c vector. If @var{beg} and @var{end} are specified, sort only this subrange.
 
-@lisp
-(global-set-key (kbd "<f3>") 'emms-pbi-popup-playlist)
-@end lisp
+@c @var{pred} is called with 2 elements and should return true, if the first is
+@c less than the other.
+@c @end defun
+@c @defun emms-pl-manip-sort by pred
+@c Sorts the Emms-playlist, by applying @var{by} as a function to each
+@c filename in the list, and then comparing the results with @var{pred}.
+@c @end defun
+@c @defun emms-pl-manip-sort-by-filename
 
-@end table
+@c @end defun
+@c @defun emms-pl-manip-sort-by-name
 
-@node Playlist Manipulation
-@section Playlist Manipulation
+@c @end defun
+@c @defun emms-pl-manip-sort-by-info-artist
+@c Sort the playlist, using
+@c @end defun
+@c @defun emms-playlist-reshuffle
+@c Reshuffle the playlist.
+@c @end defun
 
-The file @file{emms-pl-manip} offers various advanced playlist-manipulations functions for
-Emms.
+@c @node Scoring
+@c @chapter Scoring
 
-Basically just load up this file, and check out some of these
-functions.
+@c Scoring allows you to assign scores to individual files and play media
+@c according to your mood.
 
-@defun vector-sort vec pred &optional beg end
-Sort a vector @var{vec}, using the predicate @var{pred}, and return the new
-vector. If @var{beg} and @var{end} are specified, sort only this subrange.
+@c When you load @file{emms-score}, you are set to a default mood 'emms-default-mood'
+@c A mood is a one word string describing how you feel (like "funny",
+@c "tired", "aggressive"...)  Each mood have is own set of scoring rules.
 
-@var{pred} is called with 2 elements and should return true, if the first is
-less than the other.
-@end defun
-@defun emms-pl-manip-sort by pred
-Sorts the Emms-playlist, by applying @var{by} as a function to each
-filename in the list, and then comparing the results with @var{pred}.
-@end defun
-@defun emms-pl-manip-sort-by-filename
+@c You can change your mood with M-x @command{emms-score-change-mood}
 
-@end defun
-@defun emms-pl-manip-sort-by-name
+@c Every music file start with a default score of 0 the command
+@c emms-score-up-current and emms-score-down-current modify the score of
+@c the file you are currently listening by 1 In addition, skipping a file
+@c (with emms-skip) automatically score the file down.
 
-@end defun
-@defun emms-pl-manip-sort-by-info-artist
-Sort the playlist, using
-@end defun
-@defun emms-playlist-reshuffle
-Reshuffle the playlist.
-@end defun
+@c With scoring on (this mean the variable @var{emms-use-scoring} is t), emms
+@c will compare the score of the file with your tolerance to decide if it
+@c is played or not.
 
-@node Scoring
-@chapter Scoring
+@c The default tolerance level is 0 (or the variable
+@c @var{emms-score-min-score}).  This mean files with a score of 0 or more will
+@c be played and files with a score of -1 or less will be skipped.
 
-Scoring allows you to assign scores to individual files and play media
-according to your mood.
+@c You can change the tolerance (by 1) with
+@c @command{emms-score-lower-tolerance} and @command{emms-score-be-more-tolerant}.
 
-When you load @file{emms-score}, you are set to a default mood 'emms-default-mood'
-A mood is a one word string describing how you feel (like "funny",
-"tired", "aggressive"...)  Each mood have is own set of scoring rules.
-
-You can change your mood with M-x @command{emms-score-change-mood}
-
-Every music file start with a default score of 0 the command
-emms-score-up-current and emms-score-down-current modify the score of
-the file you are currently listening by 1 In addition, skipping a file
-(with emms-skip) automatically score the file down.
-
-With scoring on (this mean the variable @var{emms-use-scoring} is t), emms
-will compare the score of the file with your tolerance to decide if it
-is played or not.
-
-The default tolerance level is 0 (or the variable
-@var{emms-score-min-score}).  This mean files with a score of 0 or more will
-be played and files with a score of -1 or less will be skipped.
-
-You can change the tolerance (by 1) with
-@command{emms-score-lower-tolerance} and @command{emms-score-be-more-tolerant}.
-
-@table @code
-@findex emms-score
-@item emms-score
-Activate scoring
-@findex emms-score-change-mood
-@item emms-score-change-mood
-Change current mood
-@findex emms-score-up-current
-@item emms-score-up-current
-Score up the current track
-@findex emms-score-down-current
-@item emms-score-down-current
-Score down the current track
-@findex emms-score-up-file-on-line
-@item emms-score-up-file-on-line
-Score up file on line
-@findex emms-score-down-file-on-line
-@item emms-score-down-file-on-line
-Score down file on line
-@findex emms-score-be-more-tolerant
-@item emms-score-be-more-tolerant
-Lower minimum score
-@findex emms-score-lower-tolerance
-@item emms-score-lower-tolerance
-Raise minimum score
-@end table
+@c @table @code
+@c @findex emms-score
+@c @item emms-score
+@c Activate scoring
+@c @findex emms-score-change-mood
+@c @item emms-score-change-mood
+@c Change current mood
+@c @findex emms-score-up-current
+@c @item emms-score-up-current
+@c Score up the current track
+@c @findex emms-score-down-current
+@c @item emms-score-down-current
+@c Score down the current track
+@c @findex emms-score-up-file-on-line
+@c @item emms-score-up-file-on-line
+@c Score up file on line
+@c @findex emms-score-down-file-on-line
+@c @item emms-score-down-file-on-line
+@c Score down file on line
+@c @findex emms-score-be-more-tolerant
+@c @item emms-score-be-more-tolerant
+@c Lower minimum score
+@c @findex emms-score-lower-tolerance
+@c @item emms-score-lower-tolerance
+@c Raise minimum score
+@c @end table
 
 @node Extending Emms
 @chapter Extending Emms
@@ -1014,7 +983,8 @@ Raise minimum score
 
 Emms introduces a high abstraction layer for playing music so you can
 customise a lot of things to morph Emms into @emph{your} media player.
-
+@c FIXME: Compress this into a smaller footprint, no need for so many
+@c submenus.
 @menu
 * New Player::  How to define a new player
 @end menu
