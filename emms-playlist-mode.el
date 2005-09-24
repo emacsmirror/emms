@@ -324,7 +324,9 @@ of the saved playlist inside."
 (defun emms-playlist-mode ()
   "A major mode for Emms playlists."
   (interactive)
-  (kill-all-local-variables)
+  (let ((val emms-playlist-buffer-p))
+    (kill-all-local-variables)
+    (setq emms-playlist-buffer-p val))
 
   (use-local-map emms-playlist-mode-map)
   (setq major-mode 'emms-playlist-mode
