@@ -462,7 +462,7 @@ If called interactively, the new buffer is also selected."
       (when (not (eq major-mode emms-playlist-default-major-mode))
         (funcall emms-playlist-default-major-mode))
       (setq emms-playlist-buffer-p t))
-    (when (called-interactively-p)
+    (when (interactive-p)
       (switch-to-buffer buf))
     buf))
 
