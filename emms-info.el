@@ -88,7 +88,7 @@ Return t when the track got changed."
       (run-hook-with-args 'emms-info-functions
                           track)
       (emms-track-set track 'info-mtime file-mtime)
-      (emms-playlist-track-updated track)
+      (emms-track-updated track)
       (when emms-info-asynchronously
         (setq emms-info-asynchronous-tracks (1- emms-info-asynchronous-tracks))
         (when (zerop emms-info-asynchronous-tracks)

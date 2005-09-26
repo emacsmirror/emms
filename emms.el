@@ -171,6 +171,12 @@ This can be used to initialize tracks with various info."
   :group 'emms
   :type 'hook)
 
+(defcustom emms-track-updated-functions nil
+  "*List of functions to call when a track changes data.
+These functions are passed the track as an argument."
+  :group 'emms
+  :type 'hook)
+
 (defcustom emms-player-started-hook nil
   "*Hook run when an EMMS player starts playing."
   :group 'emms
@@ -393,6 +399,11 @@ If there is no value, return DEFAULT (or nil, if not given)."
   "Return a description of TRACK.
 This function uses `emms-track-description-function'."
   (funcall emms-track-description-function track))
+
+(defun emms-track-updated (track)
+  "Information in TRACK got updated."
+  (emms-playlist-track-updated track)
+  (run-hook-with-args 'emms-track-updated-functions track))
 
 (defun emms-track-simple-description (track)
   "Simple function to give a user-readable description of a track.
