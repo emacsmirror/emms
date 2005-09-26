@@ -84,6 +84,8 @@ always work, unless you get very unlucky with a CVS-build."
 	;;(require 'emms-tageditor)
 	;;(emms-tageditor-pbi-mode 1)
 
+	(require 'emms-metaplaylist-mode)
+
 	(unless (equal level 'advanced)	; cvs
           ;; load the mode-line
           (require 'emms-mode-line)

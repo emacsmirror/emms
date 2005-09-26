@@ -119,18 +119,18 @@ more clean.
 The basic functionality of Emms consists of three parts: The core, the
 sources, and the players.
 
-The core resides in emms.el, and provides a simple playlist and the
+The core resides in @file{emms.el}, and provides a simple playlist and the
 basic functionality to use all the other features of Emms. It provides
 the common user commands and interfaces for other parts. It thinks in
 tracks, where a track is the combination of a type and a name - e.g.
 the track type 'file has a name that is the file name. Other track
 types are possible.
 
-To get to tracks, the core needs sources. The file emms-source-file.el
+To get to tracks, the core needs sources. The file @file{emms-source-file.el}
 provides simple sources to interact with the file system.
 
 When Emms finally has the sources in the playlist, it needs a player
-to play them. emms-player-simple.el defines a few useful players, and
+to play them. @file{emms-player-simple.el} defines a few useful players, and
 allows you to define your own in a very simple way.
 
 The way Emms works is easy to customize with your own code or by using
@@ -206,14 +206,15 @@ Here is a list of the interface complexity options:
 @item minimalistic
 Define the players and play directory but nothing more.
 @item tiny
-Features the pbi (playlist buffer interface).
+Features the above plus the playlist buffer mode. Use this for a
+minimalistic installation plus a user interface to the playlists.
 @item default
-Features info reading for MP3 and OGG files.
+Features the above plus the reading the info from tagged Mp3 and Ogg
+files.
 @item advanced
-Features the tageditor and playlist manipulation.
+@c FIXME: see above
 @item cvs
-Features playlist pop-up, pbi marking, mode-line, asynchronous loading
-of tags and (of course) the kitchen sink.
+@c FIXME: see above
 @end table
 
 Now your configuration is done.
@@ -233,11 +234,6 @@ about players (these are defined in `emms-player-simple') and about
 sources for tracks (trivial file system based sources, such as this
 `emms-directory-tree', are defined in `emms-source-file').
 
-@c FIXME: variable setting examlpes (with a M-x
-@c cust... mention).
-
-@c FIXME: add link to ``simple players'' section with for an example of defining custome players.
-
 @lisp
 (require 'emms-player-simple)
 (require 'emms-source-file)
@@ -245,7 +241,22 @@ sources for tracks (trivial file system based sources, such as this
                          emms-player-ogg123
                          emms-player-mplayer))
 @end lisp
-@noindent
+
+For a discussion on how to define additional players, see @xref{Simple
+Players}.
+
+Much of the behaviour of Emms can be changed by setting
+variables. Here is an example. The first `setq' turns off the
+asynchronous updating of info tags. The second sets the default name
+of the Emms playlist buffer.
+
+@lisp
+(setq emms-info-asynchronously nil)
+(setq emms-playlist-buffer-name "*Music*")
+@end lisp
+
+Another way to change Emms variables is to use the M-x
+@command{customize} mechanism provided by Emacs.
 
 @node Basic Commands
 @chapter Basic Commands
@@ -254,44 +265,57 @@ sources for tracks (trivial file system based sources, such as this
 @cindex commands, basic
 
 Before you can use the interface commands, you need a playlist to
-start with. The following commands allow you to create or add to the
-current playlist from different sources:
-@c FIXME: go over all these first, then add new ones
+start with. The following commands allow you to add to the current
+playlist from different sources:
+
+Note that the commands with the ``emms-add-'' prefix add the source to
+the playlist but do not start playing it immediately. Conversely, the
+commands with the ``emms-play-'' prefix begin playing the track
+immediately.
+
 @defun emms-play-file file
-Play the single file @var{file}.
+A source for a single file - either @var{file}, or queried from the
+user.
 @end defun
 @defun emms-add-file file
-Add the single file @var{file} to the playlist.
+A source for a single file - either @var{file}, or queried from
+the user.
 @end defun
 @defun emms-play-directory dir
-Play the single directory @var{dir}.
+A source for a whole directory tree - either @var{dir}, or queried
+from the user.
 @end defun
 @defun emms-add-directory dir
-Add the single directory @var{dir} to the playlist.
+A source for a whole directory tree - either @var{dir}, or queried
+from the user.
 @end defun
 @defun emms-play-directory-tree dir
-Play the entire directory tree of which @var{dir} is the top directory.
+A source for multiple directory trees - either @var{dir}, or the
+value of @var{emms-source-file-default-directory}.
 @end defun
 @defun emms-add-directory-tree dir
-Add the entire directory tree of which @var{dir} is the top directory.
+A source for multiple directory trees - either @var{dir}, or the
+value of @var{emms-source-file-default-directory}.
 @end defun
 @defun emms-play-url url
-Play streaming audio from @var{url}.
+A source for an @var{url} - for example, for streaming.
 @end defun
 @defun emms-add-url url
-Add the streaming audio station at @var{url} to the playlist.
+A source for an @var{url} - for example, for streaming.
 @end defun
 @defun emms-play-m3u-playlist playlist
-Play the M3U (XMMS) playlist from the file @var{playlist}.
+A source for the M3u playlist format from the file @var{playlist}.
 @end defun
 @defun emms-add-m3u-playlist playlist
-Add an M3U (XMMS) playlist to Emms from the file @var{playlist}.
+A source for the M3u playlist format from the file @var{playlist}.
 @end defun
 @defun emms-play-find dir regexp
-Search for files in @var{dir} matching @var{regexp} to play.
+A source that will find files in @var{dir} or
+@var{emms-source-file-default-directory} which match @var{regexp}.
 @end defun
 @defun emms-add-find dir regexp
-Search for files in @var{dir} matching @var{regexp} to add.
+A source that will find files in @var{dir} or
+@var{emms-source-file-default-directory} which match @var{regexp}.
 @end defun
 
 The basic functionality of Emms is just to play music without being
@@ -307,13 +331,18 @@ Start playing the current playlist
 Stop playing
 @end defun
 @defun emms-next
-Go to the next track in the playlist
+Start playing the next track in the playlist
 @end defun
 @defun emms-previous
-Go to the previous track in the playlist
+Start playing previous track in the playlist
 @end defun
 @defun emms-shuffle
-Shuffle the playlist
+Shuffle the current playlist. This uses
+@var{emms-playlist-shuffle-function}.
+@end defun
+@defun emms-sort
+Sort the current playlist. This uses
+@var{emms-playlist-sort-function}.
 @end defun
 @defun emms-show &optional insertp
 Describe the current Emms track in the minibuffer. If @var{insertp} is
@@ -324,15 +353,8 @@ non-nil, insert the description into the current buffer instead.
 @chapter The Core File
 @c FIXME: go over all these first, then add new ones
 The file @file{emms.el} provides all basic functions for playing
-music, generating a playlist and defining player.
+music, generating a playlist and defining players.
 
-@defopt emms-source-list
-A list of sources Emms can get tracks from.
-@lisp
-(setq emms-source-list '((emms-source-directory-tree \"~/media\")))
-@end lisp
-@noindent
-@end defopt
 @defopt emms-player-list
 A list of players Emms can use. You need to set this in order to play
 files. Unless you use @file{emms-player-simple} you have to define a

@@ -329,7 +329,7 @@ This uses `emms-playlist-shuffle-function'."
 
 (defun emms-sort ()
   "Sort the current playlist.
-This uses `emms-playlist-shuffle-function'."
+This uses `emms-playlist-sort-function'."
   (interactive)
   (with-current-emms-playlist
     (save-excursion
