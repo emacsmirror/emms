@@ -32,7 +32,7 @@
 ;; even know how to find any tracks to consider playing --- for this,
 ;; you need sources.
 
-;; A sample configuration is offered in emms-default.el, so you might
+;; A sample configuration is offered in emms-setup.el, so you might
 ;; just want to use that file.
 
 ;;; Code:

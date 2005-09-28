@@ -1,4 +1,4 @@
-;;; emms-default.el --- Setup script for EMMS
+;;; emms-setup.el --- Setup script for EMMS
 
 ;; Copyright (C) 2004  Free Software Foundation, Inc.
 
@@ -110,6 +110,5 @@ always work, unless you get very unlucky with a CVS-build."
 	  (require 'emms-playing-time))))))
 
 
-(provide 'emms-default)
-
-;;; emms-default.el ends here
+(provide 'emms-setup)
+;;; emms-setup.el ends here
