@@ -51,22 +51,22 @@ This is the Manual for the Emacs Multimedia System
 * The GNU FDL::         The license for this documentation.
 
 Starting out
-* Introduction::        Introduction to Emms
-* Installation::        How to install Emms on your System
-* Quick Setup::         Quick start in Emms
-* Configuration Example::     Bare bones configuration
+* Introduction::        Introduction to Emms.
+* Installation::        How to install Emms on your System.
+* Quick Setup::         Quick start in Emms.
+* Configuration Example::     Bare bones configuration.
 
 Emms basics
-* Basic Commands::      How to control Emms with ease
-* The Core File::       The inner core of Emms
-* Sources::             Sources for playlists-creation
-* Simple Players::      Some simple players
+* Basic Commands::      How to control Emms with ease.
+* The Core File::       The inner core of Emms.
+* Sources::             Sources for playlists-creation.
+* Simple Players::      Some simple players.
 
 Advanced Features
-* Info Tags::           More narrative track descriptions
-* The Playlist Buffer:: Interactive Playlist
-* Extending Emms::           How to define new players and modules
-* Streaming Audio::          Interface to streaming audio
+* Info Tags::           More narrative track descriptions.
+* The Playlist Buffer:: Interactive Playlist.
+* Extending Emms::           How to define new players and modules.
+* Streaming Audio::          Interface to streaming audio.
 
 Indices
 * Concept Index::
@@ -74,6 +74,8 @@ Indices
 * Variable Index::
 * Keybinding Index::
 
+@c FIXME: the detailed listing needs to be re-generated after the
+@c above is finished.
 @detailmenu
 --- The Detailed Node Listing ---
 
@@ -189,7 +191,7 @@ just need the following line,
 which installs the core of Emms.
 
 Now we need to do some configuration.
-
+@c FIXME: Renaming of emms-default? New user levels?
 The Emms module `emms-default' provides the function `emms-setup',
 which is a way to quickly configure your Emms. You can add any number
 of directories which contain media. The first argument is the
@@ -201,7 +203,6 @@ complexity level of the user interface. Here's an example:
 @end lisp
 
 Here is a list of the interface complexity options:
-@c FIXME: what is actually included with emms-defaults for each level?
 @table @samp
 @item minimalistic
 Define the players and play directory but nothing more.
@@ -211,10 +212,6 @@ minimalistic installation plus a user interface to the playlists.
 @item default
 Features the above plus the reading the info from tagged Mp3 and Ogg
 files.
-@item advanced
-@c FIXME: see above
-@item cvs
-@c FIXME: see above
 @end table
 
 Now your configuration is done.
@@ -227,9 +224,9 @@ The (optional) directory is used for
 
 @cindex Configuration Example
 
-The following code fragment provides a minimal EMMS setup without
+The following code fragment provides a minimal Emms setup without
 using the layer of `emms-default'. It can maybe be used to better
-understand the internals of EMMS. You can see how EMMS needs to know
+understand the internals of Emms. You can see how Emms needs to know
 about players (these are defined in `emms-player-simple') and about
 sources for tracks (trivial file system based sources, such as this
 `emms-directory-tree', are defined in `emms-source-file').
@@ -346,60 +343,118 @@ Sort the current playlist. This uses
 @end defun
 @defun emms-show &optional insertp
 Describe the current Emms track in the minibuffer. If @var{insertp} is
-non-nil, insert the description into the current buffer instead.
+non-nil, insert the description into the current buffer instead. This
+function uses @var{emms-show-format} to format the current track.
 @end defun
 
 @node The Core File
 @chapter The Core File
-@c FIXME: go over all these first, then add new ones
-The file @file{emms.el} provides all basic functions for playing
-music, generating a playlist and defining players.
+@c FIXME: go over all these first, then add new ones. Also divide
+@c these into subsections to keep the overall size down.
+The core file @file{emms.el} provides the all basic functions for
+playing music, generating playlists and defining players.
+
+@menu
+* User Variables::     Variables for the user to tweak.
+* Hooks::              Hooks for important Emms functions.
+* Core Functions::     Providing the basic functionality of Emms.
+@end menu
+
+@node User Variables
+@section User Variables
+The core file defines a number of user variables.
 
 @defopt emms-player-list
-A list of players Emms can use. You need to set this in order to play
-files. Unless you use @file{emms-player-simple} you have to define a
-player with @command{emms-define-player} first.
+A list of players Emms can use. You need to set this in order to use
+Emms to play media.
 @end defopt
 @defopt emms-show-format
-The format to use for @command{emms-show}. The only argument %s is the
-string returned by @command{emms-track-description}
+The format to use for @command{emms-show}. Any "%s" is replaced by
+what @var{emms-track-description-function} returns for the currently
+playing track.
 @end defopt
 @defopt emms-repeat-playlist
-Non-nil for repeating the playlist after playing the last track.
+Non-nil if the Emms playlist should automatically repeat the playlist.
+If nil, playback will stop when the last track finishes playing.
 @end defopt
 @defopt emms-track-description-function
-A function to be called to give a nice, user-friendly description of
-the track passed to it as an argument.
+Function for describing an Emms track in a user-friendly way.
 @end defopt
 @defopt emms-sort-lessp-function
 A function that compares two tracks, and returns non-nil if the first
-track should be sorted before the second (see `sort').
+track should be sorted before the second (see also @code{sort}).
 @end defopt
-@defopt emms-playlist-changed-hook
-A hook run when the playlist of Emms has changed.
-@end defopt
-@defopt emms-playlist-current-changed-hook
-A hook run when the current track in the playlist of Emms has
-changed.
-@end defopt
+
+@node Hooks
+@section Hooks
+The core file provides hook variables for the basic functionality of
+Emms.
+
 @defopt emms-player-started-hook
 A hook run when an Emms player started playing.
 @end defopt
 @defopt emms-player-stopped-hook
-A hook run when an Emms player stopped playing.
+A hook run when an Emms player stopped playing. See also
+@var{emms-player-finished-hook}.
+@end defopt
+@defopt emms-playlist-source-inserted-hook
+Hook run when a source got inserted into the playlist. The buffer is
+narrowed to the new tracks.
+@end defopt
+@defopt emms-playlist-selection-changed-hook
+Hook run after another track is selected in the Emms playlist.
+@end defopt
+@defopt emms-playlist-cleared-hook
+Hook run after the current Emms playlist is cleared. This happens both
+when the playlist is cleared and when a new buffer is created for it.
+@end defopt
+@defopt emms-player-finished-hook
+Hook run when an Emms player finishes playing a track. Please pay
+attention to the differences between @var{emms-player-finished-hook}
+and @var{emms-player-stopped-hook}. The former is called only when the
+player is stopped interactively; the latter, only when the player
+actually finishes playing a track.
+@end defopt
+@defopt emms-player-paused-hook
+Hook run when a player is paused or resumed. Use
+@var{emms-player-paused-p} to find the current state.
 @end defopt
 
+@node Core Functions
+@section Core Functions
+The core file also defines all the functions important to the basic
+use of Emms.
+@c FIXME: sort these so that they make sense
+
+There are functions which deal with movement in the playlist.
+
 @defun emms-next-noerror
-Play the next track in the playlist, but don't signal an error when
-we're at the end. This should be called when no player is playing.
-This is a suitable function to put in @var{emms-player-stopped-hook}.
+Start playing the next track in the Emms playlist. Unlike
+@code{emms-next}, this function doesn't signal an error when called at
+the end of the playlist. This function should only be called when no
+player is playing. This is a good function to put in
+@code{emms-player-finished-hook}.
 @end defun
-@defun emms-sort
-Sort the playlist.
+@defun emms-playlist-next
+Move to the previous track in the current buffer.
 @end defun
-@defun emms-sort-track-name-less-p a b
-Return non-nil if the track name of @var{a} is before @var{b}.
+@defun emms-playlist-previous
+Move to the previous track in the current buffer.
 @end defun
+@defun emms-random
+Jump to a random track.
+@end defun
+@defun emms-toggle-repeat-playlist
+Toggle whether emms repeats the playlist after it is done. See
+@var{emms-repeat-playlist}.
+@end defun
+@defun emms-toggle-repeat-track
+Toggle whether emms repeats the current track. See
+@var{emms-repeat-track}.
+@end defun
+
+Some functions deal with the getting and setting track information.
+
 @defun emms-track type name
 Create a track with type @var{type} and name @var{name}.
 @end defun
@@ -410,80 +465,27 @@ Return the type of @var{track}.
 Return the name of @var{track}.
 @end defun
 @defun emms-track-get name track &optional inexistent
-Return the value of @var{name} for @var{track}. If there is no value, return
-@var{inexistent} (or nil if not given).
+Return the value of @var{name} for @var{track}. If there is no value,
+return @var{default} (or nil, if not given).
 @end defun
 @defun emms-track-set track name value
 Set the value of @var{name} for @var{track} to @var{value}.
 @end defun
 @defun emms-track-description track
-A simple function to give a user-readable description of @var{track}.
-If it's a file track, it's just the filename.
-Else it's the type and the name with a colon in between.
-@end defun
-@defun emms-playlist-current
-Return a description of the currently playing track.
-This uses @var{emms-track-description-function}.
-@end defun
-@defun emms-playlist-current-track
-Return the currently playing track.
-@end defun
-@defun emms-playlist-get n
-Return a description of the @var{n}th entry of the current playlist.
-This uses `emms-track-description-function'
-@end defun
-@defun emms-playlist-get-track n
-Return the @var{n}th track of the current playlist.
-@end defun
-@defun emms-playlist-set-playlist new
-Set the playlist to @var{new}.
-This runs `emms-playlist-changed-hook'.
-@end defun
-@defun emms-playlist-get-playlist
-Return the current playlist.
-@end defun
-@defun emms-playlist-set-current n
-Set the current track in the playlist to @var{n} (a number).
-This runs `emms-playlist-current-changed-hook'.
-@end defun
-@defun emms-playlist-get-current
-Return the number of the current track, or nil if the playlist is
-empty.
-@end defun
-@defun emms-playlist-next
-Advance the current track to the next entry in the playlist and
-return non-nil. Return nil if there is no next track.
-@end defun
-@defun emms-playlist-previous
-Set the current track to the previous entry in the playlist and
-return non-nil. Return nil if there is no previous track.
-@end defun
-@defun emms-playlist-add seq &optional idx
-Add each track of the sequence @var{seq} to the current playlist.
-Insert at @var{idx}, which defaults to the end.
-@end defun
-@defun emms-playlist-remove idx
-Remove track at @var{idx} from playlist.
-@end defun
-@defun emms-playlist-shuffle
-Shuffle the current playlist.
-@end defun
-@defun emms-playlist-sort
-Sort the current playlist according to `emms-sort-lessp-function'
-@end defun
-@defun emms-playlist-shuffle-vector vector
-Shuffle @var{vector}.
-@end defun
-@defun emms-playlist-sort-vector vector
-Sort @var{vector} according to `emms-sort-lessp-function'.
-@end defun
-@defun emms-source-play lis
-Play the tracks returned by @var{lis}.
+Return a description of @var{track}. This function uses
+@var{emms-track-description-function}.
 @end defun
 @defun emms-player-for track
-Return the player which is responsible for @var{track}, or nil if
-there is none.
+Return an Emms player capable of playing @var{track}. This will be the
+first player whose PLAYABLEP function returns non-nil, or nil if no
+such player exists.
 @end defun
+@defun emms-playlist-current-selected-track
+Return the currently selected track in the current playlist.
+@end defun
+
+There are also functions which deal with the playing itself.
+
 @defun emms-player-start track
 Start playing @var{track}.
 @end defun
@@ -491,9 +493,29 @@ Start playing @var{track}.
 Stop the currently playing player.
 @end defun
 @defun emms-player-stopped
-Declare that the current player has finished playing.
-This should only be called by a player.
+Declare that the current Emms player is finished.
+This should only be done by the current player itself.
 @end defun
+@defun emms-seek seconds
+Seek the current player @var{seconds} seconds.  This can be a floating
+point number for sub-second fractions.  It can also be negative to
+seek backwards.
+@end defun
+@defun emms-seek-forward
+Seek ten seconds forward.
+@end defun
+@defun emms-seek-backward
+Seek ten seconds backward.
+@end defun
+@defun emms-sort-track-name-less-p a b
+Return non-nil if the track name of @var{A} sorts before @var{B}.
+@end defun
+@defun emms-ensure-player-playing-p
+Raise an error if no player is playing right now.
+@end defun
+
+For more basic commands defined in the core file see @xref{Basic
+Commands}.
 
 @node Sources
 @chapter Sources
@@ -547,7 +569,7 @@ Return a regexp that matches everything any player (that supports
 files) can play.
 @end defun
 @defun emms-save-playlist filename
-Export the current playlist as to @var{filename}.  See also
+Export the current playlist as to @var{filename}. See also
 @command{emms-source-playlist-file}.
 @end defun
 @defun emms-locate
@@ -876,7 +898,7 @@ should return the text to be inserted in the playlist.
 @end defopt
 @defopt emms-pbi-playlist-entry-max-length
 The maximum length of an entry in the playlist. If this is nil, the
-entire string provided by `emms-track-description-function'.  will be
+entire string provided by `emms-track-description-function'. will be
 used. Beware, the output of that function is cut off to fit the
 max-length before running `emms-pbi-playlist-entry-generate-function'.
 @end defopt
@@ -1181,8 +1203,8 @@ interface:
 @item RET
 @kindex RET (emms-streams)
 @vindex emms-stream-default-action
-Perform the default action when you press RET in the EMMS Stream
-interface.  Can be either ``add'' or ``play''. The default is ``add'',
+Perform the default action when you press RET in the Emms Stream
+interface. Can be either ``add'' or ``play''. The default is ``add'',
 which adds the station under point to the Emms playlist. When
 @var{emms-stream-default-action} is ``play'' then Emms will play the
 streaming audio channel under point.
