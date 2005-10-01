@@ -6,6 +6,12 @@
 
 @c Maintainer comments: As of Oct 2005 the manual is being re-written
 @c for Emms2.
+@c
+@c As a rule, modules which are stable enough to be included into the
+@c `emms-all' setup level should be documented.
+
+@c FIXME: Stuff slated for addition to the manual:
+@c emms-mode-line, emms-metaplaylist-mode.
 
 @dircategory Emacs
 @direntry
@@ -190,6 +196,7 @@ just need the following line,
 
 which installs the core of Emms.
 
+@c FIXME: update this for new version of emms-setup.
 Now we need to do some configuration. The Emms module `emms-setup'
 provides the function `emms-setup', which is a way to quickly
 configure your Emms. You can add any number of directories which

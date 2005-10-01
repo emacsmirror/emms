@@ -1,9 +1,9 @@
 ;;; emms-setup.el --- Setup script for EMMS
 
-;; Copyright (C) 2004  Free Software Foundation, Inc.
+;; Copyright (C) 2005 Yoni Rabkin
 
-;; Author: Ulrik Jensen <terryp@vernon>
-;; Keywords:
+;; Author: Yoni Rabkin <yonirabkin@member.fsf.org>
+;; Keywords: emms setup multimedia
 
 ;; This file is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -21,96 +21,81 @@
 ;; Boston, MA 02110-1301 USA
 
 ;;; Commentary:
-
-;; This script can intiialise EMMS to different "levels" of usage.
+;;
 
 ;;; Code:
 
-(eval-when-compile
-  (require 'cl))
+(defgroup emms-setup nil
+  "*The Emacs Multimedia System setup utility."
+  :prefix "emms-setup"
+  :group 'multimedia)
 
-;;; FIXME! This is only backwards-compatibility stuff, remove
-;;; `ignored' parameter.
-(defun emms-setup (level &optional directory &rest ignored)
-  "Sets up EMMS to a specific LEVEL of bells and whistles.
+(defcustom emms-setup-default-player-list
+  '(emms-player-mpg321
+    emms-player-ogg123
+    emms-player-mplayer-playlist
+    emms-player-mplayer)
+  "*Default list of players for emms-setup."
+  :group 'emms-setup
+  :type 'list)
 
-This also sets DIRECTORY as the default directory for finding
-file-tracks.
-
-\(emms-setup 'cvs\) -- Will setup EMMS to a testing environment, that
-probably won't work, but utilizes all the available bells and whistles
-of the version you have installed.
-
-All possible values for the LEVEL, are:
-
-`cvs' -- Everything and no guarantees
-`advanced' -- info, playlist-mode, tageditor
-`default' -- info and the playlist-buffer-interface.
-`tiny' -- basic and playlist-mode
-`minimalistic' -- No bells and whistles, no info, no interfaces. M-x
-emms-next RET and such, as well as a single player. This should almost
-always work, unless you get very unlucky with a CVS-build."
-  ;; Always load the minimalistic setup
-  (require 'emms)			; minimalistic
+(defun emms-minimalistic ()
+  "An Emms setup script.
+Invisible playlist and all the basics for playing media."
+  (require 'emms)
   (require 'emms-source-file)
   (require 'emms-player-simple)
-  (require 'emms-player-mplayer)
+  (require 'emms-player-mplayer))
+
+(defun emms-standard ()
+  "An Emms setup script.
+Everything included in the `emms-minimalistic' setup and adds the
+Emms playlist mode."
+  ;; include
+  (emms-minimalistic)
+  ;; define
+  (require 'emms-playlist-mode)
+  (require 'emms-info)
+  (require 'emms-info-mp3info)
+  (require 'emms-info-ogginfo)
+  ;; setup
+  (setq emms-playlist-default-major-mode 'emms-playlist-mode)
+  (add-to-list 'emms-track-initialize-functions 'emms-info-initialize-track)
+  (add-to-list 'emms-info-functions 'emms-info-mp3info)
+  (add-to-list 'emms-info-functions 'emms-info-ogginfo)
+  (setq emms-track-description-function 'emms-info-track-description))
+
+(defun emms-all ()
+  "An Emms setup script.
+Everything included in the `emms-standard' setup and adds all the
+stable add-ons which come with the Emms distribution."
+  ;; include
+  (emms-standard)
+  ;; define
+  (require 'emms-metaplaylist-mode)
+  (require 'emms-mode-line)
+  (require 'emms-streams)
+  ;; setup
+  (emms-mode-line 1)
+  (emms-mode-line-blank))
+
+(defun emms-devel ()
+  "An Emms setup script.
+Everything included in the `emms-all' setup and adds all the
+add-ons which come with the Emms distribution regardless if they
+are considered stable or not.  Use this if you like living on the
+edge."
+  ;; include
+  (emms-all)
+  ;; define
+  (require 'emms-stream-info)
+  (require 'emms-lyrics)
+  (require 'emms-playing-time))
+
+(defun emms-default-players ()
+  "Set `emms-player-list' to `emms-setup-default-player-list'."
   (setq emms-player-list
-	'(emms-player-mpg321 emms-player-ogg123 emms-player-mplayer-playlist emms-player-mplayer)
-	emms-source-file-default-directory directory)
-
-  (when ignored
-    (message "Interface for `emms-setup' has changed, please consult the docstring.")
-    (ding))
-
-  (unless (equal level 'minimalistic)	; tiny
-    (require 'emms-playlist-mode)
-    (setq emms-playlist-default-major-mode 'emms-playlist-mode)
-
-    (unless (equal level 'tiny)		; default
-      ;; must be default, advanced or cvs, include the playlist-mode and the info
-      (require 'emms-info)
-      (add-to-list 'emms-track-initialize-functions 'emms-info-initialize-track)
-      (require 'emms-info-mp3info)
-      (add-to-list 'emms-info-functions 'emms-info-mp3info)
-      (require 'emms-info-ogginfo)
-      (add-to-list 'emms-info-functions 'emms-info-ogginfo)
-
-      ;; setup info
-      (setq emms-track-description-function 'emms-info-track-description)
-
-      (unless (equal level 'default)	; advanced
-	;; + tageditor.
-	;;(require 'emms-tageditor)
-	;;(emms-tageditor-pbi-mode 1)
-
-	(require 'emms-metaplaylist-mode)
-
-	(unless (equal level 'advanced)	; cvs
-          ;; load the mode-line
-          (require 'emms-mode-line)
-          (emms-mode-line 1)
-          (emms-mode-line-blank)
-
-          ;; try using setnu
-	  ;; (ignore-errors
-	  ;; 	    (require 'setnu)
-	  ;; 	    (add-hook 'emms-pbi-after-build-hook
-	  ;; 		      (lambda ()
-	  ;; 			(setnu-mode 1)))))))))
-
-	  ;; streaming audio interface
-	  (require 'emms-streams)
-
-	  ;; streaming audio information
-	  (require 'emms-stream-info)
-
-	  ;; display lyrics
-	  (require 'emms-lyrics)
-
-	  ;; display playing-time
-	  (require 'emms-playing-time))))))
-
+	emms-setup-default-player-list))
 
 (provide 'emms-setup)
 ;;; emms-setup.el ends here
