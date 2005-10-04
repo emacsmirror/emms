@@ -27,6 +27,9 @@
 (defvar emms-playlist-mode-selected-overlay-marker nil
   "Marker for last selected track.  Use for updating the display.")
 
+(defvar emms-playlist-mode-switched-buffer nil
+  "Last buffer visited before calling `emms-playlist-mode-switch-buffer'.")
+
 ;; The marker is unique for each playlist buffer
 (make-variable-buffer-local
  'emms-playlist-mode-selected-overlay-marker)
@@ -169,6 +172,19 @@ FUN should be a function."
 			(cdr region))
 	   (emms-playlist-mode-kill-track))
 	  (t (error "Cannot kill content at point")))))
+
+(defun emms-playlist-mode-switch-buffer ()
+  "Switch to the playlist buffer and then switch back if called again.
+
+This function switches to the current Emms playlist buffer and
+remembers the buffer switched from. When called again the
+function switches back to the remembered buffer."
+  (interactive)
+  (if (eq (current-buffer)
+	  emms-playlist-buffer)
+      (switch-to-buffer emms-playlist-mode-switched-buffer)
+    (setq emms-playlist-mode-switched-buffer (current-buffer))
+    (switch-to-buffer emms-playlist-buffer)))
 
 ;;; --------------------------------------------------------
 ;;; Overlay
