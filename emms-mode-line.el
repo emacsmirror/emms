@@ -53,8 +53,8 @@
 
 (defun emms-mode-line-playlist-current ()
   "Format the currently playing song"
-  (format emms-mode-line-format 
-	  (emms-track-description 
+  (format emms-mode-line-format
+	  (emms-track-description
 	   (emms-playlist-current-selected-track))))
 
 (defvar emms-mode-line-initial-titlebar frame-title-format)
@@ -65,19 +65,17 @@
   (or global-mode-string (setq global-mode-string '("")))
   (if (and arg (> arg 0))
       (progn
-	(add-hook 'emms-playlist-current-track-changed-hook
-		  'emms-mode-line-alter)
+	(add-hook 'emms-track-updated-functions 'emms-mode-line-alter)
 	(add-hook 'emms-player-finished-hook 'emms-mode-line-blank)
 	(add-hook 'emms-player-stopped-hook 'emms-mode-line-blank)
-	(add-hook 'emms-player-started-hook 'emms-mode-line-alter)	
+	(add-hook 'emms-player-started-hook 'emms-mode-line-alter)
 	(when (and emms-mode-line-mode-line-function
 		   (not (member 'emms-mode-line-string global-mode-string)))
 	  (setq global-mode-string
 		(append global-mode-string
 			'(emms-mode-line-string))))
 	(when emms-player-playing-p (emms-mode-line-alter)))
-    (remove-hook 'emms-playlist-current-track-changed-hook
-		 'emms-mode-line-alter)
+    (remove-hook 'emms-track-updated-functions 'emms-mode-line-alter)
     (remove-hook 'emms-player-finished-hook 'emms-mode-line-blank)
     (remove-hook 'emms-player-stopped-hook 'emms-mode-line-blank)
     (remove-hook 'emms-player-started-hook 'emms-mode-line-alter)
@@ -108,7 +106,7 @@
   (setq emms-mode-line-string nil)
   (force-mode-line-update)
   (emms-mode-line-restore-titlebar))
-	
+
 (defun emms-mode-line-restore-mode-line ()
   "Restore the mode-line."
   (when emms-mode-line-mode-line-function
