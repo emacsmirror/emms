@@ -13,6 +13,8 @@
 @c FIXME: Stuff slated for addition to the manual:
 @c emms-mode-line, emms-metaplaylist-mode.
 
+@c FIXME: Add concept indices to all the new chapters.
+
 @dircategory Emacs
 @direntry
 * Emms: (emms).           The Emacs Multimedia System
@@ -59,8 +61,8 @@ This is the Manual for the Emacs Multimedia System
 Starting out
 * Introduction::        Introduction to Emms.
 * Installation::        How to install Emms on your System.
-* Quick Setup::         Quick start in Emms.
-* Configuration Example::     Bare bones configuration.
+* Simple Setup::        Quick, basic default Emms setup.
+* Configuration::       More detailed setup and configuration.
 
 Emms basics
 * Basic Commands::      How to control Emms with ease.
@@ -71,9 +73,9 @@ Emms basics
 
 Advanced Features
 * Info Tags::           More narrative track descriptions.
-* The Playlist Buffer:: Interactive Playlist.
-* Extending Emms::           How to define new players and modules.
-* Streaming Audio::          Interface to streaming audio.
+* Interactive Playlists::    Interactive Playlists.
+* Extending Emms::      How to define new players and modules.
+* Streaming Audio::     Interface to streaming audio.
 
 Indices
 * Concept Index::
@@ -96,9 +98,6 @@ Info Tags
 * Ogg Info::    Reading ogg info tags
 * MP3 Info::    Reading mp3 info tags
 @end detailmenu
-
-The Playlist Buffer
-* Playlist Buffer::     Browsing buffer known by other players
 
 Extending Emms
 * New Player::  How to define a new player
@@ -143,8 +142,7 @@ to play them. @file{emms-player-simple.el} defines a few useful players, and
 allows you to define your own in a very simple way.
 
 The way Emms works is easy to customize with your own code or by using
-`M-x customize'. It is possible to extend Emms with the extra modules
-shipped with Emms. @xref{Extending Emms}.
+`M-x customize'.
 
 @node Installation
 @chapter Installation
@@ -184,56 +182,76 @@ the appropriate permissions to do so on your system).
 Note that Emms is a light-weight and agile program, you can therefore
 run Emms just fine without byte compiling it.
 
-@node Quick Setup
-@chapter Quick setup
+@node Simple Setup
+@chapter Simple Setup
 
-Emms is quite simple to set up. For the most basic needs, you will
-just need the following line,
-
-@lisp
-(require 'emms)
-@end lisp
-
-which installs the core of Emms.
-
-@c FIXME: update this for new version of emms-setup.
-Now we need to do some configuration. The Emms module `emms-setup'
-provides the function `emms-setup', which is a way to quickly
-configure your Emms. You can add any number of directories which
-contain media. The first argument is the complexity level of the user
-interface. Here's an example:
+After adding the location of the Emms code to the @var{load-path}
+variable, see @xref{Installation}. we invoke the following using the
+`emms-setup' feature which allows for quick and simple Emms setup.
 
 @lisp
 (require 'emms-setup)
-(emms-setup 'tiny "directory")
+(emms-standard)
+(emms-default-players)
 @end lisp
 
-Here is a list of the interface complexity options:
+After which Emms is set-up and ready to go!
 
-@table @samp
-@item minimalistic
-Define the players and play directory but nothing more.
-@item standard
-Features the above plus the playlist buffer mode. Use this for a
-minimalistic installation plus a user interface to the playlists.
-@item all
-Features the above plus the reading the info from tagged Mp3 and Ogg
-files.
-@item devel
-Featuers all the above plus all the other modules shipped with Emms
-regardless if their stability. Use this only if yuo enjoy living on
-the edge.
-@end table
+The above will setup Emms with standard features (interactive
+playlists, audio track tag reading etc.) and a default list of players
+(ogg, mp3, mplayer etc.).
 
-Now your configuration is done.
+The `emms-setup' feature is provided by the file
+@file{emms-setup.el}. It is essentially a collection of shortcuts for
+setting up Emms quickly and simply. Everything you can do with
+`emms-setup' can also be done manually.
 
-The (optional) directory is used for
-`emms-source-file-default-directory', in case you were wondering.
+We use `emms-setup' by calling one of the setup functions. Each of the
+functions sets up Emms to include a number of features.
 
-@node Configuration Example
-@chapter Configuration Example
+@defun emms-minimalistic
+An Emms setup script.
+Invisible playlists and all the basics for playing media.
+@end defun
 
-@cindex Configuration Example
+@defun emms-standard
+An Emms setup script.
+Everything included in the @code{emms-minimalistic} setup, the Emms
+interactive playlist mode and reading information from tagged
+audio files.
+@end defun
+
+@defun emms-all
+An Emms setup script.
+Everything included in the @code{emms-standard} setup and adds all the
+stable features which come with the Emms distribution.
+@end defun
+
+@defun emms-devel
+An Emms setup script.
+Everything included in the @code{emms-all} setup and adds all of the
+features which come with the Emms distribution regardless of if they
+are considered stable or not.  Use this if you like living on the
+edge.
+@end defun
+
+`emms-setup' also comes with a convinience function to set a default
+list of media players.
+
+@defun emms-default-players
+Set @var{emms-player-list} to @var{emms-setup-default-player-list}.
+@end defun
+
+It is also worth noting that you can write your own Emms setup
+functions like the above by looking at the existing function
+definitions in @file{emms-setup.el}.
+
+@node Configuration
+@chapter Configuration
+
+@cindex Configuration
+
+This chapter discusses the configuration of Emms in more detail.
 
 The following code fragment provides a minimal Emms setup without
 using the layer of `emms-setup'. It can maybe be used to better
@@ -254,14 +272,15 @@ For a discussion on how to define additional players, see @xref{Simple
 Players}.
 
 Much of the behaviour of Emms can be changed by setting
-variables. Here is an example. The first `setq' turns off the
-asynchronous updating of info tags. The second sets the default name
-of the Emms playlist buffer.
+variables. For example:
 
 @lisp
 (setq emms-info-asynchronously nil)
 (setq emms-playlist-buffer-name "*Music*")
 @end lisp
+
+The first @code{setq} turns off the asynchronous updating of info tags. The
+second sets the default name of the Emms playlist buffer.
 
 Another way to change Emms variables is to use the M-x
 @command{customize} mechanism provided by Emacs.
@@ -524,6 +543,8 @@ Commands}.
 
 @cindex sources
 
+@c FIXME: This is rather bare, add some explanatory text.
+
 @defopt emms-source-file-default-directory
 The default directory to look for media files.
 @end defopt
@@ -617,7 +638,7 @@ bottom until it reaches the end of the playlist buffer.
 The name of the playlist buffer is defined in the variable
 @var{emms-playlist-buffer-name} and is set to be an invisible Emacs
 buffer by default. You can change to any name you want. For an example
-configuration see @xref{Configuration Example}.
+configuration see @xref{Configuration}.
 
 You can create any number of playlist buffers you wish. At any time
 Emms has a single ``current'' buffer through which it proceeds track
@@ -777,189 +798,12 @@ return an emms-info structure representing it.
 *The name/path of the mp3info-program.
 @end defopt
 
-@node The Playlist Buffer
-@chapter The Playlist Buffer
-@cindex playlist buffer
+@node Interactive Playlists
+@chapter Interactive Playlists
+@cindex Interactive Playlists
 
 @c FIXME: Completely rewrite the playlist buffer thus introducing the
 @c concept of multiple playlists to the people.
-@menu
-* Playlist Buffer::     Browsing buffer known by other players
-@end menu
-
-@node Playlist Buffers
-@section Playlist buffers
-
-@findex emms-playlist-mode-go
-@cindex playlist buffers
-
-@table @code
-Switch to playlist buffer
-
-The playlist-buffer *Playlist* will be created and put into
-emms-pbi-mode, which give you some usefull keybinings
-@end table
-
-@c New keymaps all around
-@table @kbd
-@item ?
-@kindex ? (Emms-pbi)
-@findex describe-mode
-Describe the keybindings
-@item <mouse-2>
-@kindex <mouse-2> (Emms-pbi)
-@findex emms-pbi-play-current-line
-Play the current line
-@item RET
-@kindex RET (Emms-pbi)
-@findex emms-pbi-play-current-line
-Play the current line
-@item q
-@kindex q
-@findex bury-buffer
-@item Q
-@kindex Q
-@findex emms-pbi-quit
-Stops emms and kill the playlist buffer
-@item f
-@kindex f
-@findex emms-pbi-show-current-line
-Show the trackname on current line
-@item s
-@kindex s
-@findex emms-stop
-Stop Emms
-@item C-y
-@kindex C-y
-@findex emms-pbi-yank
-Yank a filename from @var{emms-kill-ring} into the playlist.
-@item C-k
-@kindex C-k
-@findex emms-pbi-kill-line
-Kill the current line from the playlist.
-
-Send the filename to the @var{emms-kill-ring}. Make sure hooks that regenerate
-the entire playlist aren't run.
-@item c
-@kindex c
-@findex emms-pbi-recenter
-Center on current playing track
-@item p
-@kindex p
-@findex emms-previous
-Play the previous track in the playlist.
-@item n
-@kindex n
-@findex emms-next
-Play the next track in the playlist.
-This might behave funny in @var{emms-player-stopped-hook}, use
-@var{emms-next-noerror} instead for that.
-@item C-x C-s
-@kindex C-x C-s
-@findex emms-pbi-export-playlist
-Export the current playlist as to FILENAME. See also:
-@var{emms-pbi-import-playlist}.
-@end table
-
-@c FIXME: update these as well.
-@defun emms-pbi
-Turn on emms-playlist if prefix argument ARG is a positive integer,
-off otherwise.
-@end defun
-@defun emms-pbi-shorten-entry-to-max-length
-Cut off an entry-text to make sure it's no longer than
-`emms-pbi-playlist-entry-max-length' characters long.
-@end defun
-@defun emms-pbi-entry-info-updated
-Update the track-entry based on the info
-@end defun
-@defun emms-pbi-rebuild-playlist-buffer
-This function rebuilds the playlist-buffer if necessary.
-@end defun
-@defun emms-pbi-build-playlist-buffer
-Build a playlist-buffer based on the current playlist.
-@end defun
-@defun emms-pbi-insert-tag
-Insert the TRACK tag at point.
-The tag is automatically shortened by
-@command{emms-pbi-shorten-entry-to-max-length'}.
-@end defun
-@defun emms-pbi-insert-entry
-Insert an entry in the playlist
-@end defun
-@defun emms-pbi-async-alternative-text filename
-Generates a single replacement-text for @var{filename}, to be
-displayed in the playlist while the info is being loaded.
-@end defun
-@defun emms-pbi-update-current-face
-Updates the file line with the current-face
-@end defun
-@defun emms-pbi-add-properties-current-line
-Adds the correct faces and other properties to the current line
-@end defun
-@defun emms-pbi-play-current-line
-Play the current line
-@end defun
-@defun emms-pbi-show-current-line
-Show filename and info for track on current line.
-@end defun
-@defun emms-pbi-export-playlist filename
-Export the current playlist as to @var{filename}.
-@end defun
-@defun emms-pbi-quit
-Stops emms and kill the playlist buffer
-@end defun
-@defun emms-pbi-kill-line
-Kill the current line from the playlist.
-
-Send the filename to @var{emms-kill-ring}. Make sure hooks that
-regenerate the entire playlist aren't run.
-@end defun
-@defun emms-pbi-yank
-Yank a filename from `kill-ring' into the playlist.
-@end defun
-@defun emms-pbi-return-current-line-index
-Return the index position in the playlist of the current line.
-@end defun
-@defun emms-pbi-recenter
-Center on current playing track
-@end defun
-
-@defopt emms-pbi-playlist-entry-generate-function
-The function to call for generating a single item of the
-playlist. This will be called with a string argument FILENAME, and
-should return the text to be inserted in the playlist.
-@end defopt
-@defopt emms-pbi-playlist-entry-max-length
-The maximum length of an entry in the playlist. If this is nil, the
-entire string provided by `emms-track-description-function'. will be
-used. Beware, the output of that function is cut off to fit the
-max-length before running `emms-pbi-playlist-entry-generate-function'.
-@end defopt
-@defopt emms-pbi-async-alternative-text-function
-The function to call for generating the replacement-text for a
-playlist-item, while the info is lazy-loading. This will be called
-with a string argument FILENAME, and should return the text to be
-processed by emms-pbi-playlist-entry-generate-function.
-@end defopt
-@defopt emms-pbi-playlist-buffer-name
-Name of the buffer to use as a playlist-buffer
-@end defopt
-@defopt emms-pbi-load-info-async
-Whether or not to use emms-info.el's features for async loading
-info. Defaults to t when emms-info is available, and nil otherwise.
-@end defopt
-@defopt emms-pbi-after-build-hook
-Hook that is run after the playlist buffer is built.
-That might be usefull to change the playlist buffer before the
-buffer is set read-only.
-@end defopt
-@defopt emms-pbi-current-line-face-changed-hook
-Hook that is called when the face of the current line changes.
-@end defopt
-@defopt emms-pbi-manually-change-song-hook
-Hook that is called when the song is manually changed.
-@end defopt
 
 @node Extending Emms
 @chapter Extending Emms
