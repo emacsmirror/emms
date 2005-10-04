@@ -41,7 +41,7 @@
 
 (defun emms-minimalistic ()
   "An Emms setup script.
-Invisible playlist and all the basics for playing media."
+Invisible playlists and all the basics for playing media."
   (require 'emms)
   (require 'emms-source-file)
   (require 'emms-player-simple)
@@ -49,8 +49,9 @@ Invisible playlist and all the basics for playing media."
 
 (defun emms-standard ()
   "An Emms setup script.
-Everything included in the `emms-minimalistic' setup and adds the
-Emms playlist mode."
+Everything included in the `emms-minimalistic' setup, the Emms
+interactive playlist mode and reading information from tagged
+audio files."
   ;; include
   (emms-minimalistic)
   ;; define
@@ -68,7 +69,7 @@ Emms playlist mode."
 (defun emms-all ()
   "An Emms setup script.
 Everything included in the `emms-standard' setup and adds all the
-stable add-ons which come with the Emms distribution."
+stable features which come with the Emms distribution."
   ;; include
   (emms-standard)
   ;; define
@@ -82,9 +83,9 @@ stable add-ons which come with the Emms distribution."
 (defun emms-devel ()
   "An Emms setup script.
 Everything included in the `emms-all' setup and adds all the
-add-ons which come with the Emms distribution regardless if they
-are considered stable or not.  Use this if you like living on the
-edge."
+features which come with the Emms distribution regardless of if
+they are considered stable or not.  Use this if you like living
+on the edge."
   ;; include
   (emms-all)
   ;; define
