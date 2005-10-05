@@ -72,7 +72,6 @@ should enable `emms-playing-time-display-p' first, though."
 (defun emms-playing-time-start ()
   "Get ready for display playing time."
   (setq emms-playing-time 0)
-  (emms-playing-time-mode-line)
   (run-at-time t 1 'emms-playing-time-display))
 
 (defun emms-playing-time-stop ()
@@ -100,24 +99,26 @@ should enable `emms-playing-time-display-p' first, though."
   "Enable displaying emms playing time on mode line."
   (interactive)
   (setq emms-playing-time-display-p t)
+  (emms-playing-time-mode-line)
   (add-hook 'emms-player-started-hook     'emms-playing-time-start)
   (add-hook 'emms-player-stopped-hook     'emms-playing-time-stop)
   (add-hook 'emms-player-finished-hook    'emms-playing-time-stop)
   (add-hook 'emms-player-paused-hook      'emms-playing-time-pause)
   (add-hook 'emms-player-seeked-functions 'emms-playing-time-seek)
-  (message "Displaying emms playing time enabled."))
+  (message "emms playing time enabled."))
 
 (defun emms-playing-time-disable ()
   "Disable displaying emms playing time on mode line."
   (interactive)
-  (setq emms-playing-time-display-p nil)
   (emms-playing-time-stop)
+  (setq emms-playing-time-display-p nil)
+  (emms-playing-time-restore-mode-line)
   (remove-hook 'emms-player-started-hook     'emms-playing-time-start)
   (remove-hook 'emms-player-stopped-hook     'emms-playing-time-stop)
   (remove-hook 'emms-player-finished-hook    'emms-playing-time-stop)
   (remove-hook 'emms-player-paused-hook      'emms-playing-time-pause)
   (remove-hook 'emms-player-seeked-functions 'emms-playing-time-seek)
-  (message "Displaying emms playing time disabled."))
+  (message "emms playing time disabled."))
 
 (defun emms-playing-time-toggle ()
   "Toggle displaying emms playing time on mode line."
@@ -161,6 +162,11 @@ should enable `emms-playing-time-display-p' first, though."
 	  (append global-mode-string
 		  '(emms-playing-time-string)))))
 
+(defun emms-playing-time-restore-mode-line ()
+  "Restore the mode line."
+  (setq global-mode-string
+	(remove 'emms-playing-time-string global-mode-string))
+  (force-mode-line-update))
 
 (provide 'emms-playing-time)
 
