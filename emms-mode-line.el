@@ -92,8 +92,11 @@
     (emms-mode-line-restore-titlebar)
     (emms-mode-line-restore-mode-line)))
 
-(defun emms-mode-line-alter ()
-  "Alter mode-line/titlebar."
+(defun emms-mode-line-alter (&optional track)
+  "Alter mode-line/titlebar.
+
+Optional TRACK is used to be compatible with
+`emms-track-updated-functions'. It's simply ignored currently."
   (emms-mode-line-alter-mode-line)
   (emms-mode-line-alter-titlebar))
 
