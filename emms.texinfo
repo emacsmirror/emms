@@ -541,23 +541,21 @@ Commands}.
 @node Sources
 @chapter Sources
 
-@cindex sources
+@cindex Sources
 
-@c FIXME: This is rather bare, add some explanatory text.
+Sources allow Emms to add and play tracks. Emms comes with a number of
+sources of its own. Sources are designed so that creating new ones
+will be easy.
+
+For examples of Emms sources for files and directories see
+@file{emms-source-file.el}.
 
 @defopt emms-source-file-default-directory
 The default directory to look for media files.
 @end defopt
-@c FIXME: go over all these first, then add new ones
 @defun emms-play-find
 Play all files in @var{emms-source-file-default-directory} that match
 a specific regular expression.
-@end defun
-@defun emms-play-dired
-Play marked files from the current dired buffer
-@end defun
-@defun emms-play-playlist
-Play all files from a playlist file.
 @end defun
 @defun emms-source-file &optional file
 An Emms source for a single file - either @var{file}, or queried from the
@@ -579,10 +577,7 @@ An Emms source that will find files in @var{dir} or
 @var{emms-source-file-default-directory} that match @var{regexp}.
 @end defun
 @defun emms-source-file-directory-tree &optional dir
-Return a list of all files under @var{dir} that match @var{regex}.
-@end defun
-@defun emms-source-playlist-file file
-Return all files from playlist @var{file}.
+Return a list of all files under @var{dir} which match @var{regex}.
 @end defun
 @defun emms-source-dired
 Play all marked files of a dired buffer
@@ -591,12 +586,8 @@ Play all marked files of a dired buffer
 Return a regexp that matches everything any player (that supports
 files) can play.
 @end defun
-@defun emms-save-playlist filename
-Export the current playlist as to @var{filename}. See also
-@command{emms-source-playlist-file}.
-@end defun
-@defun emms-locate
-Search for REGEXP and display the results in a locate buffer
+@defun emms-locate regexp
+Search for @var{regexp} and display the results in a locate buffer
 @end defun
 
 @node Simple Players
@@ -604,24 +595,28 @@ Search for REGEXP and display the results in a locate buffer
 
 @cindex players, simple
 
-@defmac define-emms-simple-player
-Returns a simple player with the use of emms-define-player.
-NAME is used to construct the name of the function like
-emms-player-NAME. REGEX must be a regexp that matches the
-filenames the player can play. COMMAND specifies the command line
-argument to call the player and ARGS are the command line
-arguments.
+@defmac define-emms-simple-player name types regex command &rest args
+Define a simple player with the use of `emms-define-player'.
+@var{name} is used to contruct the name of the function like
+emms-player-@var{name}. @var{types} is a list of track types
+understood by this player. @var{regex} must be a regexp that matches
+the filenames the player can play. @var{command} specifies the command
+line arguement to call the player and @var{args} are the command line
+arguements.
 @end defmac
-@c FIXME: add example section with a simple player definition.
+
+For a discussion on how to define new players see @xref{New Player}.
+
 @defun emms-player-simple-stop
-Stop the currently playing process, if indeed there is one
+Stop the currently playing process, if indeed there is one.
 @end defun
-@defun emms-player-simple-start
-Starts a process playing FILENAME using the specified CMDNAME with
-the specified PARAMS.
+@defun emms-player-simple-start filename cmdname params
+Starts a process playing @var{filename} using the specified @var{cmdname} with
+the specified @var{params}.
 @end defun
-@defun emms-player-simple-sentinel
-Sentinel for determining the end of process
+@defun emms-player-simple-sentinel proc str
+Sentinel for determining the end of process for the process @var{proc}
+and the sentinel string @var{str}.
 @end defun
 
 @c FIXME finish writing this
