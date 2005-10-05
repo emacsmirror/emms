@@ -249,19 +249,20 @@ To find FILE, will look up in current directory and `emms-lyrics-dir'."
   (add-hook 'emms-player-finished-hook    'emms-lyrics-stop)
   (add-hook 'emms-player-paused-hook      'emms-lyrics-pause)
   (add-hook 'emms-player-seeked-functions 'emms-lyrics-seek)
-  (message "Displaying emms lyrics enabled."))
+  (message "emms lyrics enabled."))
 
 (defun emms-lyrics-disable ()
   "Disable displaying emms lyrics."
   (interactive)
-  (setq emms-lyrics-display-p nil)
   (emms-lyrics-stop)
+  (setq emms-lyrics-display-p nil)
+  (emms-lyrics-restore-mode-line)
   (remove-hook 'emms-player-started-hook     'emms-lyrics-start)
   (remove-hook 'emms-player-stopped-hook     'emms-lyrics-stop)
   (remove-hook 'emms-player-finished-hook    'emms-lyrics-stop)
   (remove-hook 'emms-player-paused-hook      'emms-lyrics-pause)
   (remove-hook 'emms-player-seeked-functions 'emms-lyrics-seek)
-  (message "Displaying emms lyrics disabled."))
+  (message "emms lyrics disabled."))
 
 (defun emms-lyrics-toggle ()
   "Toggle displaying emms lyrics."
@@ -293,6 +294,12 @@ To find FILE, will look up in current directory and `emms-lyrics-dir'."
     (setq global-mode-string
 	  (append global-mode-string
 		  '(emms-lyrics-mode-line-string)))))
+
+(defun emms-lyrics-restore-mode-line ()
+  "Restore the mode line."
+  (setq global-mode-string
+	(remove 'emms-lyrics-mode-line-string global-mode-string))
+  (force-mode-line-update))
 
 (defun emms-lyrics-display (lyric)
   "Display lyric.
