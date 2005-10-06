@@ -76,9 +76,13 @@ stable features which come with the Emms distribution."
   (require 'emms-metaplaylist-mode)
   (require 'emms-mode-line)
   (require 'emms-streams)
+  (require 'emms-lyrics)
+  (require 'emms-playing-time)
   ;; setup
   (emms-mode-line 1)
-  (emms-mode-line-blank))
+  (emms-mode-line-blank)
+  (emms-lyrics-enable)
+  (emms-playing-time-enable))
 
 (defun emms-devel ()
   "An Emms setup script.
@@ -89,9 +93,7 @@ on the edge."
   ;; include
   (emms-all)
   ;; define
-  (require 'emms-stream-info)
-  (require 'emms-lyrics)
-  (require 'emms-playing-time))
+  (require 'emms-stream-info))
 
 (defun emms-default-players ()
   "Set `emms-player-list' to `emms-setup-default-player-list'."
