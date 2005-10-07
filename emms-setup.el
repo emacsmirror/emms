@@ -93,7 +93,8 @@ on the edge."
   ;; include
   (emms-all)
   ;; define
-  (require 'emms-stream-info))
+  (require 'emms-stream-info)
+  (require 'emms-playlist-sort))
 
 (defun emms-default-players ()
   "Set `emms-player-list' to `emms-setup-default-player-list'."
