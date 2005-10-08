@@ -923,7 +923,7 @@ ignore this."
       (save-buffer)
       (kill-buffer (current-buffer)))))
 
-(defun emms-playlist-save-active-as-m3u (filename)
+(defun emms-playlist-save-current-as-m3u (filename)
   "Save the active EMMS playlist in m3u format."
   (interactive "FFile to save playlist as: ")
   (emms-playlist-save-as-m3u emms-playlist-buffer filename))
