@@ -96,7 +96,7 @@ Installation
 
 Info Tags
 * Ogg Info::    Reading ogg info tags
-* MP3 Info::    Reading mp3 info tags
+* mp3 Info::    Reading mp3 info tags
 @end detailmenu
 
 Extending Emms
@@ -619,16 +619,15 @@ Sentinel for determining the end of process for the process @var{proc}
 and the sentinel string @var{str}.
 @end defun
 
-@c FIXME finish writing this
 @node Playlists
 @chapter Playlists
 
 @cindex organizing tracks and media
 
-Emms uses an Emacs buffer to store a list of media tracks to be
-played. We call it a ``playlist buffer'' or an ``Emms playlist
-buffer''. Emms then proceeds to play the media tracks from top to
-bottom until it reaches the end of the playlist buffer.
+Emms uses Emacs buffers to store the media tracks for playing. We call
+one such buffer a ``playlist buffer'' or an ``Emms playlist
+buffer''. Emms then proceeds to play the media tracks in the buffer
+from top to bottom until the end of the playlist.
 
 The name of the playlist buffer is defined in the variable
 @var{emms-playlist-buffer-name} and is set to be an invisible Emacs
@@ -674,7 +673,7 @@ Then you register it with emms-info, by adding it to
 
 If you wish to use 'emms-info-mp3info' you will need the mp3info
 program which is available at http://www.ibiblio.org/mp3info/.
-Otherwise Emms will display an error when you attempt to access MP3
+Otherwise Emms will display an error when you attempt to access mp3
 info.
 
 @lisp
@@ -682,52 +681,32 @@ info.
 @end lisp
 @noindent
 
-There are already two predefined methods for retrieving info
+Emms is distributed with two predefined methods for retrieving
+info. These and all other methods for retrieving info from media
+tracks are managed by the `emms-info' feature defined in the file
+@file{emms-info.el}.
 
 @menu
-* Ogg Info::    Reading ogg info tags
-* MP3 Info::    Reading mp3 info tags
+* Ogg Info::    Reading Ogg info tags
+* mp3 Info::    Reading mp3 info tags
 @end menu
-@c FIXME: check that these still exist
-@defun emms-info-get-cached track
-Return cached info for the track @var{track}, nil of no cache.
-@end defun
-@defun emms-info-set-cached
-Set cached info for @var{track} to @var{info}
-@end defun
-@defun emms-info-method-for track
-Return an info-method suitable for @var{track}.
-@end defun
-@defun emms-info-get track &optional dont-use-cached
-Return an emms-info structure representing the track @var{track}.
-if @var{dont-USE-CACHED} is non-nil, then always read from the file.
-@end defun
-@defun emms-info-get-multiple callback tracks &optional dont-use-cached
-Asynchronously get all info tags from the tracks in the listlaw
-@var{tracks}. For each file, call @var{callback} with the track and the info
-structure.
-@end defun
-@defun emms-info-set track info
-Set the info of the file @var{track} to the emms-info structure @var{info}.
-@end defun
-@defun emms-info-file-info-song-artist track
-Returns a description of @var{track}, build from it's comments.
 
-If @var{emms-info-methods-list} indicates how to retrieve special info
-about it, use this. Otherwise returns the name alone.
-@end defun
+There are a number of user variables which control the behaviour of
+`emms-info'.
 
-@defopt emms-info-methods-list
-List of info-methods. You need to set this!
+@defopt emms-info-auto-update
+Non-nil when Emms should update track information if the file changes.
+This will cause hard drive activity on track loading. If this is too
+annoying for you, set this variable to nil.
 @end defopt
-@defopt emms-info-cache
-Boolean value, indicating whether or not to use a cache for
-info-structures.
+@defopt emms-info-asynchronously
+Non-nil when track information should be loaded asynchronously. This
+requires the feature `later-do' which is provided by the file
+@file{later-do.el}, which should come with Emms.
 @end defopt
-@defopt emms-info-get-multiple-idletime
-The number of seconds emacs should be idle to get the next info.
-Increase this if emacs becomes unresponsive when building the
-playlist.
+@defopt emms-info-functions
+Functions which add information to tracks.  Each is called with a
+track as argument.
 @end defopt
 
 @c FIXME: update this to emms-info-ogginfo.el
@@ -758,8 +737,8 @@ Retrieve an emms-info structure as an ogg-comment
 @end defun
 
 @c FIXME: update this for the latest version of mp3info
-@node MP3 Info
-@section MP3 Info
+@node mp3 Info
+@section mp3 Info
 
 This code has been adapted from code found in mp3player.el, written by
 Jean-Philippe Theberge @email{jphiltheberge@@videotron.ca}, Mario Domgoergen
