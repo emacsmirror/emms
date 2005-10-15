@@ -48,7 +48,7 @@ This is a useful element for `emms-info-functions'."
 
 	;; all the rest of the info available
 	(goto-char (point-min))
-	(when (re-search-forward "User comments section follows..." (point-max) t)
+	(when (re-search-forward "^.*\\.\\.\\.$" (point-max) t)
 	  (while (zerop (forward-line 1))
 	    (when (looking-at "^\t\\(.*\\)=\\(.*\\)$")
 	      (let ((a (match-string 1))

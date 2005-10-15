@@ -648,14 +648,11 @@ buffer is also selected.
 The current Emms playlist buffer is stored in the variable
 @var{emms-playlist-buffer}.
 
+@c FIXME: Needs to be fixe-up
 @node Info Tags
 @chapter Info Tags
 
 @cindex track information
-
-The file @file{emms-info.el} provides an interface for different
-methods of reading info about the files that Emms is playing, and
-displaying it.
 
 To create a method for retrieving (or setting) info about a file, you
 create an object like this:
@@ -666,7 +663,6 @@ create an object like this:
   :get 'emms-info-mp3info-get
   :set 'emms-info-mp3info-set)
 @end lisp
-@noindent
 
 Then you register it with emms-info, by adding it to
 @var{emms-info-methods-list}.
