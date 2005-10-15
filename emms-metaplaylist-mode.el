@@ -62,7 +62,7 @@
     (define-key emms-metaplaylist-mode-map (kbd "n") 'next-line)
     (define-key emms-metaplaylist-mode-map (kbd "p") 'previous-line)
     (define-key emms-metaplaylist-mode-map (kbd "RET") 'emms-metaplaylist-mode-goto-current)
-    (define-key emms-metaplaylist-mode-map (kbd "q") 'kill-buffer)
+    (define-key emms-metaplaylist-mode-map (kbd "q") 'kill-this-buffer)
     (define-key emms-metaplaylist-mode-map (kbd "?") 'describe-mode)
     emms-metaplaylist-mode-map)
   "Keymap for `emms-metaplaylist-mode'.")
