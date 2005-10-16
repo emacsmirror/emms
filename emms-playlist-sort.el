@@ -53,7 +53,7 @@
 (define-key emms-playlist-mode-map (kbd "S n") 'emms-playlist-sort-by-name)
 (define-key emms-playlist-mode-map (kbd "S a") 'emms-playlist-sort-by-info-artist)
 (define-key emms-playlist-mode-map (kbd "S t") 'emms-playlist-sort-by-info-title)
-(define-key emms-playlist-mode-map (kbd "S b") 'emms-playlist-sort-by-name)
+(define-key emms-playlist-mode-map (kbd "S b") 'emms-playlist-sort-by-album)
 (define-key emms-playlist-mode-map (kbd "S y") 'emms-playlist-sort-by-info-year)
 (define-key emms-playlist-mode-map (kbd "S o") 'emms-playlist-sort-by-info-note)
 
