@@ -120,9 +120,9 @@ New Player
 
 Emms is the Emacs Multi-Media System. It tries to be a clean and small
 application to play multimedia files from Emacs using external
-players. Many of its ideas are derived from MpthreePlayer
-(http://www.nongnu.org/mp3player), but it tries to be more general and
-more clean.
+players. Many of its ideas are derived from
+@uref{http://www.nongnu.org/mp3player, MpthreePlayer}, but it tries to
+be more general and more clean.
 
 The basic functionality of Emms consists of three parts: The core, the
 sources, and the players.
@@ -235,7 +235,7 @@ are considered stable or not.  Use this if you like living on the
 edge.
 @end defun
 
-`emms-setup' also comes with a convinience function to set a default
+`emms-setup' also comes with a convenience function to set a default
 list of media players.
 
 @defun emms-default-players
@@ -597,12 +597,12 @@ Search for @var{regexp} and display the results in a locate buffer
 
 @defmac define-emms-simple-player name types regex command &rest args
 Define a simple player with the use of `emms-define-player'.
-@var{name} is used to contruct the name of the function like
+@var{name} is used to construct the name of the function like
 emms-player-@var{name}. @var{types} is a list of track types
 understood by this player. @var{regex} must be a regexp that matches
 the filenames the player can play. @var{command} specifies the command
-line arguement to call the player and @var{args} are the command line
-arguements.
+line argument to call the player and @var{args} are the command line
+arguments.
 @end defmac
 
 For a discussion on how to define new players see @xref{New Player}.
@@ -648,44 +648,18 @@ buffer is also selected.
 The current Emms playlist buffer is stored in the variable
 @var{emms-playlist-buffer}.
 
-@c FIXME: Needs to be fixe-up
 @node Info Tags
 @chapter Info Tags
 
 @cindex track information
 
-To create a method for retrieving (or setting) info about a file, you
-create an object like this:
-
-@lisp
-(define-emms-info-method emms-info-mp3info
-  :providep 'emms-info-mp3info-providep
-  :get 'emms-info-mp3info-get
-  :set 'emms-info-mp3info-set)
-@end lisp
-
-Then you register it with emms-info, by adding it to
-@var{emms-info-methods-list}.
-
-If you wish to use 'emms-info-mp3info' you will need the mp3info
-program which is available at http://www.ibiblio.org/mp3info/.
-Otherwise Emms will display an error when you attempt to access mp3
-info.
-
-@lisp
-(add-to-list 'emms-info-methods-list 'emms-info-mp3info)
-@end lisp
-@noindent
-
 Emms is distributed with two predefined methods for retrieving
-info. These and all other methods for retrieving info from media
-tracks are managed by the `emms-info' feature defined in the file
-@file{emms-info.el}.
-
-@menu
-* Ogg Info::    Reading Ogg info tags
-* mp3 Info::    Reading mp3 info tags
-@end menu
+info. Track information is provided by @file{emms-info-mp3info.el} and
+@file{emms-info-ogginfo.el}. Both packages are front-ends for
+command-line tools. Ogg track information is retrieved using the
+@uref{http://directory.fsf.org/audio/ogg/vorbistools.html, ogginfo}
+software. Likewise, mp3 track information is available using
+@uref{http://www.ibiblio.org/mp3info/, mp3info}.
 
 There are a number of user variables which control the behaviour of
 `emms-info'.
@@ -704,6 +678,12 @@ requires the feature `later-do' which is provided by the file
 Functions which add information to tracks.  Each is called with a
 track as argument.
 @end defopt
+
+@menu
+* Ogg Info::            Reading Ogg info tags
+* mp3 Info::            Reading mp3 info tags
+* Defining Methods::    Defining new info methods
+@end menu
 
 @c FIXME: update this to emms-info-ogginfo.el
 @node Ogg Info
@@ -768,12 +748,33 @@ return an emms-info structure representing it.
 *The name/path of the mp3info-program.
 @end defopt
 
+@node Defining Methods
+@section Defining Methods
+
+An info method essentially consists of a function which given an Emms
+track returns the appropriate info for that track.
+
+We can for example look at the predefined method for retrieving
+information about audio tracks in the Ogg format.
+
+The function @command{emms-info-ogginfo} provided by
+@file{emms-info-ogginfo.el} accepts an Emms track as a single
+argument and returns the appropriate information string.
+
+We then register our info function with Emms by adding it to the
+@var{emms-info-functions} list. The function will then be called at
+the right time to provide track info.
+
+@lisp
+(add-to-list 'emms-info-functions 'emms-info-ogginfo)
+@end lisp
+
 @node Interactive Playlists
 @chapter Interactive Playlists
 @cindex Interactive Playlists
 
 @c FIXME: Completely rewrite the playlist buffer thus introducing the
-@c concept of multiple playlists to the people.
+@c concept of multiple playlists to the proliteriat.
 
 @node Extending Emms
 @chapter Extending Emms
@@ -783,7 +784,7 @@ return an emms-info structure representing it.
 @cindex new players, defining
 
 Emms introduces a high abstraction layer for playing music so you can
-customise a lot of things to morph Emms into @emph{your} media player.
+customise a lot of things to change Emms into @emph{your} media player.
 @c FIXME: Compress this into a smaller footprint, no need for so many
 @c submenus.
 @menu
@@ -946,7 +947,7 @@ invoking:
 
 Enter the emms-streams interface by invoking M-x
 @command{emms-streams}. The emms-streams interface comes with a
-built-in, eclectic list of streaming audio channels from thoughout the
+built-in, eclectic list of streaming audio channels from throughout the
 Web. Emms can of-course play other streams than the ones listed by
 default, you are free to remove any or all of them and add your
 own.@footnote{If you enjoy a particular streaming audio station on the
