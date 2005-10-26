@@ -50,12 +50,25 @@
 (define-emms-playlist-sort info-year)
 (define-emms-playlist-sort info-note)
 
-(define-key emms-playlist-mode-map (kbd "S n") 'emms-playlist-sort-by-name)
-(define-key emms-playlist-mode-map (kbd "S a") 'emms-playlist-sort-by-info-artist)
-(define-key emms-playlist-mode-map (kbd "S t") 'emms-playlist-sort-by-info-title)
-(define-key emms-playlist-mode-map (kbd "S b") 'emms-playlist-sort-by-album)
-(define-key emms-playlist-mode-map (kbd "S y") 'emms-playlist-sort-by-info-year)
-(define-key emms-playlist-mode-map (kbd "S o") 'emms-playlist-sort-by-info-note)
+;; FIXME: Should better avoid relying on setting before loading.
+(defcustom emms-playlist-sort-prefix "S"
+  "*Prefix key sequence for `emms-playlist-sort-map'.
+You should set this variable before loading this file."
+  :type 'string)
+
+(defvar emms-playlist-sort-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "n") 'emms-playlist-sort-by-name)
+    (define-key map (kbd "a") 'emms-playlist-sort-by-info-artist)
+    (define-key map (kbd "t") 'emms-playlist-sort-by-info-title)
+    (define-key map (kbd "b") 'emms-playlist-sort-by-info-album)
+    (define-key map (kbd "y") 'emms-playlist-sort-by-info-year)
+    (define-key map (kbd "o") 'emms-playlist-sort-by-info-note)
+    map))
+
+(define-key emms-playlist-mode-map
+  emms-playlist-sort-prefix
+  emms-playlist-sort-map)
 
 (defun emms-playlist-sort (predicate)
   "Sort the whole playlist buffer by PREDICATE."
