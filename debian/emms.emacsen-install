@@ -33,13 +33,15 @@ fi
 install -m 755 -d ${ELCDIR}
 cd ${ELDIR}
 FILES=`echo *.el`
-cp ${FILES} ${ELCDIR}
 cd ${ELCDIR}
+for i in ${FILES}; do
+    ln -fs "/usr/share/emacs/site-lisp/${PACKAGE}/${i}"
+done
 
 cat << EOF > path.el
 (setq load-path (cons "." load-path) byte-compile-warnings nil)
 EOF
 ${FLAVOR} ${FLAGS} ${FILES}
-rm -f *.el path.el
+rm -f path.el
 
 exit 0
