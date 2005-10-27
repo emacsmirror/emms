@@ -35,5 +35,8 @@ install:
 deb-install:
 	install -m 644 $(ALLSOURCE) $(DESTDIR)/usr/share/emacs/site-lisp/emms/
 
+ChangeLog:
+	darcs changes > $@
+
 clean:
-	-rm -f *~ *.elc emms-auto.el emms.info
+	-rm -f *~ *.elc emms-auto.el emms.info ChangeLog
