@@ -79,8 +79,8 @@ find, but it's faster."
 
 ;;; Sources
 
-;;;###autoload (autoload 'emms-play-file "emms-source-file" t)
-;;;###autoload (autoload 'emms-add-file "emms-source-file" t)
+;;;###autoload (autoload 'emms-play-file "emms-source-file" nil t)
+;;;###autoload (autoload 'emms-add-file "emms-source-file" nil t)
 (define-emms-source file (file)
   "An EMMS source for a single file - either FILE, or queried from the
 user."
@@ -93,8 +93,8 @@ user."
     (emms-playlist-insert-track
      (emms-track 'file (expand-file-name file)))))
 
-;;;###autoload (autoload 'emms-play-directory "emms-source-file" t)
-;;;###autoload (autoload 'emms-add-directory "emms-source-file" t)
+;;;###autoload (autoload 'emms-play-directory "emms-source-file" nil t)
+;;;###autoload (autoload 'emms-add-directory "emms-source-file" nil t)
 (define-emms-source directory (dir)
   "An EMMS source for a whole directory tree - either DIR, or queried
 from the user"
@@ -108,8 +108,8 @@ from the user"
            (emms-track 'file (expand-file-name file))))
         (directory-files dir t (emms-source-file-regex))))
 
-;;;###autoload (autoload 'emms-play-directory-tree "emms-source-file" t)
-;;;###autoload (autoload 'emms-add-directory-tree "emms-source-file" t)
+;;;###autoload (autoload 'emms-play-directory-tree "emms-source-file" nil t)
+;;;###autoload (autoload 'emms-add-directory-tree "emms-source-file" nil t)
 (define-emms-source directory-tree (dir)
   "An EMMS source for multiple directory trees - either DIR, or the
 value of `emms-source-file-default-directory'."
@@ -124,8 +124,8 @@ value of `emms-source-file-default-directory'."
         (emms-source-file-directory-tree (expand-file-name dir)
                                          (emms-source-file-regex))))
 
-;;;###autoload (autoload 'emms-play-find "emms-source-file" t)
-;;;###autoload (autoload 'emms-add-find "emms-source-file" t)
+;;;###autoload (autoload 'emms-play-find "emms-source-file" nil t)
+;;;###autoload (autoload 'emms-add-find "emms-source-file" nil t)
 (define-emms-source find (dir regex)
   "An EMMS source that will find files in DIR or
 `emms-source-file-default-directory' that match REGEXP."
@@ -142,8 +142,8 @@ value of `emms-source-file-default-directory'."
 
 
 ;; FIXME! Does this work? -js
-;;;###autoload (autoload 'emms-play-m3u-playlist "emms-source-file" t)
-;;;###autoload (autoload 'emms-add-m3u-playlist "emms-source-file" t)
+;;;###autoload (autoload 'emms-play-m3u-playlist "emms-source-file" nil t)
+;;;###autoload (autoload 'emms-add-m3u-playlist "emms-source-file" nil t)
 (define-emms-source m3u-playlist (playlist)
   "A source for simple .m3u playlists. It ignores empty lines, or
 lines starting with '#'."
@@ -262,8 +262,8 @@ files) can play."
 ;; Strictly speaking, this does not belong in this file (URLs are not
 ;; real files), but it's close enough :-)
 
-;;;###autoload (autoload 'emms-play-url "emms-source-file" t)
-;;;###autoload (autoload 'emms-add-url "emms-source-file" t)
+;;;###autoload (autoload 'emms-play-url "emms-source-file" nil t)
+;;;###autoload (autoload 'emms-add-url "emms-source-file" nil t)
 (define-emms-source url (url)
   "An EMMS source for an URL - for example, for streaming."
   (interactive "sPlay URL: ")
