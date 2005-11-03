@@ -15,6 +15,8 @@
 
 @c FIXME: Add concept indices to all the new chapters.
 
+@c FIXME: Add an appropriate section discussing mupltiple playlists.
+
 @dircategory Emacs
 @direntry
 * Emms: (emms).           The Emacs Multimedia System
@@ -94,9 +96,8 @@ already listed, mentioned here so you can get to them in one step:
 Installation
 * Compiling Emms::      Compiling Emms into Byte-Code
 
-Info Tags
-* Ogg Info::    Reading ogg info tags
-* mp3 Info::    Reading mp3 info tags
+Track Information
+* Defining Info Methods::    Defining new info methods
 @end detailmenu
 
 Extending Emms
@@ -653,13 +654,22 @@ The current Emms playlist buffer is stored in the variable
 
 @cindex track information
 
-Emms is distributed with two predefined methods for retrieving
-info. Track information is provided by @file{emms-info-mp3info.el} and
+Emms is distributed with two predefined methods for retrieving info,
+provided by @file{emms-info-mp3info.el} and
 @file{emms-info-ogginfo.el}. Both packages are front-ends for
 command-line tools. Ogg track information is retrieved using the
 @uref{http://directory.fsf.org/audio/ogg/vorbistools.html, ogginfo}
 software. Likewise, mp3 track information is available using
 @uref{http://www.ibiblio.org/mp3info/, mp3info}.
+
+Automatic track information retrieval is enabled by default in the
+`emms-standard', `emms-all' and `emms-devel' setup levels provided by
+@file{emms-setup.el}. For more information about @file{emms-setup.el}
+see @xref{Simple Setup}.
+
+If you would like to know how Emms track retreival works and how we
+can define new methods for track retrieval see @xref{Defining Info
+Methods}.
 
 There are a number of user variables which control the behaviour of
 `emms-info'.
@@ -680,76 +690,11 @@ track as argument.
 @end defopt
 
 @menu
-* Ogg Info::            Reading Ogg info tags
-* mp3 Info::            Reading mp3 info tags
-* Defining Methods::    Defining new info methods
+* Defining Info Methods::    Defining new info methods
 @end menu
 
-@c FIXME: update this to emms-info-ogginfo.el
-@node Ogg Info
-@section Ogg Info
-The file @file{emms-info-ogg.el} provides an interface to retrieving
-comments from ogg-files, using Lawrence Mitchells ogg-comment.el.
-
-To activate, put something like this in your ~/.emacs:
-
-@lisp
-(require 'emms-info-ogg)
-(add-to-list 'emms-player-alist
-             '("\\.ogg$" . emms-info-ogg-comments))
-@end lisp
-@noindent
-
-Of course, you'll also need a player if you want to actually play the
-files.
-
-@defun emms-info-ogg-comment-providep
-Return non-nil if this info-method provides info for the track.
-@end defun
-@defun emms-info-ogg-get-comment
-@end defun
-@defun emms-info-ogg-comment-get
-Retrieve an emms-info structure as an ogg-comment
-@end defun
-
-@c FIXME: update this for the latest version of mp3info
-@node mp3 Info
-@section mp3 Info
-
-This code has been adapted from code found in mp3player.el, written by
-Jean-Philippe Theberge @email{jphiltheberge@@videotron.ca}, Mario Domgoergen
-@email{kanaldrache@@gmx.de} and Jorgen Schäfer @email{forcer@@forcix.cx}
-
-To activate this method for getting info, use something like:
-
-@lisp
-(require 'emms-info-mp3info)
-(add-to-list 'emms-info-methods-alist
-             '("\\.mp3$" . emms-info-mp3info))
-@end lisp
-@noindent
-
-Of course, you'll also need a player if you want to actually play the
-files.
-
-@defun emms-info-mp3info-providep
-Return non-nil if this info-method provides info for the track.
-@end defun
-@defun emms-info-mp3info-set track info
-Set the id3v1 tag of file @var{track} to id3info @var{info}, using the
-@var{mp3info-program}.
-@end defun
-@defun emms-info-mp3info-get track
-Get the id3v1 tag of file @var{track}, using the mp3info-program and
-return an emms-info structure representing it.
-@end defun
-
-@defopt emms-info-mp3info-program-name
-*The name/path of the mp3info-program.
-@end defopt
-
-@node Defining Methods
-@section Defining Methods
+@node Defining Info Methods
+@section Defining Info Methods
 
 An info method essentially consists of a function which given an Emms
 track returns the appropriate info for that track.
@@ -773,8 +718,27 @@ the right time to provide track info.
 @chapter Interactive Playlists
 @cindex Interactive Playlists
 
-@c FIXME: Completely rewrite the playlist buffer thus introducing the
-@c concept of multiple playlists to the proliteriat.
+@c FIXME: Complete this section.
+
+Emms provides a visual, interactive playlist mode as well as the
+ability to use the playlists without ever looking at then. The visual,
+interactive mode is called the ``interactive playlist mode'' and is
+defined in @file{emms-playlist-mode.el}.
+
+The interactive playlist mode is enabled by default in the
+`emms-standard', `emms-all' and `emms-devel' setup levels. For more
+information about Emms setup levels see @xref{Simple Setup}.
+
+In order to manually enable the interactive playlist mode we can
+invoke the following:
+
+@lisp
+(require 'emms-playlist-mode)
+(setq emms-playlist-default-major-mode 'emms-playlist-mode)
+@end lisp
+
+This loads the feature and sets the correct major mode for visiting
+playlist buffers.
 
 @node Extending Emms
 @chapter Extending Emms

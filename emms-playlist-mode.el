@@ -15,6 +15,14 @@
 ;;;
 ;;; (1) Arbitrary comment entry with color overlays.
 
+;;; Todo:
+;;;
+;;; emms-add-m3u-playlist displays the first track on the
+;;; mode-line.
+;;;
+;;; Not all of the methods for adding tracks behave correctly in
+;;; regards to marking the current track. Stress test this.
+
 ;;; Code:
 
 ;;; --------------------------------------------------------
