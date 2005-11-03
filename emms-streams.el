@@ -36,6 +36,9 @@
 (defvar emms-stream-play-hook nil
   "*A hook run when you add or play an EMMS stream via the popup.")
 
+(defvar emms-stream-hook nil
+"*A hook run when you call emms-streams or emms-stream-popup.")
+
 (defvar emms-stream-current-stream nil
   "The stream currently being played.
 Needed by the info method, as the track doesn't contain all the
@@ -163,6 +166,7 @@ If POS is nil, use current buffer location."
   (goto-char 1)
   (emms-stream-display)
   (toggle-read-only 1)
+  (run-hooks 'emms-stream-hook)
   (message "EMMS Stream Menu"))
 
 (defun emms-stream-popup-revert ()
