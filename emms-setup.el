@@ -21,7 +21,19 @@
 ;; Boston, MA 02110-1301 USA
 
 ;;; Commentary:
+
+;; This file provides the `emms-setup' feature. With `emms-setup' we
+;; can setup Emms with different features enabled. The use of this
+;; feature is documented in the Emms manual which is distributed with
+;; Emms.
 ;;
+;; The use this feature we can invoke:
+;;
+;; (require 'emms-setup)
+;; (emms-all)
+;;
+;; The first command loads the feature into Emacs and the second
+;; chooses the `emms-all' level.
 
 ;;; Code:
 
@@ -73,7 +85,6 @@ stable features which come with the Emms distribution."
   ;; include
   (emms-standard)
   ;; define
-  (require 'emms-metaplaylist-mode)
   (require 'emms-mode-line)
   (require 'emms-streams)
   (require 'emms-lyrics)
@@ -93,6 +104,7 @@ on the edge."
   ;; include
   (emms-all)
   ;; define
+  (require 'emms-metaplaylist-mode)
   (require 'emms-stream-info)
   (require 'emms-playlist-sort))
 
