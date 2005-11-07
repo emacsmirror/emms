@@ -4,18 +4,18 @@
 @settitle The Emms Manual
 @c %**end of header
 
-@c Maintainer comments: As of Oct 2005 the manual is being re-written
-@c for Emms2.
-@c
+@c History: The Emms manual was almost entirely rewritten for the
+@c release of Emms version 2.
+
 @c As a rule, modules which are stable enough to be included into the
 @c `emms-all' setup level should be documented.
 
 @c FIXME: Stuff slated for addition to the manual:
-@c emms-mode-line, emms-metaplaylist-mode.
+@c emms-mode-line
 
-@c FIXME: Add concept indices to all the new chapters.
-
-@c FIXME: Add an appropriate section discussing mupltiple playlists.
+@c FIXME: Should emms-playlist-mode-save-buffer be a part of
+@c emms-playlist-mode? Probably not. This should be raised in the
+@c forum of our quaint and sleepy mailing list.
 
 @dircategory Emacs
 @direntry
@@ -52,8 +52,6 @@ Documentation License".
 @top Emms Manual
 
 This is the Manual for the Emacs Multimedia System
-@c FIXME: This is the last thing that needs to be done after the
-@c manual is fixed.
 @menu
 * Copying::             The GNU General Public License gives you permission to
                             redistribute Emms on certain terms; it also explains
@@ -74,7 +72,7 @@ Emms basics
 * Playlists::           How Emms organizes media
 
 Advanced Features
-* Info Tags::           More narrative track descriptions.
+* Track Information::           More narrative track descriptions.
 * Interactive Playlists::    Interactive Playlists.
 * Extending Emms::      How to define new players and modules.
 * Streaming Audio::     Interface to streaming audio.
@@ -85,8 +83,6 @@ Indices
 * Variable Index::
 * Keybinding Index::
 
-@c FIXME: the detailed listing needs to be re-generated after the
-@c above is finished.
 @detailmenu
 --- The Detailed Node Listing ---
 
@@ -96,16 +92,19 @@ already listed, mentioned here so you can get to them in one step:
 Installation
 * Compiling Emms::      Compiling Emms into Byte-Code
 
+The Core File
+* User Variables::     Variables for the user to tweak.
+* Hooks::              Hooks for important Emms functions.
+* Core Functions::     Providing the basic functionality of Emms.
+
 Track Information
 * Defining Info Methods::    Defining new info methods
-@end detailmenu
 
 Extending Emms
 * New Player::  How to define a new player
-
-New Player
 * Simple Player for @command{play}:: Example player using @command{play}
 * More Complex Player:: Example of a complex player using @command{mpg321}
+@end detailmenu
 @end menu
 
 @end ifnottex
@@ -185,6 +184,10 @@ run Emms just fine without byte compiling it.
 
 @node Simple Setup
 @chapter Simple Setup
+
+@cindex simple setup
+@cindex setting up Emms
+@cindex quick setup
 
 After adding the location of the Emms code to the @var{load-path}
 variable, see @xref{Installation}. we invoke the following using the
@@ -380,6 +383,11 @@ function uses @var{emms-show-format} to format the current track.
 
 @node The Core File
 @chapter The Core File
+
+@cindex core file
+@cindex heart of Emms
+@cindex primitive functions
+
 The core file @file{emms.el} provides the all basic functions for
 playing music, generating playlists and defining players.
 
@@ -391,6 +399,10 @@ playing music, generating playlists and defining players.
 
 @node User Variables
 @section User Variables
+
+@cindex user variables
+@cindex options
+
 The core file defines a number of user variables.
 
 @defopt emms-player-list
@@ -416,6 +428,10 @@ track should be sorted before the second (see also @code{sort}).
 
 @node Hooks
 @section Hooks
+
+@cindex hooks
+@cindex adding functionality
+
 The core file provides hook variables for the basic functionality of
 Emms.
 
@@ -451,6 +467,10 @@ Hook run when a player is paused or resumed. Use
 
 @node Core Functions
 @section Core Functions
+
+@cindex core functions
+@cindex basic functions
+
 The core file also defines all the functions important to the basic
 use of Emms.
 
@@ -649,10 +669,11 @@ buffer is also selected.
 The current Emms playlist buffer is stored in the variable
 @var{emms-playlist-buffer}.
 
-@node Info Tags
-@chapter Info Tags
+@node Track Information
+@chapter Track Information
 
 @cindex track information
+@cindex info tags
 
 Emms is distributed with two predefined methods for retrieving info,
 provided by @file{emms-info-mp3info.el} and
@@ -696,6 +717,8 @@ track as argument.
 @node Defining Info Methods
 @section Defining Info Methods
 
+@cindex defining info methods
+
 An info method essentially consists of a function which given an Emms
 track returns the appropriate info for that track.
 
@@ -716,29 +739,80 @@ the right time to provide track info.
 
 @node Interactive Playlists
 @chapter Interactive Playlists
+
 @cindex Interactive Playlists
 
-@c FIXME: Complete this section.
-
 Emms provides a visual, interactive playlist mode as well as the
-ability to use the playlists without ever looking at then. The visual,
-interactive mode is called the ``interactive playlist mode'' and is
-defined in @file{emms-playlist-mode.el}.
+ability to use playlists without ever looking at then. This visual,
+interactive mode is called the `emms-playlist-mode' and is defined in
+@file{emms-playlist-mode.el}.
 
 The interactive playlist mode is enabled by default in the
 `emms-standard', `emms-all' and `emms-devel' setup levels. For more
 information about Emms setup levels see @xref{Simple Setup}.
 
-In order to manually enable the interactive playlist mode we can
-invoke the following:
+@defun emms-playlist-mode-go
+Switch to the current emms-playlist buffer and use emms-playlist-mode.
+@end defun
 
-@lisp
-(require 'emms-playlist-mode)
-(setq emms-playlist-default-major-mode 'emms-playlist-mode)
-@end lisp
+The interactive playlist buffer shows the tracks in the current Emms
+playlist in the order in which they will be played. The current track
+will be highlighted.
 
-This loads the feature and sets the correct major mode for visiting
-playlist buffers.
+When in the interactive playlist mode we can perform different actions
+on the current playlist.
+
+@table @kbd
+@item n
+@findex emms-next
+Start playing the next track in the playlist.
+@item p
+@findex emms-next
+Start playing the previous track in the playlist.
+@item C-x C-s
+@findex emms-playlist-mode-save-buffer
+Save the current playlist buffer to a file.
+@item C-k
+@findex emms-playlist-mode-kill-track
+Remove the track under point from the playlist buffer. Also available
+by pressing the @kbd{d} key.
+@item C-y
+@findex emms-playlist-mode-yank
+Yank the last track killed back into the playlist buffer.
+@item s
+@findex emms-stop
+Stop playing.
+@item f
+@findex emms-show
+Describe the currently playing track in the minibuffer.
+@item c
+@findex emms-playlist-mode-center-current
+Display the current track in the center of the screen.
+@item RET
+@findex emms-playlist-mode-play-current-track
+Start playing the track under point. Note that this is also available
+with @kbd{<mouse-2>}.
+@item q
+@findex bury-buffer
+Put the interactive playlist buffer at the end of the list of all
+buffers.
+@item ?
+@findex describe-mode
+Describe the mode.
+@item M-<
+@findex emms-playlist-mode-first
+Go to the first track in the playlist. @kbd{M->} completes this
+command by going to the last track in the playlist using
+@command{emms-playlist-mode-last}.
+@item C-n
+@findex emms-playlist-mode-select-next
+Go to the next track in the playlist. @kbd{C-p} completes this command
+by going to the previous track in the playlist using
+@command{emms-playlist-mode-select-previous}.
+@item r
+@findex emms-random
+Go to a randomly selected track in the playlist.
+@end table
 
 @node Extending Emms
 @chapter Extending Emms
@@ -748,28 +822,31 @@ playlist buffers.
 @cindex new players, defining
 
 Emms introduces a high abstraction layer for playing music so you can
-customise a lot of things to change Emms into @emph{your} media player.
-@c FIXME: Compress this into a smaller footprint, no need for so many
-@c submenus.
+customise it to your needs.
+
 @menu
 * New Player::  How to define a new player
+* Simple Player for @command{play}:: An example player using @command{play}
+* More Complex Player:: Example of a complex player using @command{mpg321}
 @end menu
 
 @node New Player
 @section New Player
+
+@cindex new player
+@cindex defining new players
 
 The file @file{emms-player-simple.el} defines some easy players to
 start with, but it shouldn't be hard to provide a function for your
 favourite player. We will start with an easy example that shows how
 we can use the @command{play} command under Unix to play our WAV files.
 
-@menu
-* Simple Player for @command{play}:: An example player using @command{play}
-* More Complex Player:: Example of a complex player using @command{mpg321}
-@end menu
-
 @node Simple Player for @command{play}
-@subsection Simple Player for @command{play}
+@section Simple Player for @command{play}
+
+@cindex simple player
+@cindex primitive player
+@cindex basic player
 
 Play is a very easy command line player for various format. If you
 want your emms to play WAV files just put the following lines in you
@@ -810,7 +887,10 @@ particular song. For any other concept you will need to customise
 emms a bit more...
 
 @node More Complex Player
-@subsection More Complex Player
+@section More Complex Player
+
+@cindex complex player
+@cindex advanced player
 
 The most players you use will be simple players so you don't need to
 read this chapter. But if you are curious how you can use (almost) every
@@ -833,12 +913,12 @@ complicated but much more powerful!
 @end lisp
 @noindent
 
-So, that almost all! @command{define-emms-player} takes a minimum of
-three arguments. The first is the name of the player. The rest are
+So, that is almost all! @command{define-emms-player} takes a minimum
+of three arguments. The first is the name of the player. The rest are
 methods with functions to call. Three methods are required: start,
 stop and playable. Start says Emms how to start a track (sic!), stop
-how to stop a player and playablep should return non-nil if the
-player can play the track.
+how to stop a player and playablep should return non-nil if the player
+can play the track.
 
 So we just need these three functions to get our mpg321-remote:
 
@@ -909,7 +989,11 @@ invoking:
 (require 'emms-streams)
 @end lisp
 
-Enter the emms-streams interface by invoking M-x
+The Emms interface for streaming audio is enabled by default in the
+`emms-all' and `emms-devel' setup levels. For more information about
+Emms setup levels see @xref{Simple Setup}.
+
+Enter the emms-streams interface by invoking @kbd{M-x}
 @command{emms-streams}. The emms-streams interface comes with a
 built-in, eclectic list of streaming audio channels from throughout the
 Web. Emms can of-course play other streams than the ones listed by
