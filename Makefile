@@ -27,6 +27,9 @@ emms-auto.el: emms-auto.in $(SOURCE)
 %.info: %.texinfo
 	makeinfo $<
 
+emms-print-metadata: emms-print-metadata.c
+	$(CC) -o $@ $< -I/usr/include/taglib -L/usr/lib -ltag_c
+
 install:
 	test -d $(DESTDIR) || mkdir -p $(DESTDIR)
 	install -m 644 $(ALLSOURCE) $(DESTDIR)/usr/share/emacs/site-lisp/emms/
@@ -39,4 +42,4 @@ ChangeLog:
 	darcs changes > $@
 
 clean:
-	-rm -f *~ *.elc emms-auto.el emms.info ChangeLog
+	-rm -f *~ *.elc emms-auto.el emms.info ChangeLog emms-print-metadata
