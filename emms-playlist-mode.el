@@ -237,7 +237,7 @@ FACE should be a... face."
 				      'emms-playlist-selected-face
 				      3))
   nil)
-		  
+
 ;;; --------------------------------------------------------
 ;;; Saving/Restoring
 ;;; --------------------------------------------------------
@@ -331,6 +331,19 @@ of the saved playlist inside."
 	       emms-playlist-buffer-p)
       (emms-playlist-mode))))
 
+(defvar emms-playlist-window-width -25
+  "Window width for the emms-playlist window when it's popuped.")
+
+(defun emms-playlist-mode-go-popup (&optional window-width)
+  "Popup emms-playlist buffer as a side window. Default value for
+WINDOW-WIDTH is `emms-playlist-window-width'."
+  (interactive)
+  (setq emms-playlist-window-width
+	(or window-width emms-playlist-window-width))
+  (split-window-horizontally emms-playlist-window-width)
+  (other-window 1)
+  (emms-playlist-mode-go))
+
 (defun emms-playlist-mode-startup ()
   "Instigate emms-playlist-mode on the current buffer."
   (when (not (or emms-playlist-selected-marker
@@ -346,7 +359,8 @@ of the saved playlist inside."
 
 ;;;###autoload
 (defun emms-playlist-mode ()
-  "A major mode for Emms playlists."
+  "A major mode for Emms playlists.
+\\{emms-playlist-mode-map}."
   (interactive)
   (let ((val emms-playlist-buffer-p))
     (kill-all-local-variables)
