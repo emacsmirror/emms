@@ -30,7 +30,7 @@
 ;; info-artist - string naming the artist
 ;; info-title - string naming the title of the song
 ;; info-album - string naming the album
-;; info-tracknum - string(?) naming the track number
+;; info-tracknumber - string(?) naming the track number
 ;; info-year - string naming the year
 ;; info-note - string of free-form entry
 ;; info-genre - string naming the genre
