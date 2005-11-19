@@ -35,15 +35,13 @@
 
 ;;; Code:
 
-(require 'rx)
-
 (defvar emms-info-libtag-coding-system 'utf-8)
 (defvar emms-info-libtag-program-name "emms-print-metadata")
 
 (defun emms-info-libtag (track)
   (when (and (eq 'file (emms-track-type track))
              (string-match 
-              "\\.\([Mm][Pp]3\|[oO][gG][gG]\|[fF][lL][aA][cC]\)\\'"
+              "\\.\\([Mm][Pp]3\\|[oO][gG][gG]\\|[fF][lL][aA][cC]\\)\\'"
               (emms-track-name track)))
     (with-temp-buffer
       (when (zerop
@@ -53,7 +51,7 @@
                              (emms-track-name track))))
         (goto-char (point-min))
         (while (looking-at "^\\([^=]+\\)=\\(.*\\)$")
-          (let ((name (intern (match-string 1)))
+          (let ((name (intern-soft (match-string 1)))
                 (value (match-string 2)))
             (when (> (length value)
                      0)
