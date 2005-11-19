@@ -25,42 +25,64 @@ configure-stamp:
 	touch configure-stamp
 
 
-build: build-stamp
-
-build-stamp: configure-stamp 
+build: 
+build-indep: build-indep-stamp
+build-arch: build-arch-stamp
+build-arch-stamp:
+	make emms-print-metadata
+	touch build-arch-stamp
+build-indep-stamp: configure-stamp 
 	dh_testdir
 	make emms.info
 	make emms-auto.el
 	make ChangeLog
-	touch build-stamp
+	touch build-indep-stamp
 
 clean:
 	dh_testdir
 	dh_testroot
-	rm -f build-stamp configure-stamp
+	rm -f build-arch-stamp build-indep-stamp configure-stamp
 
 	# Add here commands to clean up after the build process.
 	-$(MAKE) clean
 
 	dh_clean 
 
-install: build
+install: install-indep install-arch
+install-indep:
 	dh_testdir
 	dh_testroot
-	dh_clean -k 
-	dh_installdirs
+	dh_clean -k -i 
+	dh_installdirs -i
 
-	# Add here commands to install the package into debian/emms.
+	# Add here commands to install the indep part of the package into
+	# debian/emms.
 	$(MAKE) deb-install DESTDIR=$(CURDIR)/debian/emms
+	dh_installinfo -i emms.info
 
-# Build architecture-independent files here.
-binary-indep: build install
+	dh_install -i
+
+install-arch:
+	dh_testdir
+	dh_testroot
+	dh_clean -k -s 
+	dh_installdirs -s
+
+	# Add here commands to install the arch part of the package into 
+	# debian/emms-extras.
+	install emms-print-metadata debian/emms-extras/usr/bin/
+
+	dh_install -s
+
+# Must not depend on anything. This is to be called by
+# binary-arch/binary-indep
+# in another 'make' thread.
+binary-common:
 	dh_testdir
 	dh_testroot
 	dh_installchangelogs ChangeLog
 	dh_installdocs
 #	dh_installexamples
-	dh_install
 #	dh_installmenu
 #	dh_installdebconf	
 #	dh_installlogrotate
@@ -69,10 +91,9 @@ binary-indep: build install
 #	dh_installmime
 #	dh_installinit
 #	dh_installcron
-	dh_installinfo emms.info
 #	dh_installman
 	dh_link
-#	dh_strip
+	dh_strip
 	dh_compress
 	dh_fixperms
 #	dh_perl
@@ -83,10 +104,13 @@ binary-indep: build install
 	dh_gencontrol
 	dh_md5sums
 	dh_builddeb
+# Build architecture independent packages using the common target.
+binary-indep: build-indep install-indep
+	$(MAKE) -f debian/rules DH_OPTIONS=-i binary-common
 
-# Build architecture-dependent files here.
-binary-arch: build install
-# We have nothing to do by default.
+# Build architecture dependant packages using the common target.
+binary-arch: build-arch install-arch
+	$(MAKE) -f debian/rules DH_OPTIONS=-a binary-common
 
 binary: binary-indep binary-arch
 .PHONY: build clean binary-indep binary-arch binary install configure
