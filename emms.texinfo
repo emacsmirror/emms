@@ -102,7 +102,7 @@ Track Information
 
 Extending Emms
 * New Player::  How to define a new player
-* Simple Player for @command{play}:: Example player using @command{play}
+* Simple Player for `play':: Example player using @command{play}
 * More Complex Player:: Example of a complex player using @command{mpg321}
 @end detailmenu
 @end menu
@@ -826,7 +826,7 @@ customise it to your needs.
 
 @menu
 * New Player::  How to define a new player
-* Simple Player for @command{play}:: An example player using @command{play}
+* Simple Player for `play':: An example player using @command{play}
 * More Complex Player:: Example of a complex player using @command{mpg321}
 @end menu
 
@@ -841,8 +841,8 @@ start with, but it shouldn't be hard to provide a function for your
 favourite player. We will start with an easy example that shows how
 we can use the @command{play} command under Unix to play our WAV files.
 
-@node Simple Player for @command{play}
-@section Simple Player for @command{play}
+@node Simple Player for `play'
+@section Simple Player for `play'
 
 @cindex simple player
 @cindex primitive player
@@ -874,8 +874,13 @@ your favourite artist in the most possible volume use the following
 line:
 
 @lisp
-(require 'emms-player-simple)
-(define-emms-simple-player play '(file) "\\artist-*.wav$" "play" "--volume=100")
+(require 'emms-player-simple) 
+
+(define-emms-simple-player play 
+                           '(file) 
+                           "\\artist-*.wav$" 
+                           "play"
+                           "--volume=100")
 @end lisp
 @noindent
 
@@ -928,7 +933,7 @@ with the filename and set a filter.
 
 @lisp
 (defun emms-mpg321-remote-start ()
-  (unless (get-process "mpg321-remote")
+  (unless (get-process ``mpg321-remote'')
     (setq emms-mpg321-remote-process
 	  (start-process "mpg321-remote-process"
 			 "*mpg321*" "mpg321" "-R" "abc"))
