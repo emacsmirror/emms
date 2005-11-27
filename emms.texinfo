@@ -8,14 +8,8 @@
 @c release of Emms version 2.
 
 @c As a rule, modules which are stable enough to be included into the
-@c `emms-all' setup level should be documented.
-
-@c FIXME: Stuff slated for addition to the manual:
-@c emms-mode-line
-
-@c FIXME: Should emms-playlist-mode-save-buffer be a part of
-@c emms-playlist-mode? Probably not. This should be raised in the
-@c forum of our quaint and sleepy mailing list.
+@c `emms-all' setup level should be documented. That is, any feature
+@c which is considered stable should be included.
 
 @dircategory Emacs
 @direntry
@@ -23,7 +17,7 @@
 @end direntry
 
 @copying
- @copyright{} (c) 2004, 2005
+ @copyright{} 2004, 2005
    Yoni Rabkin, Jorgen Schaefer, Mario Domgoergen
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -48,16 +42,11 @@ Documentation License".
 @c END For printed material
 
 @ifnottex
-@node Top, Copying, (dir), (dir)
+@node Top, Introduction, (dir), (dir)
 @top Emms Manual
 
 This is the Manual for the Emacs Multimedia System
 @menu
-* Copying::             The GNU General Public License gives you permission to
-                            redistribute Emms on certain terms; it also explains
-                            that there is no warranty.
-* The GNU FDL::         The license for this documentation.
-
 Starting out
 * Introduction::        Introduction to Emms.
 * Installation::        How to install Emms on your System.
@@ -76,6 +65,12 @@ Advanced Features
 * Interactive Playlists::    Interactive Playlists.
 * Extending Emms::      How to define new players and modules.
 * Streaming Audio::     Interface to streaming audio.
+
+Copying and license
+* Copying::             The GNU General Public License gives you permission to
+                            redistribute Emms on certain terms; it also explains
+                            that there is no warranty.
+* The GNU FDL::         The license for this documentation.
 
 Indices
 * Concept Index::
@@ -109,9 +104,6 @@ Extending Emms
 
 @end ifnottex
 
-@c including the relevant licenses
-@include gpl.texi
-@include fdl.texi
 
 @node Introduction
 @chapter Introduction
@@ -1060,6 +1052,10 @@ Return information about the streaming audio at the URL of the
 bookmark under point. Note that this will only work if the
 `emms-stream-info' has already been loaded.
 @end table
+
+@c including the relevant licenses
+@include gpl.texi
+@include fdl.texi
 
 @node Concept Index
 @unnumbered Concept Index
