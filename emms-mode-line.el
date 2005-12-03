@@ -102,7 +102,8 @@ Optional TRACK is used to be compatible with
 
 (defun emms-mode-line-alter-mode-line ()
   "Update the mode-line with song info."
-  (when emms-mode-line-mode-line-function
+  (when (and emms-mode-line-mode-line-function
+	     emms-player-playing-p)
     (setq emms-mode-line-string
 	  (funcall emms-mode-line-mode-line-function))
     (force-mode-line-update)))
