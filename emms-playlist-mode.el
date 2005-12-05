@@ -1,23 +1,15 @@
 ;;; emms-playlist-mode.el --- Playlist mode for Emms.
 
-;;; Copyright Yoni Rabkin under the GNU General Public License.
+;;; Copyright 2005 Yoni Rabkin under the GNU General Public License.
 ;;; This file is a part of the Emacs Multimedia system.
 
 ;;; Commentary:
 ;;;
-;;; I'm designing this as a method of displaying and manipulating the
-;;; different Emms playlist buffers defined by the user.
+;;; This is a method of displaying and manipulating the different Emms
+;;; playlist buffers.
 ;;;
 ;;; Emms developer's motto: "When forcer says (require 'jump) we say
 ;;; (funcall #'jump height)"
-
-;;; Todo:
-;;;
-;;; emms-add-m3u-playlist displays the first track on the
-;;; mode-line.
-;;;
-;;; Not all of the methods for adding tracks behave correctly in
-;;; regards to marking the current track. Stress test this.
 
 ;;; Code:
 
@@ -33,6 +25,9 @@
 
 (defvar emms-playlist-mode-switched-buffer nil
   "Last buffer visited before calling `emms-playlist-mode-switch-buffer'.")
+
+(defvar emms-playlist-mode-window-width -25
+  "Width for the emms-playlist-mode pop-up window.")
 
 ;; The marker is unique for each playlist buffer
 (make-variable-buffer-local
@@ -75,24 +70,26 @@
 (defconst emms-playlist-mode-map
   (let ((emms-playlist-mode-map (make-sparse-keymap)))
     (set-keymap-parent emms-playlist-mode-map text-mode-map)
+    (define-key emms-playlist-mode-map (kbd "C-x C-s") 'emms-playlist-mode-save-buffer)
+    (define-key emms-playlist-mode-map (kbd "C-y") 'emms-playlist-mode-yank)
+    (define-key emms-playlist-mode-map (kbd "C-k") 'emms-playlist-mode-kill-track)
+    (define-key emms-playlist-mode-map (kbd "C-w") 'emms-playlist-mode-kill)
+    (define-key emms-playlist-mode-map (kbd "C-n") 'next-line)
+    (define-key emms-playlist-mode-map (kbd "C-p") 'previous-line)
+    (define-key emms-playlist-mode-map (kbd "C-j") 'emms-playlist-mode-insert-newline)
+    (define-key emms-playlist-mode-map (kbd "M-y") 'emms-playlist-mode-yank-pop)
+    (define-key emms-playlist-mode-map (kbd "M-<") 'emms-playlist-mode-first)
+    (define-key emms-playlist-mode-map (kbd "M->") 'emms-playlist-mode-last)
     (define-key emms-playlist-mode-map (kbd "n") 'emms-next)
     (define-key emms-playlist-mode-map (kbd "p") 'emms-previous)
-    (define-key emms-playlist-mode-map (kbd "C-x C-s") 'emms-playlist-mode-save-buffer)
-    (define-key emms-playlist-mode-map (kbd "C-k") 'emms-playlist-mode-kill-track)
-    (define-key emms-playlist-mode-map (kbd "C-y") 'emms-playlist-mode-yank)
-    (define-key emms-playlist-mode-map (kbd "d") 'emms-playlist-mode-kill-track)
     (define-key emms-playlist-mode-map (kbd "s") 'emms-stop)
     (define-key emms-playlist-mode-map (kbd "f") 'emms-show)
     (define-key emms-playlist-mode-map (kbd "c") 'emms-playlist-mode-center-current)
-    (define-key emms-playlist-mode-map (kbd "RET") 'emms-playlist-mode-play-current-track)
     (define-key emms-playlist-mode-map (kbd "q") 'bury-buffer)
-    (define-key emms-playlist-mode-map (kbd "<mouse-2>") 'emms-playlist-mode-play-current-track)
     (define-key emms-playlist-mode-map (kbd "?") 'describe-mode)
-    (define-key emms-playlist-mode-map (kbd "M-<") 'emms-playlist-mode-first)
-    (define-key emms-playlist-mode-map (kbd "M->") 'emms-playlist-mode-last)
-    (define-key emms-playlist-mode-map (kbd "C-n") 'emms-playlist-mode-select-next)
-    (define-key emms-playlist-mode-map (kbd "C-p") 'emms-playlist-mode-select-previous)
     (define-key emms-playlist-mode-map (kbd "r") 'emms-random)
+    (define-key emms-playlist-mode-map (kbd "<mouse-2>") 'emms-playlist-mode-play-current-track)
+    (define-key emms-playlist-mode-map (kbd "RET") 'emms-playlist-mode-play-current-track)
     emms-playlist-mode-map)
   "Keymap for `emms-playlist-mode'.")
 
@@ -139,47 +136,6 @@ FUN should be a function."
     (emms-stop))
   (emms-start))
 
-;; Buggy
-(defun emms-playlist-mode-yank ()
-  "Yank the last Emms track killed into the buffer."
-  (interactive)
-  (let ((track nil)
-	(start nil))
-    (with-temp-buffer
-      (yank)
-      (setq track (get-text-property (point-min) 'emms-track)))
-    (if track
-	(funcall emms-playlist-insert-track-function track)
-      (error "No playlist info to yank"))))
-
-;; The logic for killing tracks in an interactive manner is
-;; suprisingly annoying
-(defun emms-playlist-mode-kill-track ()
-  "Kill the track at point."
-  (interactive)
-  (let ((region (emms-property-region (point) 'emms-track))
-	(inhibit-read-only t))
-    (cond ((not (emms-playlist-track-at))
-	   (kill-line 1) (current-kill 1))
-	  ((and (not (emms-playlist-mode-selected-at))
-		(emms-playlist-track-at))
-	   (kill-region (car region)
-			(cdr region))
-	   (emms-playlist-mode-kill-track))
-	  ((and emms-player-playing-p
-		(emms-playlist-mode-selected-at))
-	   (emms-stop)
-	   (emms-next-noerror)
-	   (kill-region (car region)
-			(cdr region))
-	   (emms-playlist-mode-kill-track))
-	  ((and (not emms-player-playing-p)
-		(emms-playlist-mode-selected-at))
-	   (kill-region (car region)
-			(cdr region))
-	   (emms-playlist-mode-kill-track))
-	  (t (error "Cannot kill content at point")))))
-
 (defun emms-playlist-mode-switch-buffer ()
   "Switch to the playlist buffer and then switch back if called again.
 
@@ -192,6 +148,69 @@ function switches back to the remembered buffer."
       (switch-to-buffer emms-playlist-mode-switched-buffer)
     (setq emms-playlist-mode-switched-buffer (current-buffer))
     (switch-to-buffer emms-playlist-buffer)))
+
+(defun emms-playlist-mode-insert-newline ()
+  "Insert a newline at point."
+  (interactive)
+  (let ((inhibit-read-only t))
+    (newline)))
+
+;;; --------------------------------------------------------
+;;; Killing and yanking
+;;; --------------------------------------------------------
+
+(defun emms-playlist-mode-between-p (p a b)
+  "Return t if P is a point between points A and B."
+  (if (eq a b)
+      nil
+    (eq p (cadr (sort (list a b p) #'<=)))))
+
+;; C-k
+(defun emms-playlist-mode-kill-track ()
+  "Kill track at point."
+  (interactive)
+  (let ((track (emms-playlist-track-at))
+	(inhibit-read-only t))
+    (if track
+	(let ((track-region (emms-property-region (point)
+						  'emms-track)))
+	  (when (and emms-player-playing-p
+		     (equal (emms-playlist-selected-track) track))
+	    (emms-stop))
+	  (remove-overlays (point-at-bol) (point-at-eol))
+	  (kill-region (car track-region) (cdr track-region)))
+      (kill-line))))
+
+;; C-w
+(defun emms-playlist-mode-kill ()
+  "Kill from mark to point."
+  (interactive)
+  (let ((inhibit-read-only t)
+	(m (mark))			; throw error if no mark
+	(p (point))
+	(sm emms-playlist-selected-marker))
+    (kill-region p m)
+    (when (emms-playlist-mode-between-p
+	   (marker-position sm) p m)
+      (setq emms-playlist-selected-marker nil)
+      (setq emms-playlist-mode-selected-overlay-marker nil)
+      (emms-stop))))			; regardless of state
+
+;; C-y
+(defun emms-playlist-mode-yank ()
+  "Yank into the playlist buffer."
+  (interactive)
+  (let ((inhibit-read-only t))
+    (emms-playlist-mode-remove-overlay-selected)
+    (yank)
+    (emms-playlist-mode-overlay-selected)))
+
+;; M-y
+(defun emms-playlist-mode-yank-pop ()
+  "Cycle through the kill-ring."
+  (interactive)
+  (let ((inhibit-read-only t))
+    (yank-pop)))
 
 ;;; --------------------------------------------------------
 ;;; Overlay
@@ -219,20 +238,24 @@ FACE should be a... face."
 
 (defun emms-playlist-mode-overlay-selected ()
   "Place an overlay over the currently selected track."
-  (unless (null emms-playlist-mode-selected-overlay-marker)
-    (save-excursion
-      (goto-char emms-playlist-mode-selected-overlay-marker)
-      (remove-overlays (point-at-bol)
-		       (point-at-eol))
-      (emms-playlist-mode-overlay-at-point 
-       'emms-playlist-track-face 1)))
+  (emms-playlist-mode-remove-overlay-selected)
   (save-excursion
     (goto-char emms-playlist-selected-marker)
     (setq emms-playlist-mode-selected-overlay-marker
 	  (point-marker))
     (setq emms-playlist-mode-selected-overlay
-	  (emms-playlist-mode-overlay-at-point 
+	  (emms-playlist-mode-overlay-at-point
 	   'emms-playlist-selected-face 2))))
+
+(defun emms-playlist-mode-remove-overlay-selected ()
+  "Remove the overlay from the currently selected track"
+  (unless (null emms-playlist-mode-selected-overlay-marker)
+    (save-excursion
+      (goto-char emms-playlist-mode-selected-overlay-marker)
+      (remove-overlays (point-at-bol)
+		       (point-at-eol))
+      (emms-playlist-mode-overlay-at-point
+       'emms-playlist-track-face 1))))
 
 ;;; --------------------------------------------------------
 ;;; Saving/Restoring
@@ -332,16 +355,13 @@ of the saved playlist inside."
 	       emms-playlist-buffer-p)
       (emms-playlist-mode))))
 
-(defvar emms-playlist-window-width -25
-  "Window width for the emms-playlist window when it's popuped.")
-
 (defun emms-playlist-mode-go-popup (&optional window-width)
   "Popup emms-playlist buffer as a side window. Default value for
-WINDOW-WIDTH is `emms-playlist-window-width'."
+WINDOW-WIDTH is `emms-playlist-mode-window-width'."
   (interactive)
-  (setq emms-playlist-window-width
-	(or window-width emms-playlist-window-width))
-  (split-window-horizontally emms-playlist-window-width)
+  (setq emms-playlist-mode-window-width
+	(or window-width emms-playlist-mode-window-width))
+  (split-window-horizontally emms-playlist-mode-window-width)
   (other-window 1)
   (emms-playlist-mode-go))
 
