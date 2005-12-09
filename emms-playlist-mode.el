@@ -161,11 +161,16 @@ function switches back to the remembered buffer."
 
 (defun emms-playlist-mode-between-p (p a b)
   "Return t if P is a point between points A and B."
-  (if (eq a b)
+  (if (or (eq a b)
+	  (and (> b a)
+	       (= p b)))
       nil
     (eq p (cadr (sort (list a b p) #'<=)))))
 
 ;; C-k
+;;
+;; Currently this kills as regular GNU/Emacs would and not like a
+;; typical music player would.
 (defun emms-playlist-mode-kill-track ()
   "Kill track at point."
   (interactive)
@@ -189,21 +194,21 @@ function switches back to the remembered buffer."
 	(m (mark))			; throw error if no mark
 	(p (point))
 	(sm emms-playlist-selected-marker))
-    (kill-region p m)
+    ;; Are we killing the playing/selected track?
     (when (emms-playlist-mode-between-p
-	   (marker-position sm) p m)
+	   (marker-position sm) m p)
       (setq emms-playlist-selected-marker nil)
       (setq emms-playlist-mode-selected-overlay-marker nil)
-      (emms-stop))))			; regardless of state
+      (emms-stop))
+    (kill-region p m)))
 
 ;; C-y
 (defun emms-playlist-mode-yank ()
   "Yank into the playlist buffer."
   (interactive)
   (let ((inhibit-read-only t))
-    (emms-playlist-mode-remove-overlay-selected)
-    (yank)
-    (emms-playlist-mode-overlay-selected)))
+    (yank))
+  (emms-playlist-mode-overlay-refresh))
 
 ;; M-y
 (defun emms-playlist-mode-yank-pop ()
@@ -239,23 +244,41 @@ FACE should be a... face."
 (defun emms-playlist-mode-overlay-selected ()
   "Place an overlay over the currently selected track."
   (emms-playlist-mode-remove-overlay-selected)
-  (save-excursion
-    (goto-char emms-playlist-selected-marker)
-    (setq emms-playlist-mode-selected-overlay-marker
-	  (point-marker))
-    (setq emms-playlist-mode-selected-overlay
-	  (emms-playlist-mode-overlay-at-point
-	   'emms-playlist-selected-face 2))))
+  (when (not (and (null emms-playlist-selected-marker)
+		  (null emms-playlist-mode-selected-overlay-marker))) ; ugh
+    (save-excursion
+      (goto-char emms-playlist-selected-marker)
+      (setq emms-playlist-mode-selected-overlay-marker
+	    (point-marker))
+      (setq emms-playlist-mode-selected-overlay
+	    (emms-playlist-mode-overlay-at-point
+	     'emms-playlist-selected-face 2)))))
 
 (defun emms-playlist-mode-remove-overlay-selected ()
   "Remove the overlay from the currently selected track"
-  (unless (null emms-playlist-mode-selected-overlay-marker)
+  (when (not (null emms-playlist-mode-selected-overlay-marker))
     (save-excursion
       (goto-char emms-playlist-mode-selected-overlay-marker)
       (remove-overlays (point-at-bol)
 		       (point-at-eol))
       (emms-playlist-mode-overlay-at-point
        'emms-playlist-track-face 1))))
+
+(defun emms-playlist-mode-overlay-all ()
+  "Place an low-priority overlay over the entire buffer."
+  (emms-playlist-mode-overlay-track (point-min)
+				    (point-max)
+				    'emms-playlist-track-face
+				    1))
+
+;; not graceful, but avoids growing as the number of tracks grow.
+(defun emms-playlist-mode-overlay-refresh ()
+  "Remove and re-apply all the overlays in the buffer."
+  (remove-overlays (point-min)
+		   (point-max))
+  (emms-playlist-mode-overlay-all)
+  (setq emms-playlist-mode-selected-overlay-marker nil)
+  (emms-playlist-mode-overlay-selected))
 
 ;;; --------------------------------------------------------
 ;;; Saving/Restoring
@@ -367,11 +390,15 @@ WINDOW-WIDTH is `emms-playlist-mode-window-width'."
 
 (defun emms-playlist-mode-startup ()
   "Instigate emms-playlist-mode on the current buffer."
+  ;; when there is neither a current emms track or a playing one...
   (when (not (or emms-playlist-selected-marker
 		 emms-player-playing-p))
+    ;; ...then stop the player.
     (emms-stop)
+    ;; why select the first track?
     (when emms-playlist-buffer-p
       (emms-playlist-select-first)))
+  ;; when there is a selected track.
   (when emms-playlist-selected-marker
     (emms-playlist-mode-overlay-selected)
     (goto-char (or emms-playlist-mode-selected-overlay-marker
