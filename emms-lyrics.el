@@ -337,11 +337,6 @@ a valid `emms-lyrics-dir'."
 
 ;;; emms-lyrics-mode
 
-(define-derived-mode emms-lyrics-mode nil "Emms Lyric"
-  "Major mode for creating lyric files.
-\\{emms-lyrics-mode-map}"
-  (run-hooks 'emms-lyrics-mode-hook))
-
 (defvar emms-lyrics-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map "p" 'emms-lyrics-previous-line)
@@ -373,6 +368,11 @@ beginning of next line."
   "Goto the beginning of previous line."
   (interactive)
   (forward-line -1))
+
+(define-derived-mode emms-lyrics-mode nil "Emms Lyric"
+  "Major mode for creating lyric files.
+\\{emms-lyrics-mode-map}"
+  (run-hooks 'emms-lyrics-mode-hook))
 
 (provide 'emms-lyrics)
 
