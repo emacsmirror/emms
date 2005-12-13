@@ -31,12 +31,14 @@
 
 ;;; Code:
 
+(require 'emms-score)
+
 ;;; sort macro
 
 (defmacro define-emms-playlist-sort (attribute)
   "Macro for defining emms playlist sort functions."
   `(defun ,(intern (format "emms-playlist-sort-by-%s" attribute)) ()
-     ,(format "Sort emms playlist by %s." attribute)
+     ,(format "Sort emms playlist by %s, increasingly." attribute)
      (interactive)
      (emms-playlist-sort
       (lambda (a b)
@@ -49,6 +51,14 @@
 (define-emms-playlist-sort info-album)
 (define-emms-playlist-sort info-year)
 (define-emms-playlist-sort info-note)
+
+(defun emms-playlist-sort-by-score ()
+  "Sort emms playlist by score, decreasingly."
+  (interactive)
+  (emms-playlist-sort
+   (lambda (a b)
+     (> (emms-score-get-score (emms-track-get a 'name))
+	(emms-score-get-score (emms-track-get b 'name))))))
 
 ;; FIXME: Should better avoid relying on setting before loading.
 (defcustom emms-playlist-sort-prefix "S"
@@ -66,9 +76,10 @@ You should set this variable before loading this file."
     (define-key map (kbd "o") 'emms-playlist-sort-by-info-note)
     map))
 
-(define-key emms-playlist-mode-map
-  emms-playlist-sort-prefix
-  emms-playlist-sort-map)
+(eval-after-load "emms-playlist-sort.el"
+  (define-key emms-playlist-mode-map
+    emms-playlist-sort-prefix
+    emms-playlist-sort-map))
 
 (defun emms-playlist-sort (predicate)
   "Sort the whole playlist buffer by PREDICATE."
@@ -90,7 +101,6 @@ You should set this variable before loading this file."
 	  (if pos
 	      (emms-playlist-select pos)
 	    (emms-playlist-first)))))))
-
 
 (provide 'emms-playlist-sort)
 
