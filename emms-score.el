@@ -1,4 +1,4 @@
-;;; emms-scores.el --- Scoring system for mp3player
+;;; emms-score.el --- Scoring system for mp3player
 
 ;; Copyright (C) 2003, 2004, 2005
 
@@ -53,25 +53,137 @@
 
 ;;; Code:
 
+;; TODO: (xwl)
+;; 1. show score on playlist buffer?
+;; 2. bug: everything(playing time, lyrics, ...) disppears on mode line
+;;    when calling `emms-score-next-noerror'.
+
 (defvar emms-scores-list nil)
 (defvar emms-score-current-mood 'default)
 (defvar emms-score-min-score 0)
 (defvar emms-score-default-score 0)
 (defvar emms-score-hash (make-hash-table :test 'equal))
 
-(add-hook 'kill-emacs-hook 'emms-score-save-hash)
-
 (defcustom emms-score-file "~/.emms/scores"
   "*Directory to store the score file."
   :type 'directory
   :group 'emms)
 
+
+;;; User Interfaces
+
+(defun emms-score (arg)
+  "Turn on emms-score if prefix argument ARG is a positive integer,
+off otherwise."
+  (interactive "p")
+  (if (and arg (> arg 0))
+      (progn
+	(emms-score-load-hash)
+	(remove-hook 'emms-player-finished-hook 'emms-next-noerror)
+	(add-hook 'emms-player-finished-hook 'emms-score-next-noerror)
+	(add-hook 'kill-emacs-hook 'emms-score-save-hash))
+    (emms-score-save-hash)
+    (remove-hook 'emms-player-finished-hook 'emms-score-next-noerror)
+    (add-hook 'emms-player-finished-hook 'emms-next-noerror)
+    (remove-hook 'kill-emacs-hook 'emms-score-save-hash)))
+
 (defun emms-score-change-mood (mood)
-  "Change the current MOOD.  
+  "Change the current MOOD.
 The score hash is automatically saved."
   (interactive "sMood: ")
   (emms-score-save-hash)
   (setq emms-score-current-mood (intern (downcase mood))))
+
+(defun emms-score-up-playing ()
+  (interactive)
+  (if emms-player-playing-p
+      (emms-score-change-score 1 (emms-score-current-selected-track-filename))
+    (error "No track currently playing")))
+
+(defun emms-score-down-playing ()
+  (interactive)
+  (if emms-player-playing-p
+      (emms-score-change-score -1 (emms-score-current-selected-track-filename))
+    (error "No track currently playing")))
+
+(defun emms-score-up-file-on-line ()
+  (interactive)
+  (emms-score-change-score 1 (emms-score-track-at-filename)))
+
+(defun emms-score-down-file-on-line ()
+  (interactive)
+  (emms-score-change-score -1 (emms-score-track-at-filename)))
+
+(defun emms-score-less-tolerant ()
+  "Only play mp3 with a higher score"
+  (interactive)
+  (setq emms-score-min-score (+ emms-score-min-score 1))
+  (message "Will play songs with a score >= %d" emms-score-min-score))
+
+(defun emms-score-more-tolerant ()
+  "Allow playing of mp3 with a lower score."
+  (interactive)
+  (setq emms-score-min-score (- emms-score-min-score 1))
+  (message "Will play songs with a score >= %d" emms-score-min-score))
+
+(defun emms-score-set-playing (score)
+  "Set score for current playing track."
+  (interactive "nSet score for playing track: ")
+  (if emms-player-playing-p
+      (emms-score-change-score score (emms-score-current-selected-track-filename))
+    (error "No track currently playing")))
+
+(defun emms-score-set-file-on-line (score)
+  "Set score for track at point in emms-playlist buffer."
+  (interactive "nSet score for track at point: ")
+  (emms-score-change-score score (emms-score-track-at-filename)))
+
+(defun emms-score-set-tolerance (tolerance)
+  "Allow playing tracks with a score >= tolerance."
+  (interactive "nSet tolerance: ")
+  (setq emms-score-min-score tolerance)
+  (message "Will play songs with a score >= %d" emms-score-min-score))
+
+(defun emms-score-show ()
+  "Show current track's score in minibuf."
+  (interactive)
+  (message "track/tolerance score: %d/%d"
+	   (emms-score-get-score
+	    (emms-score-current-selected-track-filename))
+	   emms-score-min-score))
+
+
+;;; Internal Functions
+
+(defun emms-score-current-selected-track-filename ()
+  "Return filename of current selected track."
+  (emms-track-get (emms-playlist-current-selected-track) 'name))
+
+(defun emms-score-track-at-filename ()
+  "Return file of track at point in emms-playlist buffer."
+  (emms-track-get (emms-playlist-track-at) 'name))
+
+;; TODO: Better merge this into `emms-next-noerror' in `emms.el'.(xwl)
+(defun emms-score-next-noerror ()
+  "Modify `emms-next-noerror' with score check.
+
+Better merge this into `emms-next-noerror' in `emms.el'."
+  (interactive)
+  (when emms-player-playing-p
+    (error "A track is already being played"))
+  (cond (emms-repeat-track
+	 (emms-start))
+	((condition-case nil
+	     (progn
+	       (emms-playlist-current-select-next)
+	       t)
+	   (error nil))
+	 (if (emms-score-check-score
+	      (emms-score-current-selected-track-filename))
+	     (emms-start)
+	   (emms-score-next-noerror)))
+	(t
+	 (message "No next track in playlist"))))
 
 (defun emms-score-save-hash ()
   "Save score hash in `emms-score-file'."
@@ -102,59 +214,14 @@ The score hash is automatically saved."
 (defun emms-score-change-score (score filename)
   (let ((sp (emms-score-get-plist filename) )
 	(sc (emms-score-get-score filename)))
-    (puthash filename 
-	     (plist-put sp emms-score-current-mood (+ sc score)) 
+    (puthash filename
+	     (plist-put sp emms-score-current-mood (+ sc score))
 	     emms-score-hash)
     (message "New score is %s" (+ score sc))))
 
-(defun emms-score-up-playing ()
-  (interactive)
-  (if emms-player-playing-p
-      (emms-score-change-score 1 (emms-playlist-current-selected-track))
-    (error "No track currently playing")))
-
-(defun emms-score-down-playing ()
-  (interactive)
-  (if emms-player-playing-p
-      (emms-score-change-score -1 (emms-playlist-current-selected-track))
-    (error "No track currently playing")))
-
-(defun emms-score-up-file-on-line ()
-  (interactive)
-  (emms-score-change-score 1 (emms-playlist-current-selected-track)))
-
-(defun emms-score-down-file-on-line ()
-  (interactive)
-  (emms-score-change-score -1 (emms-playlist-current-selected-track)))
-
-(defun emms-score (arg)
-  "Turn on emms-score if prefix argument ARG is a positive integer,
-off otherwise."
-  (interactive "p")
-  (if (and arg (> arg 0))
-      (progn
-	(emms-score-load-hash)
-	(remove-hook 'emms-player-stopped-hook 'emms-next-noerror)
-	(add-hook 'emms-player-stopped-hook 'emms-score-next-noerror))
-    (emms-score-save-hash)
-    (remove-hook 'emms-player-stopped-hook 'emms-score-next-noerror)
-    (add-hook 'emms-player-stopped-hook 'emms-next-noerror)))
-
-(defun emms-score-next-noerror ()
-  "Play the next track in the playlist, but don't signal an error when
-we're at the end. This should be called when no player is playing.
-This is a suitable function to put in `emms-player-stopped-hook'."
-  (interactive)
-  (when emms-player-playing-p
-    (error "A track is already playing."))  
-  (if (emms-playlist-next) 
-      (if (emms-score-check-score (emms-playlist-current-selected-track))
-	  (emms-start)
-	(emms-score-next-noerror))
-    (message "No track in playlist that matches your score anymore")))
-
 (defun emms-score-create-entry (filename)
-  (puthash filename (list emms-score-current-mood emms-score-default-score) 
+  (puthash filename
+	   `(,emms-score-current-mood ,emms-score-default-score)
 	   emms-score-hash))
 
 (defun emms-score-get-score (filename)
@@ -164,19 +231,9 @@ This is a suitable function to put in `emms-player-stopped-hook'."
 	(plist-get plist emms-score-current-mood)
       (emms-score-create-entry filename)
       (emms-score-get-score filename))))
-    
+
 (defun emms-score-check-score (filename)
   (>= (emms-score-get-score filename) emms-score-min-score))
-
-(defun emms-score-lower-tolerance ()
-  "Only play mp3 with a higher score"
-  (interactive)
-  (setq emms-score-min-score (+ emms-score-min-score 1)))
-
-(defun emms-score-be-more-tolerant ()
-  "Allow playing of mp3 with a lower score"
-  (interactive)
-  (setq emms-score-min-score (- emms-score-min-score 1)))
 
 (provide 'emms-score)
 
