@@ -129,14 +129,21 @@ The score hash is automatically saved."
 (defun emms-score-set-playing (score)
   "Set score for current playing track."
   (interactive "nSet score for playing track: ")
-  (if emms-player-playing-p
-      (emms-score-change-score score (emms-score-current-selected-track-filename))
-    (error "No track currently playing")))
+  (let ((filename (emms-score-current-selected-track-filename)))
+    (if emms-player-playing-p
+	(emms-score-change-score
+	 (- score (emms-score-get-score filename))
+	 filename)
+      (error "No track currently playing"))))
 
 (defun emms-score-set-file-on-line (score)
   "Set score for track at point in emms-playlist buffer."
   (interactive "nSet score for track at point: ")
-  (emms-score-change-score score (emms-score-track-at-filename)))
+  (let ((filename (emms-score-track-at-filename)))
+    (if emms-player-playing-p
+	(emms-score-change-score
+	 (- score (emms-score-get-score filename))
+	 filename))))
 
 (defun emms-score-set-tolerance (tolerance)
   "Allow playing tracks with a score >= tolerance."
