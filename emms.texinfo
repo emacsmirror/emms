@@ -761,16 +761,6 @@ Start playing the next track in the playlist.
 @item p
 @findex emms-next
 Start playing the previous track in the playlist.
-@item C-x C-s
-@findex emms-playlist-mode-save-buffer
-Save the current playlist buffer to a file.
-@item C-k
-@findex emms-playlist-mode-kill-track
-Remove the track under point from the playlist buffer. Also available
-by pressing the @kbd{d} key.
-@item C-y
-@findex emms-playlist-mode-yank
-Yank the last track killed back into the playlist buffer.
 @item s
 @findex emms-stop
 Stop playing.
@@ -784,27 +774,53 @@ Display the current track in the center of the screen.
 @findex emms-playlist-mode-play-current-track
 Start playing the track under point. Note that this is also available
 with @kbd{<mouse-2>}.
-@item q
-@findex bury-buffer
-Put the interactive playlist buffer at the end of the list of all
-buffers.
-@item ?
-@findex describe-mode
-Describe the mode.
 @item M-<
 @findex emms-playlist-mode-first
 Go to the first track in the playlist. @kbd{M->} completes this
 command by going to the last track in the playlist using
 @command{emms-playlist-mode-last}.
-@item C-n
-@findex emms-playlist-mode-select-next
-Go to the next track in the playlist. @kbd{C-p} completes this command
-by going to the previous track in the playlist using
-@command{emms-playlist-mode-select-previous}.
 @item r
 @findex emms-random
 Go to a randomly selected track in the playlist.
+@item q
+@findex bury-buffer
+Put the interactive playlist buffer at the end of the list of all
+buffers.
+@item C-x C-s
+@findex emms-playlist-mode-save-buffer
+Save the current playlist buffer to a file.
+@item ?
+@findex describe-mode
+Describe the mode.
 @end table
+
+We can also edit the playlist using familiar GNU/Emacs commands:
+
+@table @kbd
+@item C-k
+@findex emms-playlist-mode-kill-track
+Remove the track under point from the playlist buffer. Also available
+using the @kbd{d} key.
+@item C-y
+@findex emms-playlist-mode-yank
+See the command @command{yank}
+@item C-w
+@findex emms-playlist-mode-kill
+See the command @command{kill-region}
+@item M-y
+@findex emms-playlist-mode-yank-pop
+See the command @command{yank-pop}.
+@item C-j
+@findex emms-playlist-mode-insert-newline
+Insert a newline at point.
+@end table
+
+We can use the regular GNU/Emacs killing and yanking commands to move
+and copy tracks in between playlist buffers. We can use the same
+commands to insert arbitrary text into the playlist buffers together
+with the playlist tracks. Text which is not a track is ignored by the
+program and can therefore be used to include titles and annotations
+within the playlist.
 
 @node Extending Emms
 @chapter Extending Emms
@@ -866,11 +882,11 @@ your favourite artist in the most possible volume use the following
 line:
 
 @lisp
-(require 'emms-player-simple) 
+(require 'emms-player-simple)
 
-(define-emms-simple-player play 
-                           '(file) 
-                           "\\artist-*.wav$" 
+(define-emms-simple-player play
+                           '(file)
+                           "\\artist-*.wav$"
                            "play"
                            "--volume=100")
 @end lisp

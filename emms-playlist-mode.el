@@ -80,6 +80,7 @@
     (define-key emms-playlist-mode-map (kbd "M-y") 'emms-playlist-mode-yank-pop)
     (define-key emms-playlist-mode-map (kbd "M-<") 'emms-playlist-mode-first)
     (define-key emms-playlist-mode-map (kbd "M->") 'emms-playlist-mode-last)
+    (define-key emms-playlist-mode-map (kbd "d") 'emms-playlist-mode-kill-track)
     (define-key emms-playlist-mode-map (kbd "n") 'emms-next)
     (define-key emms-playlist-mode-map (kbd "p") 'emms-previous)
     (define-key emms-playlist-mode-map (kbd "s") 'emms-stop)
