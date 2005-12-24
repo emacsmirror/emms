@@ -156,6 +156,43 @@ function switches back to the remembered buffer."
     (newline)))
 
 ;;; --------------------------------------------------------
+;;; Overlay compatability
+;;; --------------------------------------------------------
+
+(defun find-overlay-emms-track ()
+  "Return the position of the next emms track."
+  (save-excursion
+    (while (and (not (eobp))
+		(not (get-char-property (point) 'emms-track)))
+      (goto-char (min (next-overlay-change (point))
+		      (next-single-property-change (point) 'emms-track))))
+    (point)))
+
+;; Taken from CVS Emacs (2005-12-24) and modified to support Emms2 on
+;; Emacs 21.4. The modifications make this function not equivalent to
+;; the original `remove-overlays' from which it was copied, so don't
+;; try to use it in the same way.
+(defun remove-all-overlays (&optional beg end)
+  "Clear BEG and END of overlays."
+  (unless beg (setq beg (point-min)))
+  (unless end (setq end (point-max)))
+  (if (< end beg)
+      (setq beg (prog1 end (setq end beg))))
+  (save-excursion
+    (dolist (o (overlays-in beg end))
+      (when (eq (overlay-get o nil) nil)
+	(if (< (overlay-start o) beg)
+	    (if (> (overlay-end o) end)
+		(progn
+		  (move-overlay (copy-overlay o)
+				(overlay-start o) beg)
+		  (move-overlay o end (overlay-end o)))
+	      (move-overlay o (overlay-start o) beg))
+	  (if (> (overlay-end o) end)
+	      (move-overlay o end (overlay-end o))
+	    (delete-overlay o)))))))
+
+;;; --------------------------------------------------------
 ;;; Killing and yanking
 ;;; --------------------------------------------------------
 
@@ -182,7 +219,7 @@ function switches back to the remembered buffer."
 	  (when (and emms-player-playing-p
 		     (equal (emms-playlist-selected-track) track))
 	    (emms-stop))
-	  (remove-overlays (point-at-bol) (point-at-eol))
+	  (remove-all-overlays (point-at-bol) (point-at-eol))
 	  (kill-region (car track-region) (cdr track-region)))
       (kill-line))))
 
@@ -259,8 +296,8 @@ FACE should be a... face."
   (when (not (null emms-playlist-mode-selected-overlay-marker))
     (save-excursion
       (goto-char emms-playlist-mode-selected-overlay-marker)
-      (remove-overlays (point-at-bol)
-		       (point-at-eol))
+      (remove-all-overlays (point-at-bol)
+			   (point-at-eol))
       (emms-playlist-mode-overlay-at-point
        'emms-playlist-track-face 1))))
 
@@ -274,8 +311,8 @@ FACE should be a... face."
 ;; not graceful, but avoids growing as the number of tracks grow.
 (defun emms-playlist-mode-overlay-refresh ()
   "Remove and re-apply all the overlays in the buffer."
-  (remove-overlays (point-min)
-		   (point-max))
+  (remove-all-overlays (point-min)
+		       (point-max))
   (emms-playlist-mode-overlay-all)
   (setq emms-playlist-mode-selected-overlay-marker nil)
   (emms-playlist-mode-overlay-selected))
