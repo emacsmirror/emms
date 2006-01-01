@@ -196,7 +196,10 @@ and errors."
     (set-process-sentinel emms-player-mpd-process
                           'emms-player-mpd-sentinel)
     (set-process-filter emms-player-mpd-process
-                        'emms-player-mpd-filter)))
+                        'emms-player-mpd-filter)
+    (if (fboundp 'set-process-query-on-exit-flag)
+        (set-process-query-on-exit-flag emms-player-mpd-process nil)
+      (process-kill-without-query emms-player-mpd-process))))
 
 (defun emms-player-mpd-send (command)
   "Send the given COMMAND to the MusicPD server."
