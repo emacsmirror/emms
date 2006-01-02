@@ -31,9 +31,12 @@
 
 ;;; MusicPD setup
 
-;; You'll need to have both mpc and mpd installed.  The website is at
-;; http://musicpd.org/.  Debian packages are available.  I recommend
-;; getting the latest development version; see
+;; If you want to set up a local MusicPD server, you'll need to have
+;; mpd installed.  If you want to use a remote server instance, no
+;; installation is needed.
+
+;; The website is at http://musicpd.org/.  Debian packages are
+;; available.  I recommend getting the latest development version; see
 ;; http://mpd.wikicities.com/wiki/Subversion for nightly Debian
 ;; packages and the svn repo.
 ;;
