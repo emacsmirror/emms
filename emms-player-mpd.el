@@ -56,14 +56,30 @@
 
 ;;; EMMS setup
 
-;; Add "emms-player-mpd" to the top of `emms-player-list'.  If you use
-;; absolute file names in your m3u playlists (which is most likely),
-;; make sure you set `emms-player-mpd-music-directory' to the value of
-;; "music_directory" from your MusicPD config.
+;; Add the following to your config.
+;;
+;; (require 'emms-player-mpd)
+
+;; Adjust `emms-player-mpd-server-name' and
+;; `emms-player-mpd-server-port' to match the location and port of
+;; your MusicPD server.
+;;
+;; (setq emms-player-mpd-server-name "localhost")
+;; (setq emms-player-mpd-server-port "6600")
 
 ;; To get track info from MusicPD, do the following.
-
+;;
 ;; (add-to-list 'emms-info-functions 'emms-info-mpd)
+
+;; Add 'emms-player-mpd to the top of `emms-player-list'.
+;;
+;; (add-to-list 'emms-player-list 'emms-player-mpd)
+
+;; If you use absolute file names in your m3u playlists (which is most
+;; likely), make sure you set `emms-player-mpd-music-directory' to the
+;; value of "music_directory" from your MusicPD config.  There are
+;; additional options available as well, but the defaults should be
+;; sufficient for most uses.
 
 ;;; TODO
 
@@ -178,9 +194,12 @@ and errors."
            (when emms-player-mpd-verbose
              (message "Closed MusicPD process"))
            (setq emms-player-mpd-process nil))
-          ((memq status '(run listen open))
+          ((memq status '(run open))
            (when emms-player-mpd-verbose
-             (message "MusicPD process started successfully"))))))
+             (message "MusicPD process started successfully")))
+          (t
+           (when emms-player-mpd-verbose
+             (message "Other MusicPD status change: %s" status))))))
 
 (defun emms-player-mpd-filter (proc string)
   "The process filter for MusicPD."
@@ -202,7 +221,9 @@ and errors."
                         'emms-player-mpd-filter)
     (if (fboundp 'set-process-query-on-exit-flag)
         (set-process-query-on-exit-flag emms-player-mpd-process nil)
-      (process-kill-without-query emms-player-mpd-process))))
+      (process-kill-without-query emms-player-mpd-process))
+    ;; wait a bit for the process to finish starting
+    (accept-process-output emms-player-mpd-process 0 200)))
 
 (defun emms-player-mpd-send (command)
   "Send the given COMMAND to the MusicPD server."
