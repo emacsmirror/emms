@@ -81,17 +81,16 @@
 ;; additional options available as well, but the defaults should be
 ;; sufficient for most uses.
 
+;; You will have to set `emms-player-mpd-sync-playlist' to non-nil if
+;; you want to use MusicPD in a similar way as most other EMMS
+;; backends.  If your EMMS playlist contains music files rather than
+;; playlists, set this to non-nil, otherwise if your EMMS playlist
+;; contains stored playlists, leave this set to nil.
+
 ;;; TODO
 
-;; If you try to play individual songs, the tracks will not advance.
-;; I recommend playing playlists instead.  This should be addresed
-;; eventually, though, perhaps with a timer watching the mpd process.
-;;
-;; It might also be good to "sync" the mpd playlist with the emms one.
-;; Currently we just clear the mpd playlist, add the track, and play,
-;; for each track.  Not the best approach, unless your track is a
-;; playlist in itself, in which case all tracks from the playlist are
-;; added immediately after clearing the mpd playlist.
+;; Write a function that imports the current MusicPD playlist into
+;; EMMS.
 
 (require 'emms-player-simple)
 
@@ -167,6 +166,25 @@ and errors."
   :type 'boolean
   :group 'emms-player-mpd)
 
+(defcustom emms-player-mpd-sync-playlist nil
+  "Whether to syncronize the EMMS playlist with the MusicPD playlist.
+
+If your EMMS playlist contains stored playlists, leave this set
+to nil.
+
+If your EMMS playlist contains music files rather than playlists,
+set this to non-nil."
+  :type 'boolean
+  :group 'emms-player-mpd)
+
+(defcustom emms-player-mpd-check-interval 2
+  "The number of seconds to wait before checking to see whether
+MusicPD has moved on to the next song.
+
+This is used only if `emms-player-mpd-sync-playlist' is non-nil"
+  :type 'integer
+  :group 'emms-player-mpd)
+
 (define-emms-simple-player mpd '(file url playlist)
   emms-player-mpd-supported-regexp "mpd")
 
@@ -186,6 +204,12 @@ and errors."
 
 (defvar emms-player-mpd-process nil)
 (defvar emms-player-mpd-returned-data nil)
+
+(defvar emms-player-mpd-playlist-id nil)
+(make-variable-buffer-local 'emms-player-mpd-playlist-id)
+
+(defvar emms-player-mpd-current-song nil)
+(defvar emms-player-mpd-status-timer nil)
 
 (defun emms-player-mpd-sentinel (proc str)
   "The process sentinel for MusicPD."
@@ -222,7 +246,8 @@ and errors."
     (if (fboundp 'set-process-query-on-exit-flag)
         (set-process-query-on-exit-flag emms-player-mpd-process nil)
       (process-kill-without-query emms-player-mpd-process))
-    ;; wait a bit for the process to finish starting
+    ;; wait a bit for the process to finish starting, as it likes to
+    ;; send us an "OK" message initially
     (accept-process-output emms-player-mpd-process 0 200)))
 
 (defun emms-player-mpd-send (command)
@@ -257,7 +282,7 @@ Otherwise, it will be nil."
                          (car cruft)
                        (cadr cruft))))
         (setcdr cruft nil)
-        (when (string-match "^OK MPD " (car data))
+        (when (string-match "^OK\\( MPD \\)?" (car data))
           (setq data (cdr data)))
         (if (string-match "^ACK \\[\\([0-9]+\\)@[0-9]+\\] \\(.+\\)" status)
             (cons (cons (match-string 1 status)
@@ -273,13 +298,53 @@ The format of the alist is (name . value)."
              (cdr info))                ; data exists
     (let (alist)
       (dolist (line (cdr info))
-        (string-match "\\`\\([^:]+\\):\\s-*\\(.+\\)" line)
-        (let ((name (match-string 1 line))
-              (value (match-string 2 line)))
-          (when (and name value)
-            (setq name (downcase name))
-            (add-to-list 'alist (cons name value) t))))
+        (when (string-match "\\`\\([^:]+\\):\\s-*\\(.+\\)" line)
+          (let ((name (match-string 1 line))
+                (value (match-string 2 line)))
+            (when (and name value)
+              (setq name (downcase name))
+              (add-to-list 'alist (cons name value) t)))))
       alist)))
+
+(defun emms-player-mpd-get-playlist-id ()
+  "Get the current playlist ID from MusicPD."
+  (let ((info (emms-player-mpd-get-alist
+               (emms-player-mpd-parse-response
+                (emms-player-mpd-send-and-wait "status")))))
+    (cdr (assoc "playlist" info))))
+
+(defun emms-player-mpd-get-current-song ()
+  "Get the current song from MusicPD.
+This is in the form of a number that indicates the position of
+the song on the current playlist."
+  (let ((info (emms-player-mpd-get-alist
+               (emms-player-mpd-parse-response
+                (emms-player-mpd-send-and-wait "status")))))
+    (cdr (assoc "song" info))))
+
+(defun emms-player-mpd-sync-from-emms ()
+  "Synchronize the MusicPD playlist with the contents of the
+current EMMS playlist."
+  (emms-player-mpd-clear)
+  (with-current-emms-playlist
+   (save-excursion
+     (mapc #'emms-player-mpd-add
+           (nreverse
+            (emms-playlist-tracks-in-region (point-min) (point-max)))))
+   (setq emms-player-mpd-playlist-id (emms-player-mpd-get-playlist-id))))
+
+(defun emms-player-mpd-detect-song-change ()
+  "Detect whether a song change has occurred.
+This is usually called by a timer."
+  (let ((song (emms-player-mpd-get-current-song)))
+    (unless (or (null emms-player-mpd-current-song)
+                (null song)
+                (string= song emms-player-mpd-current-song))
+      (setq emms-player-mpd-current-song song)
+      (with-current-emms-playlist
+        (emms-playlist-select (progn
+                                (goto-line (1+ (string-to-number song)))
+                                (point)))))))
 
 (defun emms-player-mpd-get-filename (file)
   "Turn FILE into something that MusicPD can understand.
@@ -296,27 +361,27 @@ This usually means removing a prefix."
   "Clear the playlist."
   (emms-player-mpd-send "clear"))
 
-(defun emms-player-mpd-add (file)
+(defun emms-player-mpd-add-file (file)
   "Add FILE to the current MusicPD playlist.
-If we do not succeed in adding the file, return the string from
-the process, nil otherwise."
+If we succeed in adding the file, return non-nil, nil otherwise."
   (setq file (emms-player-mpd-get-filename file))
   (let ((output (emms-player-mpd-parse-response
                  (emms-player-mpd-send-and-wait (concat "add " file)))))
-    (when (car output)
-      (when emms-player-mpd-verbose
-        (message "MusicPD error: %s: %s" file (cdar output)))
-      (cdar output))))
+    (if (car output)
+        (progn
+          (when emms-player-mpd-verbose
+            (message "MusicPD error: %s: %s" file (cdar output)))
+          nil)
+      t)))
 
-(defun emms-player-mpd-load (playlist)
+(defun emms-player-mpd-add-playlist (playlist)
   "Load contents of PLAYLIST into MusicPD by adding each line.
 This handles both m3u and pls type playlists."
   ;; This allows us to keep playlists anywhere and not worry about
   ;; having to mangle their names.  Also, mpd can't handle pls
   ;; playlists by itself.
-  (let ((pls-p (if (string-match "\\.pls\\'" playlist)
-                   t
-                 nil)))
+  (let ((pls-p (if (string-match "\\.pls\\'" playlist) t nil))
+        any-success)
     (mapc #'(lambda (file)
               (when pls-p
                 (if (string-match "\\`File[0-9]*=\\(.*\\)\\'" file)
@@ -324,31 +389,73 @@ This handles both m3u and pls type playlists."
                   (setq file "")))
               (unless (or (string= file "")
                           (string-match "\\`#" file))
-                (emms-player-mpd-add file)))
+                (when (emms-player-mpd-add-file file)
+                  (setq any-success t))))
           (split-string (with-temp-buffer
                           (insert-file-contents playlist)
                           (buffer-string))
-                        "\n"))))
+                        "\n"))
+    any-success))
 
-(defun emms-player-mpd-play ()
-  "Play whatever is in the current MusicPD playlist."
-  (emms-player-mpd-send "play"))
+(defun emms-player-mpd-add (track)
+  "Add TRACK to the MusicPD playlist."
+  (let ((name (emms-track-get track 'name))
+        (type (emms-track-get track 'type)))
+    (cond ((eq type 'url)
+           (emms-player-mpd-add-file name))
+          ((or (eq type 'playlist)
+               (string-match "\\.\\(m3u\\|pls\\)\\'" name))
+           (emms-player-mpd-add-playlist name))
+          ((eq type 'file)
+           (emms-player-mpd-add-file name)))))
+
+;;; EMMS API
+
+(defun emms-player-mpd-play (&optional id)
+  "Play whatever is in the current MusicPD playlist.
+If ID is specified, play the song at that position in the MusicPD
+playlist."
+  (if id
+      (progn
+        (unless (stringp id)
+          (setq id (number-to-string id)))
+        (emms-player-mpd-send (concat "play " id))
+        (setq emms-player-mpd-current-song id))
+    (emms-player-mpd-send "play")))
+
+(defun emms-player-mpd-start-and-sync (track)
+  "Starts a process playing TRACK.
+This is called if `emms-player-mpd-sync-playlist' is non-nil.
+
+It ensures that MusicPD's playlist is up-to-date with EMMS's
+playlist, and then plays the current track."
+  (let ((id (emms-player-mpd-get-playlist-id)))
+    (unless (and (stringp emms-player-mpd-playlist-id)
+                 (string= emms-player-mpd-playlist-id id))
+      (emms-player-mpd-sync-from-emms))
+    (with-current-emms-playlist
+      (emms-player-mpd-play (1- (line-number-at-pos
+                                 emms-playlist-selected-marker)))))
+  (unless emms-player-mpd-status-timer
+    (setq emms-player-mpd-status-timer
+          (run-at-time t emms-player-mpd-check-interval
+                       'emms-player-mpd-detect-song-change))))
 
 (defun emms-player-mpd-start (track)
   "Starts a process playing TRACK."
   (interactive)
-  (emms-player-mpd-clear)
-  (let ((name (emms-track-get track 'name)))
-    ;; If it's a playlist, we have to `load' rather than `add' it
-    (if (string-match "\\.\\(m3u\\|pls\\)\\'" name)
-        (emms-player-mpd-load name)
-      (emms-player-mpd-add name)))
-  ;; Now that we've added/loaded the file/playlist, play it
-  (emms-player-mpd-play))
+  (if emms-player-mpd-sync-playlist
+      (emms-player-mpd-start-and-sync track)
+    (emms-player-mpd-clear)
+    (when (emms-player-mpd-add track)
+      ;; if we have loaded the item successfully, play it
+      (emms-player-mpd-play))))
 
 (defun emms-player-mpd-stop ()
   "Stop the currently playing song."
   (interactive)
+  (emms-cancel-timer emms-player-mpd-status-timer)
+  (setq emms-player-mpd-status-timer nil)
   (emms-player-mpd-send "stop"))
 
 (defun emms-player-mpd-pause ()
@@ -362,9 +469,6 @@ This handles both m3u and pls type playlists."
   (emms-player-mpd-send (format "seek %s%d"
                                 (if (> sec 0) "+" "")
                                 sec)))
-
-;; Not currently used by the API (to my knowledge), but I make use of
-;; these to advance my playlists.
 
 (defun emms-player-mpd-next ()
   "Move forward by one track in MusicPD's internal playlist."
