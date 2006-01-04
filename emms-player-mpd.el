@@ -81,11 +81,8 @@
 ;; additional options available as well, but the defaults should be
 ;; sufficient for most uses.
 
-;; You will have to set `emms-player-mpd-sync-playlist' to non-nil if
-;; you want to use MusicPD in a similar way as most other EMMS
-;; backends.  If your EMMS playlist contains music files rather than
-;; playlists, set this to non-nil, otherwise if your EMMS playlist
-;; contains stored playlists, leave this set to nil.
+;; You can set `emms-player-mpd-sync-playlist' to nil if your master
+;; EMMS playlist contains only stored playlists.
 
 ;;; TODO
 
@@ -166,14 +163,13 @@ and errors."
   :type 'boolean
   :group 'emms-player-mpd)
 
-(defcustom emms-player-mpd-sync-playlist nil
+(defcustom emms-player-mpd-sync-playlist t
   "Whether to syncronize the EMMS playlist with the MusicPD playlist.
 
-If your EMMS playlist contains stored playlists, leave this set
-to nil.
-
 If your EMMS playlist contains music files rather than playlists,
-set this to non-nil."
+leave this set to non-nil.
+
+If your EMMS playlist contains stored playlists, set this to nil."
   :type 'boolean
   :group 'emms-player-mpd)
 
@@ -458,7 +454,8 @@ playlist, and then plays the current track."
   (interactive)
   (emms-cancel-timer emms-player-mpd-status-timer)
   (setq emms-player-mpd-status-timer nil)
-  (emms-player-mpd-send "stop"))
+  (emms-player-mpd-send "stop")
+  (run-hooks 'emms-player-stopped-hook))
 
 (defun emms-player-mpd-pause ()
   "Pause the currently playing song."
