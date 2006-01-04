@@ -74,8 +74,9 @@ should enable `emms-playing-time-display-p' first, though."
 (defun emms-playing-time-start ()
   "Get ready for display playing time."
   (setq emms-playing-time 0)
-  (setq emms-playing-time-display-timer
-        (run-at-time t 1 'emms-playing-time-display)))
+  (unless emms-playing-time-display-timer
+    (setq emms-playing-time-display-timer
+	  (run-at-time t 1 'emms-playing-time-display))))
 
 (defun emms-playing-time-stop ()
   "Remove playing time on the mode line."
@@ -91,8 +92,9 @@ should enable `emms-playing-time-display-p' first, though."
   "Pause playing time."
   (if emms-player-paused-p
       (emms-playing-time-stop)
-    (setq emms-playing-time-display-timer
-	  (run-at-time t 1 'emms-playing-time-display))))
+    (unless emms-playing-time-display-timer
+      (setq emms-playing-time-display-timer
+	    (run-at-time t 1 'emms-playing-time-display)))))
 
 (defun emms-playing-time-seek (sec)
   "Seek forward or backward SEC playing time."
