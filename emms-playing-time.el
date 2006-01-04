@@ -69,6 +69,8 @@ should enable `emms-playing-time-display-p' first, though."
 
 (defvar emms-playing-time-string "")
 
+(defvar emms-playing-time-display-timer nil)
+
 (defun emms-playing-time-start ()
   "Get ready for display playing time."
   (setq emms-playing-time 0)
@@ -81,13 +83,15 @@ should enable `emms-playing-time-display-p' first, though."
       (progn
 	(setq emms-playing-time-string "")
 	(force-mode-line-update)))
-  (cancel-function-timers 'emms-playing-time-display))
+  (emms-cancel-timer emms-playing-time-display-timer)
+  (setq emms-playing-time-display-timer nil))
 
 (defun emms-playing-time-pause ()
   "Pause playing time."
   (if emms-player-paused-p
       (emms-playing-time-stop)
-    (run-at-time t 1 'emms-playing-time-display)))
+    (setq emms-playing-time-display-timer
+	  (run-at-time t 1 'emms-playing-time-display))))
 
 (defun emms-playing-time-seek (sec)
   "Seek forward or backward SEC playing time."

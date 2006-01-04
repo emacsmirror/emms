@@ -178,7 +178,7 @@ To find FILE, will look up in current directory and `emms-lyrics-dir'."
   "Stop displaying lyrics."
   (interactive)
   (when emms-lyrics-alist
-    (cancel-function-timers 'emms-lyrics-display)
+    (mapc #'emms-cancel-timer emms-lyrics-timers)
     (if (or (not emms-player-paused-p)
 	    emms-player-stopped-p)
 	(setq emms-lyrics-alist nil
