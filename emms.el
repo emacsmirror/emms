@@ -363,6 +363,14 @@ See  `emms-repeat-track'."
   (when (not emms-player-playing-p)
     (error "No EMMS player playing right now")))
 
+(defun emms-cancel-timer (timer)
+  "Cancel the given TIMER."
+  (when timer
+    (cond ((fboundp 'cancel-timer)
+           (cancel-timer timer))
+          ((fboundp 'delete-itimer)
+           (delete-itimer timer)))))
+
 
 ;;; Tracks
 
