@@ -341,10 +341,12 @@ This is usually called by a timer."
                 (null song)
                 (string= song emms-player-mpd-current-song))
       (setq emms-player-mpd-current-song song)
+      (run-hooks 'emms-player-stopped-hook)
       (with-current-emms-playlist
         (emms-playlist-select (progn
                                 (goto-line (1+ (string-to-number song)))
-                                (point)))))))
+                                (point))))
+      (run-hooks 'emms-player-started-hook))))
 
 (defun emms-player-mpd-get-filename (file)
   "Turn FILE into something that MusicPD can understand.
