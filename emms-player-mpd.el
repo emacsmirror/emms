@@ -364,7 +364,8 @@ This usually means removing a prefix."
 If we succeed in adding the file, return non-nil, nil otherwise."
   (setq file (emms-player-mpd-get-filename file))
   (let ((output (emms-player-mpd-parse-response
-                 (emms-player-mpd-send-and-wait (concat "add " file)))))
+                 (emms-player-mpd-send-and-wait
+                  (concat "add \"" file "\"")))))
     (if (car output)
         (progn
           (when emms-player-mpd-verbose
@@ -496,7 +497,7 @@ info from MusicPD."
         (setq info (emms-player-mpd-get-alist
                     (emms-player-mpd-parse-response
                      (emms-player-mpd-send-and-wait
-                      (concat "find filename " file)))))))
+                      (concat "find filename \"" file "\"")))))))
     (when info
       (dolist (data info)
         (let ((name (car data))
