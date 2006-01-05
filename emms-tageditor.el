@@ -235,20 +235,14 @@
   (setq emms-tageditor-widgets nil)
   (kill-buffer (get-buffer-create emms-tageditor-buffer-name)))
 
-(defun emms-tageditor-replace-regexp (regexp rep string &optional fixedcase literal subexp start)
-  "Compatibility wrapper for replace-regexp-in-string/replace-in-string."
-  (if (featurep 'xemacs)
-      (replace-in-string regexp rep string fixedcase literal subexp start)
-    (replace-regexp-in-string regexp rep string fixedcase literal subexp start)))
-
 (defun emms-tageditor-replace-create-replacement (replace-with trackidx)
   (let ((info (aref emms-tageditor-current-infos trackidx))
 	(track (aref emms-tageditor-current-tracks trackidx)))
-    (setq replace-with (emms-tageditor-replace-regexp "$TITLE" (emms-info-title info) replace-with))
-    (setq replace-with (emms-tageditor-replace-regexp "$ALBUM" (emms-info-album info) replace-with))
-    (setq replace-with (emms-tageditor-replace-regexp "$ARTIST" (emms-info-artist info) replace-with))
-    (setq replace-with (emms-tageditor-replace-regexp "$NOTE" (emms-info-note info) replace-with))
-    (setq replace-with (emms-tageditor-replace-regexp "$TRACKNAME" (emms-track-name track) replace-with)))
+    (setq replace-with (emms-replace-regexp-in-string "$TITLE" (emms-info-title info) replace-with))
+    (setq replace-with (emms-replace-regexp-in-string "$ALBUM" (emms-info-album info) replace-with))
+    (setq replace-with (emms-replace-regexp-in-string "$ARTIST" (emms-info-artist info) replace-with))
+    (setq replace-with (emms-replace-regexp-in-string "$NOTE" (emms-info-note info) replace-with))
+    (setq replace-with (emms-replace-regexp-in-string "$TRACKNAME" (emms-track-name track) replace-with)))
   replace-with)
 
 (defun emms-tageditor-replace-tag (field regexp replace-with)
@@ -258,7 +252,7 @@
       ;; Find the widget for the current track
       (let ((widget (emms-tageditor-get-widget idx field)))
 	(let* ((str (widget-value widget))
-	       (str (emms-tageditor-replace-regexp regexp replace-with str)))
+	       (str (emms-replace-regexp-in-string regexp replace-with str)))
 	  (if (string= "$SET" regexp)
 	      (widget-value-set
 	       widget

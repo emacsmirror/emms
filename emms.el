@@ -1186,5 +1186,21 @@ or negative to seek backwards."
           ((fboundp 'delete-itimer)
            (delete-itimer timer)))))
 
+(defun emms-replace-regexp-in-string (regexp replacement text &optional fixedcase literal)
+  "Replace REGEXP with REPLACEMENT in TEXT.
+If fourth arg FIXEDCASE is non-nil, do not alter case of replacement text.
+If fifth arg LITERAL is non-nil, insert REPLACEMENT literally."
+  (cond
+   ((fboundp 'replace-regexp-in-string)
+    (replace-regexp-in-string regexp replacement text fixedcase literal))
+   ((fboundp 'replace-in-string)
+    (replace-in-string text regexp replacement literal))
+   (t (let ((repl-len (length replacement))
+            start)
+        (while (setq start (string-match regexp text start))
+          (setq start (+ start repl-len)
+                text (replace-match replacement fixedcase literal text))))
+      text)))
+
 (provide 'emms)
 ;;; emms.el ends here

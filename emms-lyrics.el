@@ -141,7 +141,7 @@ To find FILE, will look up in current directory and `emms-lyrics-dir'."
 	      (time 0)
 	      (lyric ""))
 	  (setq lyric
-		(replace-regexp-in-string ".*\\]" "" lyric-string))
+		(emms-replace-regexp-in-string ".*\\]" "" lyric-string))
 	  (while (string-match "\\[[0-9:.]+\\]" lyric-string)
 	    (let* ((time-string (match-string 0 lyric-string))
 		   (semi-pos (string-match ":" time-string)))
