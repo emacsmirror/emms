@@ -151,7 +151,7 @@ should enable `emms-playing-time-display-p' first, though."
     (setq emms-playing-time-string
 	  (format
 	   emms-playing-time-display-format
-	   (replace-regexp-in-string
+	   (emms-replace-regexp-in-string
 	    " " "0"
 	    (if (or emms-playing-time-display-short-p
 		    ;; unable to get total playing-time
