@@ -353,6 +353,14 @@ This usually means removing a prefix."
       file
     (file-relative-name file emms-player-mpd-music-directory)))
 
+(defun emms-player-mpd-quote-file (file)
+  "Escape special characters in FILE and surround in double-quotes."
+  (concat "\""
+          (emms-replace-regexp-in-string
+           "\"" "\\\\\""
+           (emms-replace-regexp-in-string "\\\\" "\\\\\\\\" file))
+          "\""))
+
 ;;; MusicPD commands
 
 (defun emms-player-mpd-clear ()
@@ -365,7 +373,7 @@ If we succeed in adding the file, return non-nil, nil otherwise."
   (setq file (emms-player-mpd-get-filename file))
   (let ((output (emms-player-mpd-parse-response
                  (emms-player-mpd-send-and-wait
-                  (concat "add \"" file "\"")))))
+                  (concat "add " (emms-player-mpd-quote-file file))))))
     (if (car output)
         (progn
           (when emms-player-mpd-verbose
@@ -497,7 +505,8 @@ info from MusicPD."
         (setq info (emms-player-mpd-get-alist
                     (emms-player-mpd-parse-response
                      (emms-player-mpd-send-and-wait
-                      (concat "find filename \"" file "\"")))))))
+                      (concat "find filename "
+                              (emms-player-mpd-quote-file file))))))))
     (when info
       (dolist (data info)
         (let ((name (car data))
