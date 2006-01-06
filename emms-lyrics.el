@@ -170,7 +170,7 @@ To find FILE, will look up in current directory and `emms-lyrics-dir'."
 		(emms-playlist-current-selected-track)
 		'name)))
 	  (emms-lyrics-read-file
-	   (replace-regexp-in-string
+	   (emms-replace-regexp-in-string
 	    (file-name-extension file) "lrc" file)))
     (emms-lyrics-set-timer)))
 
@@ -329,7 +329,7 @@ a valid `emms-lyrics-dir'."
 	   (concat emms-source-file-gnu-find " "
 		   emms-lyrics-dir " -name "
 		   "'"			; wrap up whitespaces
-		   (replace-regexp-in-string
+		   (emms-replace-regexp-in-string
 		    "'" "*"		; FIX ME, '->\'
 		    (file-name-nondirectory file))
 		   "'"))
@@ -355,7 +355,7 @@ beginning of next line."
 		   emms-lyrics-elapsed-time))
 	 (min (/ (* (floor (/ total 60)) 100) 100))
 	 (sec (/ (floor (* (rem* total 60) 100)) 100.0)))
-    (insert (replace-regexp-in-string
+    (insert (emms-replace-regexp-in-string
 	     " " "0" (format "[%2d:%2d]" min sec))))
   (emms-lyrics-next-line))
 
