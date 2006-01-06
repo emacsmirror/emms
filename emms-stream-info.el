@@ -284,7 +284,7 @@ trye at index 2 means continue to next connection.")
     (setq key-list (mapcar 'car format-alist))
     (mapc (lambda (e)
 	    (setq str 
-		  (replace-regexp-in-string 
+		  (emms-replace-regexp-in-string 
 		   e 
 		   (cdr (assoc e format-alist))
 		   str)))
@@ -320,7 +320,7 @@ not output a message and only return a string."
 	   format-alist))
     
     ;; Escape rougue percent signs hiding in our string.
-    (setq str (replace-regexp-in-string "%" "%%" str))
+    (setq str (emms-replace-regexp-in-string "%" "%%" str))
 
     ;; Either output a message or return a string. But only if it is
     ;; an identifiable station/channel
