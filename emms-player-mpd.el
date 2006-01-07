@@ -387,21 +387,11 @@ This handles both m3u and pls type playlists."
   ;; This allows us to keep playlists anywhere and not worry about
   ;; having to mangle their names.  Also, mpd can't handle pls
   ;; playlists by itself.
-  (let ((pls-p (if (string-match "\\.pls\\'" playlist) t nil))
+  (let ((playlist (emms-parse-playlist playlist))
         any-success)
-    (mapc #'(lambda (file)
-              (when pls-p
-                (if (string-match "\\`File[0-9]*=\\(.*\\)\\'" file)
-                    (setq file (match-string 1 file))
-                  (setq file "")))
-              (unless (or (string= file "")
-                          (string-match "\\`#" file))
-                (when (emms-player-mpd-add-file file)
-                  (setq any-success t))))
-          (split-string (with-temp-buffer
-                          (insert-file-contents playlist)
-                          (buffer-string))
-                        "\n"))
+    (dolist (file playlist)
+      (when (emms-player-mpd-add-file file)
+        (setq any-success t)))
     any-success))
 
 (defun emms-player-mpd-add (track)
@@ -501,7 +491,8 @@ info from MusicPD."
                  emms-player-mpd-music-directory
                  (setq file (emms-player-mpd-get-filename
                              (emms-track-name track)))
-                 (string-match emms-player-mpd-supported-regexp file))
+                 (string-match emms-player-mpd-supported-regexp file)
+                 (not (string-match "\\`http://" file)))
         (setq info (emms-player-mpd-get-alist
                     (emms-player-mpd-parse-response
                      (emms-player-mpd-send-and-wait

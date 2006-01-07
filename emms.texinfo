@@ -326,11 +326,11 @@ A source for an @var{url} - for example, for streaming.
 @defun emms-add-url url
 A source for an @var{url} - for example, for streaming.
 @end defun
-@defun emms-play-m3u-playlist playlist
-A source for the M3u playlist format from the file @var{playlist}.
+@defun emms-play-playlist playlist
+A source for the M3u or PLS playlist format from the file @var{playlist}.
 @end defun
-@defun emms-add-m3u-playlist playlist
-A source for the M3u playlist format from the file @var{playlist}.
+@defun emms-add-playlist playlist
+A source for the M3u or PLS playlist format from the file @var{playlist}.
 @end defun
 @defun emms-play-find dir regexp
 A source that will find files in @var{dir} or
