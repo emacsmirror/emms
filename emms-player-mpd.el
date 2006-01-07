@@ -198,6 +198,7 @@ This is used only if `emms-player-mpd-sync-playlist' is non-nil"
 
 ;;; Dealing with the MusicPD network process
 
+(defvar emms-player-mpd-blocked nil)
 (defvar emms-player-mpd-process nil)
 (defvar emms-player-mpd-returned-data nil)
 
@@ -246,21 +247,35 @@ This is used only if `emms-player-mpd-sync-playlist' is non-nil"
     ;; send us an "OK" message initially
     (accept-process-output emms-player-mpd-process 0 200)))
 
+(defun emms-player-mpd-block ()
+  "Block input for MusicPD, waiting if currently blocked.
+The maximum amount is determined by `emms-player-mpd-timeout'."
+  `(with-timeout '(,emms-player-mpd-timeout)
+     (while emms-player-mpd-blocked
+       (sit-for 0.20)))
+  (setq emms-player-mpd-blocked t))
+
+(defun emms-player-mpd-unblock ()
+  "Unblock input for MusicPD."
+  (setq emms-player-mpd-blocked nil))
+
 (defun emms-player-mpd-send (command)
-  "Send the given COMMAND to the MusicPD server."
+  "Send the given COMMAND to the MusicPD server and await a response,
+which is returned."
   (emms-player-mpd-ensure-process)
   (unless (string= (substring command -1) "\n")
     (setq command (concat command "\n")))
-  (process-send-string emms-player-mpd-process command)
-  nil)
-
-(defun emms-player-mpd-send-and-wait (command)
-  "Send the given COMMAND to the MusicPD server and await a response,
-which is returned."
-  (setq emms-player-mpd-returned-data nil)
-  (emms-player-mpd-send command)
-  (accept-process-output emms-player-mpd-process emms-player-mpd-timeout)
-  emms-player-mpd-returned-data)
+  (let (response)
+    (unwind-protect
+        (progn
+          (emms-player-mpd-block)
+          (setq emms-player-mpd-returned-data nil)
+          (process-send-string emms-player-mpd-process command)
+          (accept-process-output emms-player-mpd-process
+                                 emms-player-mpd-timeout))
+      (setq response emms-player-mpd-returned-data)
+      (emms-player-mpd-unblock))
+    response))
 
 ;;; Helper functions
 
@@ -306,7 +321,7 @@ The format of the alist is (name . value)."
   "Get the current playlist ID from MusicPD."
   (let ((info (emms-player-mpd-get-alist
                (emms-player-mpd-parse-response
-                (emms-player-mpd-send-and-wait "status")))))
+                (emms-player-mpd-send "status")))))
     (cdr (assoc "playlist" info))))
 
 (defun emms-player-mpd-get-current-song ()
@@ -315,7 +330,7 @@ This is in the form of a number that indicates the position of
 the song on the current playlist."
   (let ((info (emms-player-mpd-get-alist
                (emms-player-mpd-parse-response
-                (emms-player-mpd-send-and-wait "status")))))
+                (emms-player-mpd-send "status")))))
     (cdr (assoc "song" info))))
 
 (defun emms-player-mpd-sync-from-emms ()
@@ -372,7 +387,7 @@ This usually means removing a prefix."
 If we succeed in adding the file, return non-nil, nil otherwise."
   (setq file (emms-player-mpd-get-filename file))
   (let ((output (emms-player-mpd-parse-response
-                 (emms-player-mpd-send-and-wait
+                 (emms-player-mpd-send
                   (concat "add " (emms-player-mpd-quote-file file))))))
     (if (car output)
         (progn
@@ -495,7 +510,7 @@ info from MusicPD."
                  (not (string-match "\\`http://" file)))
         (setq info (emms-player-mpd-get-alist
                     (emms-player-mpd-parse-response
-                     (emms-player-mpd-send-and-wait
+                     (emms-player-mpd-send
                       (concat "find filename "
                               (emms-player-mpd-quote-file file))))))))
     (when info
@@ -524,7 +539,7 @@ rather than EMMS."
   (interactive "P")
   (let* ((info (emms-player-mpd-get-alist
                 (emms-player-mpd-parse-response
-                 (emms-player-mpd-send-and-wait "currentsong"))))
+                 (emms-player-mpd-send "currentsong"))))
          (track (emms-dictionary '*track*))
          desc string)
     (when info
