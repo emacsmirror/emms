@@ -142,28 +142,19 @@ value of `emms-source-file-default-directory'."
 
 
 ;; FIXME! Does this work? -js
-;;;###autoload (autoload 'emms-play-m3u-playlist "emms-source-file" nil t)
-;;;###autoload (autoload 'emms-add-m3u-playlist "emms-source-file" nil t)
-(define-emms-source m3u-playlist (playlist)
-  "A source for simple .m3u playlists. It ignores empty lines, or
-lines starting with '#'."
+;;;###autoload (autoload 'emms-play-playlist "emms-source-file" nil t)
+;;;###autoload (autoload 'emms-add-playlist "emms-source-file" nil t)
+(define-emms-source playlist (playlist)
+  "A source for .m3u and .pls playlists. It ignores empty lines,
+or lines starting with '#'."
   (interactive (list (read-file-name "Play file: "
                                      emms-source-file-default-directory
                                      emms-source-file-default-directory
                                      t)))
-  (emms-source-files
-   (let ((files '())
-         (dir (file-name-directory playlist)))
-     (with-temp-buffer
-       (insert-file-contents playlist)
-       (goto-char (point-min))
-       (while (re-search-forward "^[^# ].*$" nil t)
-         (let ((line (match-string 0)))
-           (setq files (cons (if (file-name-absolute-p line)
-                                 line
-                               (concat dir line))
-                             files)))))
-     (reverse files))))
+  (dolist (file (emms-parse-playlist playlist))
+    (if (string-match "\\`http://" file)
+        (emms-source-url file)
+      (emms-source-file file))))
 
 
 ;;; Helper functions
