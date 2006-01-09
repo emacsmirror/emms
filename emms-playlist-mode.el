@@ -74,6 +74,7 @@
     (define-key emms-playlist-mode-map (kbd "C-y") 'emms-playlist-mode-yank)
     (define-key emms-playlist-mode-map (kbd "C-k") 'emms-playlist-mode-kill-track)
     (define-key emms-playlist-mode-map (kbd "C-w") 'emms-playlist-mode-kill)
+    (define-key emms-playlist-mode-map (kbd "C-_") 'emms-playlist-mode-undo)
     (define-key emms-playlist-mode-map (kbd "C-n") 'next-line)
     (define-key emms-playlist-mode-map (kbd "C-p") 'previous-line)
     (define-key emms-playlist-mode-map (kbd "C-j") 'emms-playlist-mode-insert-newline)
@@ -150,11 +151,22 @@ function switches back to the remembered buffer."
     (setq emms-playlist-mode-switched-buffer (current-buffer))
     (switch-to-buffer emms-playlist-buffer)))
 
+(defmacro with-inhibit-read-only-t (&rest body)
+  "Simple wrapper around `inhibit-read-only'."
+  `(let ((inhibit-read-only t))
+     ,@body))
+
 (defun emms-playlist-mode-insert-newline ()
   "Insert a newline at point."
   (interactive)
-  (let ((inhibit-read-only t))
-    (newline)))
+  (with-inhibit-read-only-t
+   (newline)))
+
+(defun emms-playlist-mode-undo ()
+  "Wrapper around `undo'."
+  (interactive)
+  (with-inhibit-read-only-t
+   (undo)))
 
 ;;; --------------------------------------------------------
 ;;; Overlay compatability
@@ -212,48 +224,48 @@ function switches back to the remembered buffer."
 (defun emms-playlist-mode-kill-track ()
   "Kill track at point."
   (interactive)
-  (let ((track (emms-playlist-track-at))
-	(inhibit-read-only t))
-    (if track
-	(let ((track-region (emms-property-region (point)
-						  'emms-track)))
-	  (when (and emms-player-playing-p
-		     (equal (emms-playlist-selected-track) track))
-	    (emms-stop))
-	  (remove-all-overlays (point-at-bol) (point-at-eol))
-	  (kill-region (car track-region) (cdr track-region)))
-      (kill-line))))
+  (with-inhibit-read-only-t
+   (let ((track (emms-playlist-track-at)))
+     (if track
+	 (let ((track-region (emms-property-region (point)
+						   'emms-track)))
+	   (when (and emms-player-playing-p
+		      (equal (emms-playlist-selected-track) track))
+	     (emms-stop))
+	   (remove-all-overlays (point-at-bol) (point-at-eol))
+	   (kill-region (car track-region) (cdr track-region)))
+       (kill-line)))))
 
 ;; C-w
 (defun emms-playlist-mode-kill ()
   "Kill from mark to point."
   (interactive)
-  (let ((inhibit-read-only t)
-	(m (mark))			; throw error if no mark
-	(p (point))
-	(sm emms-playlist-selected-marker))
-    ;; Are we killing the playing/selected track?
-    (when (emms-playlist-mode-between-p
-	   (marker-position sm) m p)
-      (setq emms-playlist-selected-marker nil)
-      (setq emms-playlist-mode-selected-overlay-marker nil)
-      (emms-stop))
-    (kill-region p m)))
+  (with-inhibit-read-only-t
+   (let ((m (mark))			; throw error if no mark
+	 (p (point))
+	 (sm emms-playlist-selected-marker))
+     ;; Are we killing the playing/selected track?
+     (when (emms-playlist-mode-between-p
+	    (marker-position sm) m p)
+       (setq emms-playlist-selected-marker nil)
+       (setq emms-playlist-mode-selected-overlay-marker nil)
+       (emms-stop))
+     (kill-region p m))))
 
 ;; C-y
 (defun emms-playlist-mode-yank ()
   "Yank into the playlist buffer."
   (interactive)
-  (let ((inhibit-read-only t))
-    (yank))
+  (with-inhibit-read-only-t
+   (yank))
   (emms-playlist-mode-overlay-refresh))
 
 ;; M-y
 (defun emms-playlist-mode-yank-pop ()
   "Cycle through the kill-ring."
   (interactive)
-  (let ((inhibit-read-only t))
-    (yank-pop)))
+  (with-inhibit-read-only-t
+   (yank-pop)))
 
 ;;; --------------------------------------------------------
 ;;; Overlay
@@ -346,17 +358,17 @@ of the saved playlist inside."
       (setq s (read (buffer-string))))
     (kill-buffer buffer)
     (with-current-buffer (emms-playlist-new name)
-      (let ((inhibit-read-only t))
-	(insert s)
-	(condition-case nil
-	    (progn
-	      (emms-playlist-first)
-	      (emms-playlist-update-track)
-	      (while t
-		(emms-playlist-next)
-		(emms-playlist-update-track)))
-	  (error
-	   nil)))
+      (with-inhibit-read-only-t
+       (insert s)
+       (condition-case nil
+	   (progn
+	     (emms-playlist-first)
+	     (emms-playlist-update-track)
+	     (while t
+	       (emms-playlist-next)
+	       (emms-playlist-update-track)))
+	 (error
+	  nil)))
       (emms-playlist-first)
       (emms-playlist-select (point))
       (switch-to-buffer (current-buffer)))))
@@ -373,33 +385,33 @@ of the saved playlist inside."
 (defun emms-playlist-mode-insert-track (track)
   "Insert the description of TRACK at point."
   (emms-playlist-ensure-playlist-buffer)
-  (let ((inhibit-read-only t))
-    (insert (propertize (emms-track-description track)
-			'emms-track track))
-    (save-restriction
-      (widen)
-      (let ((p (emms-property-region (point-at-bol) 'emms-track))
-	    (c (if (equal (emms-playlist-current-selected-track)
-			  (get-text-property (point-at-bol) 'emms-track))
-		   (cons 'emms-playlist-selected-face 2)
-		 (cons 'emms-playlist-track-face 1))))
-	(emms-playlist-mode-overlay-track (car p) (cdr p)
-					  (car c) (cdr c))))
-    (insert "\n")))
+  (with-inhibit-read-only-t
+   (insert (propertize (emms-track-description track)
+		       'emms-track track))
+   (save-restriction
+     (widen)
+     (let ((p (emms-property-region (point-at-bol) 'emms-track))
+	   (c (if (equal (emms-playlist-current-selected-track)
+			 (get-text-property (point-at-bol) 'emms-track))
+		  (cons 'emms-playlist-selected-face 2)
+		(cons 'emms-playlist-track-face 1))))
+       (emms-playlist-mode-overlay-track (car p) (cdr p)
+					 (car c) (cdr c))))
+   (insert "\n")))
 
 (defun emms-playlist-mode-update-track-function ()
   "Update the track display at point."
   (emms-playlist-ensure-playlist-buffer)
-  (let ((inhibit-read-only t))
-    (let ((track-region (emms-property-region (point)
-					      'emms-track))
-	  (track (get-text-property (point)
-				    'emms-track)))
-      (save-excursion
-	(delete-region (car track-region)
-		       ;; 1+ For the \n
-		       (1+ (cdr track-region)))
-	(emms-playlist-mode-insert-track track)))))
+  (with-inhibit-read-only-t
+   (let ((track-region (emms-property-region (point)
+					     'emms-track))
+	 (track (get-text-property (point)
+				   'emms-track)))
+     (save-excursion
+       (delete-region (car track-region)
+		      ;; 1+ For the \n
+		      (1+ (cdr track-region)))
+       (emms-playlist-mode-insert-track track)))))
 
 ;;; --------------------------------------------------------
 ;;; Entry
