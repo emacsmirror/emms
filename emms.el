@@ -493,17 +493,23 @@ If no playlist exists, a new one is generated."
   (interactive)
   (emms-playlist-ensure-playlist-buffer)
   (let ((inhibit-read-only t))
-        (widen)
-        (delete-region (point-min)
-                       (point-max)))
-      (run-hooks 'emms-playlist-cleared-hook))
+    (widen)
+    (delete-region (point-min)
+		   (point-max)))
+  (run-hooks 'emms-playlist-cleared-hook))
+
+(defmacro with-widened-buffer (&rest body)
+  `(save-restriction
+     (widen)
+     ,@body))
 
 ;;; Point movement within the playlist buffer.
 (defun emms-playlist-track-at (&optional pos)
   "Return the track at POS (point if not given), or nil if none."
   (emms-playlist-ensure-playlist-buffer)
-  (get-text-property (or pos (point))
-                     'emms-track))
+  (with-widened-buffer
+   (get-text-property (or pos (point))
+		      'emms-track)))
 
 (defun emms-playlist-next ()
   "Move to the next track in the current buffer."
@@ -757,7 +763,7 @@ This is supplying ARGS as arguments to the source."
                     (emms-playlist-update-track)
                     (setq pos (text-property-any
                                (next-single-property-change (point)
-                                                           'emms-track)
+							    'emms-track)
                                (point-max)
                                'emms-track
                                track))))))))
