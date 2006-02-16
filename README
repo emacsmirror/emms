@@ -1,22 +1,34 @@
 EMMS --- The Emacs Multi-Media System                -*-outline-*-
 =====================================
 
-* Introduction
-==============
+* Introduction, Overview
+========================
 EMMS is the Emacs Multi-Media System. It tries to be a clean and small
 application to play multimedia files from Emacs using external
 players. Many of it's ideas are derived from MpthreePlayer
 (http://www.nongnu.org/mp3player), but it tries to be more general and
 more clean.
 
-** EMMS, Emms, emms, or what?
------------------------------
-In various contexts, this program is called EMMS, Emms or emms. Those
-are all correct, and which you use is a matter of personal preference.
-EMMS highlights the acronym character of the name. Emms is akin to
-Emacs and Gnus, ignoring that Emms is pronounce ee-em-em-es, and not a
-single name. emms is highlighting that emms is a case-sensitive file
-name and Emacs Lisp command.
+   The basic functionality of Emms consists of three parts: The core,
+the sources, and the players.
+
+   The core resides in `emms.el', and provides a simple playlist and the
+basic functionality to use all the other features of Emms. It provides
+the common user commands and interfaces for other parts. It thinks in
+tracks, where a track is the combination of a type and a name - e.g.
+the track type 'file has a name that is the file name. Other track
+types are possible.
+
+   To get to tracks, the core needs sources. The file
+`emms-source-file.el' provides simple sources to interact with the file
+system.
+
+   When Emms finally has the sources in the playlist, it needs a player
+to play them. `emms-player-simple.el' defines a few useful players, and
+allows you to define your own in a very simple way.
+
+   The way Emms works is easy to customize with your own code or by
+using `M-x customize'.
 
 
 * Installation
@@ -27,43 +39,24 @@ then in your ~/.emacs, you should do:
 
 (add-to-list 'load-path "~/elisp/emms/")
 
+For information about compiling Emms into byte-code see the "Compiling
+Emms" section in the Emms manual.
 
 ** Setup
 --------
-EMMS is quite simple to set up. For the most basic needs, you will
-just need the following line:
 
-(require 'emms)
+After adding the location of the Emms code to the LOAD-PATH variable,
+see *Note Installation::. we invoke the following using the
+`emms-setup' feature which allows for quick and simple Emms setup.
 
-Which installs the core of EMMS. Now we need to do some configuration.
+     (require 'emms-setup)
+     (emms-standard)
+     (emms-default-players)
 
-The EMMS module `emms-default' provides the function `emms-setup',
-which is a way to quickly configure your EMMS. You can add any number
-of directories which contain media. The first argument is the
-complexity level of the user interface. Here's an example:
+   After which Emms is set-up and ready to go!
 
-(require 'emms-default)
-(emms-setup 'tiny "directory")
-
-Here are the all the interface complexity options:
-
- * minimalistic : defines the players, play directory but nothing
-                  more.
-
- * tiny : adds the pbi (playlist buffer interface)
-
- * default : adds the info reading (tags for mp3 and oggs)
-
- * advanced : features the tageditor and playlist manipulation
-
- * cvs : features playlist pop-up, pbi marking, mode-line, and
-         asynchronous loading of tags.
-
-Now your configuration is done.
-
-The (optional) directory is used for
-`emms-source-file-default-directory', in case you were wondering.
-
+For more information about different setup levels and features see the
+"Simple Setup" section of the Emms manual.
 
 ** Usage
 --------
@@ -87,72 +80,38 @@ emms-play-file ............. Play a single file
 emms-play-directory ........ Play a whole directory
 emms-play-directory-tree ... Play a directory tree
 
+* The Interactive Playlist buffer
+=================================
 
-* Overview
-==========
-The basic functionality of EMMS consists of three parts: The core, the
-sources, and the players.
+Emms provides a visual, interactive playlist mode as well as the
+ability to use playlists without ever looking at then. This visual,
+interactive mode is called the `emms-playlist-mode' and is defined in
+`emms-playlist-mode.el'.
 
-The core resides in emms.el, and provides a simple playlist and the
-basic functionality to use all the other features of EMMS. It provides
-the common user commands and interfaces for other parts. It thinks in
-tracks, where a track is the combination of a type and a name - e.g.
-the track type 'file has a name that is the file name. Other track
-types are possible.
+To use the interactive playlist invoke: `M-x emms-playlist-mode-go'
 
-To get to tracks, the core needs sources. The file emms-source-file.el
-provides simple sources to interact with the file system.
+   When in the interactive playlist mode we can perform different
+actions on the current playlist. Here are some basic commands:
 
-When EMMS finally has the sources in the playlist, it needs a player
-to play them. emms-player-simple.el defines a few useful players, and
-allows you to define your own in a very simple way.
+`n'....Start playing the next track in the playlist.
 
+`p'....Start playing the previous track in the playlist.
 
-* Modules
-=========
+`s'....Stop playing.
 
-To use one of the modules that come with EMMS just put:
+`f'....Describe the currently playing track in the minibuffer.
 
-(require 'MODULE-NAME)
+`c'....Display the current track in the center of the screen.
 
-in your .emacs
+`RET'..Start playing the track under point. Note that this is also
+       available with `<mouse-2>'.
 
+`q'....Put the interactive playlist buffer at the end of the list of all
+       buffers.
 
-** Playlist buffer (emms-pbi)
------------------------------
+As always, for more commands see the mode documentation and the
+"Interactive Playlists" section of the Emms manual.
 
-emms-pbi ................ Switch to playlist buffer
-
-The playlist-buffer *Playlist* will be created and put into
-emms-pbi-mode, which give you some useful key bindings.
-
-key             binding
----             -------
-?		describe-mode
-<mouse-2>	emms-pbi-play-current-line
-RET		emms-pbi-play-current-line
-q		bury-buffer
-Q		emms-pbi-quit
-f		emms-pbi-show-current-line
-s		emms-stop
-C-y		emms-pbi-yank
-C-k		emms-pbi-kill-line
-c		emms-pbi-recenter
-p		emms-previous
-n		emms-next
-C-x C-s		emms-pbi-export-playlist
-
-
-** Pop-up the Playlist Buffer (emms-pbi-popup)
-----------------------------------------------
-
-emms-pbi-popup-playlist...Popup Playlist buffer
-
-After changing manually the track with emms-pbi-play-current-line the
-old window configuration is restored. It might be useful to bind that
-function to a global-key in your .emacs, for example:
-
-(global-set-key (kbd "<f3>") 'emms-pbi-popup-playlist)
 
 * Bare Bones Setup
 ==================
@@ -168,4 +127,14 @@ sources for tracks (trivial file system based sources, such as this
 (setq emms-player-list '(emms-player-mpg321
                          emms-player-ogg123
                          emms-player-mplayer))
+
+
+* EMMS, Emms, emms, or what?
+============================
+In various contexts, this program is called EMMS, Emms or emms. Those
+are all correct, and which you use is a matter of personal preference.
+EMMS highlights the acronym character of the name. Emms is akin to
+Emacs and Gnus, ignoring that Emms is pronounce ee-em-em-es, and not a
+single name. emms is highlighting that emms is a case-sensitive file
+name and Emacs Lisp command.
 
