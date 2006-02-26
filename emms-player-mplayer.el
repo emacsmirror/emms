@@ -32,7 +32,7 @@
 (define-emms-simple-player mplayer '(file url)
   (regexp-opt '(".ogg" ".mp3" ".wav" ".mpg" ".mpeg" ".wmv" ".wma"
                 ".mov" ".avi" ".divx" ".ogm" ".asf" ".mkv" "http://"
-		".rm" ".rmvb" ".mp4"))
+		".rm" ".rmvb" ".mp4" ".flac"))
   "mplayer")
 
 (define-emms-simple-player mplayer-playlist '(streamlist)
