@@ -1,7 +1,7 @@
 ;;; emms-playlist-mode.el --- Playlist mode for Emms.
 
-;;; Copyright 2005 Yoni Rabkin under the GNU General Public License.
-;;; This file is a part of the Emacs Multimedia system.
+;;; Copyright 2005, 2006, Yoni Rabkin under the GNU General Public
+;;; License.  This file is a part of the Emacs Multimedia system.
 
 ;;; Commentary:
 ;;;
@@ -257,6 +257,7 @@ function switches back to the remembered buffer."
   "Yank into the playlist buffer."
   (interactive)
   (with-inhibit-read-only-t
+   (goto-char (point-at-bol))
    (yank))
   (emms-playlist-mode-overlay-refresh))
 
