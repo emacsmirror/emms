@@ -318,14 +318,19 @@ The format of the alist is (name . value)."
               (add-to-list 'alist (cons name value) t)))))
       alist)))
 
+(defun emms-player-mpd-get-status ()
+  "Get status information from MusicPD.
+It will be returned in the form of an alist."
+  (emms-player-mpd-get-alist
+   (emms-player-mpd-parse-response
+    (emms-player-mpd-send "status"))))
+
 (defun emms-player-mpd-get-playlist-id (&optional info)
   "Get the current playlist ID from MusicPD.
 If INFO is specified, use that instead of acquiring the necessary
 info from MusicPD."
   (unless info
-    (setq info (emms-player-mpd-get-alist
-                (emms-player-mpd-parse-response
-                 (emms-player-mpd-send "status")))))
+    (setq info (emms-player-mpd-get-status)))
   (cdr (assoc "playlist" info)))
 
 (defun emms-player-mpd-get-current-song (&optional info)
@@ -336,9 +341,7 @@ the song on the current playlist.
 If INFO is specified, use that instead of acquiring the necessary
 info from MusicPD."
   (unless info
-    (setq info (emms-player-mpd-get-alist
-                (emms-player-mpd-parse-response
-                 (emms-player-mpd-send "status")))))
+    (setq info (emms-player-mpd-get-status)))
   (cdr (assoc "song" info)))
 
 (defun emms-player-mpd-get-state (&optional info)
@@ -348,10 +351,21 @@ This is either \"play\", \"stop\", or \"pause\".
 If INFO is specified, use that instead of acquiring the necessary
 info from MusicPD."
   (unless info
-    (setq info (emms-player-mpd-get-alist
-                (emms-player-mpd-parse-response
-                 (emms-player-mpd-send "status")))))
+    (setq info (emms-player-mpd-get-status)))
   (cdr (assoc "state" info)))
+
+(defun emms-player-mpd-get-playing-time (&optional info)
+  "Get the number of seconds that the current song has been playing,
+or nil if we cannot obtain this information.
+
+If INFO is specified, use that instead of acquiring the necessary
+info from MusicPD."
+  (unless info
+    (setq info (emms-player-mpd-get-status)))
+  (let ((time (cdr (assoc "time" info))))
+    (when (and time
+               (string-match "\\`\\([0-9]+\\):" time))
+      (match-string 1 time))))
 
 (defun emms-player-mpd-sync-from-emms ()
   "Synchronize the MusicPD playlist with the contents of the
@@ -367,11 +381,10 @@ current EMMS playlist."
 (defun emms-player-mpd-detect-song-change ()
   "Detect whether a song change has occurred.
 This is usually called by a timer."
-  (let* ((info (emms-player-mpd-get-alist
-                (emms-player-mpd-parse-response
-                 (emms-player-mpd-send "status"))))
+  (let* ((info (emms-player-mpd-get-status))
          (song (emms-player-mpd-get-current-song info))
-         (status (emms-player-mpd-get-state info)))
+         (status (emms-player-mpd-get-state info))
+         (time (emms-player-mpd-get-playing-time info)))
     (cond ((string= status "stop")
            (emms-cancel-timer emms-player-mpd-status-timer)
            (setq emms-player-mpd-status-timer nil)
@@ -389,7 +402,9 @@ This is usually called by a timer."
                (emms-playlist-select (progn
                                        (goto-line (1+ (string-to-number song)))
                                        (point))))
-             (run-hooks 'emms-player-started-hook))))))
+             (run-hooks 'emms-player-started-hook)
+             (when time
+               (run-hook-with-args 'emms-player-seeked-functions time)))))))
 
 (defun emms-player-mpd-get-filename (file)
   "Turn FILE into something that MusicPD can understand.
