@@ -172,7 +172,7 @@ the specified PARAMS."
                              ".stm" ".stx" ".ult" ".apun" ".xm" ".mod")
   "mikmod" "-q" "-p" "1" "-X")
 (define-emms-simple-player alsaplayer '(file url)
-  (emms-player-simple-regexp '(".ogg" ".mp3" ".wav" ".flac" ".pls" ".m3u" "http://"))
+  (emms-player-simple-regexp ".ogg" ".mp3" ".wav" ".flac" ".pls" ".m3u" "http://")
   "alsaplayer" "--quiet" "--nosave" "\"--interface text\"")
 
 (provide 'emms-player-simple)
