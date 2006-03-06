@@ -140,8 +140,6 @@ value of `emms-source-file-default-directory'."
            (emms-track 'file file)))
         (emms-source-file-directory-tree dir regex)))
 
-
-;; FIXME! Does this work? -js
 ;;;###autoload (autoload 'emms-play-playlist "emms-source-file" nil t)
 ;;;###autoload (autoload 'emms-add-playlist "emms-source-file" nil t)
 (define-emms-source playlist (playlist)
