@@ -1,6 +1,6 @@
 ;;; emms-mode-line.el --- Mode-Line and titlebar infos for emms
 
-;; Copyright (C) 2004  Free Software Foundation, Inc.
+;; Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
 
 ;; Author: Mario Domgörgen <kanaldrache@gmx.de>
 ;; Keywords: multimedia

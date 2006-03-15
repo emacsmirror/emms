@@ -1,9 +1,8 @@
 ;;; emms-playlist-sort.el --- sort emms playlist
 
-;; Copyright (C) 2005 William Xu
+;; Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 ;; Author: William Xu <william.xwl@gmail.com>
-;; $Id: emms-playlist-sort.el,v 0.1 2005/10/06 00:29:36 xwl Exp $
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by

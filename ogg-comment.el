@@ -1,14 +1,13 @@
 ;;;  ogg-comment.el --- Read Ogg-Vorbis file headers.
 
-;; Copyright (C) 2003, 2004 lawrence mitchell <wence@gmx.li>
+;; Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+
 ;; Filename: ogg-comment.el
 ;; Version: $Revision: 1.5 $
 ;; Author: lawrence mitchell <wence@gmx.li>
 ;; Maintainer: lawrence mitchell <wence@gmx.li>
 ;; Created: 2003-09-26
 ;; Keywords: music
-
-;; COPYRIGHT NOTICE
 
 ;; This program is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License as

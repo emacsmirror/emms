@@ -1,6 +1,6 @@
 ;;; emms-tageditor.el --- Info-editor for EMMS
 
-;; Copyright (C) 2004  Free Software Foundation, Inc.
+;; Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
 
 ;; Author: Ulrik Jensen <terryp@daimi.au.dk>
 ;; Keywords: 

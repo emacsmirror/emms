@@ -1,6 +1,6 @@
 ;;; emms-lyrics.el --- Display lyrics synchronically
 
-;; Copyright (C) 2005 William Xu
+;; Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 ;; Author: William Xu <william.xwl@gmail.com>
 ;; Keywords: emms music lyric

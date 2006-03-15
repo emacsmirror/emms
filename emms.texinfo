@@ -17,7 +17,7 @@
 @end direntry
 
 @copying
- @copyright{} 2004, 2005
+ @copyright{} 2004, 2005, 2006
    Yoni Rabkin, Jorgen Schaefer, Mario Domgoergen
 @quotation
 Permission is granted to copy, distribute and/or modify this document

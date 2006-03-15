@@ -1,9 +1,9 @@
 ;;; emms-info-ogg.el --- ogg-comment.el info-interface for EMMS
 
-;; Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
+;; Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
-;; Authors: Yoni Rabkin <yonirabkin@member.fsf.org>, Ulrik Jensen
-;; <terryp@daimi.au.dk>
+;; Authors: Yoni Rabkin <yonirabkin@member.fsf.org>, 
+;;          Ulrik Jensen <terryp@daimi.au.dk>
 
 ;; Keywords: ogg, emms, info
 

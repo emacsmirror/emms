@@ -1,6 +1,6 @@
 ;;; emms-info.el --- Retrieving track information
 
-;; Copyright (C) 2005  Jorgen Schaefer
+;; Copyright (C) 2005, 2006 Free Software Foundation Inc.
 
 ;; Author: Jorgen Schaefer <forcer@forcix.cx>
 

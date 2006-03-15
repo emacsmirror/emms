@@ -1,9 +1,10 @@
 ;; emms-mode-line-icon.el --- show an icon in the Emacs mode-line
 
-;; Copyright  (C)  2005  Daniel Brockman <daniel@brockman.se>
-;; 
+;; Copyright (C) 2006 Free Software Foundation, Inc.
+
 ;; Version: 1.1
 ;; Keywords: emms
+
 ;; Author: Daniel Brockman <daniel@brockman.se>
 ;; Maintainer: Lucas Bonnet <lucas@rincevent.net>
 

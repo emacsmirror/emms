@@ -1,6 +1,6 @@
 ;;; emms-pbi-mark.el --- Mark-functions for the EMMS playlist
 
-;; Copyright (C) 2003  Free Software Foundation, Inc.
+;; Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
 ;; Author: Ulrik Jensen <terryp@daimi.au.dk>
 ;; Keywords: 
