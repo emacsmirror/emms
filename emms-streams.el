@@ -2,6 +2,10 @@
 
 ;; Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
 
+;; Authors: Lucas Bonnet <lucas@rincevent.net>
+;;          Jose A Ortega Ruiz <jao@gnu.org>
+;;          Yoni Rabkin <yonirabkin@member.fsf.org>
+
 ;; This program is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License
 ;; as published by the Free Software Foundation; either version 2
