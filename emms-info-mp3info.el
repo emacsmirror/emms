@@ -1,6 +1,6 @@
 ;;; emms-info-mp3info.el --- Info-method for EMMS using mp3info
 
-;; Copyright (C) 2003  Free Software Foundation, Inc.
+;; Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
 ;; Authors: Ulrik Jensen <terryp@daimi.au.dk>
 ;;          Jorgen Schäfer <forcer@forcix.cx>

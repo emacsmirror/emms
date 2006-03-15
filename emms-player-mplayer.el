@@ -1,7 +1,6 @@
 ;;; emms-player-mplayer.el --- mplayer support for EMMS
 
-;; Copyright (C) 2005  William XWL
-;; Copyright (C) 2005  Jorgen Schaefer
+;; Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 ;; Authors: William XWL <william.xwl@gmail.com>
 ;;          Jorgen Schaefer <forcer@forcix.cx>

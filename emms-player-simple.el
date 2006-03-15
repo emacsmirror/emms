@@ -1,6 +1,6 @@
 ;;; emms-player-simple.el --- A generic simple player.
 
-;; Copyright (C) 2003  Free Software Foundation, Inc.
+;; Copyright (C) 2003, 2004, 2006 Free Software Foundation, Inc.
 
 ;; Authors: Ulrik Jensen <terryp@daimi.au.dk>
 ;;          Jorgen SchÅ‰fer <forcer@forcix.cx>
