@@ -434,20 +434,24 @@ MusicPD playlist."
     (mapc #'emms-playlist-insert-track (emms-player-mpd-get-tracks)))
   (setq emms-player-mpd-playlist-id (emms-player-mpd-get-playlist-id)))
 
-(defun emms-player-mpd-detect-song-change ()
+(defun emms-player-mpd-detect-song-change (&optional info)
   "Detect whether a song change has occurred.
-This is usually called by a timer."
-  (let* ((info (emms-player-mpd-get-status))
-         (song (emms-player-mpd-get-current-song info))
-         (status (emms-player-mpd-get-state info))
-         (time (emms-player-mpd-get-playing-time info)))
+This is usually called by a timer.
+
+If INFO is specified, use that instead of acquiring the necessary
+info from MusicPD."
+  (unless info
+    (setq info (emms-player-mpd-get-status)))
+  (let ((song (emms-player-mpd-get-current-song info))
+        (status (emms-player-mpd-get-state info))
+        (time (emms-player-mpd-get-playing-time info)))
     (cond ((string= status "stop")
            (emms-cancel-timer emms-player-mpd-status-timer)
            (setq emms-player-mpd-status-timer nil)
            (setq emms-player-stopped-p t)
            (emms-player-stopped))
           ((string= status "pause")
-           nil)
+           (setq emms-player-paused-p t))
           ((string= status "play")
            (unless (or (null song)
                        (and emms-player-mpd-current-song
@@ -565,7 +569,10 @@ Afterward, the status of MusicPD will be tracked."
   (when emms-player-mpd-status-timer
     (emms-cancel-timer emms-player-mpd-status-timer))
   (setq emms-player-mpd-current-song nil)
-  (emms-player-mpd-detect-song-change)
+  (let ((info (emms-player-mpd-get-status)))
+    (unless (string= (emms-player-mpd-get-state info) "stop")
+      (setq emms-player-playing-p 'emms-player-mpd))
+    (emms-player-mpd-detect-song-change info))
   (setq emms-player-mpd-status-timer
         (run-at-time t emms-player-mpd-check-interval
                      'emms-player-mpd-detect-song-change)))
