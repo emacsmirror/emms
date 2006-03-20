@@ -141,12 +141,12 @@ This will usually be auto-detected correctly."
   :type 'function
   :group 'emms-player-mpd)
 
-(defcustom emms-player-mpd-server-name "localhost"
+(defcustom emms-player-mpd-server-name (or (getenv "MPD_HOST") "localhost")
   "The MusicPD server that we should connect to."
   :type 'string
   :group 'emms-player-mpd)
 
-(defcustom emms-player-mpd-server-port "6600"
+(defcustom emms-player-mpd-server-port (or (getenv "MPD_PORT") "6600")
   "The port of the MusicPD server that we should connect to."
   :type '(choice number string)
   :group 'emms-player-mpd)
@@ -251,9 +251,9 @@ If your EMMS playlist contains stored playlists, set this to nil."
 (defun emms-player-mpd-block ()
   "Block input for MusicPD, waiting if currently blocked.
 The maximum amount is determined by `emms-player-mpd-timeout'."
-  `(with-timeout '(,emms-player-mpd-timeout)
-     (while emms-player-mpd-blocked
-       (sit-for 0.20)))
+  (with-timeout (emms-player-mpd-timeout)
+    (while emms-player-mpd-blocked
+      (sit-for 0.20)))
   (setq emms-player-mpd-blocked t))
 
 (defun emms-player-mpd-unblock ()
