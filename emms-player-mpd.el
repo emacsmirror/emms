@@ -82,10 +82,12 @@
 ;; You can set `emms-player-mpd-sync-playlist' to nil if your master
 ;; EMMS playlist contains only stored playlists.
 
-;;; TODO
-
-;; Write a function that imports the current MusicPD playlist into
-;; EMMS.
+;; If at any time you wish to replace the current EMMS playlist buffer
+;; with the contents of the MusicPD playlist, type
+;; M-x emms-player-mpd-connect.
+;;
+;; This will also run the relevant seek functions, so that if you use
+;; emms-playing-time, the displayed time will be accurate.
 
 (require 'emms-player-simple)
 
@@ -300,21 +302,69 @@ Otherwise, it will be nil."
                   data)
           (cons nil data))))))
 
+(defun emms-player-mpd-parse-line (line)
+  "Turn the given LINE from MusicPD into a cons cell.
+The format of the cell is (name . value)."
+  (when (string-match "\\`\\([^:]+\\):\\s-*\\(.+\\)" line)
+    (let ((name (match-string 1 line))
+          (value (match-string 2 line)))
+      (if (and name value)
+          (progn
+            (setq name (downcase name))
+            (cons name value))
+        nil))))
+
 (defun emms-player-mpd-get-alist (info)
   "Turn the given parsed INFO from MusicPD into an alist.
 The format of the alist is (name . value)."
   (when (and info
              (null (car info))          ; no error has occurred
              (cdr info))                ; data exists
-    (let (alist)
+    (let ((alist nil)
+          cell old-cell)
       (dolist (line (cdr info))
-        (when (string-match "\\`\\([^:]+\\):\\s-*\\(.+\\)" line)
-          (let ((name (match-string 1 line))
-                (value (match-string 2 line)))
-            (when (and name value)
-              (setq name (downcase name))
-              (add-to-list 'alist (cons name value) t)))))
+        (when (setq cell (emms-player-mpd-parse-line line))
+          (if (setq old-cell (assoc (car cell) alist))
+              (setcdr old-cell (cdr cell))
+            (setq alist (cons cell alist)))))
       alist)))
+
+(defun emms-player-mpd-get-alists (info)
+  "Turn the given parsed INFO from MusicPD into an list of alists.
+The format of the alist is (name . value).
+
+The list will be in reverse order."
+  (when (and info
+             (null (car info))          ; no error has occurred
+             (cdr info))                ; data exists
+    (let ((alists nil)
+          (alist nil)
+          cell)
+      (dolist (line (cdr info))
+        (when (setq cell (emms-player-mpd-parse-line line))
+          (if (assoc (car cell) alist)
+              (setq alists (cons alist alists)
+                    alist (list cell))
+            (setq alist (cons cell alist)))))
+      (when alist
+        (setq alists (cons alist alists)))
+      alists)))
+
+(defun emms-player-mpd-get-tracks ()
+  "Get the current playlist from MusicPD in the form of a list of
+EMMS tracks."
+  (let ((songs (emms-player-mpd-get-alists
+                (emms-player-mpd-parse-response
+                 (emms-player-mpd-send "playlistinfo"))))
+        (tracks nil))
+    (when songs
+      (dolist (song-info songs)
+        (let (cell)
+          (when (setq cell (assoc "file" song-info))
+            (let ((track (emms-track 'file (cdr cell))))
+              (emms-info-mpd track song-info)
+              (setq tracks (cons track tracks))))))
+      tracks)))
 
 (defun emms-player-mpd-get-status ()
   "Get status information from MusicPD.
@@ -363,7 +413,7 @@ info from MusicPD."
   (let ((time (cdr (assoc "time" info))))
     (when (and time
                (string-match "\\`\\([0-9]+\\):" time))
-      (match-string 1 time))))
+      (string-to-number (match-string 1 time)))))
 
 (defun emms-player-mpd-sync-from-emms ()
   "Synchronize the MusicPD playlist with the contents of the
@@ -375,6 +425,14 @@ current EMMS playlist."
            (nreverse
             (emms-playlist-tracks-in-region (point-min) (point-max)))))
    (setq emms-player-mpd-playlist-id (emms-player-mpd-get-playlist-id))))
+
+(defun emms-player-mpd-sync-from-mpd ()
+  "Synchronize the EMMS playlist with the contents of the current
+MusicPD playlist."
+  (with-current-emms-playlist
+    (emms-playlist-clear)
+    (mapc #'emms-playlist-insert-track (emms-player-mpd-get-tracks)))
+  (setq emms-player-mpd-playlist-id (emms-player-mpd-get-playlist-id)))
 
 (defun emms-player-mpd-detect-song-change ()
   "Detect whether a song change has occurred.
@@ -448,7 +506,7 @@ This handles both m3u and pls type playlists."
   ;; having to mangle their names.  Also, mpd can't handle pls
   ;; playlists by itself.
   (let ((playlist (emms-parse-playlist playlist))
-        any-success)
+        (any-success nil))
     (dolist (file playlist)
       (when (emms-player-mpd-add-file file)
         (setq any-success t)))
@@ -493,10 +551,24 @@ playlist, and then plays the current track."
     (with-current-emms-playlist
       (emms-player-mpd-play (1- (line-number-at-pos
                                  emms-playlist-selected-marker)))))
-  (unless emms-player-mpd-status-timer
-    (setq emms-player-mpd-status-timer
-          (run-at-time t emms-player-mpd-check-interval
-                       'emms-player-mpd-detect-song-change))))
+  (when emms-player-mpd-status-timer
+    (emms-cancel-timer emms-player-mpd-status-timer))
+  (setq emms-player-mpd-status-timer
+        (run-at-time t emms-player-mpd-check-interval
+                     'emms-player-mpd-detect-song-change)))
+
+(defun emms-player-mpd-connect ()
+  "Connect to MusicPD and retrieve its current playlist.
+Afterward, the status of MusicPD will be tracked."
+  (interactive)
+  (emms-player-mpd-sync-from-mpd)
+  (when emms-player-mpd-status-timer
+    (emms-cancel-timer emms-player-mpd-status-timer))
+  (setq emms-player-mpd-current-song nil)
+  (emms-player-mpd-detect-song-change)
+  (setq emms-player-mpd-status-timer
+        (run-at-time t emms-player-mpd-check-interval
+                     'emms-player-mpd-detect-song-change)))
 
 (defun emms-player-mpd-start (track)
   "Starts a process playing TRACK."
@@ -546,8 +618,8 @@ playlist, and then plays the current track."
 This is a useful addition to `emms-info-functions'.
 If INFO is specified, use that instead of acquiring the necessary
 info from MusicPD."
-  (let (file)
-    (unless info
+  (unless info
+    (let (file)
       (when (and (eq 'file (emms-track-type track))
                  emms-player-mpd-music-directory
                  (setq file (emms-player-mpd-get-filename
@@ -558,23 +630,23 @@ info from MusicPD."
                     (emms-player-mpd-parse-response
                      (emms-player-mpd-send
                       (concat "find filename "
-                              (emms-player-mpd-quote-file file))))))))
-    (when info
-      (dolist (data info)
-        (let ((name (car data))
-              (value (cdr data)))
-          (setq name (cond ((string= name "artist") 'info-artist)
-                           ((string= name "title") 'info-title)
-                           ((string= name "album") 'info-album)
-                           ((string= name "track") 'info-tracknumber)
-                           ((string= name "date") 'info-year)
-                           ((string= name "genre") 'info-genre)
-                           ((string= name "time")
-                            (setq value (string-to-number value))
-                            'info-playing-time)
-                           (t nil)))
-          (when name
-            (emms-track-set track name value)))))))
+                              (emms-player-mpd-quote-file file)))))))))
+  (when info
+    (dolist (data info)
+      (let ((name (car data))
+            (value (cdr data)))
+        (setq name (cond ((string= name "artist") 'info-artist)
+                         ((string= name "title") 'info-title)
+                         ((string= name "album") 'info-album)
+                         ((string= name "track") 'info-tracknumber)
+                         ((string= name "date") 'info-year)
+                         ((string= name "genre") 'info-genre)
+                         ((string= name "time")
+                          (setq value (string-to-number value))
+                          'info-playing-time)
+                         (t nil)))
+        (when name
+          (emms-track-set track name value))))))
 
 (defun emms-player-mpd-show (&optional insertp)
   "Describe the current EMMS track in the minibuffer.
@@ -587,7 +659,8 @@ rather than EMMS."
                 (emms-player-mpd-parse-response
                  (emms-player-mpd-send "currentsong"))))
          (track (emms-dictionary '*track*))
-         desc string)
+         (desc nil)
+         string)
     (when info
       (emms-track-set track 'type 'file)
       (emms-track-set track 'name (cdr (assoc "file" info)))
