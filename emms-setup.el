@@ -27,10 +27,10 @@
 ;; feature is documented in the Emms manual which is distributed with
 ;; Emms.
 ;;
-;; The use this feature we can invoke:
+;; The use this feature we can invoke (for example):
 ;;
-;; (require 'emms-setup)
-;; (emms-all)
+;;         (require 'emms-setup)
+;;         (emms-all)
 ;;
 ;; The first command loads the feature into Emacs and the second
 ;; chooses the `emms-all' level.
@@ -89,6 +89,8 @@ stable features which come with the Emms distribution."
   (require 'emms-streams)
   (require 'emms-lyrics)
   (require 'emms-playing-time)
+  (require 'emms-player-mpd)
+  (require 'emms-playlist-sort)
   ;; setup
   (emms-mode-line 1)
   (emms-mode-line-blank)
@@ -106,7 +108,7 @@ on the edge."
   ;; define
   (require 'emms-metaplaylist-mode)
   (require 'emms-stream-info)
-  (require 'emms-playlist-sort))
+  (require 'emms-score))
 
 (defun emms-default-players ()
   "Set `emms-player-list' to `emms-setup-default-player-list'."
