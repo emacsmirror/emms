@@ -63,8 +63,11 @@ Emms basics
 Advanced Features
 * Track Information::           More narrative track descriptions.
 * Interactive Playlists::    Interactive Playlists.
-* Extending Emms::      How to define new players and modules.
+
+Modules and Extensions
+* Sorting Playlists::   Sorting the order of the tracks.
 * Streaming Audio::     Interface to streaming audio.
+* Extending Emms::      How to define new players and modules.
 
 Copying and license
 * Copying::             The GNU General Public License gives you permission to
@@ -986,6 +989,48 @@ from @file{emms-player-simple.el}
 
 Now we have a ready player and we could add commands like
 @command{emms-mpg321-remote-pause} for example.
+
+@node Sorting Playlists
+@chapter Sorting Playlists
+
+@cindex sort
+@cindex track order
+
+The `emms-playlist-sort' module, defined in the
+@file{emms-playlist-sort.el} package provides functions for sorting
+Emms playlists. `emms-playlist-sort' can be loaded by invoking:
+
+@lisp
+(require 'emms-playlist-sort)
+@end lisp
+
+@defun emms-playlist-sort-by-name
+Sort playlist by name in ascending order.
+@end defun
+
+@defun emms-playlist-sort-by-info-artist
+Sort playlist by artist in ascending order.
+@end defun
+
+@defun emms-playlist-sort-by-info-title
+Sort playlist by title in ascending order.
+@end defun
+
+@defun emms-playlist-sort-by-info-album
+Sort playlist by album in ascending order.
+@end defun
+
+@defun emms-playlist-sort-by-info-year
+Sort playlist by year in ascending order.
+@end defun
+
+@defun emms-playlist-sort-by-info-note
+Sort playlist by notes in ascending order.
+@end defun
+
+@defun emms-playlist-sort-by-score
+Sort emms playlist by score in descending order.
+@end defun
 
 @node Streaming Audio
 @chapter Streaming Audio

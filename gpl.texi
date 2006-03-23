@@ -1,4 +1,4 @@
-@node Copying, The GNU FDL, Streaming Audio, Top
+@node Copying, The GNU FDL, Extending Emms, Top
 @unnumbered GNU GENERAL PUBLIC LICENSE
 @center Version 2, June 1991
 
