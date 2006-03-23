@@ -431,8 +431,16 @@ current EMMS playlist."
 MusicPD playlist."
   (with-current-emms-playlist
     (emms-playlist-clear)
-    (mapc #'emms-playlist-insert-track (emms-player-mpd-get-tracks)))
-  (setq emms-player-mpd-playlist-id (emms-player-mpd-get-playlist-id)))
+    (mapc #'emms-playlist-insert-track (emms-player-mpd-get-tracks))
+    (let* ((info (emms-player-mpd-get-status))
+           (id (emms-player-mpd-get-playlist-id info))
+           (song (emms-player-mpd-get-current-song info)))
+      (setq emms-player-mpd-playlist-id id)
+      (if song
+          (progn
+            (goto-line (1+ (string-to-number song)))
+            (emms-playlist-select (point)))
+        (goto-char (point-min))))))
 
 (defun emms-player-mpd-detect-song-change (&optional info)
   "Detect whether a song change has occurred.
@@ -451,7 +459,7 @@ info from MusicPD."
            (setq emms-player-stopped-p t)
            (emms-player-stopped))
           ((string= status "pause")
-           (setq emms-player-paused-p t))
+           nil)
           ((string= status "play")
            (unless (or (null song)
                        (and emms-player-mpd-current-song
@@ -565,17 +573,22 @@ playlist, and then plays the current track."
   "Connect to MusicPD and retrieve its current playlist.
 Afterward, the status of MusicPD will be tracked."
   (interactive)
-  (emms-player-mpd-sync-from-mpd)
   (when emms-player-mpd-status-timer
-    (emms-cancel-timer emms-player-mpd-status-timer))
+    (emms-cancel-timer emms-player-mpd-status-timer)
+    (setq emms-player-mpd-status-timer nil))
+  (emms-player-mpd-sync-from-mpd)
   (setq emms-player-mpd-current-song nil)
-  (let ((info (emms-player-mpd-get-status)))
-    (unless (string= (emms-player-mpd-get-state info) "stop")
+  (let* ((info (emms-player-mpd-get-status))
+         (state (emms-player-mpd-get-state info)))
+    (unless (string= state "stop")
       (setq emms-player-playing-p 'emms-player-mpd))
-    (emms-player-mpd-detect-song-change info))
-  (setq emms-player-mpd-status-timer
-        (run-at-time t emms-player-mpd-check-interval
-                     'emms-player-mpd-detect-song-change)))
+    (when (string= state "pause")
+      (setq emms-player-paused-p t))
+    (unless (string= state "stop")
+      (emms-player-mpd-detect-song-change info)
+      (setq emms-player-mpd-status-timer
+            (run-at-time t emms-player-mpd-check-interval
+                         'emms-player-mpd-detect-song-change)))))
 
 (defun emms-player-mpd-start (track)
   "Starts a process playing TRACK."
