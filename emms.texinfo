@@ -66,6 +66,7 @@ Advanced Features
 
 Modules and Extensions
 * Sorting Playlists::   Sorting the order of the tracks.
+* Music Player Daemon:: Interface to Music Player Daemon.
 * Streaming Audio::     Interface to streaming audio.
 * Extending Emms::      How to define new players and modules.
 
@@ -1030,6 +1031,90 @@ Sort playlist by notes in ascending order.
 
 @defun emms-playlist-sort-by-score
 Sort emms playlist by score in descending order.
+@end defun
+
+@node Music Player Daemon
+@chapter Music Player Daemon
+
+@cindex music player daemon
+@cindex remote interface
+@cindex mpd
+
+Emms provides an interface to the @uref{http://www.musicpd.org/, Music
+Player Daemon}(MusicPD) software. The package is called `emms-player-mpd' and
+is provided by the file @file{emms-player-mpd.el}. To load
+`emms-player-mpd' invoke:
+
+@lisp
+(require 'emms-player-mpd)
+@end lisp
+
+Set the variables @var{emms-player-mpd-server-name} and
+@var{emms-player-mpd-server-port} to the location and port
+(respectively) of your MusicPD server. For example:
+
+@lisp
+(setq emms-player-mpd-server-name "localhost")
+(setq emms-player-mpd-server-port "6600")
+@end lisp
+
+To get track information from MusicPD, invoke the following:
+
+@lisp
+(add-to-list 'emms-info-functions 'emms-info-mpd)
+@end lisp
+
+Adding `emms-player-mpd' to your Emms player list is accomplished by
+invoking:
+
+@lisp
+(add-to-list 'emms-player-list 'emms-player-mpd)
+@end lisp
+
+If you use absolute file names in your m3u playlists (which is most
+likely), make sure you set @var{emms-player-mpd-music-directory} to
+the value of "music_directory" from your MusicPD config.  There are
+additional options available as well, but the defaults should be
+sufficient for most uses.
+
+You can set @var{emms-player-mpd-sync-playlist} to nil if your master
+EMMS playlist contains only stored playlists.
+
+@defun emms-player-mpd-connect
+Connect to MusicPD and retrieve its current playlist. Afterward, the
+status of MusicPD will be tracked.
+@end defun
+
+@defun emms-player-mpd-pause
+Pause the currently playing song.
+@end defun
+
+@defun emms-player-mpd-seek sec
+Seek backward or forward by SEC seconds, depending on sign of SEC.
+@end defun
+
+@defun emms-player-mpd-next
+Move forward by one track in MusicPD's internal playlist.
+@end defun
+
+@defun emms-player-mpd-previous
+Move backward by one track in MusicPD's internal playlist.
+@end defun
+
+@defun emms-player-mpd-show &optional insertp
+Describe the current EMMS track in the minibuffer. If INSERTP is
+non-nil, insert the description into the current buffer instead. This
+function uses @var{emms-show-format} to format the current track. It
+differs from @command{emms-show} in that it asks MusicPD for the
+current track, rather than Emms.
+@end defun
+
+@defun emms-player-mpd-start track
+Starts a process playing TRACK.
+@end defun
+
+@defun emms-player-mpd-stop
+Stop the currently playing song.
 @end defun
 
 @node Streaming Audio
