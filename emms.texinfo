@@ -66,8 +66,10 @@ Advanced Features
 
 Modules and Extensions
 * Sorting Playlists::   Sorting the order of the tracks.
+* Emms Mode Line::      Emms information on the mode line.
 * Music Player Daemon:: Interface to Music Player Daemon.
 * Streaming Audio::     Interface to streaming audio.
+* Lyrics::              Displaying lyrics synchronously.
 * Extending Emms::      How to define new players and modules.
 
 Copying and license
@@ -186,7 +188,7 @@ run Emms just fine without byte compiling it.
 @cindex quick setup
 
 After adding the location of the Emms code to the @var{load-path}
-variable, see @xref{Installation}. we invoke the following using the
+variable, see @xref{Installation}. We invoke the following using the
 `emms-setup' feature which allows for quick and simple Emms setup.
 
 @lisp
@@ -1033,6 +1035,46 @@ Sort playlist by notes in ascending order.
 Sort emms playlist by score in descending order.
 @end defun
 
+@node Emms Mode Line
+@chapter Emms Mode Line
+
+@cindex mode line
+@cindex display emms information
+
+We can display information about the currenty playing track on the
+Emacs mode line using the package `emms-mode-line' which is provided
+by the file @file{emms-mode-line.el}.
+
+To activate this feature invoke:
+
+@lisp
+(require 'emms-mode-line)
+(emms-mode-line 1)
+@end lisp
+
+It is also possible to display the amount of time a track has been
+playing. This feature is defined in the `emms-playing-time' package
+which is provided by the file @file{emms-playing-time.el}.
+
+To use this feature invoke:
+
+@lisp
+(require 'emms-playing-time)
+(emms-playing-time-enable)
+@end lisp
+
+@defun emms-playing-time-enable
+Enable displaying emms playing time on the mode line.
+@end defun
+
+@defun emms-playing-time-disable
+Enable displaying emms playing time on the mode line.
+@end defun
+
+@defun emms-playing-time-toggle
+Toggle displaying emms playing time on the mode line.
+@end defun
+
 @node Music Player Daemon
 @chapter Music Player Daemon
 
@@ -1115,6 +1157,66 @@ Starts a process playing TRACK.
 
 @defun emms-player-mpd-stop
 Stop the currently playing song.
+@end defun
+
+@node Lyrics
+@chapter Lyrics
+
+@cindex lyrics
+
+We can display the lyrics of a song in time with the music using the
+`emms-lyrics' package provided by the file @file{emms-lyrics.el}.
+
+The lyrics files should have the extention ``.lrc''.
+
+To add this feature we invoke:
+
+@lisp
+(require 'emms-lyrics)
+(emms-lyrics-enable)
+@end lisp
+
+There are a number of variables we can set to define the way that
+`emms-lyrics' behaves, we can set these directly or by using the
+Customize feature in Emacs.
+
+@defvr {User Option} emms-lyrics-display-on-minibuffer
+If non-nil, display lyrics on minibuffer.
+@end defvr
+
+@defvr {User Option} emms-lyrics-dir
+Local lyrics repository. @command{emms-lyrics-find-lyric} will look
+for lyrics in current directory and this directory.
+@end defvr
+
+We can control `emms-lyrics' with the help of the following functions:
+
+@defun emms-lyrics-start
+Start displaying lyrics.
+@end defun
+
+@defun emms-lyrics-stop
+Stop displaying lyrics.
+@end defun
+
+@defun emms-lyrics-toggle-display-on-minibuffer
+Toggle display lyrics on minibufer.
+@end defun
+
+@defun emms-lyrics-toggle-display-on-modeline
+Toggle display lyrics on mode line.
+@end defun
+
+@defun emms-lyrics-enable
+Enable displaying Emms lyrics.
+@end defun
+
+@defun emms-lyrics-disable
+Disable displaying Emms lyrics.
+@end defun
+
+@defun emms-lyrics-toggle
+Toggle displaying Emms lyrics.
 @end defun
 
 @node Streaming Audio
