@@ -646,11 +646,13 @@ info from MusicPD."
                              (emms-track-name track)))
                  (string-match emms-player-mpd-supported-regexp file)
                  (not (string-match "\\`http://" file)))
-        (setq info (emms-player-mpd-get-alist
-                    (emms-player-mpd-parse-response
-                     (emms-player-mpd-send
-                      (concat "find filename "
-                              (emms-player-mpd-quote-file file)))))))))
+        (setq info (condition-case nil
+                       (emms-player-mpd-get-alist
+                        (emms-player-mpd-parse-response
+                         (emms-player-mpd-send
+                          (concat "find filename "
+                                  (emms-player-mpd-quote-file file)))))
+                     (error nil))))))
   (when info
     (dolist (data info)
       (let ((name (car data))
