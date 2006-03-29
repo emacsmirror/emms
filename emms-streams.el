@@ -107,6 +107,8 @@ Can be either \"add\" or \"play\". The default is \"add\".")
     "http://www.smgradio.com/core/audio/ogg/live.pls?service=vcbb" 1 streamlist)
    ("Virgin Radio, Virgin 1215AM"
     "http://www.smgradio.com/core/audio/ogg/live.pls?service=vrbb" 1 streamlist)
+   ("Voices From Within - Words From Beyond"
+    "http://207.200.96.225:8024/listen.pls" 1 streamlist)
    ("WCPE, Classical Music"
     "http://www.ibiblio.org/wcpe/wcpe.pls" 1 streamlist)))
 
