@@ -267,7 +267,7 @@ POPUP-HEIGHT is the height of the new frame, defaulting to
   (goto-char (point-min)))
 
 ;; Helper functions
-(defun take (n list)
+(defun emms-stream-take (n list)
   "Takes N elements from LIST."
   (let ((idx  0)
         (res '()))
@@ -276,11 +276,11 @@ POPUP-HEIGHT is the height of the new frame, defaulting to
       (setq idx (+ idx 1)))
     res))
 
-(defun insert-at (n elt list)
+(defun emms-stream-insert-at (n elt list)
   "Inserts the element ELT in LIST, *before* position N.
 Positions are counted starting with 0."
   (let* ((n-1     (- n 1))
-         (before (take n-1 list))
+         (before (emms-stream-take n-1 list))
          (after  (last list (- (length list) n-1))))
     (append before (list elt) after)))
 
@@ -305,7 +305,8 @@ nFeed descriptor:
 SType (url or streamlist): ")
   (let* ((line     (emms-stream-line-number-at-pos (point)))
          (index    (+ (/ line 2) 1)))
-    (setq emms-stream-list (insert-at index (list name url fd type) emms-stream-list))
+    (setq emms-stream-list (emms-stream-insert-at index (list name url fd type)
+                                                  emms-stream-list))
     (emms-stream-redisplay)
     (goto-line line)))
 
