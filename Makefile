@@ -7,7 +7,8 @@ TARGET=$(patsubst %.el,%.elc,$(SOURCE))
 DESTDIR=/usr/share/emacs/site-lisp/emms
 INSTALLINFO=/usr/sbin/install-info
 
-.PHONY: all install clean
+.PHONY: all install deb-install clean
+.PRECIOUS: %.elc %.info %.html
 all: $(TARGET) emms-auto.el emms.info
 
 emms-auto.el: emms-auto.in $(SOURCE)
@@ -26,6 +27,9 @@ emms-auto.el: emms-auto.in $(SOURCE)
 
 %.info: %.texinfo
 	makeinfo $<
+
+%.html: %.texi
+	makeinfo --html --no-split $<
 
 emms-print-metadata: emms-print-metadata.c
 	$(CC) -o $@ $< -I/usr/include/taglib -L/usr/lib -ltag_c
