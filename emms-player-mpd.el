@@ -117,6 +117,18 @@ or nil if we cannot figure it out."
       "\\.\\(m3u\\|ogg\\|flac\\|mp3\\|wav\\|mod\\|aac\\)\\'")
   "Formats supported by MusicPD Client.")
 
+(defgroup emsm-player-mpd nil
+  "EMMS player for MusicPD."
+  :group 'emms-player
+  :prefix "emms-player-mpd-")
+
+(defcustom emms-player-mpd (emms-player 'emms-player-mpd-start
+                                        'emms-player-mpd-stop
+                                        'emms-player-mpd-playable-p)
+ "*Parameters for the MusicPD player."
+ :type '(cons symbol alist)
+ :group 'emms-player-mpd)
+
 (defcustom emms-player-mpd-music-directory nil
   "The value of 'music_directory' in your MusicPD configuration file.
 You need this if your playlists use absolute file names, otherwise
@@ -175,8 +187,9 @@ If your EMMS playlist contains stored playlists, set this to nil."
   :type 'boolean
   :group 'emms-player-mpd)
 
-(define-emms-simple-player mpd '(file url playlist)
-  emms-player-mpd-supported-regexp "mpd")
+(emms-player-set emms-player-mpd
+                 'regex
+                 emms-player-mpd-supported-regexp)
 
 (emms-player-set emms-player-mpd
                  'pause
@@ -530,6 +543,12 @@ This handles both m3u and pls type playlists."
            (emms-player-mpd-add-file name)))))
 
 ;;; EMMS API
+
+(defun emms-player-mpd-playablep (track)
+  "Return non-nil when we can play this track."
+  (and (memq (emms-track-type track) '(file url playlist))
+       (string-match (emms-player-get emms-player-mpd 'regex)
+                     (emms-track-name track))))
 
 (defun emms-player-mpd-play (&optional id)
   "Play whatever is in the current MusicPD playlist.
