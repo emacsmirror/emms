@@ -90,6 +90,7 @@
 ;; emms-playing-time, the displayed time will be accurate.
 
 (require 'emms-player-simple)
+(require 'emms-source-file) ; for emms-source-file-parse-playlist
 
 (defun emms-player-mpd-get-supported-regexp ()
   "Returns a regexp of file extensions that MusicPD supports,
@@ -509,7 +510,7 @@ This handles both m3u and pls type playlists."
   ;; This allows us to keep playlists anywhere and not worry about
   ;; having to mangle their names.  Also, mpd can't handle pls
   ;; playlists by itself.
-  (let ((playlist (emms-parse-playlist playlist))
+  (let ((playlist (emms-source-file-parse-playlist playlist))
         (any-success nil))
     (dolist (file playlist)
       (when (emms-player-mpd-add-file file)
