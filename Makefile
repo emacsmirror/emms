@@ -28,7 +28,7 @@ emms-auto.el: emms-auto.in $(SOURCE)
 %.info: %.texinfo
 	makeinfo $<
 
-%.html: %.texi
+%.html: %.texinfo
 	makeinfo --html --no-split $<
 
 emms-print-metadata: emms-print-metadata.c
