@@ -115,8 +115,8 @@
   "Toggle `emms-mode-line'."
   (interactive)
   (if emms-mode-line-active-p
-      (emms-mode-line-enable)
-    (emms-mode-line-disable)))
+      (emms-mode-line-disable)
+    (emms-mode-line-enable)))
 
 (defun emms-mode-line-alter (&optional track)
   "Alter mode-line/titlebar.

@@ -28,7 +28,7 @@
 ;;              (require 'emms-playing-time)
 ;;
 ;; Then either `M-x emms-playing-time-enable' or add
-;; (emms-playing-time-enable) in your .emacs to enable.
+;; (emms-playing-time 1) in your .emacs to enable.
 
 ;;; Code:
 
@@ -102,39 +102,48 @@ should enable `emms-playing-time-display-p' first, though."
   (when (< emms-playing-time 0)		; back to start point
     (setq emms-playing-time 0)))
 
+(defun emms-playing-time (arg)
+  "Turn on emms playing time if ARG is positive, off otherwise."
+  (interactive "p")
+  (if (and arg (> arg 0))
+      (progn
+	(setq emms-playing-time-display-p t)
+	(emms-playing-time-mode-line)
+	(add-hook 'emms-player-started-hook     'emms-playing-time-start)
+	(add-hook 'emms-player-stopped-hook     'emms-playing-time-stop)
+	(add-hook 'emms-player-finished-hook    'emms-playing-time-stop)
+	(add-hook 'emms-player-paused-hook      'emms-playing-time-pause)
+	(add-hook 'emms-player-seeked-functions 'emms-playing-time-seek))
+    (setq emms-playing-time-display-p nil)
+    (emms-playing-time-stop)
+    (emms-playing-time-restore-mode-line)
+    (remove-hook 'emms-player-started-hook     'emms-playing-time-start)
+    (remove-hook 'emms-player-stopped-hook     'emms-playing-time-stop)
+    (remove-hook 'emms-player-finished-hook    'emms-playing-time-stop)
+    (remove-hook 'emms-player-paused-hook      'emms-playing-time-pause)
+    (remove-hook 'emms-player-seeked-functions 'emms-playing-time-seek)))
+
+;;;###autoload
 (defun emms-playing-time-enable ()
   "Enable displaying emms playing time on mode line."
   (interactive)
-  (setq emms-playing-time-display-p t)
-  (emms-playing-time-mode-line)
-  (add-hook 'emms-player-started-hook     'emms-playing-time-start)
-  (add-hook 'emms-player-stopped-hook     'emms-playing-time-stop)
-  (add-hook 'emms-player-finished-hook    'emms-playing-time-stop)
-  (add-hook 'emms-player-paused-hook      'emms-playing-time-pause)
-  (add-hook 'emms-player-seeked-functions 'emms-playing-time-seek)
-  (message "emms playing time enabled."))
+  (emms-playing-time 1)
+  (message "emms playing time enabled"))
 
+;;;###autoload
 (defun emms-playing-time-disable ()
   "Disable displaying emms playing time on mode line."
   (interactive)
-  (emms-playing-time-stop)
-  (setq emms-playing-time-display-p nil)
-  (emms-playing-time-restore-mode-line)
-  (remove-hook 'emms-player-started-hook     'emms-playing-time-start)
-  (remove-hook 'emms-player-stopped-hook     'emms-playing-time-stop)
-  (remove-hook 'emms-player-finished-hook    'emms-playing-time-stop)
-  (remove-hook 'emms-player-paused-hook      'emms-playing-time-pause)
-  (remove-hook 'emms-player-seeked-functions 'emms-playing-time-seek)
-  (message "emms playing time disabled."))
+  (emms-playing-time -1)
+  (message "emms playing time disabled"))
 
+;;;###autoload
 (defun emms-playing-time-toggle ()
   "Toggle displaying emms playing time on mode line."
   (interactive)
-  (setq emms-playing-time-display-p
-	(not emms-playing-time-display-p))
   (if emms-playing-time-display-p
-      (emms-playing-time-enable)
-    (emms-playing-time-disable)))
+      (emms-playing-time-disable)
+    (emms-playing-time-enable)))
 
 (defun emms-playing-time-display ()
   "Display playing time on the mode line."
@@ -163,6 +172,7 @@ should enable `emms-playing-time-display-p' first, though."
 
 (defun emms-playing-time-mode-line ()
   "Add playing time to the mode line."
+  (or global-mode-string (setq global-mode-string '("")))
   (unless (member 'emms-playing-time-string
 		  global-mode-string)
     (setq global-mode-string

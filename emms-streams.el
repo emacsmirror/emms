@@ -152,6 +152,7 @@ If POS is nil, use current buffer location."
       (forward-line 0)
       (1+ (count-lines start (point))))))
 
+;;;###autoload
 (defun emms-streams ()
   "Opens the EMMS Streams interface."
   (interactive)

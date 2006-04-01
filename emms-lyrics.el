@@ -240,6 +240,7 @@ To find FILE, will look up in current directory and `emms-lyrics-dir'."
     (setq emms-lyrics-display-on-modeline t)
     (message "Enable lyrics on mode line.")))
 
+;;;###autoload
 (defun emms-lyrics-enable ()
   "Enable displaying emms lyrics."
   (interactive)
@@ -251,6 +252,7 @@ To find FILE, will look up in current directory and `emms-lyrics-dir'."
   (add-hook 'emms-player-seeked-functions 'emms-lyrics-seek)
   (message "emms lyrics enabled."))
 
+;;;###autoload
 (defun emms-lyrics-disable ()
   "Disable displaying emms lyrics."
   (interactive)
@@ -264,6 +266,7 @@ To find FILE, will look up in current directory and `emms-lyrics-dir'."
   (remove-hook 'emms-player-seeked-functions 'emms-lyrics-seek)
   (message "emms lyrics disabled."))
 
+;;;###autoload
 (defun emms-lyrics-toggle ()
   "Toggle displaying emms lyrics."
   (interactive)
