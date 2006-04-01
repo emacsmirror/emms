@@ -872,70 +872,6 @@ ignore this."
       (setq i (- i 1))))
   vector)
 
-;;; Saving playlists.
-
-(defun emms-playlist-save (playlist filename)
-  "Save a playlist in the native EMMS format."
-  (interactive "bPlaylist buffer name: \nFFile to save playlist as: ")
-  (let ((tracklist '()))
-    (condition-case nil
-        (with-current-buffer playlist
-          (save-excursion
-            (emms-playlist-first)
-            (while (emms-playlist-track-at)
-              (setq tracklist (cons (emms-playlist-track-at)
-                                    tracklist))
-              (emms-playlist-next))))
-      (error nil))
-    (setq tracklist (nreverse tracklist))
-    ;; tracklist complete, let's write it !
-    (with-current-buffer (find-file-noselect filename)
-      (erase-buffer)
-      (prin1 tracklist (current-buffer))
-      (insert "\n")
-      (save-buffer)
-      (kill-buffer (current-buffer)))))
-
-(defun emms-playlist-save-active (filename)
-  "Save the active EMMS playlist in native format."
-  (interactive "FFile to save playlist as: ")
-  (emms-playlist-save emms-playlist-buffer filename))
-
-(defun emms-playlist-save-as-m3u (playlist filename)
-  "Save a playlist in .m3u format."
-  (interactive "bPlaylist buffer name: \nFFile to save playlist as: ")
-  (let ((tracklist '()))
-    (condition-case nil
-        (with-current-buffer playlist
-          (save-excursion
-            (emms-playlist-first)
-            (while (emms-playlist-track-at)
-              (setq tracklist (cons (emms-playlist-track-at)
-                                    tracklist))
-              (emms-playlist-next))))
-      (error nil))
-    (setq tracklist (nreverse tracklist))
-    ;; tracklist complete, let's write it !
-    (with-current-buffer (find-file-noselect filename)
-      (erase-buffer)
-      (insert "#EXTM3U\n")
-      (mapc (lambda (track)
-	      (let ((time (or (emms-track-get track 'info-mtime) ""))
-		    (artist (emms-track-get track 'info-artist))
-		    (title (emms-track-get track 'info-title))
-		    (name (emms-track-get track 'name)))
-		(insert (format "#EXTINF: %s,%s - %s\n%s\n"
-				time artist title name))))
-            tracklist)
-      (save-buffer)
-      (kill-buffer (current-buffer)))))
-
-(defun emms-playlist-save-current-as-m3u (filename)
-  "Save the active EMMS playlist in m3u format."
-  (interactive "FFile to save playlist as: ")
-  (emms-playlist-save-as-m3u emms-playlist-buffer filename))
-
-
 
 ;;; Sources
 
