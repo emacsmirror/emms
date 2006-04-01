@@ -30,6 +30,7 @@
 
 ;; Code:
 
+(require 'emms-mode-line)
 
 (defvar emms-mode-line-icon-color "black"
   "Color of the little icon displayed in the mode-line.")
@@ -37,7 +38,7 @@
 (defvar emms-mode-line-icon-before-format ""
   "String to put before the icon, in the mode-line.
 For example, if you want to have something like :
-[ <icon> Foo - The Foo Song ]
+\[ <icon> Foo - The Foo Song ]
 You should set it to \"[\", and set emms-mode-line-format to \"%s ]\"")
 
 (setq emms-mode-line-icon-image-cache
