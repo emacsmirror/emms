@@ -3,6 +3,7 @@ EMMS --- The Emacs Multi-Media System                -*-outline-*-
 
 * Introduction, Overview
 ========================
+
 EMMS is the Emacs Multi-Media System. It tries to be a clean and small
 application to play multimedia files from Emacs using external
 players. Many of it's ideas are derived from MpthreePlayer
@@ -33,6 +34,7 @@ using `M-x customize'.
 
 * Installation
 ==============
+
 You need to put all the .el files of EMMS in a directory in your
 load-path. For example, if you put all those files into ~/elisp/emms/,
 then in your ~/.emacs, you should do:
@@ -44,10 +46,9 @@ Emms" section in the Emms manual.
 
 ** Setup
 --------
-
-After adding the location of the Emms code to the LOAD-PATH variable,
-see *Note Installation::. we invoke the following using the
-`emms-setup' feature which allows for quick and simple Emms setup.
+After adding the location of the Emms code to the LOAD-PATH variable, we
+invoke the following using the `emms-setup' feature which allows for
+quick and simple Emms setup.
 
      (require 'emms-setup)
      (emms-standard)
@@ -107,7 +108,7 @@ actions on the current playlist. Here are some basic commands:
        available with `<mouse-2>'.
 
 `q'....Put the interactive playlist buffer at the end of the list of all
-       buffers.
+       buffers (ie. bury it).
 
 As always, for more commands see the mode documentation and the
 "Interactive Playlists" section of the Emms manual.
@@ -115,6 +116,7 @@ As always, for more commands see the mode documentation and the
 
 * Bare Bones Setup
 ==================
+
 The following code fragment provides a minimal EMMS setup without
 using the layer of `emms-default'. It can maybe be used to better
 understand the internals of EMMS. You can see how EMMS needs to know
@@ -131,6 +133,7 @@ sources for tracks (trivial file system based sources, such as this
 
 * EMMS, Emms, emms, or what?
 ============================
+
 In various contexts, this program is called EMMS, Emms or emms. Those
 are all correct, and which you use is a matter of personal preference.
 EMMS highlights the acronym character of the name. Emms is akin to
