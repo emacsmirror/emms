@@ -127,17 +127,9 @@ leave it set to nil."
                  directory)
   :group 'emms-player-mpd)
 
-(defcustom emms-player-mpd-connect-function
-  (if (and (fboundp 'open-network-stream-nowait)
-           ;; CVS Emacs claims to define open-network-stream-nowait on
-           ;; windows, however, it does, in fact, not work.
-           (not (memq system-type '(windows-nt cygwin ms-dos darwin))))
-      'open-network-stream-nowait
-    'open-network-stream)
+(defcustom emms-player-mpd-connect-function 'open-network-stream
   "Function used to initiate the connection to MusicPD.
-It should take same arguments as `open-network-stream' does.
-
-This will usually be auto-detected correctly."
+It should take same arguments as `open-network-stream' does."
   :type 'function
   :group 'emms-player-mpd)
 
