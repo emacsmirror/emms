@@ -33,6 +33,13 @@
 ;; (require 'emms-info-libtag)
 ;; (add-to-list 'emms-info-functions 'emms-info-libtag)
 
+;; Note that you should remove emms-info-mp3info and emms-info-ogginfo
+;; from the emms-info-functions list if you want to avoid
+;; conflicts. For example, to set libtag as your exclusive info
+;; provider:
+
+;; (setq emms-info-functions '(emms-info-libtag))
+
 ;;; Code:
 
 (require 'emms-info)
