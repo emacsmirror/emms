@@ -149,11 +149,33 @@ or lines starting with '#'."
                                      emms-source-file-default-directory
                                      emms-source-file-default-directory
                                      t)))
-  (dolist (file (emms-parse-playlist playlist))
+  (dolist (file (emms-source-file-parse-playlist playlist))
     (if (string-match "\\`http://" file)
         (emms-source-url file)
       (emms-source-file file))))
 
+(defun emms-source-file-parse-playlist (playlist)
+  "Extract a list of filenames from the given .m3u or .pls playlist.
+Empty lines and lines starting with '#' are ignored."
+  (let ((files '())
+        (pls-p (if (string-match "\\.pls\\'" playlist) t nil))
+        (dir (file-name-directory playlist)))
+    (with-temp-buffer
+      (insert-file-contents playlist)
+      (goto-char (point-min))
+      (while (re-search-forward "^[^# ].*$" nil t)
+        (let ((line (match-string 0)))
+          (when pls-p
+            (if (string-match "\\`File[0-9]*=\\(.+\\)\\'" line)
+                (setq line (match-string 1 line))
+              (setq line "")))
+          (unless (string= line "")
+            (setq files (cons (if (or (string-match "\\`http://" line)
+                                      (file-name-absolute-p line))
+                                  line
+                                (concat dir line))
+                              files))))))
+    (reverse files)))
 
 ;;; Helper functions
 
