@@ -130,6 +130,19 @@ sources for tracks (trivial file system based sources, such as this
                          emms-player-ogg123
                          emms-player-mplayer))
 
+* Using libtag for reading tags
+===============================
+
+There is a way to read tags using Libtag as your backend for
+emms-info. However, since it requires a binary file (source code
+provided with EMMS), it isn't enabled by default. Moreover, libtag
+overwrites most of the usual methods for providing info, so it's best to
+keep it as the only function in `emms-info-functions'. Here's a way to
+do so:
+
+(require 'emms-info-libtag)
+(setq emms-info-functions '(emms-info-libtag))
+
 
 * EMMS, Emms, emms, or what?
 ============================
