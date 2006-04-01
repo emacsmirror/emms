@@ -29,7 +29,7 @@
 ;; ~/.emacs:
 ;;             (require 'emms-lyrics)
 ;;
-;; Then either `M-x emms-lyrics-enable' or add (emms-lyrics-enable) in
+;; Then either `M-x emms-lyrics-enable' or add (emms-lyrics 1) in
 ;; your .emacs to enable.
 
 ;;; Change Log:
@@ -240,41 +240,47 @@ To find FILE, will look up in current directory and `emms-lyrics-dir'."
     (setq emms-lyrics-display-on-modeline t)
     (message "Enable lyrics on mode line.")))
 
+(defun emms-lyrics (arg)
+  "Turn on emms lyrics display if ARG is positive, off otherwise."
+  (interactive "p")
+  (if (and arg (> arg 0))
+      (progn
+        (setq emms-lyrics-display-p t)
+        (add-hook 'emms-player-started-hook     'emms-lyrics-start)
+        (add-hook 'emms-player-stopped-hook     'emms-lyrics-stop)
+        (add-hook 'emms-player-finished-hook    'emms-lyrics-stop)
+        (add-hook 'emms-player-paused-hook      'emms-lyrics-pause)
+        (add-hook 'emms-player-seeked-functions 'emms-lyrics-seek))
+    (emms-lyrics-stop)
+    (setq emms-lyrics-display-p nil)
+    (emms-lyrics-restore-mode-line)
+    (remove-hook 'emms-player-started-hook     'emms-lyrics-start)
+    (remove-hook 'emms-player-stopped-hook     'emms-lyrics-stop)
+    (remove-hook 'emms-player-finished-hook    'emms-lyrics-stop)
+    (remove-hook 'emms-player-paused-hook      'emms-lyrics-pause)
+    (remove-hook 'emms-player-seeked-functions 'emms-lyrics-seek)))
+
 ;;;###autoload
 (defun emms-lyrics-enable ()
   "Enable displaying emms lyrics."
   (interactive)
-  (setq emms-lyrics-display-p t)
-  (add-hook 'emms-player-started-hook     'emms-lyrics-start)
-  (add-hook 'emms-player-stopped-hook     'emms-lyrics-stop)
-  (add-hook 'emms-player-finished-hook    'emms-lyrics-stop)
-  (add-hook 'emms-player-paused-hook      'emms-lyrics-pause)
-  (add-hook 'emms-player-seeked-functions 'emms-lyrics-seek)
+  (emms-lyrics 1)
   (message "emms lyrics enabled."))
 
 ;;;###autoload
 (defun emms-lyrics-disable ()
   "Disable displaying emms lyrics."
   (interactive)
-  (emms-lyrics-stop)
-  (setq emms-lyrics-display-p nil)
-  (emms-lyrics-restore-mode-line)
-  (remove-hook 'emms-player-started-hook     'emms-lyrics-start)
-  (remove-hook 'emms-player-stopped-hook     'emms-lyrics-stop)
-  (remove-hook 'emms-player-finished-hook    'emms-lyrics-stop)
-  (remove-hook 'emms-player-paused-hook      'emms-lyrics-pause)
-  (remove-hook 'emms-player-seeked-functions 'emms-lyrics-seek)
+  (emms-lyrics -1)
   (message "emms lyrics disabled."))
 
 ;;;###autoload
 (defun emms-lyrics-toggle ()
   "Toggle displaying emms lyrics."
   (interactive)
-  (setq emms-lyrics-display-p
-	(not emms-lyrics-display-p))
   (if emms-lyrics-display-p
-      (emms-lyrics-enable)
-    (emms-lyrics-disable)))
+      (emms-lyrics-disable)
+    (emms-lyrics-enable)))
 
 (defun emms-lyrics-set-timer ()
   "Set timers for displaying lyrics."
@@ -292,6 +298,7 @@ To find FILE, will look up in current directory and `emms-lyrics-dir'."
 
 (defun emms-lyrics-mode-line ()
   "Add lyric to the mode line."
+  (or global-mode-string (setq global-mode-string '("")))
   (unless (member 'emms-lyrics-mode-line-string
 		  global-mode-string)
     (setq global-mode-string
@@ -348,6 +355,16 @@ a valid `emms-lyrics-dir'."
     map)
   "Keymap for `emms-lyrics-mode'.")
 
+(defun emms-lyrics-rem* (x y)
+  "The remainder of X divided by Y, with the same sign as X."
+  (let* ((q (floor x y))
+         (rem (- x (* y q))))
+    (if (= rem 0)
+        0
+      (if (eq (>= x 0) (>= y 0))
+          rem
+        (- rem y)))))
+
 (defun emms-lyrics-insert-time ()
   "Insert lyric time in the form: [01:23.21], then goto the
 beginning of next line."
@@ -357,7 +374,7 @@ beginning of next line."
 				   emms-lyrics-start-time))
 		   emms-lyrics-elapsed-time))
 	 (min (/ (* (floor (/ total 60)) 100) 100))
-	 (sec (/ (floor (* (rem* total 60) 100)) 100.0)))
+	 (sec (/ (floor (* (emms-lyrics-rem* total 60) 100)) 100.0)))
     (insert (emms-replace-regexp-in-string
 	     " " "0" (format "[%2d:%2d]" min sec))))
   (emms-lyrics-next-line))
