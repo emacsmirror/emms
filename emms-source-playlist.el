@@ -58,7 +58,7 @@ See `emms-source-playlist-formats' for supported formats."
                                      t)))
   (mapc #'emms-playlist-insert-track
         (with-temp-buffer
-          (insert-file-literally file)
+          (insert-file file)
           (goto-char (point-min))
           (catch 'return
             (let ((formats emms-source-playlist-formats))
@@ -114,7 +114,7 @@ OUT should be a buffer to get the native EMMS format."
                                      t)))
   (mapc #'emms-playlist-insert-track
         (with-temp-buffer
-          (insert-file-literally file)
+          (insert-file file)
           (goto-char (point-min))
           (when (not (emms-source-playlist-native-p))
             (error "Not a native EMMS playlist file."))
