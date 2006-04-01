@@ -35,6 +35,8 @@
 
 ;;; Code:
 
+(require 'emms-info)
+
 (defvar emms-info-mp3info-version "0.2 $Revision: 1.10 $"
   "EMMS info mp3info version string.")
 ;; $Id: emms-info-mp3info.el,v 1.10 2005/08/12 18:01:16 xwl Exp $

@@ -37,6 +37,8 @@
 
 ;;; Code:
 
+(require 'emms)
+
 (defgroup emms-setup nil
   "*The Emacs Multimedia System setup utility."
   :prefix "emms-setup"
@@ -54,7 +56,6 @@
 (defun emms-minimalistic ()
   "An Emms setup script.
 Invisible playlists and all the basics for playing media."
-  (require 'emms)
   (require 'emms-source-file)
   (require 'emms-player-simple)
   (require 'emms-player-mplayer))
@@ -85,12 +86,13 @@ stable features which come with the Emms distribution."
   ;; include
   (emms-standard)
   ;; define
-  (require 'emms-mode-line)
-  (require 'emms-streams)
-  (require 'emms-lyrics)
-  (require 'emms-playing-time)
-  (require 'emms-player-mpd)
-  (require 'emms-playlist-sort)
+  (eval-and-compile
+    (require 'emms-mode-line)
+    (require 'emms-streams)
+    (require 'emms-lyrics)
+    (require 'emms-playing-time)
+    (require 'emms-player-mpd)
+    (require 'emms-playlist-sort))
   ;; setup
   (emms-mode-line 1)
   (emms-mode-line-blank)

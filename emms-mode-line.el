@@ -53,22 +53,12 @@
 
 (defun emms-mode-line-playlist-current ()
   "Format the currently playing song"
-  (format
-   emms-mode-line-format
-   (let* ((track (emms-playlist-current-selected-track))
-	  (artist (emms-track-get track 'info-artist))
-	  (title (emms-track-get track 'info-title))
-	  (type (emms-track-type track)))
-     ;; when artist or title info cann't be achieved, show file name
-     ;; without directory.
-     (if (and (not (and artist title))
-	      (eq 'file type))
-	 (file-name-nondirectory (emms-track-name track))
-       (emms-track-description
-	(emms-playlist-current-selected-track))))))
+  (format emms-mode-line-format (emms-track-description
+				 (emms-playlist-current-selected-track))))
 
 (defvar emms-mode-line-active-p nil
   "If non-nil, emms mode line is active.")
+(defvar emms-mode-line-string "")
 
 (defvar emms-mode-line-initial-titlebar frame-title-format)
 

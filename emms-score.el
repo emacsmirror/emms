@@ -58,6 +58,8 @@
 ;; 2. bug: everything(playing time, lyrics, ...) disppears on mode line
 ;;    when calling `emms-score-next-noerror'.
 
+(require 'emms)
+
 (defvar emms-scores-list nil)
 (defvar emms-score-current-mood 'default)
 (defvar emms-score-min-score 0)

@@ -426,21 +426,6 @@ Don't forget to save your modifications !"
 
 ; (add-to-list 'emms-info-methods-list 'emms-info-url)
 
-(defun emms-info-file-info-song-artist (track)
-  "Returns a description of TRACK, build from its comments.
-
-If the track already indicates artist and title, use it.
-Otherwise return the name of the track."
-  (let ((name (and track (emms-track-name track))))
-    (if (null name)
-        "Invalid track!"
-      (let ((artist (emms-track-get track 'info-artist))
-            (title (emms-track-get track 'info-title)))
-        (if (and artist (not (string= artist ""))
-                 title (not (string= title "")))
-            (concat artist " - " title)
-          (file-name-sans-extension (file-name-nondirectory name)))))))
-
 (defun emms-stream-add-data-to-track (track)
   (emms-track-set track 'metadata emms-stream-last-stream))
 

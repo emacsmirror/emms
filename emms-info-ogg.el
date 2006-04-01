@@ -61,13 +61,14 @@ ogg-comments.el"
   (when (and (eq 'file (emms-track-type track))
              (string-match "\\.[Oo][Gg][Gg]\\'" (emms-track-name track)))
     (let ((info (oggc-read-header (emms-track-name track)))
-	  (file (emms-track-get track 'name)))
+	  (file (emms-track-get track 'name))
+	  ptime-total ptime-min ptime-sec)
       (with-temp-buffer
 	(call-process "ogginfo" nil t nil file)
 	(goto-char (point-min))
 	(re-search-forward "Playback length: \\([0-9]*\\)m:\\([0-9]*\\)")
-	(let ((minutes (string-to-int (match-string 1)))
-	      (seconds (string-to-int (match-string 2))))
+	(let ((minutes (string-to-number (match-string 1)))
+	      (seconds (string-to-number (match-string 2))))
 	  (setq ptime-total (+ (* minutes 60) seconds)
 		ptime-min minutes
 		ptime-sec seconds)))
