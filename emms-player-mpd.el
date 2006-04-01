@@ -562,6 +562,7 @@ playlist, and then plays the current track."
         (run-at-time t emms-player-mpd-check-interval
                      'emms-player-mpd-detect-song-change)))
 
+;;;###autoload
 (defun emms-player-mpd-connect ()
   "Connect to MusicPD and retrieve its current playlist.
 Afterward, the status of MusicPD will be tracked."
@@ -663,6 +664,7 @@ info from MusicPD."
         (when name
           (emms-track-set track name value))))))
 
+;;;###autoload
 (defun emms-player-mpd-show (&optional insertp)
   "Describe the current EMMS track in the minibuffer.
 If INSERTP is non-nil, insert the description into the current buffer instead.

@@ -63,6 +63,8 @@
 (defvar emms-score-min-score 0)
 (defvar emms-score-default-score 0)
 (defvar emms-score-hash (make-hash-table :test 'equal))
+(defvar emms-score-enabled-p nil
+  "If non-nil, emms score is active.")
 
 (defcustom emms-score-file "~/.emms/scores"
   "*Directory to store the score file."
@@ -78,14 +80,38 @@ off otherwise."
   (interactive "p")
   (if (and arg (> arg 0))
       (progn
+	(setq emms-score-enabled-p t)
 	(emms-score-load-hash)
 	(remove-hook 'emms-player-finished-hook 'emms-next-noerror)
 	(add-hook 'emms-player-finished-hook 'emms-score-next-noerror)
 	(add-hook 'kill-emacs-hook 'emms-score-save-hash))
+    (setq emms-score-enabled-p nil)
     (emms-score-save-hash)
     (remove-hook 'emms-player-finished-hook 'emms-score-next-noerror)
     (add-hook 'emms-player-finished-hook 'emms-next-noerror)
     (remove-hook 'kill-emacs-hook 'emms-score-save-hash)))
+
+;;;###autoload
+(defun emms-score-enable ()
+  "Turn on emms-score."
+  (interactive)
+  (emms-score 1)
+  (message "emms score enabled"))
+
+;;;###autoload
+(defun emms-score-disable ()
+  "Turn off emms-score."
+  (interactive)
+  (emms-score -1)
+  (message "emms score disabled"))
+
+;;;###autoload
+(defun emms-score-toggle ()
+  "Toggle emms-score."
+  (interactive)
+  (if emms-score-enabled-p
+      (emms-score-disable)
+    (emms-score-enable)))
 
 (defun emms-score-change-mood (mood)
   "Change the current MOOD.
