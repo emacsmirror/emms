@@ -47,6 +47,27 @@ called with two buffers: The playlist buffer and the file buffer."
   :type 'sexpr
   :group 'emms)
 
+;;; General playlist
+
+(define-emms-source playlist (file)
+  "An EMMS source for playlists.
+See `emms-source-playlist-formats' for supported formats."
+  (interactive (list (read-file-name "Playlist file: "
+                                     emms-source-file-default-directory
+                                     emms-source-file-default-directory
+                                     t)))
+  (mapc #'emms-playlist-insert-track
+        (with-temp-buffer
+          (insert-file-literally file)
+          (goto-char (point-min))
+          (catch 'return
+            (let ((formats emms-source-playlist-formats))
+              (while formats
+                (when (funcall (caar formats))
+                  (throw 'return (funcall (cadr (car formats)))))
+                (setq formats (cdr formats))))
+            (error "Not a recognized playlist format")))))
+
 ;;; EMMS native playlists
 
 ;; Format:
@@ -96,7 +117,7 @@ OUT should be a buffer to get the native EMMS format."
           (insert-file-literally file)
           (goto-char (point-min))
           (when (not (emms-source-playlist-native-p))
-            (error "Not a native EMMS source file."))
+            (error "Not a native EMMS playlist file."))
           (emms-source-playlist-parse-native))))
 
 (defun emms-playlist-save (file)
