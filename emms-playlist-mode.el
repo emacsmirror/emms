@@ -33,11 +33,16 @@
 ;;; Variables
 ;;; --------------------------------------------------------
 
+(require 'emms)
+
 (defvar emms-playlist-mode-hook nil
   "Emms playlist mode hook.")
 
 (defvar emms-playlist-mode-selected-overlay-marker nil
   "Marker for last selected track.  Use for updating the display.")
+
+(defvar emms-playlist-mode-selected-overlay nil
+  "Last selected track.  Use for updating the display.")
 
 (defvar emms-playlist-mode-switched-buffer nil
   "Last buffer visited before calling `emms-playlist-mode-switch-buffer'.")
@@ -55,7 +60,7 @@
 (defgroup emms-playlist-mode nil
   "*The Emacs Multimedia System playlist mode."
   :prefix "emms-playlist-mode-"
-  :group 'multimedia)
+  :group 'emms)
 
 ;;; --------------------------------------------------------
 ;;; Faces
@@ -84,31 +89,31 @@
 ;;; --------------------------------------------------------
 
 (defconst emms-playlist-mode-map
-  (let ((emms-playlist-mode-map (make-sparse-keymap)))
-    (set-keymap-parent emms-playlist-mode-map text-mode-map)
-    (define-key emms-playlist-mode-map (kbd "C-x C-s") 'emms-playlist-mode-save-buffer)
-    (define-key emms-playlist-mode-map (kbd "C-y") 'emms-playlist-mode-yank)
-    (define-key emms-playlist-mode-map (kbd "C-k") 'emms-playlist-mode-kill-track)
-    (define-key emms-playlist-mode-map (kbd "C-w") 'emms-playlist-mode-kill)
-    (define-key emms-playlist-mode-map (kbd "C-_") 'emms-playlist-mode-undo)
-    (define-key emms-playlist-mode-map (kbd "C-n") 'next-line)
-    (define-key emms-playlist-mode-map (kbd "C-p") 'previous-line)
-    (define-key emms-playlist-mode-map (kbd "C-j") 'emms-playlist-mode-insert-newline)
-    (define-key emms-playlist-mode-map (kbd "M-y") 'emms-playlist-mode-yank-pop)
-    (define-key emms-playlist-mode-map (kbd "M-<") 'emms-playlist-mode-first)
-    (define-key emms-playlist-mode-map (kbd "M->") 'emms-playlist-mode-last)
-    (define-key emms-playlist-mode-map (kbd "d") 'emms-playlist-mode-kill-track)
-    (define-key emms-playlist-mode-map (kbd "n") 'emms-next)
-    (define-key emms-playlist-mode-map (kbd "p") 'emms-previous)
-    (define-key emms-playlist-mode-map (kbd "s") 'emms-stop)
-    (define-key emms-playlist-mode-map (kbd "f") 'emms-show)
-    (define-key emms-playlist-mode-map (kbd "c") 'emms-playlist-mode-center-current)
-    (define-key emms-playlist-mode-map (kbd "q") 'bury-buffer)
-    (define-key emms-playlist-mode-map (kbd "?") 'describe-mode)
-    (define-key emms-playlist-mode-map (kbd "r") 'emms-random)
-    (define-key emms-playlist-mode-map (kbd "<mouse-2>") 'emms-playlist-mode-play-current-track)
-    (define-key emms-playlist-mode-map (kbd "RET") 'emms-playlist-mode-play-current-track)
-    emms-playlist-mode-map)
+  (let ((map (make-sparse-keymap)))
+    (set-keymap-parent map text-mode-map)
+    (define-key map (kbd "C-x C-s") 'emms-playlist-mode-save-buffer)
+    (define-key map (kbd "C-y") 'emms-playlist-mode-yank)
+    (define-key map (kbd "C-k") 'emms-playlist-mode-kill-track)
+    (define-key map (kbd "C-w") 'emms-playlist-mode-kill)
+    (define-key map (kbd "C-_") 'emms-playlist-mode-undo)
+    (define-key map (kbd "C-n") 'next-line)
+    (define-key map (kbd "C-p") 'previous-line)
+    (define-key map (kbd "C-j") 'emms-playlist-mode-insert-newline)
+    (define-key map (kbd "M-y") 'emms-playlist-mode-yank-pop)
+    (define-key map (kbd "M-<") 'emms-playlist-mode-first)
+    (define-key map (kbd "M->") 'emms-playlist-mode-last)
+    (define-key map (kbd "d") 'emms-playlist-mode-kill-track)
+    (define-key map (kbd "n") 'emms-next)
+    (define-key map (kbd "p") 'emms-previous)
+    (define-key map (kbd "s") 'emms-stop)
+    (define-key map (kbd "f") 'emms-show)
+    (define-key map (kbd "c") 'emms-playlist-mode-center-current)
+    (define-key map (kbd "q") 'bury-buffer)
+    (define-key map (kbd "?") 'describe-mode)
+    (define-key map (kbd "r") 'emms-random)
+    (define-key map (kbd "<mouse-2>") 'emms-playlist-mode-play-current-track)
+    (define-key map (kbd "RET") 'emms-playlist-mode-play-current-track)
+    map)
   "Keymap for `emms-playlist-mode'.")
 
 (defmacro emms-playlist-mode-move-wrapper (name fun)

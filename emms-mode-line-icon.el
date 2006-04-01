@@ -41,8 +41,8 @@ For example, if you want to have something like :
 \[ <icon> Foo - The Foo Song ]
 You should set it to \"[\", and set emms-mode-line-format to \"%s ]\"")
 
-(setq emms-mode-line-icon-image-cache
-      `(image :type xpm :ascent center :data ,(concat "/* XPM */
+(defvar emms-mode-line-icon-image-cache
+  `(image :type xpm :ascent center :data ,(concat "/* XPM */
 static char *note[] = {
 /* width height num_colors chars_per_pixel */
 \"    10   11        2            1\",
@@ -67,8 +67,7 @@ static char *note[] = {
   (concat " "
           emms-mode-line-icon-before-format
           (propertize "NP:" 'display emms-mode-line-icon-image-cache)
-          (format emms-mode-line-format (emms-info-file-info-song-artist
-                          (emms-playlist-current-selected-track)))))
+          (emms-mode-line-playlist-current)))
 
 (setq emms-mode-line-mode-line-function 'emms-mode-line-icon-function)
 

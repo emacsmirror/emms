@@ -69,6 +69,8 @@
 
 ;;; Code:
 
+(require 'emms)
+
 ;; A higher value for 'emms-stream-info-max' this gives us a
 ;; correspondingly higher chance of grabbing the title information
 ;; from a stream but incurs a price in the additional time it takes to
@@ -624,9 +626,11 @@ Optional argument CONT boolean."
 
   (if urlstring
       (emms-stream-info-parse-url urlstring)
-    (emms-stream-info-parse-url 
-     ;; possible bug, what if there is no last stream?
-     (emms-stream-url emms-stream-last-stream)))
+    (and (boundp 'emms-stream-last-stream)
+         (fboundp 'emms-stream-url)
+         emms-stream-last-stream
+         (emms-stream-info-parse-url
+          (emms-stream-url emms-stream-last-stream))))
 
   (emms-stream-info-reset-state)
 

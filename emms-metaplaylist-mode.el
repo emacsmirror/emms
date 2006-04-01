@@ -29,6 +29,7 @@
 
 ;;; Code:
 
+(require 'emms)
 (require 'emms-playlist-mode)
 
 ;;; --------------------------------------------------------
@@ -73,14 +74,14 @@
 ;;; --------------------------------------------------------
 
 (defconst emms-metaplaylist-mode-map
-  (let ((emms-metaplaylist-mode-map (make-sparse-keymap)))
-    (set-keymap-parent emms-metaplaylist-mode-map text-mode-map)
-    (define-key emms-metaplaylist-mode-map (kbd "n") 'next-line)
-    (define-key emms-metaplaylist-mode-map (kbd "p") 'previous-line)
-    (define-key emms-metaplaylist-mode-map (kbd "RET") 'emms-metaplaylist-mode-goto-current)
-    (define-key emms-metaplaylist-mode-map (kbd "q") 'kill-this-buffer)
-    (define-key emms-metaplaylist-mode-map (kbd "?") 'describe-mode)
-    emms-metaplaylist-mode-map)
+  (let ((map (make-sparse-keymap)))
+    (set-keymap-parent map text-mode-map)
+    (define-key map (kbd "n") 'next-line)
+    (define-key map (kbd "p") 'previous-line)
+    (define-key map (kbd "RET") 'emms-metaplaylist-mode-goto-current)
+    (define-key map (kbd "q") 'kill-this-buffer)
+    (define-key map (kbd "?") 'describe-mode)
+    map)
   "Keymap for `emms-metaplaylist-mode'.")
 
 ;;; --------------------------------------------------------
@@ -113,7 +114,9 @@
 	(playlists (get-emms-playlist-buffers)))
     (if playlists
 	(progn
-	  (ignore-errors (kill-buffer name))
+	  (condition-case nil
+	      (kill-buffer name)
+	    (error nil))
 	  (get-buffer-create name)
 	  (with-current-buffer name
 	    (emms-metaplaylist-mode)

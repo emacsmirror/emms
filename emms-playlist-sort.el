@@ -59,11 +59,17 @@
      (> (emms-score-get-score (emms-track-get a 'name))
 	(emms-score-get-score (emms-track-get b 'name))))))
 
+(defgroup emms-playlist-sort nil
+  "*Sorting Emacs Multimedia System playlists."
+  :prefix "emms-playlist-sort-"
+  :group 'emms)
+
 ;; FIXME: Should better avoid relying on setting before loading.
 (defcustom emms-playlist-sort-prefix "S"
   "*Prefix key sequence for `emms-playlist-sort-map'.
 You should set this variable before loading this file."
-  :type 'string)
+  :type 'string
+  :group 'emms-playlist-sort)
 
 (defvar emms-playlist-sort-map
   (let ((map (make-sparse-keymap)))
@@ -75,10 +81,11 @@ You should set this variable before loading this file."
     (define-key map (kbd "o") 'emms-playlist-sort-by-info-note)
     map))
 
-(eval-after-load "emms-playlist-sort.el"
-  (define-key emms-playlist-mode-map
-    emms-playlist-sort-prefix
-    emms-playlist-sort-map))
+(eval-after-load "emms-playlist-mode"
+  (and (boundp 'emms-playlist-mode-map)
+       (define-key emms-playlist-mode-map
+         emms-playlist-sort-prefix
+         emms-playlist-sort-map)))
 
 (defun emms-playlist-sort (predicate)
   "Sort the whole playlist buffer by PREDICATE."

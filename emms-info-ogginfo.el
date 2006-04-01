@@ -25,6 +25,8 @@
 
 ;;; Code:
 
+(require 'emms-info)
+
 (defgroup emms-info-ogginfo nil
   "An EMMS-info method for getting, using the external ogginfo
 program"
@@ -54,15 +56,15 @@ This is a useful element for `emms-info-functions'."
 	;; play time, emms-info-ogg.el [U. Jensen]
 	(goto-char (point-min))
 	(re-search-forward "Playback length: \\([0-9]*\\)m:\\([0-9]*\\)")
-	(let ((minutes (string-to-int (match-string 1)))
-	      (seconds (string-to-int (match-string 2))))
-	  (setq ptime-total (+ (* minutes 60) seconds)
-		ptime-min minutes
-		ptime-sec seconds))
-	(emms-track-set track 'info-playing-time ptime-total)
-	(emms-track-set track 'info-playing-time-min ptime-min)
-	(emms-track-set track 'info-playing-time-sec ptime-sec)
-	(emms-track-set track 'info-file (emms-track-name track))
+	(let* ((minutes (string-to-number (match-string 1)))
+	       (seconds (string-to-number (match-string 2)))
+	       (ptime-total (+ (* minutes 60) seconds))
+	       (ptime-min minutes)
+	       (ptime-sec seconds))
+	  (emms-track-set track 'info-playing-time ptime-total)
+	  (emms-track-set track 'info-playing-time-min ptime-min)
+	  (emms-track-set track 'info-playing-time-sec ptime-sec)
+	  (emms-track-set track 'info-file (emms-track-name track)))
 
 	;; all the rest of the info available
 	(goto-char (point-min))
