@@ -67,12 +67,16 @@
        (emms-track-description
 	(emms-playlist-current-selected-track))))))
 
+(defvar emms-mode-line-active-p nil
+  "If non-nil, emms mode line is active.")
+
 (defvar emms-mode-line-initial-titlebar frame-title-format)
 
 (defun emms-mode-line (arg)
   "Turn on `emms-mode-line' if ARG is positive, off otherwise."
   (interactive "p")
   (or global-mode-string (setq global-mode-string '("")))
+  (setq emms-mode-line-active-p arg)
   (if (and arg (> arg 0))
       (progn
 	(add-hook 'emms-track-updated-functions 'emms-mode-line-alter)
@@ -91,6 +95,28 @@
     (remove-hook 'emms-player-started-hook 'emms-mode-line-alter)
     (emms-mode-line-restore-titlebar)
     (emms-mode-line-restore-mode-line)))
+
+;;;###autoload
+(defun emms-mode-line-enable ()
+  "Turn on `emms-mode-line'."
+  (interactive)
+  (emms-mode-line 1)
+  (message "emms mode line enabled"))
+
+;;;###autoload
+(defun emms-mode-line-disable ()
+  "Turn off `emms-mode-line'."
+  (interactive)
+  (emms-mode-line -1)
+  (message "emms mode line disabled"))
+
+;;;###autoload
+(defun emms-playing-time-toggle ()
+  "Toggle `emms-mode-line'."
+  (interactive)
+  (if emms-mode-line-active-p
+      (emms-mode-line-enable)
+    (emms-mode-line-disable)))
 
 (defun emms-mode-line-alter (&optional track)
   "Alter mode-line/titlebar.
