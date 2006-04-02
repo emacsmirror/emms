@@ -96,8 +96,8 @@ stable features which come with the Emms distribution."
   ;; setup
   (emms-mode-line 1)
   (emms-mode-line-blank)
-  (emms-lyrics-enable)
-  (emms-playing-time-enable))
+  (emms-lyrics 1)
+  (emms-playing-time 1))
 
 (defun emms-devel ()
   "An Emms setup script.
