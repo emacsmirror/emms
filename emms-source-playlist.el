@@ -168,7 +168,7 @@ Empty lines and lines starting with '#' are ignored."
   (let ((files nil))
     (save-excursion
       (goto-char (point-min))
-      (while (re-search-forward "^[^# ].*$" nil t)
+      (while (re-search-forward "^[^# \n].*$" nil t)
         (setq files (cons (match-string 0) files))))
     (nreverse files)))
 
