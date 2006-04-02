@@ -90,7 +90,7 @@
 ;; emms-playing-time, the displayed time will be accurate.
 
 (require 'emms-player-simple)
-(require 'emms-source-file) ; for emms-source-file-parse-playlist
+(require 'emms-source-playlist) ; for emms-source-file-parse-playlist
 
 (defun emms-player-mpd-get-supported-regexp ()
   "Returns a regexp of file extensions that MusicPD supports,
@@ -520,15 +520,20 @@ If we succeed in adding the file, return non-nil, nil otherwise."
 (defun emms-player-mpd-add-playlist (playlist)
   "Load contents of PLAYLIST into MusicPD by adding each line.
 This handles both m3u and pls type playlists."
-  ;; This allows us to keep playlists anywhere and not worry about
-  ;; having to mangle their names.  Also, mpd can't handle pls
-  ;; playlists by itself.
-  (let ((playlist (emms-source-file-parse-playlist playlist))
-        (any-success nil))
-    (dolist (file playlist)
-      (when (emms-player-mpd-add-file file)
-        (setq any-success t)))
-    any-success))
+  ;; This is useful for playlists of playlists
+  (with-temp-buffer
+    (insert-file-contents playlist)
+    (goto-char (point-min))
+    (let ((list (cond ((emms-source-playlist-m3u-p)
+                       (emms-source-playlist-parse-m3u-1))
+                      ((emms-source-playlist-pls-p)
+                       (emms-source-playlist-parse-pls-1))
+                      (t nil)))
+          (any-success nil))
+      (dolist (file list)
+        (when (emms-player-mpd-add-file file)
+          (setq any-success t)))
+      any-success)))
 
 (defun emms-player-mpd-add (track)
   "Add TRACK to the MusicPD playlist."
@@ -544,7 +549,7 @@ This handles both m3u and pls type playlists."
 
 ;;; EMMS API
 
-(defun emms-player-mpd-playablep (track)
+(defun emms-player-mpd-playable-p (track)
   "Return non-nil when we can play this track."
   (and (memq (emms-track-type track) '(file url playlist))
        (string-match (emms-player-get emms-player-mpd 'regex)
