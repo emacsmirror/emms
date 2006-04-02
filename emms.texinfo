@@ -1060,7 +1060,7 @@ To use this feature invoke:
 
 @lisp
 (require 'emms-playing-time)
-(emms-playing-time-enable)
+(emms-playing-time 1)
 @end lisp
 
 @defun emms-playing-time-enable
@@ -1084,8 +1084,20 @@ Toggle displaying emms playing time on the mode line.
 
 Emms provides an interface to the @uref{http://www.musicpd.org/, Music
 Player Daemon}(MusicPD) software. The package is called `emms-player-mpd' and
-is provided by the file @file{emms-player-mpd.el}. To load
-`emms-player-mpd' invoke:
+is provided by the file @file{emms-player-mpd.el}.
+
+The advantages of using MusicPD as an EMMS backend include the
+following.
+
+@itemize @bullet
+@item minimal CPU usage
+@item fast access of track information
+@item optional crossfade
+@end itemize
+
+@subsubheading Setup
+
+To load `emms-player-mpd' invoke:
 
 @lisp
 (require 'emms-player-mpd)
@@ -1122,25 +1134,11 @@ sufficient for most uses.
 You can set @var{emms-player-mpd-sync-playlist} to nil if your master
 EMMS playlist contains only stored playlists.
 
+@subsubheading Commands provided
+
 @defun emms-player-mpd-connect
 Connect to MusicPD and retrieve its current playlist. Afterward, the
 status of MusicPD will be tracked.
-@end defun
-
-@defun emms-player-mpd-pause
-Pause the currently playing song.
-@end defun
-
-@defun emms-player-mpd-seek sec
-Seek backward or forward by SEC seconds, depending on sign of SEC.
-@end defun
-
-@defun emms-player-mpd-next
-Move forward by one track in MusicPD's internal playlist.
-@end defun
-
-@defun emms-player-mpd-previous
-Move backward by one track in MusicPD's internal playlist.
 @end defun
 
 @defun emms-player-mpd-show &optional insertp
@@ -1149,14 +1147,6 @@ non-nil, insert the description into the current buffer instead. This
 function uses @var{emms-show-format} to format the current track. It
 differs from @command{emms-show} in that it asks MusicPD for the
 current track, rather than Emms.
-@end defun
-
-@defun emms-player-mpd-start track
-Starts a process playing TRACK.
-@end defun
-
-@defun emms-player-mpd-stop
-Stop the currently playing song.
 @end defun
 
 @node Lyrics
@@ -1173,7 +1163,7 @@ To add this feature we invoke:
 
 @lisp
 (require 'emms-lyrics)
-(emms-lyrics-enable)
+(emms-lyrics 1)
 @end lisp
 
 There are a number of variables we can set to define the way that

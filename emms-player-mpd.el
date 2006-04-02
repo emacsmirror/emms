@@ -117,7 +117,7 @@ or nil if we cannot figure it out."
       "\\.\\(m3u\\|ogg\\|flac\\|mp3\\|wav\\|mod\\|aac\\)\\'")
   "Formats supported by MusicPD Client.")
 
-(defgroup emsm-player-mpd nil
+(defgroup emms-player-mpd nil
   "EMMS player for MusicPD."
   :group 'emms-player
   :prefix "emms-player-mpd-")
