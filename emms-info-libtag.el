@@ -59,7 +59,7 @@
                              nil t nil
                              (emms-track-name track))))
         (goto-char (point-min))
-        (while (looking-at "^\\([^=]+\\)=\\(.*\\)$")
+        (while (looking-at "^\\([^=\n]+\\)=\\(.*\\)$")
           (let ((name (intern-soft (match-string 1)))
                 (value (match-string 2)))
             (when (> (length value)

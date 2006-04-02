@@ -311,7 +311,7 @@ Otherwise, it will be nil."
 (defun emms-player-mpd-parse-line (line)
   "Turn the given LINE from MusicPD into a cons cell.
 The format of the cell is (name . value)."
-  (when (string-match "\\`\\([^:]+\\):\\s-*\\(.+\\)" line)
+  (when (string-match "\\`\\([^:\n]+\\):\\s-*\\(.+\\)" line)
     (let ((name (match-string 1 line))
           (value (match-string 2 line)))
       (if (and name value)
