@@ -30,8 +30,31 @@
 
 ;; Code:
 
-(defvar emms-stream-bookmarks-file "~/.emacs.d/emms-streams"
-  "The file where you store your favorite emms streams")
+(require 'emms)
+(require 'later-do)
+
+(defgroup emms-stream nil
+  "*Add and play streams with EMMS."
+  :group 'emms)
+
+(defcustom emms-stream-bookmarks-file "~/.emacs.d/emms-streams"
+  "*The file where you store your favorite emms streams."
+  :type 'file
+  :group 'emms-stream)
+
+(defcustom emms-stream-default-action "add"
+  "*The default action when you press RET in the EMMS Stream interface.
+Can be either \"add\" or \"play\". The default is \"add\"."
+  :type 'string
+  :group 'emms-stream)
+
+(defface emms-stream-name-face '((t (:bold t :foreground nil :weight bold)))
+  "Face for stream names."
+  :group 'emms-stream)
+
+(defface emms-stream-url-face '((t (:foreground "LightSteelBlue")))
+  "Face for stream URLs."
+  :group 'emms-stream)
 
 (defvar emms-stream-list nil
   "The list that contains your current stream bookmarks.")
@@ -50,18 +73,11 @@
 Needed by the info method, as the track doesn't contain all the
 needed info.")
 
-(defvar emms-stream-default-action "add"
-  "The default action when you press RET in the EMMS Stream interface.
-Can be either \"add\" or \"play\". The default is \"add\".")
+(defvar emms-stream-popup-old-conf nil
+  "Old window configuration.")
 
 (defvar emms-stream-last-stream nil
   "The last stream added/played by EMMS.")
-
-(defface emms-stream-name-face '((t (:bold t :foreground nil :weight bold)))
-  "Face for stream names.")
-
-(defface emms-stream-url-face '((t (:foreground "LightSteelBlue")))
-  "Face for stream URLs.")
 
 ;; Format: (("descriptive name" url feed-number type))
 ;; type could be either url or playlist. If url, then it represents a
@@ -334,16 +350,16 @@ Don't forget to save your modifications !"
          (type     (read-from-minibuffer "Type (url or streamlist): "
                                          (format "%s" (emms-stream-type bookmark)))))
     (emms-stream-delete-bookmark)
-    (emms-stream-add-bookmark name url (string-to-int fd) type)))
+    (emms-stream-add-bookmark name url (string-to-number fd) type)))
 
 (defun emms-stream-name (el)
   (car el))
 (defun emms-stream-url (el)
   (cadr el))
 (defun emms-stream-fd (el)
-  (caddr el))
+  (car (cddr el)))
 (defun emms-stream-type (el)
-  (cadddr el))
+  (cadr (cddr el)))
 
 (defun emms-stream-play ()
   (interactive)
@@ -403,8 +419,8 @@ Don't forget to save your modifications !"
 ;; last one added by emms-add-url. so in both cases, that's what we
 ;; want.
 ;; FIXME : not working with the new design. Yrk ?
-(defun emms-stream-last-element ()
-  (elt emms-playlist (- (length emms-playlist) 1)))
+; (defun emms-stream-last-element ()
+;  (elt emms-playlist (- (length emms-playlist) 1)))
 
 (defun emms-info-url-providep (track)
   (if (eq (emms-track-type track) 'url)
