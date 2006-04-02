@@ -82,10 +82,10 @@ You should set this variable before loading this file."
     map))
 
 (eval-after-load "emms-playlist-mode"
-  (and (boundp 'emms-playlist-mode-map)
-       (define-key emms-playlist-mode-map
-         emms-playlist-sort-prefix
-         emms-playlist-sort-map)))
+  '(and (boundp 'emms-playlist-mode-map)
+        (define-key emms-playlist-mode-map
+          emms-playlist-sort-prefix
+          emms-playlist-sort-map)))
 
 (defun emms-playlist-sort (predicate)
   "Sort the whole playlist buffer by PREDICATE."
