@@ -462,7 +462,6 @@ info from MusicPD."
     (cond ((string= status "stop")
            (emms-cancel-timer emms-player-mpd-status-timer)
            (setq emms-player-mpd-status-timer nil)
-           (setq emms-player-stopped-p t)
            (emms-player-stopped))
           ((string= status "pause")
            nil)
