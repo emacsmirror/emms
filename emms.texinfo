@@ -1174,9 +1174,22 @@ Customize feature in Emacs.
 If non-nil, display lyrics on minibuffer.
 @end defvr
 
+@defvr {User Option} emms-lyrics-display-on-modeline
+If non-nil, display lyrics on modeline.
+@end defvr
+
 @defvr {User Option} emms-lyrics-dir
 Local lyrics repository. @command{emms-lyrics-find-lyric} will look
 for lyrics in current directory and this directory.
+@end defvr
+
+@defvr {User Option} emms-lyrics-display-format
+Format for displaying lyrics. "%s" will be replaced by the lyrics
+string.
+@end defvr
+
+@defvr {User Option} emms-lyrics-coding-system
+Coding system used in the output of lyrics.
 @end defvr
 
 We can control `emms-lyrics' with the help of the following functions:
