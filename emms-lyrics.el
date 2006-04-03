@@ -93,6 +93,11 @@ for lyrics in current directory and this directory."
   :type 'string
   :group 'emms-lyrics)
 
+(defcustom emms-lyrics-coding-system 'latin-1
+  "Coding system used in the output of lyrics."
+  :type 'coding-system
+  :group 'emms-lyrics)
+
 (defcustom emms-lyrics-mode-hook nil
   "Normal hook run after entering Emms Lyric mode."
   :type 'hook
@@ -135,6 +140,7 @@ To find FILE, will look up in current directory and `emms-lyrics-dir'."
     (setq file (emms-lyrics-find-lyric file)))
   (when (and file (not (string= file "")) (file-exists-p file))
     (with-temp-buffer
+      (let ((coding-system-for-read emms-lyrics-coding-system))
       (insert-file-contents file)
       (while (search-forward-regexp "\\[[0-9:.]+\\].*" nil t)
 	(let ((lyric-string (match-string 0))
@@ -157,7 +163,7 @@ To find FILE, will look up in current directory and `emms-lyrics-dir'."
 		    (substring lyric-string (length time-string)))
 	      (setq emms-lyrics-alist
 		    (append emms-lyrics-alist `((,time ,lyric))))
-	      (setq time 0)))))
+	      (setq time 0))))))
       t)))
 
 (defun emms-lyrics-start ()
