@@ -176,6 +176,7 @@ function switches back to the remembered buffer."
   "Simple wrapper around `inhibit-read-only'."
   `(let ((inhibit-read-only t))
      ,@body))
+(put 'with-inhibit-read-only-t 'edebug-form-spec '(body))
 
 (defun emms-playlist-mode-insert-newline ()
   "Insert a newline at point."
