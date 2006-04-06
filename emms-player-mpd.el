@@ -623,7 +623,9 @@ Afterward, the status of MusicPD will be tracked."
   (emms-cancel-timer emms-player-mpd-status-timer)
   (setq emms-player-mpd-status-timer nil)
   (setq emms-player-stopped-p t)
-  (emms-player-mpd-send "stop")
+  (condition-case nil
+      (emms-player-mpd-send "stop")
+    (error nil))
   (emms-player-stopped))
 
 (defun emms-player-mpd-pause ()
