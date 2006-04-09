@@ -592,6 +592,19 @@ from the user
 An Emms source for multiple directory trees - either @var{dir}, or the
 value of @var{emms-source-file-default-directory}.
 @end defun
+@defun emms-source-playlist file
+An EMMS source for playlists.  See `emms-source-playlist-formats' for
+a list of supported formats.
+@end defun
+@defun emms-source-playlist-native file
+An EMMS source for a native EMMS playlist file.
+@end defun
+@defun emms-source-playlist-m3u file
+An EMMS source for an m3u playlist file.
+@end defun
+@defun emms-source-playlist-pls file
+An EMMS source for a pls playlist file.
+@end defun
 @defun emms-source-find &optional dir regex
 An Emms source that will find files in @var{dir} or
 @var{emms-source-file-default-directory} that match @var{regexp}.
@@ -663,6 +676,11 @@ Create a new playlist buffer.
 The buffer is named @var{name}, but made unique. @var{name} defaults
 to `emms-playlist-buffer-name'. If called interactively, the new
 buffer is also selected.
+@end defun
+
+@defun emms-playlist-save &optional format file
+Store the current playlist to FILE as the type FORMAT.  The default
+format is specified by `emms-source-playlist-default-format'.
 @end defun
 
 The current Emms playlist buffer is stored in the variable
@@ -794,7 +812,7 @@ Go to a randomly selected track in the playlist.
 Put the interactive playlist buffer at the end of the list of all
 buffers.
 @item C-x C-s
-@findex emms-playlist-mode-save-buffer
+@findex emms-playlist-save
 Save the current playlist buffer to a file.
 @item ?
 @findex describe-mode
