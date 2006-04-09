@@ -57,6 +57,7 @@
   "An Emms setup script.
 Invisible playlists and all the basics for playing media."
   (require 'emms-source-file)
+  (require 'emms-source-playlist)
   (require 'emms-player-simple)
   (require 'emms-player-mplayer))
 

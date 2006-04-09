@@ -523,16 +523,14 @@ This handles both m3u and pls type playlists."
   (with-temp-buffer
     (insert-file-contents playlist)
     (goto-char (point-min))
-    (let ((list (cond ((emms-source-playlist-m3u-p)
-                       (emms-source-playlist-parse-m3u-1))
-                      ((emms-source-playlist-pls-p)
-                       (emms-source-playlist-parse-pls-1))
-                      (t nil)))
-          (any-success nil))
-      (dolist (file list)
-        (when (emms-player-mpd-add-file file)
-          (setq any-success t)))
-      any-success)))
+    (let ((format (emms-source-playlist-determine-format)))
+      (when format
+        (let ((list (emms-source-playlist-files format))
+              (any-success nil))
+          (dolist (file list)
+            (when (emms-player-mpd-add-file file)
+              (setq any-success t)))
+          any-success)))))
 
 (defun emms-player-mpd-add (track)
   "Add TRACK to the MusicPD playlist."

@@ -450,6 +450,7 @@ This also disables any read-onliness of the current buffer."
        (let ((inhibit-read-only t))
          ,@body))))
 (put 'with-current-emms-playlist 'lisp-indent-function 0)
+(put 'with-current-emms-playlist 'edebug-form-spec '(body))
 
 (defun emms-playlist-set-playlist-buffer (&optional buffer)
   "Set the current playlist buffer."

@@ -126,6 +126,7 @@ sources for tracks (trivial file system based sources, such as this
 
 (require 'emms-player-simple)
 (require 'emms-source-file)
+(require 'emms-source-playlist)
 (setq emms-player-list '(emms-player-mpg321
                          emms-player-ogg123
                          emms-player-mplayer))
