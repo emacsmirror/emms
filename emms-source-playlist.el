@@ -154,7 +154,7 @@ return a list of the files contained in the playlist."
 ;;;###autoload (autoload 'emms-add-playlist "emms-source-playlist" nil t)
 (define-emms-source playlist (file)
   "An EMMS source for playlists.
-See `emms-source-playlist-formats' for supported formats."
+See `emms-source-playlist-formats' for a list of supported formats."
   (interactive (list (read-file-name "Playlist file: "
                                      emms-source-file-default-directory
                                      emms-source-file-default-directory
