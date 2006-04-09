@@ -91,7 +91,7 @@
 (defconst emms-playlist-mode-map
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map text-mode-map)
-    (define-key map (kbd "C-x C-s") 'emms-playlist-mode-save-buffer)
+    (define-key map (kbd "C-x C-s") 'emms-playlist-save)
     (define-key map (kbd "C-y") 'emms-playlist-mode-yank)
     (define-key map (kbd "C-k") 'emms-playlist-mode-kill-track)
     (define-key map (kbd "C-w") 'emms-playlist-mode-kill)
@@ -356,17 +356,6 @@ FACE should be a... face."
 ;;; --------------------------------------------------------
 ;;; Saving/Restoring
 ;;; --------------------------------------------------------
-
-(defun emms-playlist-mode-save-buffer (buffer filename)
-  "Saves a playlist buffer in a file, including annotations."
-  (interactive "bPlaylist buffer to save: \nFFile to save buffer as: ")
-  (with-current-buffer (find-file-noselect filename)
-    (erase-buffer)
-    (prin1 (with-current-buffer buffer
-	     (buffer-string))
-	   (current-buffer))
-    (save-buffer)
-    (kill-buffer (current-buffer))))
 
 (defun emms-playlist-mode-open-buffer (filename)
   "Opens a previously saved playlist buffer.
