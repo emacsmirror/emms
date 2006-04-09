@@ -23,33 +23,132 @@
 ;;; Commentary:
 
 ;; This file contains track sources for EMMS which read playlist
-;; files. EMMS' own playlist files are supported as well als the
-;; typical .m3u and .pls files.
+;; files.  EMMS' own playlist files are supported as well as .m3u and
+;; .pls files.
 
 ;;; Code:
 
 ;; Version control
-(defvar emms-source-playlist-version "0.1 $Revision: 1.30 $"
+(defvar emms-source-playlist-version "0.5 $Revision: 1.30 $"
   "emms-source-playlist.el version string")
 ;; $Id: emms-source-file.el,v 1.30 2005/08/11 06:16:15 yonirabkin Exp $
 
 (require 'emms)
 (require 'emms-source-file)
 
-(defcustom emms-source-playlist-formats
-  '((emms-source-playlist-native-p emms-source-playlist-parse-native)
-    (emms-source-playlist-pls-p emms-source-playlist-parse-pls)
-    (emms-source-playlist-m3u-p emms-source-playlist-parse-m3u))
-  "*A list of playlist format functions.
-Each entry is a list with two elements:
-A function which returns non-nil if the current buffer is of this
-type, and a function which parses such a buffer.
-The former is called with no arguments, while the latter is
-called with two buffers: The playlist buffer and the file buffer."
-  :type 'sexpr
+(defcustom emms-source-playlist-formats '(native pls m3u)
+  "*A list of playlist formats.
+Each entry must have at least three corresponding functions.
+
+First, a function named `emms-source-playlist-FORMAT-p' which
+returns non-nil if the current buffer is of the type FORMAT.  It
+is called with no arguments.
+
+Second, a function named `emms-source-playlist-parse-FORMAT'
+which parses the current buffer into tracks.  It is called with
+no arguments.
+
+Third, a function named `emms-source-playlist-unparse-FORMAT'
+which creates an output file in the type FORMAT that contains the
+tracks of a playlist buffer.  It is called with two arguments:
+The playlist buffer and the file buffer.
+
+It is also recommended to have a function named
+`emms-source-playlist-FORMAT-files' which returns a list of the
+files contained in the playlist."
+  :type '(repeat (symbol :tag "Format"))
+  :group 'emms)
+
+(defcustom emms-source-playlist-default-format nil
+  "*The default format to use for saving playlists.
+If this is nil, you will be prompted for a format to use."
+  :type '(choice (const :tag "Prompt each time" nil)
+                 (const :tag "Native" native)
+                 (const :tag "m3u" m3u)
+                 (const :tag "pls" pls)
+                 (symbol :tag "Other"))
   :group 'emms)
 
 ;;; General playlist
+
+(defsubst emms-source-playlist-p-sym (format)
+  (intern (concat "emms-source-playlist-" (symbol-name format) "-p")))
+
+(defsubst emms-source-playlist-parse-sym (format)
+  (intern (concat "emms-source-playlist-parse-" (symbol-name format))))
+
+(defsubst emms-source-playlist-unparse-sym (format)
+  (intern (concat "emms-source-playlist-unparse-" (symbol-name format))))
+
+(defsubst emms-source-playlist-files-sym (format)
+  (intern (concat "emms-source-playlist-" (symbol-name format) "-files")))
+
+(defun emms-source-playlist-p (format &optional parse-files)
+  (let ((sym (emms-source-playlist-p-sym format)))
+    (when (and (functionp sym)
+               (or (not parse-files)
+                   (functionp (emms-source-playlist-files-sym format))))
+      (funcall sym))))
+
+(defun emms-source-playlist-parse (format)
+  (funcall (emms-source-playlist-parse-sym format)))
+
+(defun emms-source-playlist-unparse (format playlist file)
+  (funcall (emms-source-playlist-unparse-sym format) playlist file))
+
+(defun emms-source-playlist-files (format)
+  (let ((sym (emms-source-playlist-files-sym format)))
+    (if (functionp sym)
+        (funcall sym)
+      (error "The `%s' format cannot parse files from a playlist" format))))
+
+(defvar emms-source-playlist-format-history nil
+  "List of recently-entered formats; used by `emms-playlist-save'.")
+
+(defun emms-source-playlist-read-format ()
+  "Read a playlist format from the user.
+If `emms-source-playlist-default-format' is non-nil, use it
+instead of prompting the user."
+  (or emms-source-playlist-default-format
+      (intern
+       (completing-read
+        (concat "Playlist format: (default: "
+                (if emms-source-playlist-format-history
+                    (car emms-source-playlist-format-history)
+                  "native")
+                ") ")
+        (mapcar #'symbol-name emms-source-playlist-formats)
+        nil nil nil 'emms-source-playlist-format-history
+        (if emms-source-playlist-format-history
+            (car emms-source-playlist-format-history)
+          "native")))))
+
+(defun emms-playlist-save (format file)
+  "Store the current playlist to FILE as the type FORMAT.
+The default format is specified by `emms-source-playlist-default-format'."
+  (interactive (list (emms-source-playlist-read-format)
+                     (read-file-name "Store as: "
+                                     emms-source-file-default-directory
+                                     emms-source-file-default-directory
+                                     nil)))
+  (with-temp-buffer
+    (emms-source-playlist-unparse format
+                                  (with-current-emms-playlist
+                                    (current-buffer))
+                                  (current-buffer))
+    (let ((backup-inhibited t))
+      (write-file file))))
+
+(defun emms-source-playlist-determine-format (&optional parse-files)
+  "Determine the playlist format of the current buffer.
+If PARSE-FILES is specified, the given format must be able to
+return a list of the files contained in the playlist."
+  (catch 'return
+    (let ((formats emms-source-playlist-formats))
+      (while formats
+        (when (emms-source-playlist-p (car formats) parse-files)
+          (throw 'return (car formats)))
+        (setq formats (cdr formats))))))
 
 ;;;###autoload (autoload 'emms-play-playlist "emms-source-playlist" nil t)
 ;;;###autoload (autoload 'emms-add-playlist "emms-source-playlist" nil t)
@@ -64,13 +163,10 @@ See `emms-source-playlist-formats' for supported formats."
         (with-temp-buffer
           (insert-file-contents file)
           (goto-char (point-min))
-          (catch 'return
-            (let ((formats emms-source-playlist-formats))
-              (while formats
-                (when (funcall (caar formats))
-                  (throw 'return (funcall (cadr (car formats)))))
-                (setq formats (cdr formats))))
-            (error "Not a recognized playlist format")))))
+          (let ((format (emms-source-playlist-determine-format)))
+            (if format
+                (emms-source-playlist-parse format)
+              (error "Not a recognized playlist format"))))))
 
 ;;; EMMS native playlists
 
@@ -93,7 +189,7 @@ See `emms-source-playlist-formats' for supported formats."
 (defun emms-source-playlist-unparse-native (in out)
   "Unparse a native playlist from IN to OUT.
 IN should be a buffer with a EMMS playlist in it.
-OUT should be a buffer to get the native EMMS format."
+OUT should be the buffer where tracks are stored in the native EMMS format."
   (with-current-buffer in ;; Don't modify the position
     (save-excursion       ;; in the IN buffer
       (with-current-buffer out
@@ -110,6 +206,8 @@ OUT should be a buffer to get the native EMMS format."
             (setq track (emms-source-playlist-next in))))
         (insert ")\n")))))
 
+;;;###autoload (autoload 'emms-play-native-playlist "emms-source-playlist" nil t)
+;;;###autoload (autoload 'emms-add-native-playlist "emms-source-playlist" nil t)
 (define-emms-source native-playlist (file)
   "An EMMS source for a native EMMS playlist file."
   (interactive (list (read-file-name "Playlist file: "
@@ -124,19 +222,6 @@ OUT should be a buffer to get the native EMMS format."
             (error "Not a native EMMS playlist file."))
           (emms-source-playlist-parse-native))))
 
-(defun emms-playlist-save (file)
-  "Store the current playlist in a native format."
-  (interactive (list (read-file-name "Store as: "
-                                     emms-source-file-default-directory
-                                     emms-source-file-default-directory
-                                     nil)))
-  (with-temp-buffer
-    (emms-source-playlist-unparse-native (with-current-emms-playlist
-                                           (current-buffer))
-                                         (current-buffer))
-    (let ((backup-inhibited t))
-      (write-file file))))
-
 ;;; m3u files
 
 ;; Format:
@@ -148,6 +233,7 @@ OUT should be a buffer to get the native EMMS format."
 
 ; emms-source-playlist-m3u-p
 ; emms-source-playlist-parse-m3u
+; emms-source-playlist-m3u-files
 ; emms-source-playlist-unparse-m3u
 
 (defun emms-source-playlist-m3u-p ()
@@ -160,9 +246,9 @@ OUT should be a buffer to get the native EMMS format."
             (if (string-match "\\`http://" file)
                 (emms-track 'url file)
               (emms-track 'file (expand-file-name file))))
-          (emms-source-playlist-parse-m3u-1)))
+          (emms-source-playlist-m3u-files)))
 
-(defun emms-source-playlist-parse-m3u-1 ()
+(defun emms-source-playlist-m3u-files ()
   "Extract a list of filenames from the given .m3u playlist.
 Empty lines and lines starting with '#' are ignored."
   (let ((files nil))
@@ -172,14 +258,45 @@ Empty lines and lines starting with '#' are ignored."
         (setq files (cons (match-string 0) files))))
     (nreverse files)))
 
+(defun emms-source-playlist-unparse-m3u (in out)
+  "Unparse an m3u playlist from IN to OUT.
+IN should be a buffer with a EMMS playlist in it.
+OUT should be the buffer where tracks are stored in m3u format."
+  (with-current-buffer in ;; Don't modify the position
+    (save-excursion       ;; in the IN buffer
+      (with-current-buffer out
+        (let ((track (emms-source-playlist-first in)))
+          (while track
+            (insert (emms-track-name track) ?\n)
+            (setq track (emms-source-playlist-next in))))))))
+
+;;;###autoload (autoload 'emms-play-m3u-playlist "emms-source-playlist" nil t)
+;;;###autoload (autoload 'emms-add-m3u-playlist "emms-source-playlist" nil t)
+(define-emms-source m3u-playlist (file)
+  "An EMMS source for an m3u playlist file."
+  (interactive (list (read-file-name "Playlist file: "
+                                     emms-source-file-default-directory
+                                     emms-source-file-default-directory
+                                     t)))
+  (mapc #'emms-playlist-insert-track
+        (with-temp-buffer
+          (insert-file-contents file)
+          (goto-char (point-min))
+          (when (not (emms-source-playlist-m3u-p))
+            (error "Not an m3u playlist file."))
+          (emms-source-playlist-parse-m3u))))
+
 ;;; pls files
 
 ;; Format:
 ;; A list of one filename per line.
+;; [playlist]
+;; NumberOfEntries=<num_entries>
 ;; File<position>=<filename>
 
 ; emms-source-playlist-pls-p
 ; emms-source-playlist-parse-pls
+; emms-source-playlist-pls-files
 ; emms-source-playlist-unparse-pls
 
 (defun emms-source-playlist-pls-p ()
@@ -196,9 +313,9 @@ Empty lines and lines starting with '#' are ignored."
             (if (string-match "\\`http://" file)
                 (emms-track 'url file)
               (emms-track 'file (expand-file-name file))))
-          (emms-source-playlist-parse-pls-1)))
+          (emms-source-playlist-pls-files)))
 
-(defun emms-source-playlist-parse-pls-1 ()
+(defun emms-source-playlist-pls-files ()
   "Extract a list of filenames from the given .pls playlist.
 Empty lines and lines starting with '#' are ignored."
   (let ((files nil))
@@ -207,6 +324,68 @@ Empty lines and lines starting with '#' are ignored."
       (while (re-search-forward "^File[0-9]*=\\(.+\\)$" nil t)
         (setq files (cons (match-string 1) files))))
     (nreverse files)))
+
+(defun emms-source-playlist-unparse-pls (in out)
+  "Unparse a pls playlist from IN to OUT.
+IN should be a buffer with a EMMS playlist in it.
+OUT should be the buffer where tracks are stored in pls format."
+  (with-current-buffer in ;; Don't modify the position
+    (save-excursion       ;; in the IN buffer
+      (with-current-buffer out
+        (let ((pos 0))
+          (insert "[playlist]\n")
+          (save-restriction
+            (narrow-to-region (point) (point))
+            (let ((track (emms-source-playlist-first in)))
+              (while track
+                (setq pos (1+ pos))
+                (insert "File" (number-to-string pos) "="
+                        (emms-track-name track) ?\n)
+                (setq track (emms-source-playlist-next in))))
+            (goto-char (point-min))
+            (insert "NumberOfEntries=" (number-to-string pos) ?\n)))))))
+
+;;;###autoload (autoload 'emms-play-pls-playlist "emms-source-playlist" nil t)
+;;;###autoload (autoload 'emms-add-pls-playlist "emms-source-playlist" nil t)
+(define-emms-source pls-playlist (file)
+  "An EMMS source for a pls playlist file."
+  (interactive (list (read-file-name "Playlist file: "
+                                     emms-source-file-default-directory
+                                     emms-source-file-default-directory
+                                     t)))
+  (mapc #'emms-playlist-insert-track
+        (with-temp-buffer
+          (insert-file-contents file)
+          (goto-char (point-min))
+          (when (not (emms-source-playlist-pls-p))
+            (error "Not a pls playlist file."))
+          (emms-source-playlist-parse-pls))))
+
+;;; extm3u files
+
+;; Format:
+;; #EXTM3U
+;; #EXTINF:<length in seconds>,<name>
+;; <filename>
+
+; emms-source-playlist-extm3u-p
+; emms-source-playlist-parse-extm3u
+; emms-source-playlist-unparse-extm3u
+
+;;       (erase-buffer)
+;;       (insert "#EXTM3U\n")
+;;       (mapc (lambda (track)
+;; 	      (let ((time (or (emms-track-get track 'info-mtime) ""))
+;; 		    (artist (emms-track-get track 'info-artist))
+;; 		    (title (emms-track-get track 'info-title))
+;; 		    (name (emms-track-get track 'name)))
+;; 		(insert (format "#EXTINF: %s,%s - %s\n%s\n"
+;; 				time artist title name))))
+;;             tracklist)
+;;       (save-buffer)
+;;       (kill-buffer (current-buffer)))))
+
+;; Not implemented yet
 
 ;;; Helper functions
 
@@ -231,69 +410,6 @@ This moves point."
           (emms-playlist-track-at (point)))
       (error
        nil))))
-
-;;; Old stuff:
-;; 
-;; (defun emms-playlist-save (playlist filename)
-;;   "Save a playlist in the native EMMS format."
-;;   (interactive "bPlaylist buffer name: \nFFile to save playlist as: ")
-;;   (let ((tracklist '()))
-;;     (condition-case nil
-;;         (with-current-buffer playlist
-;;           (save-excursion
-;;             (emms-playlist-first)
-;;             (while (emms-playlist-track-at)
-;;               (setq tracklist (cons (emms-playlist-track-at)
-;;                                     tracklist))
-;;               (emms-playlist-next))))
-;;       (error nil))
-;;     (setq tracklist (nreverse tracklist))
-;;     ;; tracklist complete, let's write it !
-;;     (with-current-buffer (find-file-noselect filename)
-;;       (erase-buffer)
-;;       (prin1 tracklist (current-buffer))
-;;       (insert "\n")
-;;       (save-buffer)
-;;       (kill-buffer (current-buffer)))))
-;; 
-;; (defun emms-playlist-save-active (filename)
-;;   "Save the active EMMS playlist in native format."
-;;   (interactive "FFile to save playlist as: ")
-;;   (emms-playlist-save emms-playlist-buffer filename))
-;; 
-;; (defun emms-playlist-save-as-m3u (playlist filename)
-;;   "Save a playlist in .m3u format."
-;;   (interactive "bPlaylist buffer name: \nFFile to save playlist as: ")
-;;   (let ((tracklist '()))
-;;     (condition-case nil
-;;         (with-current-buffer playlist
-;;           (save-excursion
-;;             (emms-playlist-first)
-;;             (while (emms-playlist-track-at)
-;;               (setq tracklist (cons (emms-playlist-track-at)
-;;                                     tracklist))
-;;               (emms-playlist-next))))
-;;       (error nil))
-;;     (setq tracklist (nreverse tracklist))
-;;     ;; tracklist complete, let's write it !
-;;     (with-current-buffer (find-file-noselect filename)
-;;       (erase-buffer)
-;;       (insert "#EXTM3U\n")
-;;       (mapc (lambda (track)
-;; 	      (let ((time (or (emms-track-get track 'info-mtime) ""))
-;; 		    (artist (emms-track-get track 'info-artist))
-;; 		    (title (emms-track-get track 'info-title))
-;; 		    (name (emms-track-get track 'name)))
-;; 		(insert (format "#EXTINF: %s,%s - %s\n%s\n"
-;; 				time artist title name))))
-;;             tracklist)
-;;       (save-buffer)
-;;       (kill-buffer (current-buffer)))))
-;; 
-;; (defun emms-playlist-save-current-as-m3u (filename)
-;;   "Save the active EMMS playlist in m3u format."
-;;   (interactive "FFile to save playlist as: ")
-;;   (emms-playlist-save-as-m3u emms-playlist-buffer filename))
 
 
 (provide 'emms-source-playlist)
