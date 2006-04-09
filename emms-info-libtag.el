@@ -42,6 +42,8 @@
 
 ;;; Code:
 
+(require 'emms-info)
+
 (defvar emms-info-libtag-coding-system 'utf-8)
 (defvar emms-info-libtag-program-name "emms-print-metadata")
 
