@@ -385,11 +385,6 @@ of the saved playlist inside."
       (emms-playlist-select (point))
       (switch-to-buffer (current-buffer)))))
 
-(defun emms-playlist-mode-save-active-buffer (filename)
-  "Saves the active playlist buffer to a file."
-  (interactive "FFile to save playlist buffer as: ")
-  (emms-playlist-mode-save-buffer emms-playlist-buffer filename))
-
 ;;; --------------------------------------------------------
 ;;; Local functions
 ;;; --------------------------------------------------------
