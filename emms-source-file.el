@@ -140,6 +140,18 @@ value of `emms-source-file-default-directory'."
            (emms-track 'file file)))
         (emms-source-file-directory-tree dir regex)))
 
+;;;###autoload (autoload 'emms-play-dired "emms-source-file" nil t)
+;;;###autoload (autoload 'emms-add-dired "emms-source-file" nil t)
+(define-emms-source dired ()
+  "Return all marked files of a dired buffer"
+  (interactive)
+  (mapc (lambda (file)
+          (if (file-directory-p file)
+              (emms-source-directory-tree file)
+            (emms-source-file file)))
+        (with-current-buffer emms-source-old-buffer
+         (dired-get-marked-files))))
+
 
 ;;; Helper functions
 
@@ -194,16 +206,6 @@ may be supplied using `emms-source-file-gnu-find'."
                           "\n"))))
 
 ;;;###autoload
-(defun emms-source-files (files)
-  "An EMMS source for a list of FILES."
-  (mapc #'emms-source-file files))
-
-;;;###autoload
-(defun emms-source-dired ()
-  "Return all marked files of a dired buffer"
-  (emms-source-files (dired-get-marked-files)))
-
-;;;###autoload
 (defun emms-source-file-regex ()
   "Return a regexp that matches everything any player (that supports
 files) can play."
@@ -248,7 +250,7 @@ files) can play."
   "An EMMS source for streaming playlists (usually URLs ending in .pls."
   (interactive "sPlay URL: ")
   (emms-playlist-insert-track (emms-track 'streamlist streamlist)))
-  
+
 
 (provide 'emms-source-file)
 ;;; emms-source-file.el ends here
