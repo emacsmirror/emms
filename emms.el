@@ -218,6 +218,11 @@ seconds the player did seek."
 (defvar emms-player-paused-p nil
   "Whether the current player is paused or not.")
 
+(defvar emms-source-old-buffer nil
+  "The active buffer before a source was invoked.
+This can be used if the source depends on the current buffer not
+being the playlist buffer.")
+
 
 ;;; User Interface
 
@@ -446,9 +451,11 @@ This also disables any read-onliness of the current buffer."
      (when (or (not emms-playlist-buffer)
                (not (buffer-live-p emms-playlist-buffer)))
        (emms-playlist-current-clear))
-     (with-current-buffer emms-playlist-buffer
-       (let ((inhibit-read-only t))
-         ,@body))))
+     (let ((emms-source-old-buffer (or emms-source-old-buffer
+                                       (current-buffer))))
+      (with-current-buffer emms-playlist-buffer
+        (let ((inhibit-read-only t))
+          ,@body)))))
 (put 'with-current-emms-playlist 'lisp-indent-function 0)
 (put 'with-current-emms-playlist 'edebug-form-spec '(body))
 
