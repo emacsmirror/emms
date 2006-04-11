@@ -156,12 +156,6 @@ It should take same arguments as `open-network-stream' does."
   :type '(choice number string)
   :group 'emms-player-mpd)
 
-(defcustom emms-player-mpd-timeout 5
-  "The maximum acceptable delay (in seconds) while waiting for a
-response from the MusicPD server."
-  :type 'integer
-  :group 'emms-player-mpd)
-
 (defcustom emms-player-mpd-check-interval 2
   "How long to wait before checking to see whether MusicPD has
 moved on to the next song.  This may be an integer or a floating
