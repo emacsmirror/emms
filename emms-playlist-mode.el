@@ -172,42 +172,33 @@ function switches back to the remembered buffer."
     (setq emms-playlist-mode-switched-buffer (current-buffer))
     (switch-to-buffer emms-playlist-buffer)))
 
-(defmacro with-inhibit-read-only-t (&rest body)
+(defmacro emms-with-inhibit-read-only-t (&rest body)
   "Simple wrapper around `inhibit-read-only'."
   `(let ((inhibit-read-only t))
      ,@body))
-(put 'with-inhibit-read-only-t 'edebug-form-spec '(body))
+(put 'emms-with-inhibit-read-only-t 'edebug-form-spec '(body))
 
 (defun emms-playlist-mode-insert-newline ()
   "Insert a newline at point."
   (interactive)
-  (with-inhibit-read-only-t
+  (emms-with-inhibit-read-only-t
    (newline)))
 
 (defun emms-playlist-mode-undo ()
   "Wrapper around `undo'."
   (interactive)
-  (with-inhibit-read-only-t
+  (emms-with-inhibit-read-only-t
    (undo)))
 
 ;;; --------------------------------------------------------
 ;;; Overlay compatability
 ;;; --------------------------------------------------------
 
-(defun find-overlay-emms-track ()
-  "Return the position of the next emms track."
-  (save-excursion
-    (while (and (not (eobp))
-		(not (get-char-property (point) 'emms-track)))
-      (goto-char (min (next-overlay-change (point))
-		      (next-single-property-change (point) 'emms-track))))
-    (point)))
-
 ;; Taken from CVS Emacs (2005-12-24) and modified to support Emms2 on
 ;; Emacs 21.4. The modifications make this function not equivalent to
 ;; the original `remove-overlays' from which it was copied, so don't
 ;; try to use it in the same way.
-(defun remove-all-overlays (&optional beg end)
+(defun emms-remove-all-overlays (&optional beg end)
   "Clear BEG and END of overlays."
   (unless beg (setq beg (point-min)))
   (unless end (setq end (point-max)))
@@ -246,7 +237,7 @@ function switches back to the remembered buffer."
 (defun emms-playlist-mode-kill-track ()
   "Kill track at point."
   (interactive)
-  (with-inhibit-read-only-t
+  (emms-with-inhibit-read-only-t
    (let ((track (emms-playlist-track-at)))
      (if track
 	 (let ((track-region (emms-property-region (point)
@@ -254,7 +245,7 @@ function switches back to the remembered buffer."
 	   (when (and emms-player-playing-p
 		      (equal (emms-playlist-selected-track) track))
 	     (emms-stop))
-	   (remove-all-overlays (point-at-bol) (point-at-eol))
+	   (emms-remove-all-overlays (point-at-bol) (point-at-eol))
 	   (kill-region (car track-region) (cdr track-region)))
        (kill-line)))))
 
@@ -262,7 +253,7 @@ function switches back to the remembered buffer."
 (defun emms-playlist-mode-kill ()
   "Kill from mark to point."
   (interactive)
-  (with-inhibit-read-only-t
+  (emms-with-inhibit-read-only-t
    (let ((m (mark))			; throw error if no mark
 	 (p (point))
 	 (sm emms-playlist-selected-marker))
@@ -278,7 +269,7 @@ function switches back to the remembered buffer."
 (defun emms-playlist-mode-yank ()
   "Yank into the playlist buffer."
   (interactive)
-  (with-inhibit-read-only-t
+  (emms-with-inhibit-read-only-t
    (goto-char (point-at-bol))
    (yank))
   (emms-playlist-mode-overlay-refresh))
@@ -287,7 +278,7 @@ function switches back to the remembered buffer."
 (defun emms-playlist-mode-yank-pop ()
   "Cycle through the kill-ring."
   (interactive)
-  (with-inhibit-read-only-t
+  (emms-with-inhibit-read-only-t
    (yank-pop)))
 
 ;;; --------------------------------------------------------
@@ -332,8 +323,8 @@ FACE should be a... face."
   (when (not (null emms-playlist-mode-selected-overlay-marker))
     (save-excursion
       (goto-char emms-playlist-mode-selected-overlay-marker)
-      (remove-all-overlays (point-at-bol)
-			   (point-at-eol))
+      (emms-remove-all-overlays (point-at-bol)
+				(point-at-eol))
       (emms-playlist-mode-overlay-at-point
        'emms-playlist-track-face 1))))
 
@@ -347,8 +338,8 @@ FACE should be a... face."
 ;; not graceful, but avoids growing as the number of tracks grow.
 (defun emms-playlist-mode-overlay-refresh ()
   "Remove and re-apply all the overlays in the buffer."
-  (remove-all-overlays (point-min)
-		       (point-max))
+  (emms-remove-all-overlays (point-min)
+			    (point-max))
   (emms-playlist-mode-overlay-all)
   (setq emms-playlist-mode-selected-overlay-marker nil)
   (emms-playlist-mode-overlay-selected))
@@ -370,7 +361,7 @@ of the saved playlist inside."
       (setq s (read (buffer-string))))
     (kill-buffer buffer)
     (with-current-buffer (emms-playlist-new name)
-      (with-inhibit-read-only-t
+      (emms-with-inhibit-read-only-t
        (insert s)
        (condition-case nil
 	   (progn
@@ -389,10 +380,11 @@ of the saved playlist inside."
 ;;; Local functions
 ;;; --------------------------------------------------------
 
-(defun emms-playlist-mode-insert-track (track)
-  "Insert the description of TRACK at point."
+(defun emms-playlist-mode-insert-track (track &optional no-newline)
+  "Insert the description of TRACK at point.
+When NO-NEWLINE is non-nil, do not insert a newline after the track."
   (emms-playlist-ensure-playlist-buffer)
-  (with-inhibit-read-only-t
+  (emms-with-inhibit-read-only-t
    (insert (propertize (emms-track-description track)
 		       'emms-track track))
    (save-restriction
@@ -404,21 +396,21 @@ of the saved playlist inside."
 		(cons 'emms-playlist-track-face 1))))
        (emms-playlist-mode-overlay-track (car p) (cdr p)
 					 (car c) (cdr c))))
-   (insert "\n")))
+   (unless no-newline
+     (insert "\n"))))
 
 (defun emms-playlist-mode-update-track-function ()
   "Update the track display at point."
   (emms-playlist-ensure-playlist-buffer)
-  (with-inhibit-read-only-t
+  (emms-with-inhibit-read-only-t
    (let ((track-region (emms-property-region (point)
 					     'emms-track))
 	 (track (get-text-property (point)
 				   'emms-track)))
      (save-excursion
        (delete-region (car track-region)
-		      ;; 1+ For the \n
-		      (1+ (cdr track-region)))
-       (emms-playlist-mode-insert-track track)))))
+		      (cdr track-region))
+       (emms-playlist-mode-insert-track track t)))))
 
 ;;; --------------------------------------------------------
 ;;; Entry
