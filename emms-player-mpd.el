@@ -305,8 +305,6 @@ that's how we tell where the answer ends."
 (defvar emms-player-mpd-queue nil)
 
 (defvar emms-player-mpd-playlist-id nil)
-(make-variable-buffer-local 'emms-player-mpd-playlist-id)
-
 (defvar emms-player-mpd-current-song nil)
 (defvar emms-player-mpd-status-timer nil)
 
@@ -611,7 +609,7 @@ MusicPD playlist."
            nil)
           ((string= status "play")
            (unless (or (null song)
-                       (and emms-player-mpd-current-song
+                       (and (stringp emms-player-mpd-current-song)
                             (string= song emms-player-mpd-current-song)))
              (setq emms-player-mpd-current-song song)
              (run-hooks 'emms-player-stopped-hook)
@@ -704,7 +702,7 @@ This handles both m3u and pls type playlists."
        (string-match (emms-player-get emms-player-mpd 'regex)
                      (emms-track-name track))))
 
-(defun emms-player-mpd-play (&optional id closure)
+(defun emms-player-mpd-play (&optional id)
   "Play whatever is in the current MusicPD playlist.
 If ID is specified, play the song at that position in the MusicPD
 playlist."
@@ -716,14 +714,14 @@ playlist."
          (concat "play " id)
          nil
          (lambda (closure response)
-           (setq emms-player-mpd-current-song id)
+           (setq emms-player-mpd-current-song nil)
            (setq emms-player-mpd-status-timer
                  (run-at-time t emms-player-mpd-check-interval
                               'emms-player-mpd-detect-song-change)))))
     (emms-player-mpd-send
      "play"
      nil
-     (lambda (start-timer response)
+     (lambda (closure response)
        (setq emms-player-mpd-status-timer
              (run-at-time t emms-player-mpd-check-interval
                           'emms-player-mpd-detect-song-change))))))
