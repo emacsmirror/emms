@@ -156,10 +156,9 @@ It should take same arguments as `open-network-stream' does."
   :type '(choice number string)
   :group 'emms-player-mpd)
 
-(defcustom emms-player-mpd-check-interval 2
-  "How long to wait before checking to see whether MusicPD has
-moved on to the next song.  This may be an integer or a floating
-point number.
+(defcustom emms-player-mpd-check-interval 1
+  "How often to check to see whether MusicPD has advanced to the
+next song.  This may be an integer or a floating point number.
 
 This is used only if `emms-player-mpd-sync-playlist' is non-nil"
   :type 'integer
