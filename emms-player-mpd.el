@@ -1,4 +1,4 @@
-;; emms-player-mpd.el --- MusicPD support for EMMS
+;;; emms-player-mpd.el --- MusicPD support for EMMS
 
 ;; Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
@@ -197,7 +197,7 @@ If your EMMS playlist contains stored playlists, set this to nil."
                  'seek
                  'emms-player-mpd-seek)
 
-;;; Traffic Queue (with some improvements) based on tq.el
+;;; Transaction Queue (with some improvements) based on tq.el
 
 (defun emms-player-mpd-tq-create (process)
   "Create and return a transaction queue communicating with PROCESS.
