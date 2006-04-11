@@ -865,10 +865,12 @@ info from MusicPD."
              #'emms-info-mpd-1)
           (error nil))))))
 
-(defun emms-player-mpd-show-1 (insertp response)
+(defun emms-player-mpd-show-1 (closure response)
   (let* ((info (emms-player-mpd-get-alist
                 (emms-player-mpd-parse-response response)))
          (track (emms-dictionary '*track*))
+         (insertp (car closure))
+         (buffer (cdr closure))
          (desc nil)
          string)
     (when info
@@ -880,7 +882,8 @@ info from MusicPD."
                      (format emms-show-format desc)
                    "Nothing playing right now"))
     (if insertp
-        (insert string)
+        (with-current-buffer buffer
+          (insert string))
       (message "%s" string))))
 
 ;;;###autoload
@@ -891,7 +894,8 @@ This function uses `emms-show-format' to format the current track.
 It differs from `emms-show' in that it asks MusicPD for the current track,
 rather than EMMS."
   (interactive "P")
-  (emms-player-mpd-send "currentsong" insertp #'emms-player-mpd-show-1))
+  (emms-player-mpd-send "currentsong" (cons insertp (current-buffer))
+                        #'emms-player-mpd-show-1))
 
 (provide 'emms-player-mpd)
 
