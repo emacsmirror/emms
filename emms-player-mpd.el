@@ -791,6 +791,8 @@ just terminate the timer and mark the player as stopped."
   (interactive)
   (emms-cancel-timer emms-player-mpd-status-timer)
   (setq emms-player-mpd-status-timer nil)
+  (setq emms-player-mpd-playlist-id nil)
+  (setq emms-player-mpd-current-song nil)
   (let ((emms-player-stopped-p t))
     (unless no-send
       (condition-case nil
@@ -844,7 +846,8 @@ just terminate the timer and mark the player as stopped."
   (let ((info (emms-player-mpd-get-alist
                (emms-player-mpd-parse-response response))))
     (when info
-      (emms-info-mpd-process track info))))
+      (emms-info-mpd-process track info)
+      (emms-track-updated track))))
 
 (defun emms-info-mpd (track &optional info)
   "Add track information to TRACK.
