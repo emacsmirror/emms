@@ -869,7 +869,8 @@ info from MusicPD."
                 (emms-player-mpd-parse-response response)))
          (track (emms-dictionary '*track*))
          (insertp (car closure))
-         (buffer (cdr closure))
+         (callback (cadr closure))
+         (buffer (cddr closure))
          (desc nil)
          string)
     (when info
@@ -877,23 +878,28 @@ info from MusicPD."
       (emms-track-set track 'name (cdr (assoc "file" info)))
       (emms-info-mpd track info)
       (setq desc (emms-track-description track)))
-    (setq string (if desc
-                     (format emms-show-format desc)
-                   "Nothing playing right now"))
-    (if insertp
-        (with-current-buffer buffer
-          (insert string))
-      (message "%s" string))))
+    (if (not desc)
+        (message "Nothing playing right now")
+      (setq desc (format emms-show-format desc))
+      (cond ((functionp callback)
+             (funcall callback buffer desc))
+            (insertp
+             (with-current-buffer buffer
+               (insert desc)))
+            (t
+             (message "%s" desc))))))
 
 ;;;###autoload
-(defun emms-player-mpd-show (&optional insertp)
+(defun emms-player-mpd-show (&optional insertp callback)
   "Describe the current EMMS track in the minibuffer.
 If INSERTP is non-nil, insert the description into the current buffer instead.
+If CALLBACK is a function, call it with the current buffer and description.
 This function uses `emms-show-format' to format the current track.
 It differs from `emms-show' in that it asks MusicPD for the current track,
 rather than EMMS."
   (interactive "P")
-  (emms-player-mpd-send "currentsong" (cons insertp (current-buffer))
+  (emms-player-mpd-send "currentsong"
+                        (cons insertp (cons callback (current-buffer)))
                         #'emms-player-mpd-show-1))
 
 (provide 'emms-player-mpd)
