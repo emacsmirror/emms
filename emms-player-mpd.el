@@ -609,12 +609,13 @@ MusicPD playlist."
                        (and (stringp emms-player-mpd-current-song)
                             (string= song emms-player-mpd-current-song)))
              (setq emms-player-mpd-current-song song)
-             (run-hooks 'emms-player-stopped-hook)
+             (let ((emms-player-stopped-p t))
+               (emms-player-stopped))
              (with-current-emms-playlist
                (emms-playlist-select (progn
                                        (goto-line (1+ (string-to-number song)))
                                        (point))))
-             (run-hooks 'emms-player-started-hook)
+             (emms-player-started 'emms-player-mpd)
              (when time
                (run-hook-with-args 'emms-player-seeked-functions time)))))))
 

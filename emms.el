@@ -1037,10 +1037,14 @@ or nil if no such player exists."
       (if (not player)
           (error "Don't know how to play track: %s" track)
         (funcall (emms-player-get player 'start)
-                 track)
-        (setq emms-player-playing-p player
-	      emms-player-paused-p nil)
-        (run-hooks 'emms-player-started-hook)))))
+                 track)))))
+
+(defun emms-player-started (player)
+  "Declare that the given EMMS PLAYER has started.
+This should only be done by the current player itself."
+  (setq emms-player-playing-p player
+        emms-player-paused-p nil)
+  (run-hooks 'emms-player-started-hook))
 
 (defun emms-player-stop ()
   "Stop the current EMMS player."

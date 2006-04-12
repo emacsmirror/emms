@@ -86,6 +86,7 @@ to call the player and ARGS are the command line arguements."
      (defun ,start (track)
        "Start the player process."
        (emms-player-simple-start (emms-track-name track)
+                                 ,player-name
                                  ,command-name
                                  ,parameters))
      (defun ,stop ()
@@ -108,9 +109,10 @@ to call the player and ARGS are the command line arguements."
       (delete-process process))))
 
 ;; Utility-functions
-(defun emms-player-simple-start (filename cmdname params)
+(defun emms-player-simple-start (filename player cmdname params)
   "Starts a process playing FILENAME using the specified CMDNAME with
-the specified PARAMS."
+the specified PARAMS.
+PLAYER is the name of the current player."
   (let ((process (apply 'start-process
                         emms-player-simple-process-name
                         nil
@@ -118,7 +120,8 @@ the specified PARAMS."
                         ;; splice in params here
                         (append params (list filename)))))
     ;; add a sentinel for signaling termination
-    (set-process-sentinel process 'emms-player-simple-sentinel)))
+    (set-process-sentinel process 'emms-player-simple-sentinel))
+  (emms-player-started player))
 
 (defun emms-player-simple-sentinel (proc str)
   "Sentinel for determining the end of process"
