@@ -322,6 +322,10 @@ return at the end of a request.")
            (when emms-player-mpd-verbose
              (message "Other MusicPD status change: %s" status))))))
 
+;; Ignore a useless byte-compile warning
+(eval-when-compile
+  (put 'process-kill-without-query 'byte-compile nil))
+
 (defun emms-player-mpd-ensure-process ()
   "Make sure that a MusicPD process is currently active."
   (unless (and emms-player-mpd-process
