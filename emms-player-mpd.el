@@ -716,13 +716,12 @@ playlist."
            (setq emms-player-mpd-status-timer
                  (run-at-time t emms-player-mpd-check-interval
                               'emms-player-mpd-detect-song-change)))))
+    ;; we only want to play one track, so don't start the timer
     (emms-player-mpd-send
      "play"
      nil
      (lambda (closure response)
-       (setq emms-player-mpd-status-timer
-             (run-at-time t emms-player-mpd-check-interval
-                          'emms-player-mpd-detect-song-change))))))
+       (emms-player-started 'emms-player-mpd)))))
 
 (defun emms-player-mpd-start-and-sync-1 (buffer)
   (when emms-player-mpd-status-timer
