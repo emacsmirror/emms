@@ -59,6 +59,10 @@
                              nil t nil
                              (emms-track-name track))))
         (goto-char (point-min))
+        ;; Crush the trailing whitespace
+        (while (re-search-forward "[[:space:]]+$" nil t)
+          (replace-match "" nil nil))
+        (goto-char (point-min))
         (while (looking-at "^\\([^=\n]+\\)=\\(.*\\)$")
           (let ((name (intern-soft (match-string 1)))
                 (value (match-string 2)))
