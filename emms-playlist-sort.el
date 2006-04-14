@@ -59,6 +59,12 @@
      (> (emms-score-get-score (emms-track-get a 'name))
 	(emms-score-get-score (emms-track-get b 'name))))))
 
+(defun emms-playlist-sort-by-natural-order ()
+  "Sort emms playlist by natural order.
+See `emms-sort-natural-order-less-p'."
+  (interactive)
+  (emms-playlist-sort 'emms-sort-natural-order-less-p))
+
 (defgroup emms-playlist-sort nil
   "*Sorting Emacs Multimedia System playlists."
   :prefix "emms-playlist-sort-"
@@ -79,6 +85,7 @@ You should set this variable before loading this file."
     (define-key map (kbd "b") 'emms-playlist-sort-by-info-album)
     (define-key map (kbd "y") 'emms-playlist-sort-by-info-year)
     (define-key map (kbd "o") 'emms-playlist-sort-by-info-note)
+    (define-key map (kbd "N") 'emms-playlist-sort-by-natural-order)
     map))
 
 (eval-after-load "emms-playlist-mode"
@@ -107,6 +114,23 @@ You should set this variable before loading this file."
 	  (if pos
 	      (emms-playlist-select pos)
 	    (emms-playlist-first)))))))
+
+(defun emms-string> (a b)
+  (not (or (string< a b)
+	   (string= a b))))
+
+(defun emms-sort-natural-order-less-p (a b)
+  "Sort two tracks by natural order.
+This is the order in which albums where intended to be played.
+ie. by album name and then by track number."
+  (or (emms-string> (emms-track-get a 'info-album)
+		    (emms-track-get b 'info-album))
+      (and (string= (emms-track-get a 'info-album)
+		    (emms-track-get b 'info-album))
+	   (< (string-to-number (or (emms-track-get a 'info-tracknumber)
+				    "0"))
+	      (string-to-number (or (emms-track-get b 'info-tracknumber)
+				    "0"))))))
 
 (provide 'emms-playlist-sort)
 
