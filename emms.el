@@ -371,11 +371,11 @@ See  `emms-repeat-track'."
 
 ;;; Compatibility functions
 
-(if (not (fboundp 'propertize))
-    (defun emms-propertize (string &rest properties)
-      (set-text-properties 0 (length string) properties string)
-      string)
-  (defalias 'emms-propertize 'propertize))
+(defun emms-propertize (string &rest properties)
+  (if (fboundp 'propertize)
+      (apply #'propertize string properties)
+    (set-text-properties 0 (length string) properties string)
+    string))
 
 (defun emms-cancel-timer (timer)
   "Cancel the given TIMER."
