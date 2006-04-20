@@ -53,19 +53,19 @@
 
 (defface emms-metaplaylist-mode-face
   '((((class color) (background dark))
-     :foreground "AntiqueWhite3")
+     (:foreground "AntiqueWhite3"))
     (((type tty) (class mono))
-     :inverse-video t)
-    (t :background "WhiteSmoke"))
+     (:inverse-video t))
+    (t (:background "WhiteSmoke")))
   "Face for the buffer names in the playlists buffer."
   :group 'emms-metaplaylist-mode)
 
 (defface emms-metaplaylist-mode-current-face
   '((((class color) (background dark))
-     :foreground "red2")
+     (:foreground "red2"))
     (((type tty) (class mono))
-     :inverse-video t)
-    (t :background "red3"))
+     (:inverse-video t))
+    (t (:background "red3")))
   "Face for the current buffer name in the playlists buffer."
   :group 'emms-metaplaylist-mode)
 
