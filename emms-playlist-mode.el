@@ -68,19 +68,19 @@
 
 (defface emms-playlist-track-face
   '((((class color) (background dark))
-     :foreground "DarkSeaGreen")
+     (:foreground "DarkSeaGreen"))
     (((type tty) (class mono))
-     :inverse-video t)
-    (t :background "Blue"))
+     (:inverse-video t))
+    (t (:background "Blue")))
   "Face for the tracks in a playlist buffer."
   :group 'emms-playlist-mode)
 
 (defface emms-playlist-selected-face
   '((((class color) (background dark))
-     :foreground "SteelBlue3")
+     (:foreground "SteelBlue3"))
     (((type tty) (class mono))
-     :inverse-video t)
-    (t :background "blue3"))
+     (:inverse-video t))
+    (t (:background "blue3")))
   "Face for highlighting the selected track."
   :group 'emms-playlist-mode)
 
