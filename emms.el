@@ -1044,7 +1044,7 @@ or nil if no such player exists."
       (error "A player is already playing")
     (let ((player (emms-player-for track)))
       (if (not player)
-          (error "Don't know how to play track: %s" track)
+          (error "Don't know how to play track: %S" track)
         (funcall (emms-player-get player 'start)
                  track)))))
 
