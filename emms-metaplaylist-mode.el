@@ -137,6 +137,21 @@
       (error "No Emms playlist buffers"))))
 
 ;;; --------------------------------------------------------
+;;; Playlist Management : creation, deletion (?)
+;;; --------------------------------------------------------
+
+(defun emms-metaplaylist-new-buffer (buffer-name)
+  "Creates a new buffer called buffer-name, which will be ready
+to host EMMS tracks."
+  (interactive "sBuffer Name: ")
+  (if(get-buffer buffer-name)
+      (error "Buffer must not exist.")
+    (let ((buf (get-buffer-create buffer-name)))
+      (with-current-buffer buf
+        (setq emms-playlist-buffer-p t)))
+    (message "Buffer created")))
+
+;;; --------------------------------------------------------
 ;;; Mode entry
 ;;; --------------------------------------------------------
 
