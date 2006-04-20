@@ -369,15 +369,6 @@ See  `emms-repeat-track'."
     (error "No EMMS player playing right now")))
 
 
-;;; Compatibility functions
-
-(if (not (fboundp 'propertize))
-    (defun emms-propertize (string &rest properties)
-      (set-text-properties 0 (length string) properties string)
-      string)
-  (defalias 'emms-propertize 'propertize))
-
-
 ;;; Tracks
 
 ;; This is a simple datatype to store track information.
@@ -1164,6 +1155,13 @@ If fifth arg LITERAL is non-nil, insert REPLACEMENT literally."
           (setq start (+ start repl-len)
                 text (replace-match replacement fixedcase literal text))))
       text)))
+
+(if (not (fboundp 'propertize))
+    (defun emms-propertize (string &rest properties)
+      (set-text-properties 0 (length string) properties string)
+      string)
+  (defalias 'emms-propertize 'propertize))
+
 
 (provide 'emms)
 ;;; emms.el ends here
