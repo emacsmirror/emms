@@ -97,11 +97,15 @@
 or nil if we cannot figure it out."
   (let ((out (split-string (shell-command-to-string "mpd --version")
                            "\n"))
-        supported)
-    ;; Get last non-empty line
+        (found-start nil)
+        (supported nil))
+    ;; Get supported formats
     (while (car out)
-      (when (not (string= (car out) ""))
-        (setq supported (car out)))
+      (cond ((string= (car out) "Supported formats:")
+             (setq found-start t))
+            ((and found-start
+                  (not (string= (car out) "")))
+             (setq supported (concat supported (car out)))))
       (setq out (cdr out)))
     ;; Create regexp
     (when (and (stringp supported)
