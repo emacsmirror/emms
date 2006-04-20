@@ -81,6 +81,7 @@
     (define-key map (kbd "RET") 'emms-metaplaylist-mode-goto-current)
     (define-key map (kbd "q") 'kill-this-buffer)
     (define-key map (kbd "?") 'describe-mode)
+    (define-key map (kbd "SPC") 'emms-metaplaylist-set-active)
     map)
   "Keymap for `emms-metaplaylist-mode'.")
 
@@ -150,6 +151,14 @@ to host EMMS tracks."
       (with-current-buffer buf
         (setq emms-playlist-buffer-p t)))
     (message "Buffer created")))
+
+(defun emms-metaplaylist-set-active ()
+  (interactive)
+  (emms-playlist-set-playlist-buffer 
+   (get-buffer (buffer-substring (point-at-bol) (point-at-eol))))
+  (let ((ici (point)))
+    (emms-metaplaylist-mode-go)
+    (goto-char ici)))
 
 ;;; --------------------------------------------------------
 ;;; Mode entry
