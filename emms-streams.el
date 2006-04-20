@@ -157,17 +157,6 @@ needed info.")
     map)
   "Keymap for `emms-stream-menu'.")
 
-(defun emms-stream-line-number-at-pos (&optional pos)
-  "Return (narrowed) buffer line number at position POS.
-If POS is nil, use current buffer location."
-  (let ((opoint (or pos (point))) start)
-    (save-excursion
-      (goto-char (point-min))
-      (setq start (point))
-      (goto-char opoint)
-      (forward-line 0)
-      (1+ (count-lines start (point))))))
-
 ;;;###autoload
 (defun emms-streams ()
   "Opens the EMMS Streams interface."
@@ -319,7 +308,7 @@ Don't forget to run `emms-stream-save-bookmarks-file' after !"
 sURL: 
 nFeed descriptor: 
 SType (url or streamlist): ")
-  (let* ((line     (emms-stream-line-number-at-pos (point)))
+  (let* ((line     (emms-line-number-at-pos (point)))
          (index    (+ (/ line 2) 1)))
     (setq emms-stream-list (emms-stream-insert-at index (list name url fd type)
                                                   emms-stream-list))
@@ -331,7 +320,7 @@ SType (url or streamlist): ")
 
 Don't forget to save your modifications !"
   (interactive)
-  (let ((line     (emms-stream-line-number-at-pos (point))))
+  (let ((line     (emms-line-number-at-pos (point))))
     (setq emms-stream-list
           (remove (emms-stream-get-bookmark-at-point) emms-stream-list))
     (emms-stream-redisplay)

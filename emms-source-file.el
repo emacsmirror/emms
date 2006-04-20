@@ -36,10 +36,11 @@
 ;;; User Customization
 
 (require 'emms)
-(eval-when-compile 
+(eval-when-compile
   (condition-case nil
       (require 'locate)
     (error nil)))
+(require 'dired)
 
 (defgroup emms-source-file nil
   "*Sources for EMMS that use the file system."

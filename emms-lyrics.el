@@ -65,6 +65,7 @@
 (require 'emms)
 (require 'emms-player-simple)
 (require 'emms-source-file)
+(require 'time-date)
 
 ;;; User Customization
 
