@@ -66,7 +66,7 @@ static char *note[] = {
 (defun emms-mode-line-icon-function ()
   (concat " "
           emms-mode-line-icon-before-format
-          (propertize "NP:" 'display emms-mode-line-icon-image-cache)
+          (emms-propertize "NP:" 'display emms-mode-line-icon-image-cache)
           (emms-mode-line-playlist-current)))
 
 (setq emms-mode-line-mode-line-function 'emms-mode-line-icon-function)

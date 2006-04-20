@@ -369,6 +369,63 @@ See  `emms-repeat-track'."
     (error "No EMMS player playing right now")))
 
 
+;;; Compatibility functions
+
+(if (not (fboundp 'propertize))
+    (defun emms-propertize (string &rest properties)
+      (set-text-properties 0 (length string) properties string)
+      string)
+  (defalias 'emms-propertize 'propertize))
+
+(defun emms-cancel-timer (timer)
+  "Cancel the given TIMER."
+  (when timer
+    (cond ((fboundp 'cancel-timer)
+           (cancel-timer timer))
+          ((fboundp 'delete-itimer)
+           (delete-itimer timer)))))
+
+(defun emms-time-less-p (t1 t2)
+  "Say whether time T1 is less than time T2."
+  (or (< (car t1) (car t2))
+      (and (= (car t1) (car t2))
+           (< (nth 1 t1) (nth 1 t2)))))
+
+(defun emms-replace-regexp-in-string (regexp replacement text &optional fixedcase literal)
+  "Replace REGEXP with REPLACEMENT in TEXT.
+If fourth arg FIXEDCASE is non-nil, do not alter case of replacement text.
+If fifth arg LITERAL is non-nil, insert REPLACEMENT literally."
+  (cond
+   ((fboundp 'replace-regexp-in-string)
+    (replace-regexp-in-string regexp replacement text fixedcase literal))
+   ((fboundp 'replace-in-string)
+    (replace-in-string text regexp replacement literal))
+   (t (let ((repl-len (length replacement))
+            start)
+        (while (setq start (string-match regexp text start))
+          (setq start (+ start repl-len)
+                text (replace-match replacement fixedcase literal text))))
+      text)))
+
+(defun emms-line-number-at-pos (&optional pos)
+  "Return (narrowed) buffer line number at position POS.
+If POS is nil, use current buffer location."
+  (if (fboundp 'line-number-at-pos)
+      (line-number-at-pos pos)
+    (let ((opoint (or pos (point))) start)
+      (save-excursion
+        (goto-char (point-min))
+        (setq start (point))
+        (goto-char opoint)
+        (forward-line 0)
+        (1+ (count-lines start (point)))))))
+
+(defun emms-match-string-no-properties (num &optional string)
+  (if (fboundp 'match-string-no-properties)
+      (match-string-no-properties num string)
+    (match-string num string)))
+
+
 ;;; Tracks
 
 ;; This is a simple datatype to store track information.
@@ -763,8 +820,7 @@ This is supplying ARGS as arguments to the source."
           (with-current-buffer buf
             (when emms-playlist-buffer-p
               (save-excursion
-                (let ((beg (point-min))
-                      (pos (text-property-any (point-min) (point-max)
+                (let ((pos (text-property-any (point-min) (point-max)
                                               'emms-track track)))
                   (while pos
                     (goto-char pos)
@@ -1128,40 +1184,6 @@ or negative to seek backwards."
       (setcdr dict (append (cdr dict)
                            (list (cons name value))))))
   dict)
-
-
-;;; XEmacs compatibility
-
-(defun emms-cancel-timer (timer)
-  "Cancel the given TIMER."
-  (when timer
-    (cond ((fboundp 'cancel-timer)
-           (cancel-timer timer))
-          ((fboundp 'delete-itimer)
-           (delete-itimer timer)))))
-
-(defun emms-replace-regexp-in-string (regexp replacement text &optional fixedcase literal)
-  "Replace REGEXP with REPLACEMENT in TEXT.
-If fourth arg FIXEDCASE is non-nil, do not alter case of replacement text.
-If fifth arg LITERAL is non-nil, insert REPLACEMENT literally."
-  (cond
-   ((fboundp 'replace-regexp-in-string)
-    (replace-regexp-in-string regexp replacement text fixedcase literal))
-   ((fboundp 'replace-in-string)
-    (replace-in-string text regexp replacement literal))
-   (t (let ((repl-len (length replacement))
-            start)
-        (while (setq start (string-match regexp text start))
-          (setq start (+ start repl-len)
-                text (replace-match replacement fixedcase literal text))))
-      text)))
-
-(if (not (fboundp 'propertize))
-    (defun emms-propertize (string &rest properties)
-      (set-text-properties 0 (length string) properties string)
-      string)
-  (defalias 'emms-propertize 'propertize))
-
 
 (provide 'emms)
 ;;; emms.el ends here

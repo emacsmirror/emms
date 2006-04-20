@@ -34,6 +34,10 @@
 ;;; --------------------------------------------------------
 
 (require 'emms)
+(eval-when-compile
+  (condition-case nil
+      (require 'overlay)
+    (error nil)))
 
 (defvar emms-playlist-mode-hook nil
   "Emms playlist mode hook.")
@@ -198,6 +202,18 @@ function switches back to the remembered buffer."
 ;; Emacs 21.4. The modifications make this function not equivalent to
 ;; the original `remove-overlays' from which it was copied, so don't
 ;; try to use it in the same way.
+
+(defun emms-copy-overlay (o)
+  "Return a copy of overlay O."
+  (if (fboundp 'copy-overlay)
+      (copy-overlay o)
+    (let ((o1 (make-overlay (overlay-start o) (overlay-end o)
+                            (overlay-buffer o)))
+          (props (overlay-properties o)))
+      (while props
+        (overlay-put o1 (pop props) (pop props)))
+      o1)))
+
 (defun emms-remove-all-overlays (&optional beg end)
   "Clear BEG and END of overlays."
   (unless beg (setq beg (point-min)))
@@ -210,7 +226,7 @@ function switches back to the remembered buffer."
 	(if (< (overlay-start o) beg)
 	    (if (> (overlay-end o) end)
 		(progn
-		  (move-overlay (copy-overlay o)
+		  (move-overlay (emms-copy-overlay o)
 				(overlay-start o) beg)
 		  (move-overlay o end (overlay-end o)))
 	      (move-overlay o (overlay-start o) beg))
@@ -279,7 +295,7 @@ function switches back to the remembered buffer."
   "Cycle through the kill-ring."
   (interactive)
   (emms-with-inhibit-read-only-t
-   (yank-pop)))
+   (yank-pop nil)))
 
 ;;; --------------------------------------------------------
 ;;; Overlay

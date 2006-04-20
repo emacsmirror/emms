@@ -83,8 +83,8 @@ Return t when the track got changed."
                       (emms-info-track-file-mtime track))))
     (when (or (not track-mtime)
               (when emms-info-auto-update
-                (time-less-p track-mtime
-                             file-mtime)))
+                (emms-time-less-p track-mtime
+                                  file-mtime)))
       (run-hook-with-args 'emms-info-functions
                           track)
       (emms-track-set track 'info-mtime file-mtime)

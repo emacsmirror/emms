@@ -165,6 +165,14 @@ then in your ~/.emacs, you should do:
 
 @cindex compiling
 
+If you are using XEmacs, you will need to edit @file{Makefile} as
+follows before continuing.
+
+@example
+EMACS=xemacs
+SITEFLAG=-no-site-file
+@end example
+
 You can byte-compile Emms by first entering the directory containing the
 Emms source code, followed by invoking:
 

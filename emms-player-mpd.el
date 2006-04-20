@@ -734,7 +734,7 @@ playlist."
     (setq emms-player-mpd-status-timer nil))
   (let ((emms-playlist-buffer buffer))
     (with-current-emms-playlist
-      (emms-player-mpd-play (1- (line-number-at-pos
+      (emms-player-mpd-play (1- (emms-line-number-at-pos
                                  emms-playlist-selected-marker))))))
 
 (defun emms-player-mpd-start-and-sync ()
@@ -790,7 +790,7 @@ Afterward, the status of MusicPD will be tracked."
   "Stop the currently playing song.
 If NO-SEND is non-nil, do not send a stop command to MusicPD,
 just terminate the timer and mark the player as stopped."
-  (interactive)
+  (interactive "P")
   (emms-cancel-timer emms-player-mpd-status-timer)
   (setq emms-player-mpd-status-timer nil)
   (setq emms-player-mpd-playlist-id nil)
@@ -880,8 +880,7 @@ info from MusicPD."
          (insertp (car closure))
          (callback (cadr closure))
          (buffer (cddr closure))
-         (desc nil)
-         string)
+         (desc nil))
     (when info
       (emms-track-set track 'type 'file)
       (emms-track-set track 'name (cdr (assoc "file" info)))

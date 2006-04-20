@@ -244,7 +244,9 @@ functions use 'emms-stream-info-return-hook'.")
 ;; This is our tiny state machine for keeping track across multiple
 ;; connections.
 (defvar emms-stream-info-state-bv
-  (make-bool-vector 3 nil)
+  (if (fboundp 'make-bool-vector)
+      (make-bool-vector 3 nil)
+    (make-vector 3 nil))
   "State of sequential connections.
 true at index 0 means output formatted message.
 true at index 1 means insert formatted message.
@@ -379,13 +381,13 @@ KEYS. KEYS should be a list of strings."
     (re-search-forward (concat "artist=\\(" 
 			       emms-stream-info-icecast-regexp 
 			       "\\)") end t)
-    (setq artist (match-string-no-properties 1))
+    (setq artist (emms-match-string-no-properties 1))
     
     (goto-char begin)
     (re-search-forward (concat "title=\\(" 
 			       emms-stream-info-icecast-regexp 
 			       "\\)") end t)
-    (setq title (match-string-no-properties 1))
+    (setq title (emms-match-string-no-properties 1))
 
     ;; ugh
     (if (or artist title)
@@ -450,7 +452,7 @@ Argument STR Quanta of data."
 		    (progn
 		      (add-to-list 'emms-stream-info-found 
 				   (cons term 
-					 (match-string-no-properties 1)))
+					 (emms-match-string-no-properties 1)))
 		      (setq emms-stream-info-header-flag t))))
 	      emms-stream-info-vocab))
 
@@ -491,8 +493,8 @@ Argument STR Quanta of data."
 	       (point-max) t)
 	      (progn
 		(setq emms-stream-info-streamlist-found
-		      (or (match-string-no-properties 1)
-			  (match-string-no-properties 2)))
+		      (or (emms-match-string-no-properties 1)
+			  (emms-match-string-no-properties 2)))
 		(setq emms-stream-info-streamlist-flag t))))))
 
   ;; Be chatty at the user
