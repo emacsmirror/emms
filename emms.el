@@ -369,6 +369,15 @@ See  `emms-repeat-track'."
     (error "No EMMS player playing right now")))
 
 
+;;; Compatibility functions
+
+(if (not (fboundp 'propertize))
+    (defun emms-propertize (string &rest properties)
+      (set-text-properties 0 (length string) properties string)
+      string)
+  (defalias 'emms-propertize 'propertize))
+
+
 ;;; Tracks
 
 ;; This is a simple datatype to store track information.
@@ -783,8 +792,8 @@ This is supplying ARGS as arguments to the source."
   "Insert the description of TRACK at point."
   (emms-playlist-ensure-playlist-buffer)
   (let ((inhibit-read-only t))
-    (insert (propertize (emms-track-description track)
-                        'emms-track track)
+    (insert (emms-propertize (emms-track-description track)
+                             'emms-track track)
             "\n")))
 
 (defun emms-playlist-simple-update-track ()

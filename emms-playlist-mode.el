@@ -385,8 +385,8 @@ of the saved playlist inside."
 When NO-NEWLINE is non-nil, do not insert a newline after the track."
   (emms-playlist-ensure-playlist-buffer)
   (emms-with-inhibit-read-only-t
-   (insert (propertize (emms-track-description track)
-		       'emms-track track))
+   (insert (emms-propertize (emms-track-description track)
+                            'emms-track track))
    (save-restriction
      (widen)
      (let ((p (emms-property-region (point-at-bol) 'emms-track))
