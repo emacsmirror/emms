@@ -118,7 +118,8 @@ or nil if we cannot figure it out."
 (defvar emms-player-mpd-supported-regexp
   ;; Use a sane default, just in case
   (or (emms-player-mpd-get-supported-regexp)
-      "\\.\\(m3u\\|ogg\\|flac\\|mp3\\|wav\\|mod\\|aac\\)\\'")
+      (concat "\\`http://\\|"
+              "\\.\\(m3u\\|ogg\\|flac\\|mp3\\|wav\\|mod\\|au\\|aiff\\)\\'"))
   "Formats supported by MusicPD Client.")
 
 (defgroup emms-player-mpd nil
