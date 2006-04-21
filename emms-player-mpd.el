@@ -619,7 +619,16 @@ MusicPD playlist."
         (status (emms-player-mpd-get-mpd-state nil #'ignore info))
         (time (emms-player-mpd-get-playing-time nil #'ignore info)))
     (cond ((string= status "stop")
-           (emms-player-mpd-stop t))
+           (if (with-current-emms-playlist
+                 (save-excursion
+                   (forward-line 1)
+                   (emms-playlist-track-at (point))))
+               ;; a track remains, so use the conservative stop method
+               (let ((emms-player-stopped-p t))
+                 (emms-player-mpd-stop t))
+             ;; at the last track: we probably ran out of stuff to
+             ;; play, so let EMMS do something further if it wants to
+             (emms-player-mpd-stop t)))
           ((string= status "pause")
            nil)
           ((string= status "play")
@@ -808,12 +817,13 @@ just terminate the timer and mark the player as stopped."
   (setq emms-player-mpd-status-timer nil)
   (setq emms-player-mpd-playlist-id nil)
   (setq emms-player-mpd-current-song nil)
-  (let ((emms-player-stopped-p t))
-    (unless no-send
-      (condition-case nil
-          (emms-player-mpd-send "stop" nil #'ignore)
-        (error nil)))
-    (emms-player-stopped)))
+  (if no-send
+      (emms-player-stopped)
+    (condition-case nil
+        (emms-player-mpd-send "stop" nil #'ignore)
+      (error nil))
+    (let ((emms-player-stopped-p t))
+      (emms-player-stopped))))
 
 (defun emms-player-mpd-pause ()
   "Pause the currently playing song."
