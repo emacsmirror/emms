@@ -82,6 +82,7 @@
     (define-key map (kbd "q") 'kill-this-buffer)
     (define-key map (kbd "?") 'describe-mode)
     (define-key map (kbd "SPC") 'emms-metaplaylist-set-active)
+    (define-key map (kbd "c") 'emms-metaplaylist-new-buffer)
     map)
   "Keymap for `emms-metaplaylist-mode'.")
 
@@ -172,7 +173,7 @@ to host EMMS tracks."
 
 (defun emms-metaplaylist-mode ()
   "A major mode for Emms playlists."
-  (interactive)
+;;  (interactive)
   (kill-all-local-variables)
 
   (use-local-map emms-metaplaylist-mode-map)
