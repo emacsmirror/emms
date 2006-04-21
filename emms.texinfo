@@ -1176,6 +1176,19 @@ differs from @command{emms-show} in that it asks MusicPD for the
 current track, rather than Emms.
 @end defun
 
+@defun emms-player-mpd-volume-change amount
+Change volume up or down by AMOUNT, depending on whether it is
+positive or negative.
+@end defun
+
+@defun emms-player-mpd-volume-up
+Increase the volume.
+@end defun
+
+@defun emms-player-mpd-volume-down
+Decrease the volume.
+@end defun
+
 @node Lyrics
 @chapter Lyrics
 
