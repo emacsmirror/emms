@@ -842,7 +842,7 @@ just terminate the timer and mark the player as stopped."
 (defun emms-player-mpd-volume-change (amount)
   "Change volume up or down by AMOUNT, depending on whether it is
 positive or negative."
-  (interactive)
+  (interactive "MVolume change amount (+ increase, - decrease): ")
   (emms-player-mpd-get-volume
    amount
    (lambda (change volume)
