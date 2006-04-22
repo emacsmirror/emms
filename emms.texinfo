@@ -1168,6 +1168,10 @@ Connect to MusicPD and retrieve its current playlist. Afterward, the
 status of MusicPD will be tracked.
 @end defun
 
+@defun emms-player-mpd-disconnect
+Terminate the MusicPD client process and disconnect from MusicPD.
+@end defun
+
 @defun emms-player-mpd-show &optional insertp
 Describe the current EMMS track in the minibuffer. If INSERTP is
 non-nil, insert the description into the current buffer instead. This
