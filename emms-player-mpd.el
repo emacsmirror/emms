@@ -619,16 +619,17 @@ MusicPD playlist."
         (status (emms-player-mpd-get-mpd-state nil #'ignore info))
         (time (emms-player-mpd-get-playing-time nil #'ignore info)))
     (cond ((string= status "stop")
+           (emms-player-mpd-disconnect t)
            (if (with-current-emms-playlist
                  (save-excursion
                    (forward-line 1)
                    (emms-playlist-track-at (point))))
                ;; a track remains, so use the conservative stop method
                (let ((emms-player-stopped-p t))
-                 (emms-player-mpd-stop t))
+                 (emms-player-stopped))
              ;; at the last track: we probably ran out of stuff to
              ;; play, so let EMMS do something further if it wants to
-             (emms-player-mpd-stop t)))
+             (emms-player-stopped)))
           ((string= status "pause")
            nil)
           ((string= status "play")
@@ -808,22 +809,30 @@ Afterward, the status of MusicPD will be tracked."
       ;; if we have loaded the item successfully, play it
       (emms-player-mpd-play))))
 
-(defun emms-player-mpd-stop (&optional no-send)
-  "Stop the currently playing song.
-If NO-SEND is non-nil, do not send a stop command to MusicPD,
-just terminate the timer and mark the player as stopped."
-  (interactive "P")
+(defun emms-player-mpd-disconnect (&optional no-stop)
+  "Terminate the MusicPD client process and disconnect from MusicPD.
+
+If NO-STOP is non-nil, do not indicate to EMMS that we are
+stopped.  This argument is meant to be used when calling this
+from other functions."
+  (interactive)
   (emms-cancel-timer emms-player-mpd-status-timer)
   (setq emms-player-mpd-status-timer nil)
   (setq emms-player-mpd-playlist-id nil)
   (setq emms-player-mpd-current-song nil)
-  (if no-send
-      (emms-player-stopped)
-    (condition-case nil
-        (emms-player-mpd-send "stop" nil #'ignore)
-      (error nil))
+  (unless no-stop
     (let ((emms-player-stopped-p t))
       (emms-player-stopped))))
+
+(defun emms-player-mpd-stop ()
+  "Stop the currently playing song."
+  (interactive)
+  (emms-player-mpd-disconnect t)
+  (condition-case nil
+      (emms-player-mpd-send "stop" nil #'ignore)
+    (error nil))
+  (let ((emms-player-stopped-p t))
+    (emms-player-stopped)))
 
 (defun emms-player-mpd-pause ()
   "Pause the currently playing song."
@@ -848,7 +857,6 @@ just terminate the timer and mark the player as stopped."
   (interactive)
   (emms-player-mpd-send "previous" nil #'ignore))
 
-;;;###autoload
 (defun emms-player-mpd-volume-change (amount)
   "Change volume up or down by AMOUNT, depending on whether it is
 positive or negative."
@@ -861,13 +869,11 @@ positive or negative."
         (concat "setvol \"" (number-to-string new-volume) "\"")
         nil #'ignore)))))
 
-;;;###autoload
 (defun emms-player-mpd-volume-up ()
   "Increase the volume."
   (interactive)
   (emms-player-mpd-volume-change 5))
 
-;;;###autoload
 (defun emms-player-mpd-volume-down ()
   "Decrease the volume."
   (interactive)
