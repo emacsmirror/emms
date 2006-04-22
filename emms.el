@@ -193,8 +193,9 @@ See `emms-player-finished-hook'."
   "*Hook run when an EMMS player finishes playing a track.
 Please pay attention to the differences between
 `emms-player-finished-hook' and `emms-player-stopped-hook'.
-The former is called only when the player is stopped interactively;
-the latter, only when the player actually finishes playing a track."
+The former is called only when the player actually finishes
+playing a track; the latter, only when the player is stopped
+interactively."
   :group 'emms
   :type 'hook
   :options '(emms-next-noerror))
