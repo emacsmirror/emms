@@ -855,14 +855,16 @@ ignore this."
   (emms-playlist-ensure-playlist-buffer)
   (when (not (emms-playlist-track-at (point)))
     (error "No track at point"))
-  (let ((region (emms-property-region (point) 'emms-track)))
+  (let ((inhibit-read-only t)
+        (region (emms-property-region (point) 'emms-track)))
     (delete-region (car region)
                    (cdr region))))
 
 (defun emms-playlist-simple-shuffle ()
   "Shuffle the whole playlist buffer."
   (emms-playlist-ensure-playlist-buffer)
-  (let ((current nil))
+  (let ((inhibit-read-only t)
+        (current nil))
     (widen)
     (when emms-player-playing-p
       (setq current (emms-playlist-selected-track))
@@ -888,7 +890,8 @@ ignore this."
   "Sort the whole playlist buffer."
   (emms-playlist-ensure-playlist-buffer)
   (widen)
-  (let ((current (emms-playlist-selected-track))
+  (let ((inhibit-read-only t)
+        (current (emms-playlist-selected-track))
         (tracks (emms-playlist-tracks-in-region (point-min)
                                                 (point-max))))
     (delete-region (point-min)
