@@ -73,6 +73,8 @@
 (defface emms-playlist-track-face
   '((((class color) (background dark))
      (:foreground "DarkSeaGreen"))
+    (((class color) (background light))
+     (:foreground "Blue"))
     (((type tty) (class mono))
      (:inverse-video t))
     (t (:background "Blue")))
@@ -82,6 +84,8 @@
 (defface emms-playlist-selected-face
   '((((class color) (background dark))
      (:foreground "SteelBlue3"))
+    (((class color) (background light))
+     (:background "blue3" :foreground "white"))
     (((type tty) (class mono))
      (:inverse-video t))
     (t (:background "blue3")))
