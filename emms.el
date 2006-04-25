@@ -564,7 +564,7 @@ If no playlist exists, a new one is generated."
 		   (point-max)))
   (run-hooks 'emms-playlist-cleared-hook))
 
-(defmacro with-widened-buffer (&rest body)
+(defmacro emms-with-widened-buffer (&rest body)
   `(save-restriction
      (widen)
      ,@body))
@@ -573,7 +573,7 @@ If no playlist exists, a new one is generated."
 (defun emms-playlist-track-at (&optional pos)
   "Return the track at POS (point if not given), or nil if none."
   (emms-playlist-ensure-playlist-buffer)
-  (with-widened-buffer
+  (emms-with-widened-buffer
    (get-text-property (or pos (point))
 		      'emms-track)))
 
