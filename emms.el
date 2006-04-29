@@ -38,9 +38,8 @@
 ;;; Code:
 
 ;; $Id: emms.el,v 1.63 2005/08/18 13:52:23 forcer Exp $
-(defvar emms-version "1.5"
+(defvar emms-version "2.0"
   "EMMS version string.")
-;; FIXME: 1.5 will be 2.0 eventually
 
 
 ;;; User Customization
