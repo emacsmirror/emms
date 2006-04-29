@@ -266,7 +266,7 @@ function switches back to the remembered buffer."
 		      (equal (emms-playlist-selected-track) track))
 	     (emms-stop))
 	   (emms-remove-all-overlays (point-at-bol) (point-at-eol))
-	   (kill-region (car track-region) (cdr track-region)))
+	   (kill-line))
        (kill-line)))))
 
 ;; C-w
