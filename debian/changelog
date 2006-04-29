@@ -1,8 +1,11 @@
-emms (1.4) unstable; urgency=low
+emms (2.0-1) unstable; urgency=low
 
-  * Depend alternatively on emacsen (Closes: #321493)
+  * New upstream release.
+  * Depend alternatively on emacsen (Closes: #321493) and (Closes: #321493)
+  * Don't be a “native” package anymore, seems to make some people happier (Closes: #343525)
+  * Fix autoloads (Closes: #357398)
 
- --
+ -- Jorgen Schaefer <forcer@debian.org>  Sat, 29 Apr 2006 19:42:39 +0200
 
 emms (1.3) unstable; urgency=low
 
