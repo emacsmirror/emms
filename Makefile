@@ -62,5 +62,4 @@ ChangeLog:
 	darcs changes > $@
 
 clean:
-	-rm -f *~ *.elc emms-auto.el emms.info emms.html ChangeLog \
-		emms-print-metadata
+	-rm -f *~ *.elc emms-auto.el emms.info emms.html emms-print-metadata
