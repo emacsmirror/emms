@@ -35,7 +35,7 @@ build-indep-stamp: configure-stamp
 	dh_testdir
 	make emms.info
 	make emms-auto.el
-	make ChangeLog
+	#make ChangeLog
 	touch build-indep-stamp
 
 clean:
