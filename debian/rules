@@ -57,7 +57,7 @@ install-indep:
 
 	# Add here commands to install the indep part of the package into
 	# debian/emms.
-	$(MAKE) deb-install DESTDIR=$(CURDIR)/debian/emms
+	$(MAKE) deb-install DESTDIR=$(CURDIR)/debian/emms PREFIX=$(CURDIR)/debian/emms/usr
 	dh_installinfo -i emms.info
 
 	dh_install -i
@@ -91,7 +91,7 @@ binary-common:
 #	dh_installmime
 #	dh_installinit
 #	dh_installcron
-#	dh_installman
+	dh_installman
 	dh_link
 	dh_strip
 	dh_compress
