@@ -35,7 +35,23 @@ main (int argc, char **argv)
     }
 
   file = taglib_file_new (argv[1]);
+
+  if (!file)
+    {
+      fprintf (stderr, "%s: File does not exist or is of an unknown type\n", argv[1]);
+      exit (1);
+    }
+
   tag = taglib_file_tag (file);
+
+  /* Apparently, if the file is named foo.mp3 or similar, the library
+     still can open it, for whatever reason.
+  */
+  if (!tag)
+    {
+      fprintf (stderr, "%s: File does not exist or is of an unknown type\n", argv[1]);
+      exit (1);
+    }
 
   printf ("info-artist=%s\n", taglib_tag_artist (tag));
   printf ("info-title=%s\n", taglib_tag_title (tag));
