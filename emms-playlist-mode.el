@@ -477,7 +477,7 @@ WINDOW-WIDTH is `emms-playlist-mode-window-width'."
 ;;;###autoload
 (defun emms-playlist-mode ()
   "A major mode for Emms playlists.
-\\{emms-playlist-mode-map}."
+\\{emms-playlist-mode-map}"
   (interactive)
   (let ((val emms-playlist-buffer-p))
     (kill-all-local-variables)
