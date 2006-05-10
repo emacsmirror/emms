@@ -38,6 +38,7 @@
   (condition-case nil
       (require 'overlay)
     (error nil)))
+(require 'emms-source-playlist)
 
 (defvar emms-playlist-mode-hook nil
   "Emms playlist mode hook.")
@@ -65,6 +66,13 @@
   "*The Emacs Multimedia System playlist mode."
   :prefix "emms-playlist-mode-"
   :group 'emms)
+
+(defcustom emms-playlist-mode-open-playlists nil
+  "*Determine whether to open playlists in a new EMMS buffer on RET.
+This is useful if you have a master playlist buffer that is
+composed of other playlists."
+  :type 'boolean
+  :group 'emms-playlist-mode)
 
 ;;; --------------------------------------------------------
 ;;; Faces
@@ -117,10 +125,11 @@
     (define-key map (kbd "f") 'emms-show)
     (define-key map (kbd "c") 'emms-playlist-mode-center-current)
     (define-key map (kbd "q") 'bury-buffer)
+    (define-key map (kbd "k") 'emms-playlist-current-kill)
     (define-key map (kbd "?") 'describe-mode)
     (define-key map (kbd "r") 'emms-random)
     (define-key map (kbd "<mouse-2>") 'emms-playlist-mode-play-current-track)
-    (define-key map (kbd "RET") 'emms-playlist-mode-play-current-track)
+    (define-key map (kbd "RET") 'emms-playlist-mode-play-dtrt)
     map)
   "Keymap for `emms-playlist-mode'.")
 
@@ -166,6 +175,24 @@ FUN should be a function."
   (when emms-player-playing-p
     (emms-stop))
   (emms-start))
+
+(defun emms-playlist-mode-play-dtrt ()
+  "Determine the best operation to take on the current track.
+
+If on a playlist, and `emms-playlist-mode-open-playlists' is
+non-nil, load the playlist at point into a new buffer.
+
+Otherwise play the track immediately."
+  (interactive)
+  (if (not emms-playlist-mode-open-playlists)
+      (emms-playlist-mode-play-current-track)
+    (let* ((track (emms-playlist-track-at))
+           (name (emms-track-get track 'name))
+           (type (emms-track-get track 'type)))
+      (if (or (eq type 'playlist)
+              (string-match "\\.\\(m3u\\|pls\\)\\'" name))
+          (emms-playlist-mode-load-playlist)
+        (emms-playlist-mode-play-current-track)))))
 
 (defun emms-playlist-mode-switch-buffer ()
   "Switch to the playlist buffer and then switch back if called again.
@@ -395,6 +422,18 @@ of the saved playlist inside."
       (emms-playlist-first)
       (emms-playlist-select (point))
       (switch-to-buffer (current-buffer)))))
+
+(defun emms-playlist-mode-load-playlist ()
+  "Load the playlist into a new EMMS buffer.
+This preserves the current EMMS buffer."
+  (interactive)
+  (let* ((track (emms-playlist-track-at))
+         (name (emms-track-get track 'name))
+         (type (emms-track-get track 'type)))
+    (emms-playlist-select (point))
+    (run-hooks 'emms-player-stopped-hook)
+    (switch-to-buffer (setq emms-playlist-buffer (emms-playlist-new)))
+    (emms-add-playlist name)))
 
 ;;; --------------------------------------------------------
 ;;; Local functions

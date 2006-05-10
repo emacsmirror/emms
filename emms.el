@@ -542,6 +542,31 @@ If called interactively, the new buffer is also selected."
       (switch-to-buffer buf))
     buf))
 
+(defun emms-playlist-buffer-list ()
+  "Return a list of EMMS playlist buffers.
+The first element will be the most recently-created playlist, and
+so on."
+  (let ((lis nil))
+    (mapc (lambda (buf)
+	    (with-current-buffer buf
+	      (when emms-playlist-buffer-p
+		(setq lis (cons buf lis)))))
+	  (buffer-list))
+    (nreverse lis)))
+
+(defun emms-playlist-current-kill ()
+  "Kill the current EMMS playlist buffer and switch to the next one."
+  (interactive)
+  (let ((new (cadr (emms-playlist-buffer-list))))
+    (if new
+        (progn
+          (when (buffer-live-p emms-playlist-buffer)
+            (kill-buffer emms-playlist-buffer))
+          (setq emms-playlist-buffer new)
+          (switch-to-buffer emms-playlist-buffer))
+      (with-current-buffer emms-playlist-buffer
+        (bury-buffer)))))
+
 (defun emms-playlist-current-clear ()
   "Clear the current playlist.
 If no current playlist exists, a new one is generated."

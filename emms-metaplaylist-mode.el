@@ -97,23 +97,13 @@
    (buffer-substring (point-at-bol)
 		     (point-at-eol))))
 
-(defun get-emms-playlist-buffers ()
-  "Return a list of EMMS playlist buffers."
-  (let ((lis nil))
-    (mapc (lambda (buf)
-	    (with-current-buffer buf
-	      (when emms-playlist-buffer-p
-		(setq lis (cons buf lis)))))
-	  (buffer-list))
-    lis))
-
 ;; Since there will never be a significantly large amount of playlist
 ;; buffers co-existing at once, we allow ourselves not to keep
 ;; state. We regenerate the playlists buffer anew on demand.
 (defun emms-metaplaylist-mode-create ()
   "Create or recreate the meta-playlist buffer."
   (let ((name emms-metaplaylist-mode-buffer-name)
-	(playlists (get-emms-playlist-buffers)))
+	(playlists (emms-playlist-buffer-list)))
     (if playlists
 	(progn
 	  (condition-case nil
