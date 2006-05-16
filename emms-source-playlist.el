@@ -245,7 +245,7 @@ OUT should be the buffer where tracks are stored in the native EMMS format."
   (mapcar (lambda (file)
             (if (string-match "\\`http://" file)
                 (emms-track 'url file)
-              (emms-track 'file (expand-file-name file))))
+              (emms-track 'file file)))
           (emms-source-playlist-m3u-files)))
 
 (defun emms-source-playlist-m3u-files ()
@@ -312,7 +312,7 @@ OUT should be the buffer where tracks are stored in m3u format."
   (mapcar (lambda (file)
             (if (string-match "\\`http://" file)
                 (emms-track 'url file)
-              (emms-track 'file (expand-file-name file))))
+              (emms-track 'file file)))
           (emms-source-playlist-pls-files)))
 
 (defun emms-source-playlist-pls-files ()
