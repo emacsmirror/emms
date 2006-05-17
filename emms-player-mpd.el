@@ -755,10 +755,11 @@ playlist."
   (when emms-player-mpd-status-timer
     (emms-cancel-timer emms-player-mpd-status-timer)
     (setq emms-player-mpd-status-timer nil))
-  (let ((emms-playlist-buffer buffer))
-    (with-current-emms-playlist
-      (emms-player-mpd-play (1- (emms-line-number-at-pos
-                                 emms-playlist-selected-marker))))))
+  (when (buffer-live-p buffer)
+    (let ((emms-playlist-buffer buffer))
+      (with-current-emms-playlist
+        (emms-player-mpd-play (1- (emms-line-number-at-pos
+                                   emms-playlist-selected-marker)))))))
 
 (defun emms-player-mpd-start-and-sync ()
   "Ensure that MusicPD's playlist is up-to-date with EMMS's
@@ -898,8 +899,9 @@ positive or negative."
       (cond ((functionp callback)
              (funcall callback buffer desc))
             (insertp
-             (with-current-buffer buffer
-               (insert desc)))
+             (when (buffer-live-p buffer)
+               (with-current-buffer buffer
+                 (insert desc))))
             (t
              (message "%s" desc))))))
 
