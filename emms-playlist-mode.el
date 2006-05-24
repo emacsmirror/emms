@@ -190,7 +190,8 @@ Otherwise play the track immediately."
            (name (emms-track-get track 'name))
            (type (emms-track-get track 'type)))
       (if (or (eq type 'playlist)
-              (string-match "\\.\\(m3u\\|pls\\)\\'" name))
+              (and (eq type 'file)
+                   (string-match "\\.\\(m3u\\|pls\\)\\'" name)))
           (emms-playlist-mode-load-playlist)
         (emms-playlist-mode-play-current-track)))))
 
