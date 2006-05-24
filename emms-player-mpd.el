@@ -553,29 +553,32 @@ info from MusicPD."
                      (string-to-number (match-string 1 time)))))
      "time" info)))
 
-(defun emms-player-mpd-sync-from-emms-1 (closure id)
-  (let ((buffer (car closure))
-        (fn (cadr closure))
-        (close (cddr closure)))
-    (when (buffer-live-p buffer)
-      (with-current-buffer buffer
-        (setq emms-player-mpd-playlist-id id))
-      (when (functionp fn)
-        (funcall fn close)))))
+(defun emms-player-mpd-sync-from-emms-1 (closure)
+  (emms-player-mpd-get-playlist-id
+   closure
+   (lambda (closure id)
+     (let ((buffer (car closure))
+           (fn (cdr closure)))
+       (funcall fn buffer id)))))
 
-(defun emms-player-mpd-sync-from-emms (&optional closure callback)
+(defun emms-player-mpd-sync-from-emms (callback)
   "Synchronize the MusicPD playlist with the contents of the
 current EMMS playlist.
-If CALLBACK is provided, call it with CLOSURE once we are done."
+
+If CALLBACK is provided, call it with the current EMMS playlist
+buffer and MusicPD playlist ID when we are done, if there were no
+errors."
   (emms-player-mpd-clear)
   (with-current-emms-playlist
-    (save-excursion
-      (mapc #'emms-player-mpd-add
-            (nreverse
-             (emms-playlist-tracks-in-region (point-min) (point-max)))))
-    (emms-player-mpd-get-playlist-id
-     (cons (current-buffer) (cons callback closure))
-     #'emms-player-mpd-sync-from-emms-1)))
+    (let (tracks)
+      (save-excursion
+        (setq tracks (nreverse
+                      (emms-playlist-tracks-in-region
+                       (point-min) (point-max)))))
+      (emms-player-mpd-add-several-tracks
+       tracks
+       (cons (current-buffer) callback)
+       #'emms-player-mpd-sync-from-emms-1))))
 
 (defun emms-player-mpd-sync-from-mpd-2 (closure info)
   (let ((buffer (car closure))
@@ -660,7 +663,7 @@ info from MusicPD."
 (defun emms-player-mpd-get-filename (file)
   "Turn FILE into something that MusicPD can understand.
 This usually means removing a prefix."
-  (if (or (null emms-player-mpd-music-directory)
+  (if (or (not emms-player-mpd-music-directory)
           (not (eq (aref file 0) ?/))
           (string-match "\\`http://" file))
       file
@@ -674,8 +677,6 @@ This usually means removing a prefix."
            (emms-replace-regexp-in-string "\\\\" "\\\\\\\\" file))
           "\""))
 
-;;; MusicPD commands
-
 (defun emms-player-mpd-clear ()
   "Clear the playlist."
   (when emms-player-mpd-status-timer
@@ -683,48 +684,106 @@ This usually means removing a prefix."
     (setq emms-player-mpd-status-timer nil))
   (emms-player-mpd-send "clear" nil #'ignore))
 
-(defun emms-player-mpd-add-file (file)
+;;; Adding to the MusicPD playlist
+
+(defun emms-player-mpd-add-file (file closure callback)
   "Add FILE to the current MusicPD playlist.
-If an error occurs, display a relevant message."
+If an error occurs, display a relevant message.
+
+Execute CALLBACK with CLOSURE as its first argument when done."
   (setq file (emms-player-mpd-get-filename file))
   (emms-player-mpd-send
    (concat "add " (emms-player-mpd-quote-file file))
-   file
-   (lambda (file response)
-     (let ((output (emms-player-mpd-parse-response response)))
-       (when (car output)
-         (message "MusicPD error: %s: %s" file (cdar output)))))))
+   (cons file (cons callback closure))
+   (lambda (closure response)
+     (let ((output (emms-player-mpd-parse-response response))
+           (file (car closure))
+           (callback (cadr closure))
+           (close (cddr closure)))
+       (if (car output)
+           (message "MusicPD error: %s: %s" file (cdar output))
+         (when (functionp callback)
+           (funcall callback close)))))))
 
-(defun emms-player-mpd-add-playlist (playlist)
+(defun emms-player-mpd-add-buffer-contents (closure callback)
+  "Load contents of the current buffer into MusicPD by adding each line.
+This handles both m3u and pls type playlists.
+
+Execute CALLBACK with CLOSURE as its first argument when done."
+  (goto-char (point-min))
+  (let ((format (emms-source-playlist-determine-format)))
+    (when format
+      (emms-player-mpd-add-several-files
+       (emms-source-playlist-files format)
+       closure callback))))
+
+(defun emms-player-mpd-add-playlist (playlist closure callback)
   "Load contents of PLAYLIST into MusicPD by adding each line.
-This handles both m3u and pls type playlists."
+This handles both m3u and pls type playlists.
+
+Execute CALLBACK with CLOSURE as its first argument when done."
   ;; This is useful for playlists of playlists
   (with-temp-buffer
     (insert-file-contents playlist)
-    (goto-char (point-min))
-    (let ((format (emms-source-playlist-determine-format)))
-      (when format
-        (let ((list (emms-source-playlist-files format)))
-          (dolist (file list)
-            (emms-player-mpd-add-file file)))))))
+    (emms-player-mpd-add-buffer-contents closure callback)))
 
-(defun emms-player-mpd-add (track)
-  "Add TRACK to the MusicPD playlist."
+(defun emms-player-mpd-add-streamlist (url closure callback)
+  "Download contents of URL and then add its feeds into MusicPD.
+
+Execute CALLBACK with CLOSURE as its first argument when done."
+  ;; This is useful with emms-streams.el
+  (condition-case nil
+      (progn
+        (require 'url)
+        (with-temp-buffer
+          (url-insert-file-contents url)
+          (emms-player-mpd-add-buffer-contents closure callback)))
+    (error (message (concat "You need to install url.el so that"
+                            " Emms can retrieve this stream")))))
+
+(defun emms-player-mpd-add (track closure callback)
+  "Add TRACK to the MusicPD playlist.
+
+Execute CALLBACK with CLOSURE as its first argument when done."
   (let ((name (emms-track-get track 'name))
         (type (emms-track-get track 'type)))
     (cond ((eq type 'url)
-           (emms-player-mpd-add-file name))
+           (emms-player-mpd-add-file name closure callback))
+          ((eq type 'streamlist)
+           (emms-player-mpd-add-streamlist name closure callback))
           ((or (eq type 'playlist)
                (string-match "\\.\\(m3u\\|pls\\)\\'" name))
-           (emms-player-mpd-add-playlist name))
+           (emms-player-mpd-add-playlist name closure callback))
           ((eq type 'file)
-           (emms-player-mpd-add-file name)))))
+           (emms-player-mpd-add-file name closure callback)))))
+
+(defun emms-player-mpd-add-several-tracks (tracks closure callback)
+  "Add TRACKS to the MusicPD playlist.
+
+Execute CALLBACK with CLOSURE as its first argument when done."
+  (when (consp tracks)
+    (while (cdr tracks)
+      (emms-player-mpd-add (car tracks) nil #'ignore)
+      (setq tracks (cdr tracks)))
+    ;; only execute callback on last track
+    (emms-player-mpd-add (car tracks) closure callback)))
+
+(defun emms-player-mpd-add-several-files (files closure callback)
+  "Add FILES to the MusicPD playlist.
+
+Execute CALLBACK with CLOSURE as its first argument when done."
+  (when (consp files)
+    (while (cdr files)
+      (emms-player-mpd-add-file (car files) nil #'ignore)
+      (setq files (cdr files)))
+    ;; only execute callback on last file
+    (emms-player-mpd-add-file (car files) closure callback)))
 
 ;;; EMMS API
 
 (defun emms-player-mpd-playable-p (track)
   "Return non-nil when we can play this track."
-  (and (memq (emms-track-type track) '(file url playlist))
+  (and (memq (emms-track-type track) '(file url playlist streamlist))
        (string-match (emms-player-get emms-player-mpd 'regex)
                      (emms-track-name track))))
 
@@ -751,13 +810,14 @@ playlist."
      (lambda (closure response)
        (emms-player-started 'emms-player-mpd)))))
 
-(defun emms-player-mpd-start-and-sync-1 (buffer)
+(defun emms-player-mpd-start-and-sync-1 (buffer id)
   (when emms-player-mpd-status-timer
     (emms-cancel-timer emms-player-mpd-status-timer)
     (setq emms-player-mpd-status-timer nil))
   (when (buffer-live-p buffer)
     (let ((emms-playlist-buffer buffer))
       (with-current-emms-playlist
+        (setq emms-player-mpd-playlist-id id)
         (emms-player-mpd-play (1- (emms-line-number-at-pos
                                    emms-playlist-selected-marker)))))))
 
@@ -771,9 +831,8 @@ This is called if `emms-player-mpd-sync-playlist' is non-nil."
    (lambda (closure id)
      (if (and (stringp emms-player-mpd-playlist-id)
               (string= emms-player-mpd-playlist-id id))
-         (emms-player-mpd-start-and-sync-1 emms-playlist-buffer)
+         (emms-player-mpd-start-and-sync-1 emms-playlist-buffer id)
        (emms-player-mpd-sync-from-emms
-        emms-playlist-buffer
         #'emms-player-mpd-start-and-sync-1)))))
 
 (defun emms-player-mpd-connect-1 (closure info)
@@ -803,12 +862,13 @@ Afterward, the status of MusicPD will be tracked."
 (defun emms-player-mpd-start (track)
   "Starts a process playing TRACK."
   (interactive)
-  (if emms-player-mpd-sync-playlist
+  (if (and emms-player-mpd-sync-playlist
+           (not (memq (emms-track-get track 'type) '(streamlist playlist)))
+           (not (string-match "\\`http://" (emms-track-get track 'name))))
       (emms-player-mpd-start-and-sync)
     (emms-player-mpd-clear)
-    (when (emms-player-mpd-add track)
-      ;; if we have loaded the item successfully, play it
-      (emms-player-mpd-play))))
+    ;; if we have loaded the item successfully, play it
+    (emms-player-mpd-add track nil #'emms-player-mpd-play)))
 
 (defun emms-player-mpd-disconnect (&optional no-stop)
   "Terminate the MusicPD client process and disconnect from MusicPD.
@@ -887,12 +947,15 @@ positive or negative."
          (insertp (car closure))
          (callback (cadr closure))
          (buffer (cddr closure))
+         (name (cdr (assoc "name" info)))
          (desc nil))
     (when info
-      (emms-track-set track 'type 'file)
-      (emms-track-set track 'name (cdr (assoc "file" info)))
-      (emms-info-mpd track info)
-      (setq desc (emms-track-description track)))
+      (if name
+          (setq desc name)
+        (emms-track-set track 'type 'file)
+        (emms-track-set track 'name (cdr (assoc "file" info)))
+        (emms-info-mpd track info)
+        (setq desc (emms-track-description track))))
     (if (not desc)
         (message "Nothing playing right now")
       (setq desc (format emms-show-format desc))
