@@ -879,9 +879,9 @@ from other functions."
   (interactive)
   (emms-cancel-timer emms-player-mpd-status-timer)
   (setq emms-player-mpd-status-timer nil)
-  (setq emms-player-mpd-playlist-id nil)
   (setq emms-player-mpd-current-song nil)
   (unless no-stop
+    (setq emms-player-mpd-playlist-id nil)
     (let ((emms-player-stopped-p t))
       (emms-player-stopped))))
 
