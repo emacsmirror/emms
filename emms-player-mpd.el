@@ -948,19 +948,23 @@ positive or negative."
 (defun emms-player-mpd-show-1 (closure response)
   (let* ((info (emms-player-mpd-get-alist
                 (emms-player-mpd-parse-response response)))
-         (track (emms-dictionary '*track*))
          (insertp (car closure))
          (callback (cadr closure))
          (buffer (cddr closure))
-         (name (cdr (assoc "name" info)))
+         (name (cdr (assoc "name" info))) ; radio feeds sometimes set this
+         (file (cdr (assoc "file" info)))
          (desc nil))
     (when info
-      (if name
-          (setq desc name)
-        (emms-track-set track 'type 'file)
-        (emms-track-set track 'name (cdr (assoc "file" info)))
-        (emms-info-mpd track info)
-        (setq desc (emms-track-description track))))
+      (when name
+        (setq desc name))
+      (when file
+        (let ((track (emms-dictionary '*track*)))
+          (emms-track-set track 'type 'file)
+          (emms-track-set track 'name file)
+          (emms-info-mpd track info)
+          (if name
+              (setq desc (concat name ": " (emms-track-description track)))
+            (setq desc (emms-track-description track))))))
     (if (not desc)
         (message "Nothing playing right now")
       (setq desc (format emms-show-format desc))
