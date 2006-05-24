@@ -118,7 +118,7 @@ composed of other playlists."
     (define-key map (kbd "M-y") 'emms-playlist-mode-yank-pop)
     (define-key map (kbd "M-<") 'emms-playlist-mode-first)
     (define-key map (kbd "M->") 'emms-playlist-mode-last)
-    (define-key map (kbd "d") 'emms-playlist-mode-kill-track)
+    (define-key map (kbd "d") 'emms-playlist-mode-kill-entire-track)
     (define-key map (kbd "n") 'emms-next)
     (define-key map (kbd "p") 'emms-previous)
     (define-key map (kbd "s") 'emms-stop)
@@ -277,6 +277,13 @@ function switches back to the remembered buffer."
 	       (= p b)))
       nil
     (eq p (cadr (sort (list a b p) #'<=)))))
+
+;; d
+(defun emms-playlist-mode-kill-entire-track ()
+  "Kill track at point, including newline."
+  (interactive)
+  (let ((kill-whole-line t))
+    (emms-playlist-mode-kill-track)))
 
 ;; C-k
 ;;
