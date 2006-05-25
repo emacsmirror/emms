@@ -307,6 +307,8 @@ that's how we tell where the answer ends."
 (defvar emms-player-mpd-queue nil)
 
 (defvar emms-player-mpd-playlist-id nil)
+(make-variable-buffer-local 'emms-player-mpd-playlist-id)
+
 (defvar emms-player-mpd-current-song nil)
 (defvar emms-player-mpd-status-timer nil)
 
@@ -590,6 +592,7 @@ errors."
       (let ((emms-playlist-buffer buffer))
         (with-current-emms-playlist
           (setq emms-player-mpd-playlist-id id)
+          (set-buffer-modified-p nil)
           (if song
               (progn
                 (goto-line (1+ (string-to-number song)))
@@ -818,6 +821,7 @@ playlist."
     (let ((emms-playlist-buffer buffer))
       (with-current-emms-playlist
         (setq emms-player-mpd-playlist-id id)
+        (set-buffer-modified-p nil)
         (emms-player-mpd-play (1- (emms-line-number-at-pos
                                    emms-playlist-selected-marker)))))))
 
@@ -829,11 +833,13 @@ This is called if `emms-player-mpd-sync-playlist' is non-nil."
   (emms-player-mpd-get-playlist-id
    nil
    (lambda (closure id)
-     (if (and (stringp emms-player-mpd-playlist-id)
-              (string= emms-player-mpd-playlist-id id))
-         (emms-player-mpd-start-and-sync-1 emms-playlist-buffer id)
-       (emms-player-mpd-sync-from-emms
-        #'emms-player-mpd-start-and-sync-1)))))
+     (let ((buf-id (with-current-emms-playlist emms-player-mpd-playlist-id)))
+       (if (and (not (buffer-modified-p emms-playlist-buffer))
+                (stringp buf-id)
+                (string= buf-id id))
+           (emms-player-mpd-start-and-sync-1 emms-playlist-buffer id)
+         (emms-player-mpd-sync-from-emms
+          #'emms-player-mpd-start-and-sync-1))))))
 
 (defun emms-player-mpd-connect-1 (closure info)
   (setq emms-player-mpd-current-song nil)
@@ -881,7 +887,6 @@ from other functions."
   (setq emms-player-mpd-status-timer nil)
   (setq emms-player-mpd-current-song nil)
   (unless no-stop
-    (setq emms-player-mpd-playlist-id nil)
     (let ((emms-player-stopped-p t))
       (emms-player-stopped))))
 
