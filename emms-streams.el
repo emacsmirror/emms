@@ -83,6 +83,11 @@ needed info.")
 (defvar emms-stream-last-stream nil
   "The last stream added/played by EMMS.")
 
+(defvar emms-stream-owns-buffer nil
+  "Indicate whether the current EMMS playlist buffer is owned by
+emms-streams.")
+(make-variable-buffer-local 'emms-stream-owns-buffer)
+
 ;; Format: (("descriptive name" url feed-number type))
 ;; type could be either url or playlist. If url, then it represents a
 ;; direct IP, otherwite it's a stream playlist
@@ -168,6 +173,10 @@ needed info.")
   (kill-buffer (get-buffer-create emms-stream-buffer-name))
   (set-buffer (get-buffer-create emms-stream-buffer-name))
   (erase-buffer)
+  (when (string= emms-stream-default-action "play")
+    (save-excursion
+      (with-current-buffer (setq emms-playlist-buffer (emms-playlist-new))
+        (setq emms-stream-owns-buffer t))))
   (emms-stream-mode)
   (switch-to-buffer emms-stream-buffer-name))
 
@@ -483,6 +492,11 @@ Don't forget to save your modifications !"
 
 (defun emms-stream-quit ()
   (interactive)
+  (save-excursion
+    (when (and (buffer-live-p emms-playlist-buffer)
+               (with-current-emms-playlist emms-stream-owns-buffer))
+      (emms-stop)
+      (emms-playlist-current-kill)))
   (kill-this-buffer)
   (run-hooks 'emms-stream-quit-hook))
 
