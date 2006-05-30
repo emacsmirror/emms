@@ -21,14 +21,14 @@
 ;; Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 ;; 02110-1301 USA
 
-;; Commentary: 
+;;; Commentary:
 
 ;; It is part of the EMMS package
 
 ;; Heavily based on bmk-mgr.el by Jose A Ortega Ruiz <jao@gnu.org>
 ;; thanks to you !
 
-;; Code:
+;;; Code:
 
 (require 'emms)
 (require 'later-do)
@@ -141,7 +141,6 @@ needed info.")
     (define-key map (kbd "C-y") 'emms-stream-yank-bookmark)
     (define-key map (kbd "C-n") 'emms-stream-next-line)
     (define-key map (kbd "C-p") 'emms-stream-previous-line)
-    (define-key map (kbd "M-y") 'emms-stream-yank-pop)
     (define-key map (kbd "Q") 'emms-stream-quit)
     (define-key map (kbd "a") 'emms-stream-add-bookmark)
     (define-key map (kbd "d") 'emms-stream-delete-bookmark)
@@ -304,24 +303,46 @@ Positions are counted starting with 0."
          (after  (last list (- (length list) n-1))))
     (append before (list elt) after)))
 
+(defun emms-stream-insert-several-at (n new-list list)
+  "Inserts the list NEW-LIST in LIST, *before* position N.
+Positions are counted starting with 0."
+  (let* ((n-1     (- n 1))
+         (before (emms-stream-take n-1 list))
+         (after  (last list (- (length list) n-1))))
+    (append before new-list after)))
+
+(defun emms-stream-look-behind ()
+  "Return non-nil if the position behind the point is an emms-stream."
+  (and (not (bobp))
+       (get-text-property (1- (point)) 'emms-stream)))
+
+(defun emms-stream-back-to-stream ()
+  "If we are not on a stream, move backwards to the nearest one."
+  (unless (get-text-property (point) 'emms-stream)
+    (unless (emms-stream-look-behind)
+      (goto-char (or (previous-single-property-change (point) 'emms-stream)
+                     (point-min))))
+    (goto-char (or (previous-single-property-change (point) 'emms-stream)
+                   (point-min)))))
+
 (defun emms-stream-get-bookmark-at-point ()
   "Returns the bookmark under point."
+  (emms-stream-back-to-stream)
   (get-text-property (point) 'emms-stream))
-
 
 (defun emms-stream-redisplay ()
   (let ((inhibit-read-only t))
     (erase-buffer)
-    (goto-char 1)
+    (goto-char (point-min))
     (emms-stream-display)))
 
 (defun emms-stream-add-bookmark (name url fd type)
   "Creates a new bookmark, and inserts it at point position.
 
 Don't forget to run `emms-stream-save-bookmarks-file' after !"
-  (interactive "sName of the bookmark: 
-sURL: 
-nFeed descriptor: 
+  (interactive "sName of the bookmark:
+sURL:
+nFeed descriptor (use 1 if unsure):
 SType (url or streamlist): ")
   (let* ((line     (emms-line-number-at-pos (point)))
          (index    (+ (/ line 2) 1)))
@@ -335,9 +356,9 @@ SType (url or streamlist): ")
 
 Don't forget to save your modifications !"
   (interactive)
-  (let ((line     (emms-line-number-at-pos (point))))
+  (let ((line (emms-line-number-at-pos (point))))
     (setq emms-stream-list
-          (remove (emms-stream-get-bookmark-at-point) emms-stream-list))
+          (delete (emms-stream-get-bookmark-at-point) emms-stream-list))
     (emms-stream-redisplay)
     (goto-line line)))
 
@@ -399,25 +420,16 @@ Don't forget to save your modifications !"
 	(emms-stream-info-message url))
     (message "Streaming media info not available.")))
 
-(defun emms-stream-look-behind ()
-  "Return non-nil if the position behind the point is an emms-stream."
-  (and (not (bobp))
-       (get-text-property (1- (point)) 'emms-stream)))
-
-(defun emms-stream-back-to-stream ()
-  "If we are not on a stream, move backwards to the nearest one."
-  (unless (get-text-property (point) 'emms-stream)
-    (unless (emms-stream-look-behind)
-      (goto-char (or (previous-single-property-change (point) 'emms-stream)
-                     (point-min))))
-    (goto-char (or (previous-single-property-change (point) 'emms-stream)
-                   (point-min)))))
-
 ;; Killing and yanking
+(defvar emms-stream-killed-streams ()
+  "Bookmarks that have been killed.")
+
 (defun emms-stream-kill-bookmark ()
   "Kill the current bookmark."
   (interactive)
-  (emms-stream-back-to-stream)
+  (let ((stream (emms-stream-get-bookmark-at-point)))
+    (setq emms-stream-list (delete stream emms-stream-list)
+          emms-stream-killed-streams (cons stream emms-stream-killed-streams)))
   (let ((inhibit-read-only t))
     (kill-line 2)))
 
@@ -425,30 +437,30 @@ Don't forget to save your modifications !"
   "Yank bookmark into the streams buffer."
   (interactive)
   (emms-stream-back-to-stream)
-  (let ((inhibit-read-only t))
+  (let ((inhibit-read-only t)
+        (streams nil))
+    ;; get all valid streams
     (save-restriction
       (narrow-to-region (point) (point))
       (yank)
-      (remove-text-properties (point-min) (point-max)
-                              '(emms-stream nil face nil))
       (goto-char (point-min))
       (while (and (< (point) (point-max))
+                  (car emms-stream-killed-streams)
                   (looking-at "^\\(.+\\)\n      \\(.+\\)\n"))
-        (add-text-properties (match-beginning 1) (match-end 1)
-                             '(face emms-stream-name-face))
-        (add-text-properties (match-beginning 1) (match-end 1)
-                             (list 'emms-stream
-                                   (list (match-string 1) (match-string 2))))
-        (goto-char (match-beginning 2))
-        (add-text-properties (point-at-bol) (match-end 2)
-                             '(face emms-stream-url-face))
-        (goto-char (match-end 0))))))
-
-(defun emms-stream-yank-pop ()
-  "Cycle through the kill-ring."
-  (interactive)
-  (let ((inhibit-read-only t))
-    (yank-pop nil)))
+        (setq streams (cons (car emms-stream-killed-streams) streams)
+              emms-stream-killed-streams (cdr emms-stream-killed-streams))
+        (goto-char (match-end 0)))
+      (delete-region (point-min) (point-max)))
+    ;; insert streams into list
+    (if streams
+        (let* ((line (emms-line-number-at-pos (point)))
+               (index (+ (/ line 2) 1)))
+          (setq emms-stream-list (emms-stream-insert-several-at
+                                  index streams emms-stream-list))
+          (setq line (+ line (* (length streams) 2)))
+          (emms-stream-redisplay)
+          (goto-line line))
+      (message "Not yanking anything"))))
 
 ;; Navigation
 (defun emms-stream-next-line ()
