@@ -558,7 +558,7 @@ so on."
   "Kill the current EMMS playlist buffer and switch to the next one."
   (interactive)
   (let ((new (cadr (emms-playlist-buffer-list))))
-    (if new
+    (if (buffer-live-p new)
         (progn
           (when (buffer-live-p emms-playlist-buffer)
             (kill-buffer emms-playlist-buffer))
