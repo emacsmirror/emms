@@ -349,10 +349,14 @@ Positions are counted starting with 0."
   "Creates a new bookmark, and inserts it at point position.
 
 Don't forget to run `emms-stream-save-bookmarks-file' after !"
-  (interactive "sName of the bookmark:
-sURL:
-nFeed descriptor (use 1 if unsure):
-SType (url or streamlist): ")
+  (interactive
+   (list
+    (read-string "Name of the bookmark: ")
+    (read-string "URL: ")
+    (string-to-number (read-string "Feed descriptor (use 1 if unsure): "))
+    (completing-read
+     "Type (url or streamlist): "
+     (mapcar #'list '("url" "streamlist")))))
   (let* ((line     (emms-line-number-at-pos (point)))
          (index    (+ (/ line 2) 1)))
     (setq emms-stream-list (emms-stream-insert-at index (list name url fd type)
