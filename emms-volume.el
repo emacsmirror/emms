@@ -43,20 +43,27 @@
 
 ;;; Code:
 
-;; General volume setting related code.
-(defvar emms-volume-raise-function 'emms-volume-amixer-raise
-  "*The function to use to raise the volume.
-If you have your own functions for changing volume, set this and
- `emms-volume-lower-function' accordingly.")
-
-(defvar emms-volume-lower-function 'emms-volume-amixer-lower
-  "*The function to use to lower the volume.
-If you have your own functions for changing volume, set this and
- `emms-volume-raise-function' accordingly.")
 
 (require 'emms)
 (require 'emms-playlist-mode)
 (require 'emms-volume-amixer)
+
+;; General volume setting related code.
+(defcustom emms-volume-raise-function 'emms-volume-amixer-raise
+  "*The function to use to raise the volume.
+If you have your own functions for changing volume, set this and
+ `emms-volume-lower-function' accordingly."
+  :type '(choice (const :tag "Amixer" emms-volume-amixer-raise)
+                 (function :tag "Lisp function"))
+  :group 'emms)
+
+(defcustom emms-volume-lower-function 'emms-volume-amixer-lower
+  "*The function to use to lower the volume.
+If you have your own functions for changing volume, set this and
+ `emms-volume-raise-function' accordingly."
+  :type '(choice (const :tag "Amixer" emms-volume-amixer-lower)
+                 (function :tag "Lisp function"))
+  :group 'emms)
 
 (defun emms-volume-raise ()
   "Raise the speaker volume."
