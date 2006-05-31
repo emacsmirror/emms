@@ -38,9 +38,16 @@
 
 ;;; Code:
 
+(defcustom emms-volume-amixer-control "Master"
+  "The control to change the volume with."
+  :type '(choice (const :tag "Master" "Master")
+                 (const :tag "PCM" "PCM")
+                 (string :tag "Something else: "))
+  :group 'emms)
+
 (defun emms-volume-amixer-sset-master (var)
   "Change amixer master volume by VAR."
-  (start-process "mixer" nil "amixer" "sset" "Master" var))
+  (start-process "mixer" nil "amixer" "sset" emms-volume-amixer-control var))
 
 (defun emms-volume-amixer-raise ()
   "Increase volume by 2%."
