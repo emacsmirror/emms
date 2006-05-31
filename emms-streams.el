@@ -83,10 +83,8 @@ needed info.")
 (defvar emms-stream-last-stream nil
   "The last stream added/played by EMMS.")
 
-(defvar emms-stream-owns-buffer nil
-  "Indicate whether the current EMMS playlist buffer is owned by
-emms-streams.")
-(make-variable-buffer-local 'emms-stream-owns-buffer)
+(defvar emms-stream-playlist-buffer nil
+  "The EMMS playlist buffer associated with emms-streams.")
 
 ;; Format: (("descriptive name" url feed-number type))
 ;; type could be either url or playlist. If url, then it represents a
@@ -174,9 +172,7 @@ emms-streams.")
   (set-buffer (get-buffer-create emms-stream-buffer-name))
   (erase-buffer)
   (when (string= emms-stream-default-action "play")
-    (save-excursion
-      (with-current-buffer (setq emms-playlist-buffer (emms-playlist-new))
-        (setq emms-stream-owns-buffer t))))
+    (emms-stream-create-playlist))
   (emms-stream-mode)
   (switch-to-buffer emms-stream-buffer-name))
 
@@ -197,6 +193,22 @@ emms-streams.")
   (run-hooks 'emms-stream-hook)
   (set-buffer-modified-p nil)
   (message "EMMS Stream Menu"))
+
+(defun emms-stream-create-playlist ()
+  "Create a new EMMS playlist and associate it with emms-streams.
+This is used when `emms-stream-default-action' is \"play\"."
+  (save-excursion
+    (setq emms-stream-playlist-buffer
+          (emms-playlist-set-playlist-buffer (emms-playlist-new)))))
+
+(defun emms-stream-kill-playlist ()
+  "Delete the EMMS playlist associated with emms-streams, if one exists."
+  (when (buffer-live-p emms-stream-playlist-buffer)
+    (save-excursion
+      (if (eq emms-stream-playlist-buffer emms-playlist-buffer)
+          (emms-playlist-current-kill)
+        (kill-buffer emms-stream-playlist-buffer)))
+    (setq emms-stream-playlist-buffer nil)))
 
 (defun emms-stream-popup-revert ()
   "Revert to the window-configuration from before if there is one,
@@ -496,11 +508,7 @@ Don't forget to save your modifications !"
 
 (defun emms-stream-quit ()
   (interactive)
-  (save-excursion
-    (when (and (buffer-live-p emms-playlist-buffer)
-               (with-current-emms-playlist emms-stream-owns-buffer))
-      (emms-stop)
-      (emms-playlist-current-kill)))
+  (emms-stream-kill-playlist)
   (kill-this-buffer)
   (run-hooks 'emms-stream-quit-hook))
 
@@ -508,8 +516,10 @@ Don't forget to save your modifications !"
   (interactive)
   (if (string= emms-stream-default-action "play")
       (progn
+        (emms-stream-kill-playlist)
         (setq emms-stream-default-action "add")
         (message "Default action is now add"))
+    (emms-stream-create-playlist)
     (setq emms-stream-default-action "play")
     (message "Default action is now play")))
 

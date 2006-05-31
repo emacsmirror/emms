@@ -425,6 +425,25 @@ If POS is nil, use current buffer location."
       (match-string-no-properties num string)
     (match-string num string)))
 
+(defun emms-delete-if (predicate seq)
+  "Remove all items satisfying PREDICATE in SEQ.
+This is a destructive function: it reuses the storage of SEQ
+whenever possible."
+  ;; remove from car
+  (while (when (funcall predicate (car seq))
+           (setq seq (cdr seq))))
+  ;; remove from cdr
+  (let ((ptr seq)
+        (next (cdr seq)))
+    (while next
+      (when (funcall predicate (car next))
+        (setcdr ptr (if (consp next)
+                        (cdr next)
+                      nil)))
+      (setq ptr (cdr ptr))
+      (setq next (cdr ptr))))
+  seq)
+
 
 ;;; Tracks
 
@@ -488,6 +507,12 @@ Otherwise, return the type and the name with a colon in between."
 (defvar emms-playlist-buffer nil
   "The current playlist buffer, if any.")
 
+(defvar emms-playlist-buffers nil
+  "The list of EMMS playlist buffers.
+You should use the `emms-playlist-buffer-list' function to
+retrieve a current list of EMMS buffers.  Never use this variable
+for that purpose.")
+
 (defvar emms-playlist-selected-marker nil
   "The marker for the currently selected track.")
 (make-variable-buffer-local 'emms-playlist-selected-marker)
@@ -538,34 +563,50 @@ If called interactively, the new buffer is also selected."
       (when (not (eq major-mode emms-playlist-default-major-mode))
         (funcall emms-playlist-default-major-mode))
       (setq emms-playlist-buffer-p t))
+    (add-to-list 'emms-playlist-buffers buf)
     (when (interactive-p)
       (switch-to-buffer buf))
     buf))
 
 (defun emms-playlist-buffer-list ()
   "Return a list of EMMS playlist buffers.
-The first element will be the most recently-created playlist, and
-so on."
-  (let ((lis nil))
-    (mapc (lambda (buf)
-	    (with-current-buffer buf
-	      (when emms-playlist-buffer-p
-		(setq lis (cons buf lis)))))
-	  (buffer-list))
-    (nreverse lis)))
+The first element is guaranteed to be the current EMMS playlist
+buffer, if it exists, otherwise the slot will be used for the
+other EMMS buffers.  The list will be in newest-first order."
+  ;; prune dead buffers
+  (setq emms-playlist-buffers (emms-delete-if (lambda (buf)
+                                                (not (buffer-live-p buf)))
+                                              emms-playlist-buffers))
+  ;; add new buffers
+  (mapc (lambda (buf)
+          (when (buffer-live-p buf)
+            (with-current-buffer buf
+              (when (and emms-playlist-buffer-p
+                         (not (memq buf emms-playlist-buffers)))
+                (setq emms-playlist-buffers
+                      (cons buf emms-playlist-buffers))))))
+        (buffer-list))
+  ;; force current playlist buffer to head position
+  (when (and (buffer-live-p emms-playlist-buffer)
+             (not (eq (car emms-playlist-buffers) emms-playlist-buffer)))
+    (setq emms-playlist-buffers (cons emms-playlist-buffer
+                                      (delete emms-playlist-buffer
+                                              emms-playlist-buffers))))
+  emms-playlist-buffers)
 
 (defun emms-playlist-current-kill ()
   "Kill the current EMMS playlist buffer and switch to the next one."
   (interactive)
-  (let ((new (cadr (emms-playlist-buffer-list))))
-    (if (buffer-live-p new)
-        (progn
-          (when (buffer-live-p emms-playlist-buffer)
-            (kill-buffer emms-playlist-buffer))
-          (setq emms-playlist-buffer new)
-          (switch-to-buffer emms-playlist-buffer))
-      (with-current-buffer emms-playlist-buffer
-        (bury-buffer)))))
+  (when (buffer-live-p emms-playlist-buffer)
+    (let ((new (cadr (emms-playlist-buffer-list))))
+      (if new
+          (let ((old emms-playlist-buffer))
+            (setq emms-playlist-buffer new
+                  emms-playlist-buffers (cdr emms-playlist-buffers))
+            (kill-buffer old)
+            (switch-to-buffer emms-playlist-buffer))
+        (with-current-buffer emms-playlist-buffer
+          (bury-buffer))))))
 
 (defun emms-playlist-current-clear ()
   "Clear the current playlist.

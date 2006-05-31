@@ -440,7 +440,8 @@ This preserves the current EMMS buffer."
          (type (emms-track-get track 'type)))
     (emms-playlist-select (point))
     (run-hooks 'emms-player-stopped-hook)
-    (switch-to-buffer (setq emms-playlist-buffer (emms-playlist-new)))
+    (switch-to-buffer
+     (emms-playlist-set-playlist-buffer (emms-playlist-new)))
     (emms-add-playlist name)))
 
 ;;; --------------------------------------------------------
