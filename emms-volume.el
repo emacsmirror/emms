@@ -105,14 +105,15 @@ If you have your own functions for changing volume, set this and
 
 (defun emms-volume-mode-set-timer ()
   "Set a new `emms-volume-minor-mode' timer."
-  (unless (null emms-volume-mode-timer)
+  (when emms-volume-mode-timer
     (emms-volume-mode-disable-timer))
   (setq emms-volume-mode-timer (run-at-time emms-volume-mode-timeout
-                                       nil
-                                       'emms-volume-mode-timer-timeout)))
+                                            nil
+                                            'emms-volume-mode-timer-timeout)))
 
 (defun emms-volume-mode-timer-timeout ()
   "Function to disable `emms-volume-minor-mode' at timeout."
+  (setq emms-volume-mode-timer nil)
   (emms-volume-minor-mode -1))
 
 (defun emms-volume-mode-start-or-extend ()
@@ -122,5 +123,4 @@ If you have your own functions for changing volume, set this and
   (emms-volume-mode-set-timer))
 
 (provide 'emms-volume)
-
 ;;; emms-volume.el ends here
