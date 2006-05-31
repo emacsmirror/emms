@@ -54,6 +54,10 @@ If you have your own functions for changing volume, set this and
 If you have your own functions for changing volume, set this and
  `emms-volume-raise-function' accordingly.")
 
+(require 'emms)
+(require 'emms-playlist-mode)
+(require 'emms-volume-amixer)
+
 (defun emms-volume-raise ()
   "Raise the speaker volume."
   (interactive)
