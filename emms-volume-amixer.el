@@ -43,7 +43,7 @@
   :type '(choice (const :tag "Master" "Master")
                  (const :tag "PCM" "PCM")
                  (string :tag "Something else: "))
-  :group 'emms)
+  :group 'emms-volume)
 
 (defun emms-volume-amixer-sset-master (var)
   "Change amixer master volume by VAR."

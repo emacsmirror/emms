@@ -48,6 +48,11 @@
 (require 'emms-playlist-mode)
 (require 'emms-volume-amixer)
 
+;; Customize group
+(defgroup emms-volume nil
+  "Volume setting for EMMS."
+  :group 'emms)
+
 ;; General volume setting related code.
 (defcustom emms-volume-raise-function 'emms-volume-amixer-raise
   "*The function to use to raise the volume.
@@ -55,7 +60,7 @@ If you have your own functions for changing volume, set this and
  `emms-volume-lower-function' accordingly."
   :type '(choice (const :tag "Amixer" emms-volume-amixer-raise)
                  (function :tag "Lisp function"))
-  :group 'emms)
+  :group 'emms-volume)
 
 (defcustom emms-volume-lower-function 'emms-volume-amixer-lower
   "*The function to use to lower the volume.
@@ -63,7 +68,7 @@ If you have your own functions for changing volume, set this and
  `emms-volume-raise-function' accordingly."
   :type '(choice (const :tag "Amixer" emms-volume-amixer-lower)
                  (function :tag "Lisp function"))
-  :group 'emms)
+  :group 'emms-volume)
 
 (defun emms-volume-raise ()
   "Raise the speaker volume."
