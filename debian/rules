@@ -25,43 +25,23 @@ configure-stamp:
 	touch configure-stamp
 
 
-build: 
-build-indep: build-indep-stamp
+build: build-arch
 build-arch: build-arch-stamp
 build-arch-stamp:
 	make emms-print-metadata
 	touch build-arch-stamp
-build-indep-stamp: configure-stamp 
-	dh_testdir
-	make emms.info
-	make emms-auto.el
-	#make ChangeLog
-	touch build-indep-stamp
 
 clean:
 	dh_testdir
 	dh_testroot
-	rm -f build-arch-stamp build-indep-stamp configure-stamp
+	rm -f build-arch-stamp configure-stamp
 
 	# Add here commands to clean up after the build process.
 	-$(MAKE) clean
 
 	dh_clean 
 
-install: install-indep install-arch
-install-indep:
-	dh_testdir
-	dh_testroot
-	dh_clean -k -i 
-	dh_installdirs -i
-
-	# Add here commands to install the indep part of the package into
-	# debian/emms.
-	$(MAKE) deb-install DESTDIR=$(CURDIR)/debian/emms PREFIX=$(CURDIR)/debian/emms/usr
-	dh_installinfo -i emms.info
-
-	dh_install -i
-
+install: install-arch
 install-arch:
 	dh_testdir
 	dh_testroot
@@ -69,8 +49,12 @@ install-arch:
 	dh_installdirs -s
 
 	# Add here commands to install the arch part of the package into 
-	# debian/emms-extras.
-	install emms-print-metadata debian/emms-extras/usr/bin/
+	# debian/emms
+	make emms.info
+	make emms-auto.el
+	$(MAKE) deb-install DESTDIR=$(CURDIR)/debian/emms PREFIX=$(CURDIR)/debian/emms/usr
+	dh_installinfo -i emms.info
+	install emms-print-metadata debian/emms/usr/bin/
 
 	dh_install -s
 
@@ -91,7 +75,7 @@ binary-common:
 #	dh_installmime
 #	dh_installinit
 #	dh_installcron
-	dh_installman
+	dh_installman emms-print-metadata.1
 	dh_link
 	dh_strip
 	dh_compress
@@ -104,13 +88,10 @@ binary-common:
 	dh_gencontrol
 	dh_md5sums
 	dh_builddeb
-# Build architecture independent packages using the common target.
-binary-indep: build-indep install-indep
-	$(MAKE) -f debian/rules DH_OPTIONS=-i binary-common
 
 # Build architecture dependant packages using the common target.
 binary-arch: build-arch install-arch
 	$(MAKE) -f debian/rules DH_OPTIONS=-a binary-common
 
-binary: binary-indep binary-arch
-.PHONY: build clean binary-indep binary-arch binary install configure
+binary: binary-arch
+.PHONY: build clean binary-arch binary install configure

@@ -6,8 +6,8 @@ Build-Depends: debhelper (>= 4.0.0), emacs21, texinfo, libtagc0-dev
 Standards-Version: 3.6.2.1
 
 Package: emms
-Architecture: all
-Depends: emacsen-common, emacs21 | emacsen
+Architecture: any
+Depends: emacsen-common, emacs21 | emacsen, ${shlibs:Depends}
 Recommends: mpg321, vorbis-tools
 Suggests: mp3info
 Conflicts: emacs20
@@ -15,17 +15,3 @@ Description: The Emacs MultiMedia System
  EMMS is the Emacs Multi-Media System. It tries to be a clean and small
  application to play multimedia files from Emacs using external
  players.
-
-Package: emms-extras
-Architecture: any
-Depends: emms, libtagc0
-Recommends: mpg321, vorbis-tools
-Conflicts: emacs20
-Description: The Emacs MultiMedia System
- EMMS is the Emacs Multi-Media System. It tries to be a clean and small
- application to play multimedia files from Emacs using external
- players.
- .
- This package provides emms-print-metadata, a small binary program that emms
- can use to extract track metadata from music files.
-
