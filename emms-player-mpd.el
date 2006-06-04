@@ -446,9 +446,12 @@ The list will be in reverse order."
         (tracks nil))
     (when songs
       (dolist (song-info songs)
-        (let (cell)
-          (when (setq cell (assoc "file" song-info))
-            (let ((track (emms-track 'file (cdr cell))))
+        (let ((file (cdr (assoc "file" song-info))))
+          (when file
+            (let* ((type (if (string-match "\\`http://" file)
+                            'url
+                          'file))
+                   (track (emms-track type file)))
               (emms-info-mpd track song-info)
               (setq tracks (cons track tracks)))))))
     (funcall (car closure) (cdr closure) tracks)))
@@ -963,13 +966,18 @@ positive or negative."
       (when name
         (setq desc name))
       (when file
-        (let ((track (emms-dictionary '*track*)))
-          (emms-track-set track 'type 'file)
+        (let ((track (emms-dictionary '*track*))
+              track-desc)
+          (if (string-match "\\`http://" file)
+              (emms-track-set track 'type 'url)
+            (emms-track-set track 'type 'file))
           (emms-track-set track 'name file)
           (emms-info-mpd track info)
-          (if name
-              (setq desc (concat name ": " (emms-track-description track)))
-            (setq desc (emms-track-description track))))))
+          (setq track-desc (emms-track-description track))
+          (when (and (stringp track-desc) (not (string= track-desc "")))
+            (setq desc (if desc
+                           (concat desc ": " track-desc)
+                         track-desc))))))
     (if (not desc)
         (message "Nothing playing right now")
       (setq desc (format emms-show-format desc))
