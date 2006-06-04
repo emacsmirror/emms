@@ -411,6 +411,60 @@ This moves point."
       (error
        nil))))
 
+;;; Adding playlists as files
+
+;;;###autoload (autoload 'emms-play-playlist-file "emms-source-playlist" nil t)
+;;;###autoload (autoload 'emms-add-playlist-file "emms-source-playlist" nil t)
+(define-emms-source playlist-file (file)
+  "An EMMS source for playlist files.
+This adds the given file to the current EMMS playlist buffer,
+without adding its contents.
+
+See `emms-source-playlist-formats' for a list of supported formats."
+  (interactive (list (read-file-name "Playlist file: "
+                                     emms-source-file-default-directory
+                                     emms-source-file-default-directory
+                                     t)))
+  (emms-playlist-insert-track
+   (emms-track 'playlist (expand-file-name file))))
+
+;;;###autoload (autoload 'emms-play-playlist-directory
+;;;###autoload           "emms-source-playlist" nil t)
+;;;###autoload (autoload 'emms-add-playlist-directory
+;;;###autoload           "emms-source-playlist" nil t)
+(define-emms-source playlist-directory (dir)
+  "An EMMS source for a whole directory tree of playlist files.
+If DIR is not specified, it is queried from the user."
+  (interactive (list
+                (emms-read-directory-name "Play directory: "
+                                          emms-source-file-default-directory
+                                          emms-source-file-default-directory
+                                          t)))
+  (mapc (lambda (file)
+          (unless (let ((case-fold-search nil))
+                    (string-match emms-source-file-exclude-regexp file))
+            (emms-playlist-insert-track
+             (emms-track 'playlist (expand-file-name file)))))
+        (directory-files dir t "^[^.]")))
+
+;;;###autoload (autoload 'emms-play-playlist-directory-tree
+;;;###autoload           "emms-source-playlist" nil t)
+;;;###autoload (autoload 'emms-add-playlist-directory-tree
+;;;###autoload           "emms-source-file" nil t)
+(define-emms-source playlist-directory-tree (dir)
+  "An EMMS source for multiple directory trees of playlist files.
+If DIR is not specified, it is queried from the user."
+  (interactive (list
+                (emms-read-directory-name "Play directory tree: "
+                                          emms-source-file-default-directory
+                                          emms-source-file-default-directory
+                                          t)))
+  (mapc (lambda (file)
+          (unless (let ((case-fold-search nil))
+                    (string-match emms-source-file-exclude-regexp file))
+            (emms-playlist-insert-track
+             (emms-track 'playlist file))))
+        (emms-source-file-directory-tree (expand-file-name dir) "^[^.]")))
 
 (provide 'emms-source-playlist)
 ;;; emms-source-playlist.el ends here

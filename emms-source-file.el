@@ -67,6 +67,17 @@ find, but it's faster."
              emms-source-file-directory-tree-find)
   :group 'emms-source-file)
 
+(defcustom emms-source-file-exclude-regexp
+  (concat "\\`\\(.*\\.?#.*\\|.*,v\\|.*~\\|\\.\\.?\\|,.*\\)\\'\\|"
+          "/\\(CVS\\|RCS\\|\\.arch-ids\\|{arch}\\|,.*\\|\\.svn\\|"
+          "_darcs\\)\\(/\\|\\'\\)")
+  "A regexp matching files to be ignored when adding directories.
+
+You should set case-fold-search to nil before using this regexp
+in code."
+  :type 'regexp
+  :group 'emms-source-file)
+
 (defcustom emms-source-file-gnu-find "find"
   "*The program name for GNU find."
   :type 'string
@@ -105,8 +116,10 @@ from the user."
                                           emms-source-file-default-directory
                                           t)))
   (mapc (lambda (file)
-          (emms-playlist-insert-track
-           (emms-track 'file (expand-file-name file))))
+          (unless (let ((case-fold-search nil))
+                    (string-match emms-source-file-exclude-regexp file))
+            (emms-playlist-insert-track
+             (emms-track 'file (expand-file-name file)))))
         (directory-files dir t (emms-source-file-regex))))
 
 ;;;###autoload (autoload 'emms-play-directory-tree "emms-source-file" nil t)
@@ -120,8 +133,10 @@ value of `emms-source-file-default-directory'."
                                           emms-source-file-default-directory
                                           t)))
   (mapc (lambda (file)
-          (emms-playlist-insert-track
-           (emms-track 'file file)))
+          (unless (let ((case-fold-search nil))
+                    (string-match emms-source-file-exclude-regexp file))
+            (emms-playlist-insert-track
+             (emms-track 'file file))))
         (emms-source-file-directory-tree (expand-file-name dir)
                                          (emms-source-file-regex))))
 
@@ -137,8 +152,10 @@ value of `emms-source-file-default-directory'."
                                           t)
                 (read-from-minibuffer "Find files matching: ")))
   (mapc (lambda (file)
-          (emms-playlist-insert-track
-           (emms-track 'file file)))
+          (unless (let ((case-fold-search nil))
+                    (string-match emms-source-file-exclude-regexp file))
+            (emms-playlist-insert-track
+             (emms-track 'file file))))
         (emms-source-file-directory-tree dir regex)))
 
 ;;;###autoload (autoload 'emms-play-dired "emms-source-file" nil t)
