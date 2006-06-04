@@ -427,7 +427,8 @@ Don't forget to save your modifications !"
          (url   (emms-stream-url  line))
          (fd    (emms-stream-fd   line))
          (type  (emms-stream-type line))
-         (player (read (concat "emms-" emms-stream-default-action "-" (format "%s" type)))))
+         (player (read (concat "emms-" emms-stream-default-action "-"
+                               (format "%s" type)))))
     (setq emms-stream-last-stream line)
 ;;    (funcall emms-stream-default-action url)
     (funcall player url)

@@ -98,7 +98,7 @@ user."
 ;;;###autoload (autoload 'emms-add-directory "emms-source-file" nil t)
 (define-emms-source directory (dir)
   "An EMMS source for a whole directory tree - either DIR, or queried
-from the user"
+from the user."
   (interactive (list
                 (emms-read-directory-name "Play directory: "
                                           emms-source-file-default-directory
@@ -129,7 +129,7 @@ value of `emms-source-file-default-directory'."
 ;;;###autoload (autoload 'emms-add-find "emms-source-file" nil t)
 (define-emms-source find (dir regex)
   "An EMMS source that will find files in DIR or
-`emms-source-file-default-directory' that match REGEXP."
+`emms-source-file-default-directory' that match REGEX."
   (interactive (list
                 (emms-read-directory-name "Find in directory: "
                                           emms-source-file-default-directory
@@ -151,7 +151,7 @@ value of `emms-source-file-default-directory'."
               (emms-source-directory-tree file)
             (emms-source-file file)))
         (with-current-buffer emms-source-old-buffer
-         (dired-get-marked-files))))
+          (dired-get-marked-files))))
 
 
 ;;; Helper functions
@@ -225,16 +225,16 @@ files) can play."
   "Search for REGEXP and display the results in a locate buffer"
   (interactive "sRegexp to search for: ")
   (require 'locate)
-  (save-window-excursion 
-    (set-buffer (get-buffer-create "*EMMS Find*")) 
-    (locate-mode) 
+  (save-window-excursion
+    (set-buffer (get-buffer-create "*EMMS Find*"))
+    (locate-mode)
     (erase-buffer)
-    (mapc (lambda (elt) (insert (cdr (assoc 'name elt)) "\n")) 
-	  (emms-source-find emms-source-file-default-directory regexp)) 
+    (mapc (lambda (elt) (insert (cdr (assoc 'name elt)) "\n"))
+          (emms-source-find emms-source-file-default-directory regexp))
     (locate-do-setup regexp))
-  (and (not (string-equal (buffer-name) "*EMMS Find*")) 
-       (switch-to-buffer-other-window "*EMMS Find*")) 
-  (run-hooks 'dired-mode-hook) 
+  (and (not (string-equal (buffer-name) "*EMMS Find*"))
+       (switch-to-buffer-other-window "*EMMS Find*"))
+  (run-hooks 'dired-mode-hook)
   (dired-next-line 2))
 
 ;; Strictly speaking, this does not belong in this file (URLs are not
@@ -247,6 +247,8 @@ files) can play."
   (interactive "sPlay URL: ")
   (emms-playlist-insert-track (emms-track 'url url)))
 
+;;;###autoload (autoload 'emms-play-streamlist "emms-source-file" nil t)
+;;;###autoload (autoload 'emms-add-streamlist "emms-source-file" nil t)
 (define-emms-source streamlist (streamlist)
   "An EMMS source for streaming playlists (usually URLs ending in .pls."
   (interactive "sPlay URL: ")
