@@ -493,8 +493,19 @@ Otherwise, return the type and the name with a colon in between."
   (if (eq 'file (emms-track-type track))
       (emms-track-name track)
     (concat (symbol-name (emms-track-type track))
-            ":"
-            (emms-track-name track))))
+            ": " (emms-track-name track))))
+
+(defun emms-track-force-description (track)
+  "Always return text that describes TRACK.
+This is used when inserting a description into a buffer.
+
+The reason for this is that if no text was returned (i.e. the
+user defined a track function that returned nil or the empty
+string), a confusing error message would result."
+  (let ((desc (emms-track-description track)))
+    (if (and (stringp desc) (not (string= desc "")))
+        desc
+      (emms-track-simple-description track))))
 
 
 ;;; The Playlist
@@ -905,7 +916,7 @@ This is supplying ARGS as arguments to the source."
   "Insert the description of TRACK at point."
   (emms-playlist-ensure-playlist-buffer)
   (let ((inhibit-read-only t))
-    (insert (emms-propertize (emms-track-description track)
+    (insert (emms-propertize (emms-track-force-description track)
                              'emms-track track)
             "\n")))
 
