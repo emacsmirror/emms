@@ -453,7 +453,7 @@ This preserves the current EMMS buffer."
 When NO-NEWLINE is non-nil, do not insert a newline after the track."
   (emms-playlist-ensure-playlist-buffer)
   (emms-with-inhibit-read-only-t
-   (insert (emms-propertize (emms-track-description track)
+   (insert (emms-propertize (emms-track-force-description track)
                             'emms-track track))
    (save-restriction
      (widen)
