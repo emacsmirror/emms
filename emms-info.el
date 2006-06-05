@@ -67,6 +67,30 @@ Each is called with a track as argument."
 (defvar emms-info-asynchronous-tracks 0
   "Number of tracks we're waiting for to be done.")
 
+;; cache support (break into a separate file and make
+;; emms-info-really-initialize-track into a variable controlling which
+;; function to use)?
+
+;; The cache is invalidated when track names are changed. It also does
+;; not differenciate between file or uri tracks, and relies on the
+;; uniqueness of the name.
+
+;; usage - in your .emacs
+
+;; (add-hook 'after-init-hook 'emms-info-cache-restore)
+;; (add-hook 'kill-emacs-hook 'emms-info-cache-save)
+
+;; this is works much better with a later-do-interval of something
+;; like 0.001
+
+(define-hash-table-test 'string-hash 'string= 'sxhash)
+(defvar emms-info-cache (make-hash-table :test 'string-hash)
+  "A mapping of paths to file info.
+This is used to cache file info over emacs sessions.")
+
+(defvar emms-info-cache-file "~/.emms-cache"
+  "A file used to store cached file info information over sessions")
+
 (defun emms-info-initialize-track (track)
   "Initialize TRACK with emms-info information.
 This is a suitable value for `emms-track-initialize-functions'."
@@ -78,22 +102,55 @@ This is a suitable value for `emms-track-initialize-functions'."
 (defun emms-info-really-initialize-track (track)
   "Really initialize TRACK.
 Return t when the track got changed."
-  (let ((track-mtime (emms-track-get track 'info-mtime))
-        (file-mtime (when emms-info-auto-update
-                      (emms-info-track-file-mtime track))))
-    (when (or (not track-mtime)
-              (when emms-info-auto-update
-                (emms-time-less-p track-mtime
-                                  file-mtime)))
-      (run-hook-with-args 'emms-info-functions
-                          track)
-      (emms-track-set track 'info-mtime file-mtime)
-      (emms-track-updated track)
-      (when emms-info-asynchronously
-        (setq emms-info-asynchronous-tracks (1- emms-info-asynchronous-tracks))
-        (when (zerop emms-info-asynchronous-tracks)
-          (message "EMMS: All track information loaded.")))
-      t)))
+  (let ((file-mtime (when emms-info-auto-update
+                      (emms-info-track-file-mtime track)))
+        (name (emms-track-get track 'name))
+        cached-track
+        updated)
+
+    (when (setq cached-track (gethash name emms-info-cache))
+      ;; We need to modify TRACK. This way we lose information already
+      ;; present in TRACK, which is not necessarily what we want, but
+      ;; it's efficient.
+      (setcar track (car cached-track))
+      (setcdr track (cdr cached-track)))
+
+    ;; if uncached, or cached and the time has changed
+    (when (or (not cached-track)
+              (and cached-track
+               emms-info-auto-update
+               (emms-time-less-p
+                (emms-track-get track 'info-mtime) file-mtime)))
+      (setq updated t)
+      (run-hook-with-args 'emms-info-functions track))
+
+    (emms-track-set track 'info-mtime file-mtime)
+    (emms-track-updated track)
+
+    (if (or (not cached-track)
+            updated)
+        (puthash name track emms-info-cache))
+
+    (when emms-info-asynchronously
+      (setq emms-info-asynchronous-tracks (1- emms-info-asynchronous-tracks))
+      (when (zerop emms-info-asynchronous-tracks)
+        (message "EMMS: All track information loaded.")))
+    t))
+
+(defun emms-info-cache-save ()
+  "Save the info cache to a file."
+  (set-buffer (get-buffer-create " emms-info-cache "))
+  (erase-buffer)
+  (maphash (lambda (k v)
+             (insert (format
+                      "(puthash %S '%S emms-info-cache)\n" k v)))
+           emms-info-cache)
+  (write-region (point-min) (point-max) emms-info-cache-file)
+  (kill-buffer (current-buffer)))
+
+(defun emms-info-cache-restore ()
+  "Restore the info cache from a file."
+  (load emms-info-cache-file t nil t))
 
 (defun emms-info-track-file-mtime (track)
   "Return the mtime of the file of TRACK, if any.
