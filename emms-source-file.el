@@ -178,9 +178,10 @@ value of `emms-source-file-default-directory'."
   "Return a list of all files under DIR that match REGEX.
 This function uses `emms-source-file-directory-tree-function'."
   (message "Building playlist...")
-  (let ((pl (funcall emms-source-file-directory-tree-function
-                     dir
-                     regex)))
+  (let ((pl (sort (funcall emms-source-file-directory-tree-function
+                           dir
+                           regex)
+                  'string<)))
     (message "Building playlist...done")
     pl))
 
