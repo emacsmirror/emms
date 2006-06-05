@@ -91,6 +91,9 @@ This is used to cache file info over emacs sessions.")
 (defvar emms-info-cache-file "~/.emms-cache"
   "A file used to store cached file info information over sessions")
 
+(defvar emms-info-cache-dirty nil
+  "True if the cache has been updated since init.")
+
 (defun emms-info-initialize-track (track)
   "Initialize TRACK with emms-info information.
 This is a suitable value for `emms-track-initialize-functions'."
@@ -127,9 +130,10 @@ Return t when the track got changed."
     (emms-track-set track 'info-mtime file-mtime)
     (emms-track-updated track)
 
-    (if (or (not cached-track)
+    (when (or (not cached-track)
             updated)
-        (puthash name track emms-info-cache))
+        (puthash name track emms-info-cache)
+        (setq emms-info-cache-dirty t))
 
     (when emms-info-asynchronously
       (setq emms-info-asynchronous-tracks (1- emms-info-asynchronous-tracks))
@@ -139,18 +143,24 @@ Return t when the track got changed."
 
 (defun emms-info-cache-save ()
   "Save the info cache to a file."
-  (set-buffer (get-buffer-create " emms-info-cache "))
-  (erase-buffer)
-  (maphash (lambda (k v)
-             (insert (format
-                      "(puthash %S '%S emms-info-cache)\n" k v)))
-           emms-info-cache)
-  (write-region (point-min) (point-max) emms-info-cache-file)
-  (kill-buffer (current-buffer)))
+  (when emms-info-cache-dirty
+    (message "Saving emms info cache...")
+    (set-buffer (get-buffer-create " emms-info-cache "))
+    (erase-buffer)
+    (maphash (lambda (k v)
+               (insert (format
+                        "(puthash %S '%S emms-info-cache)\n" k v)))
+             emms-info-cache)
+    (set-buffer-file-coding-system 'mule-utf-8)
+    (write-region (point-min) (point-max) emms-info-cache-file)
+    (kill-buffer (current-buffer))
+    (message "Saving emms info cache...done")
+    (setq emms-info-cache-dirty nil)))
 
 (defun emms-info-cache-restore ()
   "Restore the info cache from a file."
-  (load emms-info-cache-file t nil t))
+  (load emms-info-cache-file t nil t)
+  (setq emms-info-cache-dirty nil))
 
 (defun emms-info-track-file-mtime (track)
   "Return the mtime of the file of TRACK, if any.
