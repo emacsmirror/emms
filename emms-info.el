@@ -122,8 +122,9 @@ Return t when the track got changed."
     (when (or (not cached-track)
               (and cached-track
                emms-info-auto-update
-               (emms-time-less-p
-                (emms-track-get track 'info-mtime) file-mtime)))
+               (let ((info-mtime (emms-track-get track 'info-mtime)))
+                 (or (not (consp info-mtime))
+                     (emms-time-less-p info-mtime file-mtime)))))
       (setq updated t)
       (run-hook-with-args 'emms-info-functions track))
 
