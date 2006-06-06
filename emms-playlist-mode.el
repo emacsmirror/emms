@@ -216,47 +216,6 @@ function switches back to the remembered buffer."
    (undo)))
 
 ;;; --------------------------------------------------------
-;;; Overlay compatability
-;;; --------------------------------------------------------
-
-;; Taken from CVS Emacs (2005-12-24) and modified to support Emms2 on
-;; Emacs 21.4. The modifications make this function not equivalent to
-;; the original `remove-overlays' from which it was copied, so don't
-;; try to use it in the same way.
-
-;;; FIXME! After the overlay rewrite, do we still need these?
-(defun emms-copy-overlay (o)
-  "Return a copy of overlay O."
-  (if (fboundp 'copy-overlay)
-      (copy-overlay o)
-    (let ((o1 (make-overlay (overlay-start o) (overlay-end o)
-                            (overlay-buffer o)))
-          (props (overlay-properties o)))
-      (while props
-        (overlay-put o1 (pop props) (pop props)))
-      o1)))
-
-(defun emms-remove-all-overlays (&optional beg end)
-  "Clear BEG and END of overlays."
-  (unless beg (setq beg (point-min)))
-  (unless end (setq end (point-max)))
-  (if (< end beg)
-      (setq beg (prog1 end (setq end beg))))
-  (save-excursion
-    (dolist (o (overlays-in beg end))
-      (when (eq (overlay-get o nil) nil)
-	(if (< (overlay-start o) beg)
-	    (if (> (overlay-end o) end)
-		(progn
-		  (move-overlay (emms-copy-overlay o)
-				(overlay-start o) beg)
-		  (move-overlay o end (overlay-end o)))
-	      (move-overlay o (overlay-start o) beg))
-	  (if (> (overlay-end o) end)
-	      (move-overlay o end (overlay-end o))
-	    (delete-overlay o)))))))
-
-;;; --------------------------------------------------------
 ;;; Killing and yanking
 ;;; --------------------------------------------------------
 
