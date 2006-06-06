@@ -728,6 +728,17 @@ If no playlist exists, a new one is generated."
   (with-current-emms-playlist
     (emms-playlist-selected-track)))
 
+(defun emms-playlist-selected-track-at-p (&optional point)
+  "Return non-nil when POINT (defaulting to point) is on the selected track."
+  (when emms-playlist-selected-marker
+    (or (= emms-playlist-selected-marker
+           (or point (point)))
+        (let ((p (previous-single-property-change (or point (point))
+                                                  'emms-track)))
+          (when p
+            (= emms-playlist-selected-marker
+               p))))))
+
 (defun emms-playlist-select (pos)
   "Select the track at POS."
   (emms-playlist-ensure-playlist-buffer)

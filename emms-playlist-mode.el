@@ -43,9 +43,6 @@
 (defvar emms-playlist-mode-hook nil
   "Emms playlist mode hook.")
 
-(defvar emms-playlist-mode-selected-overlay-marker nil
-  "Marker for last selected track.  Use for updating the display.")
-
 (defvar emms-playlist-mode-selected-overlay nil
   "Last selected track.  Use for updating the display.")
 
@@ -54,10 +51,6 @@
 
 (defvar emms-playlist-mode-window-width -25
   "Width for the emms-playlist-mode pop-up window.")
-
-;; The marker is unique for each playlist buffer
-(make-variable-buffer-local
- 'emms-playlist-mode-selected-overlay-marker)
 
 (make-variable-buffer-local
  'emms-playlist-mode-selected-overlay)
@@ -159,13 +152,9 @@ FUN should be a function."
 (defun emms-playlist-mode-center-current ()
   "Move point to the currently selected track."
   (interactive)
-  (goto-char (or emms-playlist-mode-selected-overlay-marker
+  (goto-char (if emms-playlist-mode-selected-overlay
+                 (overlay-start emms-playlist-mode-selected-overlay)
 		 (point-min))))
-
-(defun emms-playlist-mode-selected-at ()
-  "Return t if point is currently on the selected track."
-  (eq (emms-playlist-track-at)
-      (emms-playlist-selected-track)))
 
 (defun emms-playlist-mode-play-current-track ()
   "Start playing track at point."
@@ -235,6 +224,7 @@ function switches back to the remembered buffer."
 ;; the original `remove-overlays' from which it was copied, so don't
 ;; try to use it in the same way.
 
+;;; FIXME! After the overlay rewrite, do we still need these?
 (defun emms-copy-overlay (o)
   "Return a copy of overlay O."
   (if (fboundp 'copy-overlay)
@@ -272,11 +262,8 @@ function switches back to the remembered buffer."
 
 (defun emms-playlist-mode-between-p (p a b)
   "Return t if P is a point between points A and B."
-  (if (or (eq a b)
-	  (and (> b a)
-	       (= p b)))
-      nil
-    (eq p (cadr (sort (list a b p) #'<=)))))
+  (and (<= a p)
+       (<= p b)))
 
 ;; d
 (defun emms-playlist-mode-kill-entire-track ()
@@ -298,9 +285,10 @@ function switches back to the remembered buffer."
 	 (let ((track-region (emms-property-region (point)
 						   'emms-track)))
 	   (when (and emms-player-playing-p
-		      (equal (emms-playlist-selected-track) track))
-	     (emms-stop))
-	   (emms-remove-all-overlays (point-at-bol) (point-at-eol))
+		      (emms-playlist-selected-track-at-p))
+	     (emms-stop)
+             (delete-overlay emms-playlist-mode-selected-overlay)
+             (setq emms-playlist-mode-selected-overlay nil))
 	   (kill-line))
        (kill-line)))))
 
@@ -309,16 +297,16 @@ function switches back to the remembered buffer."
   "Kill from mark to point."
   (interactive)
   (emms-with-inhibit-read-only-t
-   (let ((m (mark))			; throw error if no mark
-	 (p (point))
-	 (sm emms-playlist-selected-marker))
-     ;; Are we killing the playing/selected track?
-     (when (emms-playlist-mode-between-p
-	    (marker-position sm) m p)
-       (setq emms-playlist-selected-marker nil)
-       (setq emms-playlist-mode-selected-overlay-marker nil)
-       (emms-stop))
-     (kill-region p m))))
+   ;; Are we killing the playing/selected track?
+   (when (emms-playlist-mode-between-p
+          (marker-position emms-playlist-selected-marker)
+          (region-beginning)
+          (region-end))
+     (emms-stop)
+     (delete-overlay emms-playlist-mode-selected-overlay)
+     (setq emms-playlist-mode-selected-overlay nil))
+   (kill-region (region-beginning)
+                (region-end))))
 
 ;; C-y
 (defun emms-playlist-mode-yank ()
@@ -326,8 +314,7 @@ function switches back to the remembered buffer."
   (interactive)
   (emms-with-inhibit-read-only-t
    (goto-char (point-at-bol))
-   (yank))
-  (emms-playlist-mode-overlay-refresh))
+   (yank)))
 
 ;; M-y
 (defun emms-playlist-mode-yank-pop ()
@@ -340,64 +327,23 @@ function switches back to the remembered buffer."
 ;;; Overlay
 ;;; --------------------------------------------------------
 
-(defun emms-playlist-mode-overlay-face (ovly face priority)
-  "Place the overlay OVLY with the face FACE and priority PRIORITY."
-  (overlay-put ovly 'face face)
-  (overlay-put ovly 'priority priority))
-
-(defun emms-playlist-mode-overlay-track (start end face priority)
-  "Place the overlay starting at START and ending at END over FACE.
-
-START and END should points.
-FACE should be a... face."
-  (let ((overl (make-overlay start end)))
-    (emms-playlist-mode-overlay-face overl face priority) overl))
-
-(defun emms-playlist-mode-overlay-at-point (face priority)
-  (let ((region (emms-property-region (point) 'emms-track)))
-    (emms-playlist-mode-overlay-track (car region)
-				      (cdr region)
-				      face
-				      priority)))
-
 (defun emms-playlist-mode-overlay-selected ()
   "Place an overlay over the currently selected track."
-  (emms-playlist-mode-remove-overlay-selected)
-  (when (not (and (null emms-playlist-selected-marker)
-		  (null emms-playlist-mode-selected-overlay-marker))) ; ugh
+  (when emms-playlist-selected-marker
     (save-excursion
       (goto-char emms-playlist-selected-marker)
-      (setq emms-playlist-mode-selected-overlay-marker
-	    (point-marker))
-      (setq emms-playlist-mode-selected-overlay
-	    (emms-playlist-mode-overlay-at-point
-	     'emms-playlist-selected-face 2)))))
-
-(defun emms-playlist-mode-remove-overlay-selected ()
-  "Remove the overlay from the currently selected track"
-  (when (not (null emms-playlist-mode-selected-overlay-marker))
-    (save-excursion
-      (goto-char emms-playlist-mode-selected-overlay-marker)
-      (emms-remove-all-overlays (point-at-bol)
-				(point-at-eol))
-      (emms-playlist-mode-overlay-at-point
-       'emms-playlist-track-face 1))))
-
-(defun emms-playlist-mode-overlay-all ()
-  "Place an low-priority overlay over the entire buffer."
-  (emms-playlist-mode-overlay-track (point-min)
-				    (point-max)
-				    'emms-playlist-track-face
-				    1))
-
-;; not graceful, but avoids growing as the number of tracks grow.
-(defun emms-playlist-mode-overlay-refresh ()
-  "Remove and re-apply all the overlays in the buffer."
-  (emms-remove-all-overlays (point-min)
-			    (point-max))
-  (emms-playlist-mode-overlay-all)
-  (setq emms-playlist-mode-selected-overlay-marker nil)
-  (emms-playlist-mode-overlay-selected))
+      (let ((reg (emms-property-region (point) 'emms-track)))
+        (if emms-playlist-mode-selected-overlay
+            (move-overlay emms-playlist-mode-selected-overlay
+                          (car reg)
+                          (cdr reg))
+          (setq emms-playlist-mode-selected-overlay
+                (make-overlay (car reg)
+                              (cdr reg)))
+          (overlay-put emms-playlist-mode-selected-overlay
+                       'face 'emms-playlist-selected-face)
+          (overlay-put emms-playlist-mode-selected-overlay
+                       'evaporate t))))))
 
 ;;; --------------------------------------------------------
 ;;; Saving/Restoring
@@ -454,16 +400,10 @@ When NO-NEWLINE is non-nil, do not insert a newline after the track."
   (emms-playlist-ensure-playlist-buffer)
   (emms-with-inhibit-read-only-t
    (insert (emms-propertize (emms-track-force-description track)
-                            'emms-track track))
-   (save-restriction
-     (widen)
-     (let ((p (emms-property-region (point-at-bol) 'emms-track))
-	   (c (if (equal (emms-playlist-current-selected-track)
-			 (get-text-property (point-at-bol) 'emms-track))
-		  (cons 'emms-playlist-selected-face 2)
-		(cons 'emms-playlist-track-face 1))))
-       (emms-playlist-mode-overlay-track (car p) (cdr p)
-					 (car c) (cdr c))))
+                            'emms-track track
+                            'face 'emms-playlist-track-face))
+   (when (emms-playlist-selected-track-at-p)
+     (emms-playlist-mode-overlay-selected))
    (unless no-newline
      (insert "\n"))))
 
@@ -517,9 +457,7 @@ WINDOW-WIDTH is `emms-playlist-mode-window-width'."
       (emms-playlist-select-first)))
   ;; when there is a selected track.
   (when emms-playlist-selected-marker
-    (emms-playlist-mode-overlay-selected)
-    (goto-char (or emms-playlist-mode-selected-overlay-marker
-		   (point-min))))
+    (emms-playlist-mode-overlay-selected))
   (setq buffer-read-only t))
 
 ;;;###autoload
