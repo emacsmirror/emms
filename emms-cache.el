@@ -2,7 +2,7 @@
 
 ;; Copyright (C) 2006  Damien Elmes <resolve@repose.cx>
 
-;; Author: Damien Elmes <damien@repose.cx>
+;; Author: Damien Elmes <emacs@repose.cx>
 ;; Keywords: emms, mp3, mpeg, multimedia
 
 ;; This file is free software; you can redistribute it and/or modify
