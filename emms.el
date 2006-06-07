@@ -765,6 +765,7 @@ If no playlist exists, a new one is generated."
     (error "No track at position %s" pos))
   (when (not emms-playlist-selected-marker)
     (setq emms-playlist-selected-marker (make-marker)))
+  (set-marker-insertion-type emms-playlist-selected-marker t)
   (set-marker emms-playlist-selected-marker pos)
   (run-hooks 'emms-playlist-selection-changed-hook))
 
