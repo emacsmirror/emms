@@ -298,7 +298,8 @@ function switches back to the remembered buffer."
                           (cdr reg))
           (setq emms-playlist-mode-selected-overlay
                 (make-overlay (car reg)
-                              (cdr reg)))
+                              (cdr reg)
+                              nil t t))
           (overlay-put emms-playlist-mode-selected-overlay
                        'face 'emms-playlist-selected-face)
           (overlay-put emms-playlist-mode-selected-overlay
