@@ -64,8 +64,8 @@ Invisible playlists and all the basics for playing media."
 (defun emms-standard ()
   "An Emms setup script.
 Everything included in the `emms-minimalistic' setup, the Emms
-interactive playlist mode and reading information from tagged
-audio files."
+interactive playlist mode, reading information from tagged
+audio files, and a metadata cache."
   ;; include
   (emms-minimalistic)
   ;; define
@@ -73,12 +73,17 @@ audio files."
   (require 'emms-info)
   (require 'emms-info-mp3info)
   (require 'emms-info-ogginfo)
+  (require 'emms-cache)
   ;; setup
   (setq emms-playlist-default-major-mode 'emms-playlist-mode)
   (add-to-list 'emms-track-initialize-functions 'emms-info-initialize-track)
   (add-to-list 'emms-info-functions 'emms-info-mp3info)
   (add-to-list 'emms-info-functions 'emms-info-ogginfo)
-  (setq emms-track-description-function 'emms-info-track-description))
+  (setq emms-track-description-function 'emms-info-track-description)
+  (add-hook 'after-init-hook 'emms-cache-restore)
+  (add-hook 'kill-emacs-hook 'emms-cache-save)
+  (setq emms-cache-get-function 'emms-cache-get)
+  (setq emms-cache-set-function 'emms-cache-set))
 
 (defun emms-all ()
   "An Emms setup script.

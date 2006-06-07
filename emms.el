@@ -223,6 +223,11 @@ seconds the player did seek."
 This can be used if the source depends on the current buffer not
 being the playlist buffer.")
 
+(defvar emms-cache-get-function (lambda (path))
+  "A function to retrieve a track entry from the cache.")
+(defvar emms-cache-set-function (lambda (path track))
+  "A function to add/set a track entry from the cache.")
+
 
 ;;; User Interface
 
@@ -453,9 +458,15 @@ whenever possible."
 
 (defun emms-track (type name)
   "Create an EMMS track with type TYPE and name NAME."
-  (let ((track (emms-dictionary '*track*)))
-    (emms-track-set track 'type type)
-    (emms-track-set track 'name name)
+  (let (track)
+    ;; we assume that name is unique across types, so type is not used
+    ;; if we find name in the cache
+    (unless (setq track (funcall emms-cache-get-function name))
+      (setq track (emms-dictionary '*track*))
+      (emms-track-set track 'type type)
+      (emms-track-set track 'name name))
+    ;; run any hooks regardless of a cache hit, as the entry may be
+    ;; old
     (run-hook-with-args 'emms-track-initialize-functions track)
     track))
 
