@@ -1088,11 +1088,17 @@ See emms-source-file.el for some examples."
        (defun ,source-play ,arglist
          ,docstring
          ,interactive
-         (emms-source-play ',source-name ,@call-args))
+         (if current-prefix-arg
+             (let ((current-prefix-arg nil))
+               (emms-source-add ',source-name ,@call-args))
+           (emms-source-play ',source-name ,@call-args)))
        (defun ,source-add ,arglist
          ,docstring
          ,interactive
-         (emms-source-add ',source-name ,@call-args))
+         (if current-prefix-arg
+             (let ((current-prefix-arg nil))
+               (emms-source-play ',source-name ,@call-args))
+           (emms-source-add ',source-name ,@call-args)))
        (defun ,source-insert ,arglist
          ,docstring
          ,interactive
