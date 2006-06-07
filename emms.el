@@ -224,6 +224,12 @@ This is called with a single argument, the track."
   :group 'emms
   :type 'function)
 
+(defcustom emms-cache-modified-function nil
+  "A function to be called when a track is modified.
+The modified track is passed as the argument to this function."
+  :group 'emms
+  :type 'function)
+
 (defvar emms-player-playing-p nil
   "The currently playing EMMS player, or nil.")
 
@@ -469,8 +475,10 @@ whenever possible."
                  (funcall emms-cache-get-function type name))))
     (when (not track)
       (setq track (emms-dictionary '*track*))
-      (emms-track-set track 'type type)
-      (emms-track-set track 'name name)
+      ;; Prevent the cache from being called for these two sets
+      (let ((emms-cache-modified-function nil))
+        (emms-track-set track 'type type)
+        (emms-track-set track 'name name))
       (when emms-cache-set-function
         (funcall emms-cache-set-function type name track)))
     ;; run any hooks regardless of a cache hit, as the entry may be
@@ -493,7 +501,9 @@ If there is no value, return DEFAULT (or nil, if not given)."
 
 (defun emms-track-set (track name value)
   "Set the value of NAME for TRACK to VALUE."
-  (emms-dictionary-set track name value))
+  (emms-dictionary-set track name value)
+  (when emms-cache-modified-function
+    (funcall emms-cache-modified-function track)))
 
 (defun emms-track-description (track)
   "Return a description of TRACK.
