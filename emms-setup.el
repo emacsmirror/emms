@@ -121,7 +121,11 @@ on the edge."
   ;; define
   (require 'emms-metaplaylist-mode)
   (require 'emms-stream-info)
-  (require 'emms-score))
+  (require 'emms-score)
+  (require 'emms-last-played)
+  ;; setup
+  (add-hook 'emms-player-started-hook 'emms-last-played-update-current))
+
 
 ;;;###autoload
 (defun emms-default-players ()
