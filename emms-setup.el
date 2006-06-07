@@ -53,6 +53,7 @@
   :group 'emms-setup
   :type 'list)
 
+;;;###autoload
 (defun emms-minimalistic ()
   "An Emms setup script.
 Invisible playlists and all the basics for playing media."
@@ -61,6 +62,7 @@ Invisible playlists and all the basics for playing media."
   (require 'emms-player-simple)
   (require 'emms-player-mplayer))
 
+;;;###autoload
 (defun emms-standard ()
   "An Emms setup script.
 Everything included in the `emms-minimalistic' setup, the Emms
@@ -85,6 +87,7 @@ audio files, and a metadata cache."
   (setq emms-cache-get-function 'emms-cache-get)
   (setq emms-cache-set-function 'emms-cache-set))
 
+;;;###autoload
 (defun emms-all ()
   "An Emms setup script.
 Everything included in the `emms-standard' setup and adds all the
@@ -105,6 +108,7 @@ stable features which come with the Emms distribution."
   (emms-lyrics 1)
   (emms-playing-time 1))
 
+;;;###autoload
 (defun emms-devel ()
   "An Emms setup script.
 Everything included in the `emms-all' setup and adds all the
@@ -118,6 +122,7 @@ on the edge."
   (require 'emms-stream-info)
   (require 'emms-score))
 
+;;;###autoload
 (defun emms-default-players ()
   "Set `emms-player-list' to `emms-setup-default-player-list'."
   (setq emms-player-list
