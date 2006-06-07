@@ -212,6 +212,18 @@ seconds the player did seek."
   :group 'emms
   :type 'hook)
 
+(defcustom emms-cache-get-function nil
+  "A function to retrieve a track entry from the cache.
+This is called with two arguments, the type and the name."
+  :group 'emms
+  :type 'function)
+
+(defvar emms-cache-set-function nil
+  "A function to add/set a track entry from the cache.
+This is called with a single argument, the track."
+  :group 'emms
+  :type 'function)
+
 (defvar emms-player-playing-p nil
   "The currently playing EMMS player, or nil.")
 
@@ -222,11 +234,6 @@ seconds the player did seek."
   "The active buffer before a source was invoked.
 This can be used if the source depends on the current buffer not
 being the playlist buffer.")
-
-(defvar emms-cache-get-function (lambda (path))
-  "A function to retrieve a track entry from the cache.")
-(defvar emms-cache-set-function (lambda (path track))
-  "A function to add/set a track entry from the cache.")
 
 
 ;;; User Interface
@@ -458,13 +465,14 @@ whenever possible."
 
 (defun emms-track (type name)
   "Create an EMMS track with type TYPE and name NAME."
-  (let (track)
-    ;; we assume that name is unique across types, so type is not used
-    ;; if we find name in the cache
-    (unless (setq track (funcall emms-cache-get-function name))
+  (let ((track (when emms-cache-get-function
+                 (funcall emms-cache-get-function type name))))
+    (when (not track)
       (setq track (emms-dictionary '*track*))
       (emms-track-set track 'type type)
-      (emms-track-set track 'name name))
+      (emms-track-set track 'name name)
+      (when emms-cache-set-function
+        (funcall emms-cache-set-function type name track)))
     ;; run any hooks regardless of a cache hit, as the entry may be
     ;; old
     (run-hook-with-args 'emms-track-initialize-functions track)

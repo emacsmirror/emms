@@ -32,6 +32,13 @@
 
 ;; This code is activated by (emms-standard) and above.
 
+;; To activate it by hand, use:
+
+;; (add-hook 'after-init-hook 'emms-cache-restore)
+;; (add-hook 'kill-emacs-hook 'emms-cache-save)
+;; (setq emms-cache-get-function 'emms-cache-get)
+;; (setq emms-cache-set-function 'emms-cache-set)
+
 ;;; Code:
 
 (define-hash-table-test 'string-hash 'string= 'sxhash)
@@ -45,11 +52,11 @@ This is used to cache over emacs sessions.")
 (defvar emms-cache-dirty nil
   "True if the cache has been updated since init.")
 
-(defun emms-cache-get (path)
+(defun emms-cache-get (type path)
   "Return a cache element for PATH, or nil."
   (gethash path emms-cache-db))
 
-(defun emms-cache-set (path track)
+(defun emms-cache-set (type path track)
   "Set PATH to TRACK in the cache."
   (puthash path track emms-cache-db)
   (setq emms-cache-dirty t))
