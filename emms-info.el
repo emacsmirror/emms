@@ -90,7 +90,6 @@ Return t when the track got changed."
       (run-hook-with-args 'emms-info-functions track)
       ;; not set by info functions
       (emms-track-set track 'info-mtime file-mtime)
-      (funcall emms-cache-set-function name track)
       (emms-track-updated track))
 
     (when emms-info-asynchronously

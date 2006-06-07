@@ -38,6 +38,7 @@
 ;; (add-hook 'kill-emacs-hook 'emms-cache-save)
 ;; (setq emms-cache-get-function 'emms-cache-get)
 ;; (setq emms-cache-set-function 'emms-cache-set)
+;; (setq emms-cache-modified-function 'emms-cache-dirty)
 
 ;;; Code:
 
@@ -52,6 +53,10 @@ This is used to cache over emacs sessions.")
 (defvar emms-cache-dirty nil
   "True if the cache has been updated since init.")
 
+(defun emms-cache-dirty (&rest ignored)
+  "Mark the cache as dirty."
+  (setq emms-cache-dirty t))
+
 (defun emms-cache-get (type path)
   "Return a cache element for PATH, or nil."
   (gethash path emms-cache-db))
@@ -59,7 +64,7 @@ This is used to cache over emacs sessions.")
 (defun emms-cache-set (type path track)
   "Set PATH to TRACK in the cache."
   (puthash path track emms-cache-db)
-  (setq emms-cache-dirty t))
+  (emms-cache-dirty))
 
 (defun emms-cache-save ()
   "Save the track cache to a file."
