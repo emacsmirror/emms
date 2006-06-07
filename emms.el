@@ -1026,25 +1026,10 @@ ignore this."
 ;;; Helper functions
 (defun emms-property-region (pos prop)
   "Return a pair of the beginning and end of the property PROP at POS."
-  (let ((beg nil)
-        (end nil))
-    (save-excursion
-      (goto-char pos)
-      (while (and (not (bobp))
-                  (get-text-property (point)
-                                     prop))
-        (backward-char))
-      (when (not (get-text-property (point)
-                                    prop))
-        (forward-char))
-      (setq beg (point))
-      (goto-char pos)
-      (while (and (not (eobp))
-                  (get-text-property (point)
-                                     prop))
-        (forward-char))
-      (setq end (point)))
-    (cons beg end)))
+  (let ((begin (next-single-property-change pos prop))
+        (end (previous-single-property-change pos prop)))
+    (cons (or begin (point-min))
+          (or end (point-max)))))
 
 (defun emms-shuffle-vector (vector)
   "Shuffle VECTOR."
