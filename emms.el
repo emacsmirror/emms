@@ -218,7 +218,7 @@ This is called with two arguments, the type and the name."
   :group 'emms
   :type 'function)
 
-(defvar emms-cache-set-function nil
+(defcustom emms-cache-set-function nil
   "A function to add/set a track entry from the cache.
 This is called with a single argument, the track."
   :group 'emms
