@@ -1026,8 +1026,9 @@ ignore this."
 ;;; Helper functions
 (defun emms-property-region (pos prop)
   "Return a pair of the beginning and end of the property PROP at POS."
-  (let ((begin (next-single-property-change pos prop))
-        (end (previous-single-property-change pos prop)))
+  ;; This +/-1 stuff DTRT, but _is_ it TRT?
+  (let ((begin (previous-single-property-change (+ pos 1) prop))
+        (end (next-single-property-change (- pos 1) prop)))
     (cons (or begin (point-min))
           (or end (point-max)))))
 
