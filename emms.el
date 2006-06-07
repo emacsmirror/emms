@@ -1025,10 +1025,21 @@ ignore this."
 
 ;;; Helper functions
 (defun emms-property-region (pos prop)
-  "Return a pair of the beginning and end of the property PROP at POS."
-  ;; This +/-1 stuff DTRT, but _is_ it TRT?
-  (let ((begin (previous-single-property-change (+ pos 1) prop))
-        (end (next-single-property-change (- pos 1) prop)))
+  "Return a pair of the beginning and end of the property PROP at POS.
+If POS does not contain PROP, try to find PROP just before POS."
+  (let (begin end)
+    (if (and (> pos (point-min))
+             (get-text-property (1- pos) prop))
+        (setq begin (previous-single-property-change (1- pos) prop))
+      (if (get-text-property pos prop)
+          (setq begin pos)
+        (error "Cannot find the %s property at the given position" prop)))
+    (if (get-text-property pos prop)
+        (setq end (next-single-property-change pos prop))
+      (if (and (> pos (point-min))
+               (get-text-property (1- pos) prop))
+          (setq end pos)
+        (error "Cannot find the %s property at the given position" prop)))
     (cons (or begin (point-min))
           (or end (point-max)))))
 
