@@ -201,12 +201,6 @@ function switches back to the remembered buffer."
     (setq emms-playlist-mode-switched-buffer (current-buffer))
     (switch-to-buffer emms-playlist-buffer)))
 
-(defmacro emms-with-inhibit-read-only-t (&rest body)
-  "Simple wrapper around `inhibit-read-only'."
-  `(let ((inhibit-read-only t))
-     ,@body))
-(put 'emms-with-inhibit-read-only-t 'edebug-form-spec '(body))
-
 (defun emms-playlist-mode-insert-newline ()
   "Insert a newline at point."
   (interactive)

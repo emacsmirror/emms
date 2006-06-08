@@ -58,7 +58,9 @@
 
 ;;; Code:
 
+(require 'emms)
 (require 'emms-cache)
+(require 'emms-source-file)
 
 ;; --------------------------------------------------
 ;; Variables and configuration
@@ -307,8 +309,9 @@ example function is `emms-browse-by-artist'."
     (when emms-browser-sort-function
       (with-current-emms-playlist
         (setq new-max (point-max)))
-      (emms-playlist-sort 'emms-sort-natural-order-less-p
-                                 old-max new-max))
+      (when (fboundp 'emms-playlist-sort)
+        (emms-playlist-sort emms-browser-sort-function
+                            old-max new-max)))
     (run-mode-hooks 'emms-browser-tracks-added-hook)
     (message "Added %d tracks." count)))
 
@@ -430,11 +433,12 @@ Returns the playlist window."
           (setq pbuf (emms-playlist-current-clear))
           (switch-to-buffer pbuf))
         ;; make q in the playlist window hide the linked browser
-        (define-key emms-playlist-mode-map (kbd "q")
-          (lambda ()
-            (interactive)
-            (emms-browser-hide-linked-window)
-            (bury-buffer)))
+        (when (boundp 'emms-playlist-mode-map)
+          (define-key emms-playlist-mode-map (kbd "q")
+            (lambda ()
+              (interactive)
+              (emms-browser-hide-linked-window)
+              (bury-buffer))))
         (setq pwin (get-buffer-window pbuf))
         (goto-char (point-max))))
     pwin))
