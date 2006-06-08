@@ -562,7 +562,7 @@ for that purpose.")
 (make-variable-buffer-local 'emms-playlist-buffer-p)
 
 (defun emms-playlist-ensure-playlist-buffer ()
-  "Throw an error if we're on in a playlist-buffer."
+  "Throw an error if we're not in a playlist-buffer."
   (when (not emms-playlist-buffer-p)
     (error "Not an EMMS playlist buffer")))
 
