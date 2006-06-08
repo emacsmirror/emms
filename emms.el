@@ -463,6 +463,21 @@ whenever possible."
   seq)
 
 
+;;; Convenient macros
+
+(defmacro emms-with-inhibit-read-only-t (&rest body)
+  "Simple wrapper around `inhibit-read-only'."
+  `(let ((inhibit-read-only t))
+     ,@body))
+(put 'emms-with-inhibit-read-only-t 'edebug-form-spec '(body))
+
+(defmacro emms-with-widened-buffer (&rest body)
+  `(save-restriction
+     (widen)
+     ,@body))
+(put 'emms-with-widened-buffer 'edebug-form-spec '(body))
+
+
 ;;; Tracks
 
 ;; This is a simple datatype to store track information.
@@ -668,11 +683,6 @@ If no playlist exists, a new one is generated."
     (delete-region (point-min)
 		   (point-max)))
   (run-hooks 'emms-playlist-cleared-hook))
-
-(defmacro emms-with-widened-buffer (&rest body)
-  `(save-restriction
-     (widen)
-     ,@body))
 
 ;;; Point movement within the playlist buffer.
 (defun emms-playlist-track-at (&optional pos)
