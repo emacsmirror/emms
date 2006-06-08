@@ -1216,8 +1216,11 @@ or nil if no such player exists."
     (let ((player (emms-player-for track)))
       (if (not player)
           (error "Don't know how to play track: %S" track)
-        (funcall (emms-player-get player 'start)
-                 track)))))
+        ;; Change default-directory so we don't accidentally block any
+        ;; directories the current buffer was visiting.
+        (let ((default-directory "/"))
+          (funcall (emms-player-get player 'start)
+                   track))))))
 
 (defun emms-player-started (player)
   "Declare that the given EMMS PLAYER has started.
