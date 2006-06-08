@@ -137,10 +137,13 @@ The default is to compare case-insensitively."
 (defun emms-browser (&optional name)
   "Launch or switch to the EMMS Browser."
   (interactive)
-  (when (or (null emms-browser-buffer)
+  (if (or (null emms-browser-buffer)
             (not (buffer-live-p emms-browser-buffer)))
-    (setq emms-browser-buffer (emms-browser-new-buffer name))
-    (funcall emms-browser-default-browsing-function))
+      (progn
+        (setq emms-browser-buffer (emms-browser-new-buffer name))
+        (funcall emms-browser-default-browsing-function))
+    (when name
+      (rename-buffer name)))
   ;; if the buffer is displayed, switch the window instead
   (let ((wind (get-buffer-window emms-browser-buffer)))
     (if wind
