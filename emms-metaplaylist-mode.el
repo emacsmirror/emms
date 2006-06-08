@@ -54,6 +54,8 @@
 (defface emms-metaplaylist-mode-face
   '((((class color) (background dark))
      (:foreground "AntiqueWhite3"))
+    (((class color) (background light))
+     (:foreground "red3"))
     (((type tty) (class mono))
      (:inverse-video t))
     (t (:background "WhiteSmoke")))
@@ -63,6 +65,8 @@
 (defface emms-metaplaylist-mode-current-face
   '((((class color) (background dark))
      (:foreground "red2"))
+    (((class color) (background light))
+     (:background "red3" :foreground "white"))
     (((type tty) (class mono))
      (:inverse-video t))
     (t (:background "red3")))
@@ -116,14 +120,13 @@
 	      (mapc (lambda (buf)
 		      (let ((inhibit-read-only t))
 			(insert (buffer-name buf))
-			(emms-playlist-mode-overlay-track
-			 (point-at-bol)
-			 (point-at-eol)
-			 (if (eq buf emms-playlist-buffer)
-			     'emms-metaplaylist-mode-face
-			   'emms-metaplaylist-mode-current-face
-			   1)
-			 (newline))))
+			(add-text-properties
+			 (point-at-bol) (point-at-eol)
+			 (list 'face
+			       (if (eq buf emms-playlist-buffer)
+				   'emms-metaplaylist-mode-current-face
+				 'emms-metaplaylist-mode-face)))
+			(newline)))
 		    playlists))
 	    (current-buffer)))	       ; return the buffer as lisp obj
       (error "No Emms playlist buffers"))))
