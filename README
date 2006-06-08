@@ -155,3 +155,8 @@ Emacs and Gnus, ignoring that Emms is pronounce ee-em-em-es, and not a
 single name. emms is highlighting that emms is a case-sensitive file
 name and Emacs Lisp command.
 
+* License
+=========
+
+EMMS is available under the terms of the GNU General Public License.
+Please see the file COPYING for details.
