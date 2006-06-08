@@ -83,6 +83,13 @@ The default is to compare case-insensitively."
   :group 'emms-browser
   :type 'symbol)
 
+(defcustom emms-browser-sort-function
+  'emms-sort-natural-order-less-p
+  "How to sort tracks from the browser (nil for no sorting).
+This is used to sort tracks when they are added to the playlist."
+  :group 'emms-browser
+  :type 'function)
+
 (defcustom emms-browser-show-display-hook nil
   "Hooks to run when starting or switching to a browser buffer."
   :group 'emms-browser
@@ -138,12 +145,12 @@ The default is to compare case-insensitively."
   "Launch or switch to the EMMS Browser."
   (interactive)
   (if (or (null emms-browser-buffer)
-            (not (buffer-live-p emms-browser-buffer)))
+          (not (buffer-live-p emms-browser-buffer)))
       (progn
         (setq emms-browser-buffer (emms-browser-new-buffer name))
         (funcall emms-browser-default-browsing-function))
     (when name
-      (rename-buffer name)))
+      (rename-buffer name t)))
   ;; if the buffer is displayed, switch the window instead
   (let ((wind (get-buffer-window emms-browser-buffer)))
     (if wind
@@ -263,15 +270,29 @@ If called interactively, the new buffer is also selected."
 (defun emms-browser-add-tracks ()
   "Add all the tracks on the current line to the playlist."
   (interactive)
-  ;; display the bottom of the current playlist
   (let ((tracks (emms-browser-tracks-at))
-        (count 0))
+        (count 0)
+        old-max new-max type name)
     (unless tracks
       (error "No tracks on current line!"))
+    (with-current-emms-playlist
+      (setq old-max (point-max)))
+    ;; add each of the tracks
     (dolist (track tracks)
-      ;; FIXME: assumes 'file type
-      (emms-add-file (emms-track-get track 'name))
+      (setq type (emms-track-get track 'type))
+      (setq name (emms-track-get track 'name))
+      (cond
+       ((eq type 'file)
+        (emms-add-file name))
+       ((eq type 'url)
+        (emms-add-url name)))
       (setq count (1+ count)))
+    ;; sort
+    (when emms-browser-sort-function
+      (with-current-emms-playlist
+        (setq new-max (point-max)))
+      (emms-playlist-sort 'emms-sort-natural-order-less-p
+                                 old-max new-max))
     (run-mode-hooks 'emms-browser-tracks-added-hook)
     (message "Added %d tracks." count)))
 
