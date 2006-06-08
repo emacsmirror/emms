@@ -1,6 +1,6 @@
 ;;; emms-cache.el --- persistence for emms-track
 
-;; Copyright (C) 2006  Damien Elmes <resolve@repose.cx>
+;; Copyright (C) 2006  Damien Elmes <emacs@repose.cx>
 
 ;; Author: Damien Elmes <emacs@repose.cx>
 ;; Keywords: emms, mp3, mpeg, multimedia

@@ -123,6 +123,7 @@ on the edge."
   (require 'emms-stream-info)
   (require 'emms-score)
   (require 'emms-last-played)
+  (require 'emms-browser)
   ;; setup
   (add-hook 'emms-player-started-hook 'emms-last-played-update-current))
 
