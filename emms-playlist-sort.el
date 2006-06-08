@@ -94,26 +94,28 @@ You should set this variable before loading this file."
           emms-playlist-sort-prefix
           emms-playlist-sort-map)))
 
-(defun emms-playlist-sort (predicate)
-  "Sort the whole playlist buffer by PREDICATE."
-  (with-current-emms-playlist
-    (save-excursion
-      (emms-playlist-ensure-playlist-buffer)
-      (widen)
-      (let ((current (emms-playlist-selected-track))
-	    (tracks (emms-playlist-tracks-in-region (point-min)
-						    (point-max))))
-	(delete-region (point-min)
-		       (point-max))
-	(run-hooks 'emms-playlist-cleared-hook)
-	(mapc 'emms-playlist-insert-track
-	      (sort tracks predicate))
-	(let ((pos (text-property-any (point-min)
-				      (point-max)
-				      'emms-track current)))
-	  (if pos
-	      (emms-playlist-select pos)
-	    (emms-playlist-first)))))))
+(defun emms-playlist-sort (predicate &optional start end)
+  "Sort the playlist buffer by PREDICATE.
+If START and END are not provided, the whole buffer will be sorted."
+  (let ((run-cleared-hook nil))
+    (unless start (setq start (point-min)))
+    (unless end (setq end (point-max)))
+    (with-current-emms-playlist
+      (save-excursion
+        (emms-playlist-ensure-playlist-buffer)
+        (widen)
+        (let ((current (emms-playlist-selected-track))
+              (tracks
+               (emms-playlist-tracks-in-region start end)))
+          (delete-region start end)
+          (run-hooks 'emms-playlist-cleared-hook)
+          (mapc 'emms-playlist-insert-track
+                (sort tracks predicate))
+          (let ((pos (text-property-any start end
+                                        'emms-track current)))
+            (if pos
+                (emms-playlist-select pos)
+              (emms-playlist-first))))))))
 
 (defun emms-string> (a b)
   (not (or (string< a b)
