@@ -139,7 +139,8 @@ The default is to compare case-insensitively."
   (interactive)
   (when (or (null emms-browser-buffer)
             (not (buffer-live-p emms-browser-buffer)))
-    (setq emms-browser-buffer (emms-browser-new-buffer name)))
+    (setq emms-browser-buffer (emms-browser-new-buffer name))
+    (funcall emms-browser-default-browsing-function))
   ;; if the buffer is displayed, switch the window instead
   (let ((wind (get-buffer-window emms-browser-buffer)))
     (if wind
@@ -356,7 +357,7 @@ configuration."
       (emms-browser-hide-linked-window)))
    (t
     ;; show both
-    (funcall emms-browser-default-browsing-function)))))
+    (emms-browser)))))
 
 (defun emms-browser-get-linked-buffer ()
   "Return linked buffer (eg browser if playlist is selected."
