@@ -141,21 +141,34 @@ This is used to sort tracks when they are added to the playlist."
 ;; General mode setup
 ;; --------------------------------------------------
 
-(defun emms-browser (&optional name)
+(defun emms-browser ()
   "Launch or switch to the EMMS Browser."
   (interactive)
-  (if (or (null emms-browser-buffer)
-          (not (buffer-live-p emms-browser-buffer)))
-      (progn
-        (setq emms-browser-buffer (emms-browser-new-buffer name))
-        (funcall emms-browser-default-browsing-function))
-    (when name
-      (rename-buffer name t)))
-  ;; if the buffer is displayed, switch the window instead
-  (let ((wind (get-buffer-window emms-browser-buffer)))
-    (if wind
-        (select-window wind)
-      (switch-to-buffer emms-browser-buffer)))
+  (emms-browser-create-or-focus
+   emms-browser-default-browsing-function))
+
+(defun emms-browser-create-or-focus (browse-func)
+  "Create a new browser buffer with BROWSE-FUNC, or switch.
+BROWSE-FUNC should fill the buffer with something of interest. An
+example function is `emms-browse-by-artist'."
+  (let ((buf (emms-browser-get-buffer))
+        wind)
+    (if buf
+        ;; if the buffer is displayed, switch the window instead
+        (progn
+          (setq wind (get-buffer-window buf))
+          (if wind
+              (select-window wind)
+            (switch-to-buffer buf))
+          (run-mode-hooks 'emms-browser-show-display-hook))
+      ;; if there's no buffer, create a new window
+      (emms-browser-create)
+      (funcall browse-func))))
+
+(defun emms-browser-create ()
+  "Create a new emms-browser buffer and start emms-browser-mode."
+  (emms-browser-new-buffer)
+  (emms-browser-mode)
   (run-mode-hooks 'emms-browser-show-display-hook))
 
 (defun emms-browser-mode ()
@@ -168,21 +181,29 @@ This is used to sort tracks when they are added to the playlist."
   (setq major-mode 'emms-browser-mode
         mode-name "Emms-Browser")
 
-  (setq buffer-read-only t))
+  (setq buffer-read-only t)
+  (setq emms-browser-buffer (current-buffer)))
 
-(defun emms-browser-new-buffer (&optional name)
-  "Create a new browser buffer.
-The buffer is named NAME, but made unique. NAME defaults to
-`emms-playlist-buffer-name'.
-If called interactively, the new buffer is also selected."
-  (let ((buf (generate-new-buffer (or name
-                                      emms-browser-buffer-name))))
-    (with-current-buffer buf
-      (when (not (eq major-mode 'emms-browser-mode))
-        (emms-browser-mode))
-      (when (interactive-p)
-        (switch-to-buffer buf)))
-    buf))
+(defun emms-browser-new-buffer ()
+  "Create a new browser buffer, and switch to it."
+  (switch-to-buffer (generate-new-buffer
+                     emms-browser-buffer-name)))
+
+(defun emms-browser-clear ()
+  "Create or switch to a browser buffer, clearing it."
+  (let ((buf (emms-browser-get-buffer)))
+    (if buf
+        (progn
+          (switch-to-buffer buf)
+          (emms-with-inhibit-read-only-t
+           (delete-region (point-min) (point-max))))
+      (emms-browser-create))))
+
+(defun emms-browser-get-buffer ()
+  "Return the current buffer if it exists, or nil."
+  (unless (or (null emms-browser-buffer)
+              (not (buffer-live-p emms-browser-buffer)))
+    emms-browser-buffer))
 
 (defun emms-browser-ensure-browser-buffer ()
   (unless (eq major-mode 'emms-browser-mode)
@@ -193,12 +214,6 @@ If called interactively, the new buffer is also selected."
   (interactive)
   (run-mode-hooks 'emms-browser-hide-display-hook)
   (bury-buffer))
-
-(defun emms-browser-new (&optional name)
-  "Create or switch to a browser buffer, clearing it."
-  (emms-browser name)
-  (emms-with-inhibit-read-only-t
-   (delete-region (point-min) (point-max))))
 
 ;; --------------------------------------------------
 ;; Browsing methods - by artist/album/etc
@@ -212,7 +227,8 @@ If called interactively, the new buffer is also selected."
   `(defun ,funname ()
      ,funcdesc
      (interactive)
-     (emms-browser-new ,modedesc)
+     (emms-browser-clear)
+     (rename-buffer ,modedesc)
      (emms-browser-display-by ,track-type)
      (goto-char (point-min)))))
 
