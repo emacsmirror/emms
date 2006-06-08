@@ -418,6 +418,10 @@ WINDOW-WIDTH is `emms-playlist-mode-window-width'."
   ;; when there is a selected track.
   (when emms-playlist-selected-marker
     (emms-playlist-mode-overlay-selected))
+  (emms-with-inhibit-read-only-t
+   (add-text-properties (point-min)
+                        (point-max)
+                        '(face emms-playlist-track-face)))
   (setq buffer-read-only t))
 
 ;;;###autoload
