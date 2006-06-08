@@ -173,16 +173,20 @@ non-nil, load the playlist at point into a new buffer.
 
 Otherwise play the track immediately."
   (interactive)
-  (if (not emms-playlist-mode-open-playlists)
-      (emms-playlist-mode-play-current-track)
-    (let* ((track (emms-playlist-track-at))
-           (name (emms-track-get track 'name))
-           (type (emms-track-get track 'type)))
-      (if (or (eq type 'playlist)
-              (and (eq type 'file)
-                   (string-match "\\.\\(m3u\\|pls\\)\\'" name)))
-          (emms-playlist-mode-load-playlist)
-        (emms-playlist-mode-play-current-track)))))
+  (save-excursion
+    ;; move to the start of the line, in case the point is on the \n,
+    ;; which isn't propertized
+    (move-beginning-of-line nil)
+    (if (not emms-playlist-mode-open-playlists)
+        (emms-playlist-mode-play-current-track)
+      (let* ((track (emms-playlist-track-at))
+             (name (emms-track-get track 'name))
+             (type (emms-track-get track 'type)))
+        (if (or (eq type 'playlist)
+                (and (eq type 'file)
+                     (string-match "\\.\\(m3u\\|pls\\)\\'" name)))
+            (emms-playlist-mode-load-playlist)
+          (emms-playlist-mode-play-current-track))))))
 
 (defun emms-playlist-mode-switch-buffer ()
   "Switch to the playlist buffer and then switch back if called again.

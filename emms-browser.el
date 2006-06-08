@@ -252,7 +252,6 @@ If called interactively, the new buffer is also selected."
   "Add a single ENTRY -> TRACKS mapping to the buffer."
   (emms-browser-ensure-browser-buffer)
   (emms-with-inhibit-read-only-t
-   ;; why don't we propertize the \n?
    (insert (emms-propertize entry
                             'emms-tracks tracks
                             'face 'emms-browser-tracks-face) "\n")))
@@ -289,9 +288,13 @@ If called interactively, the new buffer is also selected."
 (defun emms-browser-tracks-at (&optional pos)
   "Return the tracks at POS (point if not given), or nil if none."
   (emms-browser-ensure-browser-buffer)
-  (emms-with-widened-buffer
-   (get-text-property (or pos (point))
-		      'emms-tracks)))
+  (save-excursion
+    ;; move the point to the start of the line, since the trailing new
+    ;; line is not propertized
+    (move-beginning-of-line nil)
+    (emms-with-widened-buffer
+     (get-text-property (or pos (point))
+                        'emms-tracks))))
 
 (defun emms-isearch-buffer ()
   "Isearch through the buffer."
