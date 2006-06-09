@@ -44,8 +44,9 @@
 
 ;; Some useful keybindings in the browser buffer:
 
-;; SPC      - add all the tracks on the current line to the playlist
-;; RET      - do the same, and start the first added track playing
+;; SPC      - expand/contract current item
+;; RET      - add current artist/album/title/etc
+;; C-RET    - as above, but select the first added file and play
 ;; /        - isearch through the available items
 ;; q        - bury both buffers (if you use emms-smart-browse)
 
@@ -119,20 +120,59 @@ This is used to sort tracks when they are added to the playlist."
   "The current mapping db, eg. artist -> track.")
 (make-variable-buffer-local 'emms-browser-current-mapping)
 
+(defvar emms-browser-current-mapping-type nil
+  "The current mapping type, eg. 'info-artist")
+(make-variable-buffer-local 'emms-browser-current-mapping-type)
+
 (defconst emms-browser-mode-map
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map text-mode-map)
     (define-key map (kbd "q") 'emms-browser-bury-buffer)
     (define-key map (kbd "/") 'emms-isearch-buffer)
     (define-key map (kbd "?") 'describe-mode)
-    (define-key map (kbd "RET") 'emms-browser-add-tracks-and-play)
-    (define-key map (kbd "SPC") 'emms-browser-add-tracks)
+    (define-key map (kbd "C-/") 'emms-playlist-mode-undo)
+    (define-key map (kbd "SPC") 'emms-browser-toggle-subitems)
+    (define-key map (kbd "RET") 'emms-browser-add-tracks)
+    (define-key map (kbd "<C-return>") 'emms-browser-add-tracks-and-play)
     map)
   "Keymap for `emms-browser-mode'.")
 
 (defface emms-browser-tracks-face
   '((((class color) (background dark))
-     (:foreground "plum"))
+     (:foreground "#aaaaff"))
+    (((class color) (background light))
+     (:foreground "Blue"))
+    (((type tty) (class mono))
+     (:inverse-video t))
+    (t (:background "Blue")))
+  "Face for the tracks in a playlist buffer."
+  :group 'emms-browser-mode)
+
+(defface emms-browser-tracks-sub-face-1
+  '((((class color) (background dark))
+     (:foreground "#7777ff"))
+    (((class color) (background light))
+     (:foreground "Blue"))
+    (((type tty) (class mono))
+     (:inverse-video t))
+    (t (:background "Blue")))
+  "Face for the tracks in a playlist buffer."
+  :group 'emms-browser-mode)
+
+(defface emms-browser-tracks-sub-face-2
+  '((((class color) (background dark))
+     (:foreground "#4444ff"))
+    (((class color) (background light))
+     (:foreground "Blue"))
+    (((type tty) (class mono))
+     (:inverse-video t))
+    (t (:background "Blue")))
+  "Face for the tracks in a playlist buffer."
+  :group 'emms-browser-mode)
+
+(defface emms-browser-tracks-sub-face-3
+  '((((class color) (background dark))
+     (:foreground "#3333ff"))
     (((class color) (background light))
      (:foreground "Blue"))
     (((type tty) (class mono))
@@ -223,7 +263,7 @@ example function is `emms-browse-by-artist'."
 ;; Browsing methods - by artist/album/etc
 ;; --------------------------------------------------
 
-(defmacro emms-browser-add-category (name track-type)
+(defmacro emms-browser-add-category (name track-type &optional expand-func)
   "Create an interactive function emms-browse-by-NAME."
   (let ((funname (intern (concat "emms-browse-by-" name)))
         (modedesc (concat "Browsing by: " name))
@@ -233,13 +273,13 @@ example function is `emms-browse-by-artist'."
      (interactive)
      (emms-browser-clear)
      (rename-buffer ,modedesc)
-     (emms-browser-display-by ,track-type)
+     (emms-browser-display-by ,track-type ,expand-func)
      (goto-char (point-min)))))
 
-(emms-browser-add-category "artist" 'info-artist)
-(emms-browser-add-category "album" 'info-album)
-(emms-browser-add-category "genre" 'info-genre)
-(emms-browser-add-category "year" 'info-year)
+(emms-browser-add-category "artist" 'info-artist 'emms-browser-show-albums)
+(emms-browser-add-category "album" 'info-album 'emms-browser-show-titles)
+(emms-browser-add-category "genre" 'info-genre 'emms-browser-show-artists)
+(emms-browser-add-category "year" 'info-year 'emms-browser-show-artists)
 
 (defun emms-browser-make-by (field-type)
   "Make a mapping with FIELD-TYPE, eg artist -> tracks."
@@ -247,7 +287,7 @@ example function is `emms-browse-by-artist'."
              :test emms-browser-comparison-test))
         field existing-entry)
     (maphash (lambda (path track)
-               (setq field (emms-track-get track field-type "missing-tag"))
+               (setq field (emms-track-get track field-type "misc"))
                (setq existing-entry (gethash field db))
                (if existing-entry
                    (puthash field (cons track existing-entry) db)
@@ -255,11 +295,13 @@ example function is `emms-browse-by-artist'."
              emms-cache-db)
     db))
 
-(defun emms-browser-display-by (field-type)
-  "Render a mapping into a browser buffer."
+(defun emms-browser-display-by (field-type &optional expand-func)
+  "Render a mapping into a browser buffer.
+Optional EXPAND-FUNC is a function to call when expanding a
+line."
   (let ((db (emms-browser-make-by field-type)))
-    (maphash (lambda (field track)
-               (emms-browser-insert-entry field track))
+    (maphash (lambda (desc data)
+               (emms-browser-insert-entry desc data expand-func))
              db)
     (setq emms-browser-current-mapping db)
     (emms-with-inhibit-read-only-t
@@ -279,18 +321,21 @@ example function is `emms-browse-by-artist'."
 ;; Operations on individual lines
 ;; --------------------------------------------------
 
-(defun emms-browser-insert-entry (entry tracks)
-  "Add a single ENTRY -> TRACKS mapping to the buffer."
+(defun emms-browser-insert-entry (entry tracks &optional expand-func)
+  "Add a single ENTRY -> TRACKS mapping to the buffer.
+EXPAND-FUNC is an optional func to call when expanding a line."
   (emms-browser-ensure-browser-buffer)
   (emms-with-inhibit-read-only-t
    (insert (emms-propertize entry
-                            'emms-tracks tracks
+                            'emms-browser-data tracks
+                            'emms-browser-level 1
+                            'emms-browser-expand-func expand-func
                             'face 'emms-browser-tracks-face) "\n")))
 
 (defun emms-browser-add-tracks ()
   "Add all the tracks on the current line to the playlist."
   (interactive)
-  (let ((tracks (emms-browser-tracks-at))
+  (let ((tracks (emms-browser-data-at))
         (count 0)
         old-max new-max type name)
     (unless tracks
@@ -331,7 +376,7 @@ example function is `emms-browse-by-artist'."
     (emms-stop)
     (emms-start)))
 
-(defun emms-browser-tracks-at (&optional pos)
+(defun emms-browser-data-at (&optional pos)
   "Return the tracks at POS (point if not given), or nil if none."
   (emms-browser-ensure-browser-buffer)
   (save-excursion
@@ -340,13 +385,135 @@ example function is `emms-browse-by-artist'."
     (move-beginning-of-line nil)
     (emms-with-widened-buffer
      (get-text-property (or pos (point))
-                        'emms-tracks))))
+                        'emms-browser-data))))
 
 (defun emms-isearch-buffer ()
   "Isearch through the buffer."
   (interactive)
   (goto-char (point-min))
   (call-interactively 'isearch-forward))
+
+;; --------------------------------------------------
+;; Expansion/subitem support (experimental)
+;; --------------------------------------------------
+
+(defmacro emms-browser-add-show-category (name field-type &optional expand-func)
+  "Create an interactive function emms-browser-show-FIELD-TYPE.
+EXPAND-FUNC is used to further expand subitems."
+  (let ((fname (intern (concat "emms-browser-show-" name)))
+        (fdesc (concat "Show " name " under current line")))
+  `(defun ,fname ()
+     ,fdesc
+     (interactive)
+     (let ((data (emms-browser-make-alist-from-field
+                  ,field-type
+                  (emms-browser-data-at))))
+       ;; FIXME: sort data
+       (emms-browser-insert-subitems data ,expand-func)))))
+
+(emms-browser-add-show-category
+ "albums" 'info-album 'emms-browser-show-titles)
+(emms-browser-add-show-category
+ "artists" 'info-artist 'emms-browser-show-albums)
+(emms-browser-add-show-category
+ "titles" 'info-title)
+
+(defun emms-browser-level-at-point ()
+  "Return the current level at point.
+Actually this function returns the value of the first character
+on the line, because if point is on a trailing \n it will fail.
+Returns 0 if the current line is not an entry."
+  (let ((val
+         (get-text-property (line-beginning-position)
+                            'emms-browser-level)))
+    (if val
+        val
+      0)))
+
+(defun emms-browser-find-entry-more-than-level (level)
+  "Move point to next entry more than LEVEL and return point.
+If no entry exits, return nil.
+Returns point if currently on a an entry more than LEVEL."
+  (let ((old-pos (point))
+        level-at-point)
+    (re-search-forward "\n" nil t)
+    (if (> (emms-browser-level-at-point) level)
+        (point)
+      (goto-char old-pos)
+      nil)))
+
+(defun emms-browser-subitems-exist ()
+  "True if there are any subentries under point."
+  (let ((current-level (emms-browser-level-at-point))
+        new-level)
+    (save-excursion
+      (re-search-forward "\n" nil t)
+      (when (setq new-level (emms-browser-level-at-point))
+        (> new-level current-level)))))
+
+(defun emms-browser-toggle-subitems ()
+  "Show or hide (kill) subitems under the current line."
+  (interactive)
+  (if (emms-browser-subitems-exist)
+      (emms-browser-kill-subitems)
+    (emms-browser-show-subitems)))
+
+(defun emms-browser-show-subitems ()
+  "Show subitems under the current line."
+  (let ((func (get-text-property (line-beginning-position)
+                                 'emms-browser-expand-func)))
+  (if func
+      (funcall func)
+    (message "Can't expand further!"))))
+
+(defun emms-browser-kill-subitems ()
+  "Remove all subitems under the current line.
+Stops at the next line at the same level, or EOF."
+  (let ((current-level (emms-browser-level-at-point))
+        (kill-whole-line t))
+    (save-excursion
+      (emms-with-inhibit-read-only-t
+       (while (emms-browser-find-entry-more-than-level current-level)
+         (kill-line)
+         (previous-line))))))
+
+(defun emms-browser-insert-subitems (subitems &optional expand-func)
+  "Insert SUBITEMS under the current item.
+SUBITEMS is a list of cons cells (desc . data).
+emms-browser-level will be set to 1 more than the current level."
+  (let ((new-level (1+ (emms-browser-level-at-point)))
+        desc data)
+    (save-excursion
+      (next-line)
+      (beginning-of-line)
+      (emms-with-inhibit-read-only-t
+       (dolist (item subitems)
+         (setq desc (car item))
+         (setq data (cdr item))
+         (insert
+          (emms-propertize (concat (make-string (* 2 (1- new-level)) ?\  ) desc)
+                           'emms-browser-data data
+                           'emms-browser-level new-level
+                           'emms-browser-expand-func expand-func
+                           'face
+                           (intern
+                            (concat
+                             "emms-browser-tracks-sub-face-"
+                             (int-to-string
+                              (1- new-level)))))
+          "\n"))))))
+
+(defun emms-browser-make-alist-from-field (field-type tracks)
+  "Make an alist mapping of FIELD-TYPE -> TRACKS.
+Items with no metadata for FIELD-TYPE will be placed in 'misc'"
+  (let (db key existing)
+    (dolist (track tracks)
+      (setq key (emms-track-get track field-type "misc"))
+      (setq existing (assoc key db))
+      (if existing
+          (setcdr existing (cons track (cdr existing)))
+        (push (cons key (list track)) db)))
+    db))
 
 ;; --------------------------------------------------
 ;; Linked browser and playlist windows (experimental)
@@ -371,14 +538,18 @@ configuration."
   ;; switch to the playlist window when adding tracks?
   (add-to-list 'emms-browser-tracks-added-hook
                (lambda () (interactive)
-                 (when emms-browser-switch-to-playlist-on-add
-                   (emms-smart-browse))
-                 ;; recenter
-                 (with-selected-window
-                     (emms-browser-get-linked-window)
-                   ;; FIXME: how do we achieve the same behaviour as
-                   ;; c-u when calling interactively?
-                   (recenter))))
+                 (let (playlist-window)
+                   (when emms-browser-switch-to-playlist-on-add
+                     (emms-smart-browse))
+                   ;; recenter
+                   (when
+                       (setq playlist-window
+                             (emms-browser-get-linked-window))
+                     (with-selected-window
+                         playlist-window
+                       ;; FIXME: how do we achieve the same behaviour as
+                       ;; c-u when calling interactively?
+                       (recenter))))))
   (let (wind buf)
   (cond
    ((eq major-mode 'emms-browser-mode)
@@ -457,5 +628,6 @@ Returns the playlist window."
     ;; linked buffer
     (bury-buffer other-buf)))
 
+;(defun emms
 (provide 'emms-browser)
 ;;; emms-browser.el ends here
