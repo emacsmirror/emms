@@ -36,11 +36,7 @@
 
 ;; To activate it by hand, use:
 
-;; (add-hook 'after-init-hook 'emms-cache-restore)
-;; (add-hook 'kill-emacs-hook 'emms-cache-save)
-;; (setq emms-cache-get-function 'emms-cache-get)
-;; (setq emms-cache-set-function 'emms-cache-set)
-;; (setq emms-cache-modified-function 'emms-cache-dirty)
+;; (emms-cache 1)
 
 ;;; Code:
 
