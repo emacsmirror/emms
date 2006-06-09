@@ -369,6 +369,24 @@ When a reply comes, call FN with CLOSURE and the result."
 
 ;;; Helper functions
 
+(defun emms-player-mpd-get-mpd-filename (file)
+  "Turn FILE into something that MusicPD can understand.
+This usually means removing a prefix."
+  (if (or (not emms-player-mpd-music-directory)
+          (not (eq (aref file 0) ?/))
+          (string-match "\\`http://" file))
+      file
+    (file-relative-name file emms-player-mpd-music-directory)))
+
+(defun emms-player-mpd-get-emms-filename (file)
+  "Turn FILE into something that EMMS can understand.
+This usually means adding a prefix."
+  (if (or (not emms-player-mpd-music-directory)
+          (eq (aref file 0) ?/)
+          (string-match "\\`http://" file))
+      file
+    (expand-file-name file emms-player-mpd-music-directory)))
+
 (defun emms-player-mpd-parse-response (response)
   "Convert the given MusicPD response into a list.
 The car of the list is special:
@@ -450,9 +468,10 @@ The list will be in reverse order."
       (dolist (song-info songs)
         (let ((file (cdr (assoc "file" song-info))))
           (when file
+            (setq file (emms-player-mpd-get-emms-filename file))
             (let* ((type (if (string-match "\\`http://" file)
                             'url
-                          'file))
+                           'file))
                    (track (emms-track type file)))
               (emms-info-mpd track song-info)
               (setq tracks (cons track tracks)))))))
@@ -668,15 +687,6 @@ info from MusicPD."
       (emms-player-mpd-detect-song-change-1 nil info)
     (emms-player-mpd-get-status nil #'emms-player-mpd-detect-song-change-1)))
 
-(defun emms-player-mpd-get-filename (file)
-  "Turn FILE into something that MusicPD can understand.
-This usually means removing a prefix."
-  (if (or (not emms-player-mpd-music-directory)
-          (not (eq (aref file 0) ?/))
-          (string-match "\\`http://" file))
-      file
-    (file-relative-name file emms-player-mpd-music-directory)))
-
 (defun emms-player-mpd-quote-file (file)
   "Escape special characters in FILE and surround in double-quotes."
   (concat "\""
@@ -699,7 +709,7 @@ This usually means removing a prefix."
 If an error occurs, display a relevant message.
 
 Execute CALLBACK with CLOSURE as its first argument when done."
-  (setq file (emms-player-mpd-get-filename file))
+  (setq file (emms-player-mpd-get-mpd-filename file))
   (emms-player-mpd-send
    (concat "add " (emms-player-mpd-quote-file file))
    (cons file (cons callback closure))
@@ -1041,7 +1051,7 @@ info from MusicPD."
     (let (file)
       (when (and (eq 'file (emms-track-type track))
                  emms-player-mpd-music-directory
-                 (setq file (emms-player-mpd-get-filename
+                 (setq file (emms-player-mpd-get-mpd-filename
                              (emms-track-name track)))
                  (string-match emms-player-mpd-supported-regexp file)
                  (not (string-match "\\`http://" file)))
