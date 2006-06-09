@@ -1067,6 +1067,48 @@ info from MusicPD."
              #'emms-info-mpd-1)
           (error nil))))))
 
+;;; Caching
+
+(defun emms-cache-set-from-mpd-track (track-info)
+  "Dump TRACK-INFO into the EMMS cache.
+The track should be an alist as per `emms-player-mpd-get-alist'."
+  (when emms-cache-set-function
+    (let ((track (emms-dictionary '*track*))
+          (name (cdr (assoc "file" track-info))))
+      (when name
+        (setq name (emms-player-mpd-get-emms-filename name))
+        (emms-track-set track 'type 'file)
+        (emms-track-set track 'name name)
+        (emms-info-mpd-process track track-info)
+        (funcall emms-cache-set-function 'file name track)))))
+
+(defun emms-cache-set-from-mpd-directory (dir)
+  "Dump all MusicPD data from DIR into the EMMS cache.
+This is useful to do when you have recently acquired new music."
+  (interactive
+   (list (read-string "Directory: ")))
+  (if emms-cache-set-function
+      (progn
+        (message "Dumping MusicPD data to cache...")
+        (emms-player-mpd-send
+         (concat "listallinfo " dir)
+         nil
+         (lambda (closure response)
+           (message "Dumping MusicPD data to cache...processing")
+           (let ((info (emms-player-mpd-get-alists
+                        (emms-player-mpd-parse-response response))))
+             (dolist (track-info info)
+               (emms-cache-set-from-mpd-track track-info))
+             (message "Dumping MusicPD data to cache...done")))))
+    (error "Caching is not enabled")))
+
+(defun emms-cache-set-from-mpd-all ()
+  "Dump all MusicPD data into the EMMS cache.
+This is useful to do once, just before using emms-browser.el, in
+order to prime the cache."
+  (interactive)
+  (emms-cache-set-from-mpd-directory ""))
+
 (provide 'emms-player-mpd)
 
 ;;; emms-player-mpd.el ends here
