@@ -44,6 +44,8 @@
 
 ;;; Code:
 
+(require 'emms)
+
 (define-hash-table-test 'string-hash 'string= 'sxhash)
 (defvar emms-cache-db (make-hash-table :test 'string-hash)
   "A mapping of paths to file info.
