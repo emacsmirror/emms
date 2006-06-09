@@ -84,7 +84,8 @@ audio files, and a metadata cache."
   (add-to-list 'emms-info-functions 'emms-info-mp3info)
   (add-to-list 'emms-info-functions 'emms-info-ogginfo)
   (setq emms-track-description-function 'emms-info-track-description)
-  (emms-cache 1))
+  (when (fboundp 'emms-cache)           ; work around compiler warning
+    (emms-cache 1)))
 
 ;;;###autoload
 (defun emms-all ()
