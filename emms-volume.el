@@ -61,6 +61,7 @@
 If you have your own functions for changing volume, set this and
  `emms-volume-lower-function' accordingly."
   :type '(choice (const :tag "Amixer" emms-volume-amixer-raise)
+                 (const :tag "MPD" emms-volume-mpd-raise)
                  (function :tag "Lisp function"))
   :group 'emms-volume)
 
@@ -69,6 +70,7 @@ If you have your own functions for changing volume, set this and
 If you have your own functions for changing volume, set this and
  `emms-volume-raise-function' accordingly."
   :type '(choice (const :tag "Amixer" emms-volume-amixer-lower)
+                 (const :tag "MPD" emms-volume-mpd-lower)
                  (function :tag "Lisp function"))
   :group 'emms-volume)
 
