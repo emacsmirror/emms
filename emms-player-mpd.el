@@ -943,7 +943,9 @@ from other functions."
   (interactive)
   (emms-player-mpd-send "previous" nil #'ignore))
 
-(defun emms-player-mpd-volume-change (amount)
+;;; Volume
+
+(defun emms-volume-mpd-change (amount)
   "Change volume up or down by AMOUNT, depending on whether it is
 positive or negative."
   (interactive "MVolume change amount (+ increase, - decrease): ")
@@ -955,15 +957,17 @@ positive or negative."
         (concat "setvol \"" (number-to-string new-volume) "\"")
         nil #'ignore)))))
 
-(defun emms-player-mpd-volume-up ()
+(defun emms-volume-mpd-raise ()
   "Increase the volume."
   (interactive)
-  (emms-player-mpd-volume-change 5))
+  (emms-volume-mpd-change 5))
 
-(defun emms-player-mpd-volume-down ()
+(defun emms-volume-mpd-lower ()
   "Decrease the volume."
   (interactive)
-  (emms-player-mpd-volume-change -5))
+  (emms-volume-mpd-change -5))
+
+;;; Now playing
 
 (defun emms-player-mpd-show-1 (closure response)
   (let* ((info (emms-player-mpd-get-alist
