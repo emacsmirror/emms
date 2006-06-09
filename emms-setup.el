@@ -84,11 +84,7 @@ audio files, and a metadata cache."
   (add-to-list 'emms-info-functions 'emms-info-mp3info)
   (add-to-list 'emms-info-functions 'emms-info-ogginfo)
   (setq emms-track-description-function 'emms-info-track-description)
-  (add-hook 'after-init-hook 'emms-cache-restore)
-  (add-hook 'kill-emacs-hook 'emms-cache-save)
-  (setq emms-cache-get-function 'emms-cache-get)
-  (setq emms-cache-set-function 'emms-cache-set)
-  (setq emms-cache-modified-function 'emms-cache-dirty))
+  (emms-cache 1))
 
 ;;;###autoload
 (defun emms-all ()

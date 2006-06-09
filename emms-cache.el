@@ -49,11 +49,51 @@
   "A mapping of paths to file info.
 This is used to cache over emacs sessions.")
 
-(defvar emms-cache-file "~/.emms-cache"
-  "A file used to store cached file info information over sessions")
-
 (defvar emms-cache-dirty nil
   "True if the cache has been updated since init.")
+
+(defcustom emms-cache-file "~/.emms-cache"
+  "A file used to store cached file information over sessions."
+  :group 'emms
+  :type 'file)
+
+(defun emms-cache (arg)
+  "Turn on Emms caching if ARG is positive, off otherwise."
+  (interactive "p")
+  (if (and arg (> arg 0))
+      (progn
+        (add-hook 'after-init-hook 'emms-cache-restore)
+        (add-hook 'kill-emacs-hook 'emms-cache-save)
+        (setq emms-cache-get-function 'emms-cache-get)
+        (setq emms-cache-set-function 'emms-cache-set)
+        (setq emms-cache-modified-function 'emms-cache-dirty))
+    (remove-hook 'after-init-hook 'emms-cache-restore)
+    (remove-hook 'kill-emacs-hook 'emms-cache-save)
+    (setq emms-cache-get-function nil)
+    (setq emms-cache-set-function nil)
+    (setq emms-cache-modified-function nil)))
+
+;;;###autoload
+(defun emms-cache-enable ()
+  "Enable caching of Emms track data."
+  (interactive)
+  (emms-cache 1)
+  (message "Emms cache enabled"))
+
+;;;###autoload
+(defun emms-cache-disable ()
+  "Disable caching of Emms track data."
+  (interactive)
+  (emms-cache -1)
+  (message "Emms cache disabled"))
+
+;;;###autoload
+(defun emms-cache-toggle ()
+  "Toggle caching of Emms track data."
+  (interactive)
+  (if emms-cache-get-function
+      (emms-cache-disable)
+    (emms-cache-enable)))
 
 (defun emms-cache-dirty (&rest ignored)
   "Mark the cache as dirty."
