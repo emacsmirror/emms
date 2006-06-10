@@ -102,11 +102,11 @@ Return t when the track got changed."
 
 (defun emms-info-track-file-mtime (track)
   "Return the mtime of the file of TRACK, if any.
-Return zero otherwise."
+Return nil otherwise."
   (if (eq (emms-track-type track)
           'file)
       (nth 5 (file-attributes (emms-track-name track)))
-    0))
+    nil))
 
 (defun emms-info-track-description (track)
   "Return a description of the current track."
