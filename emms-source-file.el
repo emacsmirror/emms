@@ -70,7 +70,7 @@ find, but it's faster."
   :group 'emms-source-file)
 
 (defcustom emms-source-file-exclude-regexp
-  (concat "\\`\\(.*\\.?#.*\\|.*,v\\|.*~\\|\\.\\.?\\|,.*\\)\\'\\|"
+  (concat "\\`\\(#.*#\\|.*,v\\|.*~\\|\\.\\.?\\|\\.#.*\\|,.*\\)\\'\\|"
           "/\\(CVS\\|RCS\\|\\.arch-ids\\|{arch}\\|,.*\\|\\.svn\\|"
           "_darcs\\)\\(/\\|\\'\\)")
   "A regexp matching files to be ignored when adding directories.
