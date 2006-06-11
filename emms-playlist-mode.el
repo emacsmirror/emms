@@ -440,9 +440,6 @@ WINDOW-WIDTH is `emms-playlist-mode-window-width'."
 	'emms-playlist-mode-insert-track)
   (setq emms-playlist-update-track-function
 	'emms-playlist-mode-update-track-function)
-  ;; Not used yet
-  ;; (setq emms-playlist-delete-track-function
-  ;;       ...)
   (add-hook 'emms-playlist-selection-changed-hook
 	    'emms-playlist-mode-overlay-selected)
 
