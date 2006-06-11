@@ -108,6 +108,7 @@ This is used to cache over emacs sessions.")
 
 (defun emms-cache-save ()
   "Save the track cache to a file."
+  (interactive)
   (when emms-cache-dirty
     (message "Saving emms track cache...")
     (set-buffer (get-buffer-create " emms-cache "))
@@ -124,8 +125,22 @@ This is used to cache over emacs sessions.")
 
 (defun emms-cache-restore ()
   "Restore the track cache from a file."
+  (interactive)
   (load emms-cache-file t nil t)
   (setq emms-cache-dirty nil))
+
+(defun emms-cache-prune ()
+  "Remove invalid entries from the cache."
+  ;; FIXME: at the moment, only supports files
+  (interactive)
+  (message "Pruning emms track cache...")
+  (maphash (lambda (path track)
+             (when (eq (emms-track-get track 'type) 'file)
+               (unless (file-exists-p path)
+                 (remhash path emms-cache-db))))
+           emms-cache-db)
+  (setq emms-cache-dirty t)
+  (message "Pruning emms track cache...done"))
 
 (provide 'emms-cache)
 ;;; emms-cache.el ends here
