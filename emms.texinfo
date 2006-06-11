@@ -313,11 +313,13 @@ immediately.
 
 @defun emms-play-file file
 A source for a single file - either @var{file}, or queried from the
-user.
+user. If called with a prefix the file will be added like
+@command{emms-add-file}.
 @end defun
 @defun emms-add-file file
 A source for a single file - either @var{file}, or queried from
-the user.
+the user. If called with a prefix the file will be played like
+@command{emms-play-file}.
 @end defun
 @defun emms-play-directory dir
 A source for a whole directory tree - either @var{dir}, or queried
