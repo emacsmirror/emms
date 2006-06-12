@@ -88,10 +88,17 @@ The default is to compare case-insensitively."
   :group 'emms-browser
   :type 'symbol)
 
-(defcustom emms-browser-sort-function
+(defcustom emms-browser-track-sort-function
   'emms-sort-natural-order-less-p
-  "How to sort tracks from the browser (nil for no sorting).
-This is used to sort tracks when they are added to the playlist."
+  "How to sort tracks in the browser.
+Ues nil for no sorting."
+  :group 'emms-browser
+  :type 'function)
+
+(defcustom emms-browser-alpha-sort-function
+  'string<
+  "How to sort artists/albums/etc. in the browser.
+Use nil for no sorting."
   :group 'emms-browser
   :type 'function)
 
@@ -303,7 +310,12 @@ line."
     (maphash (lambda (desc data)
                (emms-browser-insert-entry desc data expand-func))
              db)
+    ;; sort
     (setq emms-browser-current-mapping db)
+    ;; FIXME: currently we use a hash for the 'level 1' information,
+    ;; and an alist for subinfo. that means that this sorting is done
+    ;; differently to subinfo..
+    ;; should we use emms-browser-alpha-sort-function instead?
     (emms-with-inhibit-read-only-t
      (let ((sort-fold-case t))
        (sort-lines nil (point-min) (point-max))))))
@@ -352,13 +364,6 @@ EXPAND-FUNC is an optional func to call when expanding a line."
        ((eq type 'url)
         (emms-add-url name)))
       (setq count (1+ count)))
-    ;; sort
-    (when emms-browser-sort-function
-      (with-current-emms-playlist
-        (setq new-max (point-max)))
-      (when (fboundp 'emms-playlist-sort)
-        (emms-playlist-sort emms-browser-sort-function
-                            old-max new-max)))
     (run-mode-hooks 'emms-browser-tracks-added-hook)
     (message "Added %d tracks." count)))
 
@@ -391,32 +396,51 @@ EXPAND-FUNC is an optional func to call when expanding a line."
   "Isearch through the buffer."
   (interactive)
   (goto-char (point-min))
-  (call-interactively 'isearch-forward))
+  (when (isearch-forward)
+    (unless (emms-browser-subitems-visible)
+      (emms-browser-show-subitems)
+      (next-line))))
 
 ;; --------------------------------------------------
 ;; Expansion/subitem support (experimental)
 ;; --------------------------------------------------
 
-(defmacro emms-browser-add-show-category (name field-type &optional expand-func)
+(defmacro emms-browser-add-show-category (name field-type &optional
+                                               expand-func sort-func)
   "Create an interactive function emms-browser-show-FIELD-TYPE.
-EXPAND-FUNC is used to further expand subitems."
+EXPAND-FUNC is used to further expand subitems if not already
+expanded.
+SORT-FUNC is called to sort retrieved data."
   (let ((fname (intern (concat "emms-browser-show-" name)))
         (fdesc (concat "Show " name " under current line")))
   `(defun ,fname ()
      ,fdesc
      (interactive)
-     (let ((data (emms-browser-make-alist-from-field
-                  ,field-type
-                  (emms-browser-data-at))))
-       ;; FIXME: sort data
-       (emms-browser-insert-subitems data ,expand-func)))))
+     (unless (emms-browser-subitems-visible)
+       (let ((data (emms-browser-make-alist-from-field
+                    ,field-type
+                    (emms-browser-data-at))))
+         (when ,sort-func
+           (setq data (funcall ,sort-func data)))
+         (emms-browser-insert-subitems data ,expand-func))))))
+
+;;
+;; create emms-browser-show-*
+;;
+(emms-browser-add-show-category
+ "albums" 'info-album
+ 'emms-browser-show-titles
+ 'emms-browser-sort-by-name)
 
 (emms-browser-add-show-category
- "albums" 'info-album 'emms-browser-show-titles)
+ "artists" 'info-artist
+ 'emms-browser-show-albums
+ 'emms-browser-sort-by-name)
+
 (emms-browser-add-show-category
- "artists" 'info-artist 'emms-browser-show-albums)
-(emms-browser-add-show-category
- "titles" 'info-title)
+ "titles" 'info-title
+ nil
+ 'emms-browser-sort-by-tracks)
 
 (defun emms-browser-level-at-point ()
   "Return the current level at point.
@@ -442,7 +466,7 @@ Returns point if currently on a an entry more than LEVEL."
       (goto-char old-pos)
       nil)))
 
-(defun emms-browser-subitems-exist ()
+(defun emms-browser-subitems-visible ()
   "True if there are any subentries under point."
   (let ((current-level (emms-browser-level-at-point))
         new-level)
@@ -454,7 +478,7 @@ Returns point if currently on a an entry more than LEVEL."
 (defun emms-browser-toggle-subitems ()
   "Show or hide (kill) subitems under the current line."
   (interactive)
-  (if (emms-browser-subitems-exist)
+  (if (emms-browser-subitems-visible)
       (emms-browser-kill-subitems)
     (emms-browser-show-subitems)))
 
@@ -480,7 +504,8 @@ Stops at the next line at the same level, or EOF."
 (defun emms-browser-insert-subitems (subitems &optional expand-func)
   "Insert SUBITEMS under the current item.
 SUBITEMS is a list of cons cells (desc . data).
-emms-browser-level will be set to 1 more than the current level."
+emms-browser-level will be set to 1 more than the current level.
+Don't add anything if there are already subitems below."
   (let ((new-level (1+ (emms-browser-level-at-point)))
         desc data)
     (save-excursion
@@ -514,6 +539,42 @@ Items with no metadata for FIELD-TYPE will be placed in 'misc'"
           (setcdr existing (cons track (cdr existing)))
         (push (cons key (list track)) db)))
     db))
+
+;; --------------------------------------------------
+;; Sorting expanded entries
+;; --------------------------------------------------
+
+(defmacro emms-browser-sort-cadr (sort-func)
+  "Return a function to sort an alist using SORT-FUNC.
+This sorting predicate will compare the cadr of each entry.
+SORT-FUNC should be a playlist sorting predicate like
+`emms-playlist-sort-by-natural-order'."
+  `(lambda (a b)
+     (funcall ,sort-func (cadr a) (cadr b))))
+
+(defmacro emms-browser-sort-car (sort-func)
+  "Return a function to sort an alist using SORT-FUNC.
+This sorting predicate will compare the car of each entry.
+SORT-FUNC should be a playlist sorting predicate like
+`emms-playlist-sort-by-natural-order'."
+  `(lambda (a b)
+     (funcall ,sort-func (car a) (car b))))
+
+(defun emms-browser-sort-by-tracks (data)
+  "Sort an alist DATA by the tracks in each entry.
+Uses `emms-browser-track-sort-function'."
+  (if emms-browser-track-sort-function
+      (sort data (emms-browser-sort-cadr
+                  emms-browser-track-sort-function))
+    data))
+
+(defun emms-browser-sort-by-name (data)
+  "Sort an alist DATA by keys.
+Uses `emms-browser-alpha-sort-function'."
+  (if emms-browser-alpha-sort-function
+      (sort data (emms-browser-sort-car
+                  emms-browser-alpha-sort-function))
+    data))
 
 ;; --------------------------------------------------
 ;; Linked browser and playlist windows (experimental)
