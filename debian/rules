@@ -53,7 +53,6 @@ install-arch:
 	make emms.info
 	make emms-auto.el
 	$(MAKE) deb-install DESTDIR=$(CURDIR)/debian/emms PREFIX=$(CURDIR)/debian/emms/usr
-	dh_installinfo -i emms.info
 	install emms-print-metadata debian/emms/usr/bin/
 
 	dh_install -s
@@ -71,6 +70,7 @@ binary-common:
 #	dh_installdebconf	
 #	dh_installlogrotate
 	dh_installemacsen
+	dh_installinfo
 #	dh_installpam
 #	dh_installmime
 #	dh_installinit
