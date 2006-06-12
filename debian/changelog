@@ -1,3 +1,9 @@
+emms (2.0-2) unstable; urgency=low
+
+  * Install info manual as well (Closes: #372953)
+
+ -- Jorgen Schaefer <forcer@debian.org>  Mon, 12 Jun 2006 21:14:41 +0200
+
 emms (2.0-1) unstable; urgency=low
 
   * New upstream release.
