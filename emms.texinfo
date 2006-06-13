@@ -296,6 +296,32 @@ second sets the default name of the Emms playlist buffer.
 Another way to change Emms variables is to use the M-x
 @command{customize} mechanism provided by Emacs.
 
+@menu
+* Finding files and speed::     Finding files quickly or portably
+@end menu
+
+@node Finding files and speed
+@section Finding files and speed
+
+@cindex files
+@cindex speed
+
+Emms needs to traverse directories in order to find playable
+media. The default method Emms uses to achive this is
+@code{emms-source-file-directory-tree-internal} as defined in
+@file{emms-source-file.el}.  The above method is written portably and
+will always work, but might be too slow if we want to load several
+hundred tracks (or more).
+
+@file{emms-source-file.el} defines another method for finding files,
+@code{emms-source-file-directory-tree-find} which uses
+GNU/find. @code{emms-source-file-directory-tree-find} is usually an
+order of magnitude faster, but of course will not work if you do not
+have GNU/find installed.
+
+The method Emms will use is defined in the customisable variable
+@var{emms-source-file-directory-tree-function}.
+
 @node Basic Commands
 @chapter Basic Commands
 
