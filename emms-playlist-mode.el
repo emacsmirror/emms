@@ -153,9 +153,10 @@ FUN should be a function."
 (defun emms-playlist-mode-center-current ()
   "Move point to the currently selected track."
   (interactive)
-  (goto-char (if emms-playlist-mode-selected-overlay
-                 (overlay-start emms-playlist-mode-selected-overlay)
-		 (point-min))))
+  (with-current-emms-playlist
+    (goto-char (if emms-playlist-mode-selected-overlay
+		   (overlay-start emms-playlist-mode-selected-overlay)
+		 (point-min)))))
 
 (defun emms-playlist-mode-play-current-track ()
   "Start playing track at point."
