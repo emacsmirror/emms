@@ -52,18 +52,25 @@
 
 ;; If you just want access to the browser, try M-x
 ;; emms-browse-by-TYPE, where TYPE is one of artist, album, genre or
-;; year.
+;; year. These commands can also be used while smart browsing to
+;; change the browsing category.
 
 ;; If you don't want to activate the code with (emms-devel), you can
 ;; activate it manually with:
 
 ;; (require 'emms-browser)
 
+;; Note this code is very new and is still prone to big changes in the
+;; API and breakage. Bug reports are welcome.
+
 ;;; Code:
 
 (require 'emms)
 (require 'emms-cache)
 (require 'emms-source-file)
+
+(eval-when-compile
+  (require 'cl))
 
 ;; --------------------------------------------------
 ;; Variables and configuration
@@ -78,6 +85,22 @@
 (defcustom emms-browser-default-browsing-function
   'emms-browse-by-artist
   "The default browsing mode."
+  :group 'emms-browser
+  :type 'function)
+
+(defcustom emms-browser-make-name-function
+  'emms-browser-make-name-standard
+  "A function to make names for entries and subentries.
+Overriding this function allows you to customise how various elements
+are displayed. It is called with two arguments - track and type."
+  :group 'emms-browser
+  :type 'function)
+
+(defcustom emms-browser-insert-track-function
+  'emms-browser-insert-track-standard
+  "A function to insert a track into the playlist.
+The default behaviour indents tracks depending on whether you're
+adding an album, artist, etc."
   :group 'emms-browser
   :type 'function)
 
@@ -123,13 +146,9 @@ Use nil for no sorting."
 (defvar emms-browser-buffer-name "*EMMS Browser*"
   "The default buffer name.")
 
-(defvar emms-browser-current-mapping nil
+(defvar emms-browser-top-level-hash nil
   "The current mapping db, eg. artist -> track.")
-(make-variable-buffer-local 'emms-browser-current-mapping)
-
-(defvar emms-browser-current-mapping-type nil
-  "The current mapping type, eg. 'info-artist")
-(make-variable-buffer-local 'emms-browser-current-mapping-type)
+(make-variable-buffer-local 'emms-browser-top-level-hash)
 
 (defconst emms-browser-mode-map
   (let ((map (make-sparse-keymap)))
@@ -267,10 +286,14 @@ example function is `emms-browse-by-artist'."
   (bury-buffer))
 
 ;; --------------------------------------------------
-;; Browsing methods - by artist/album/etc
+;; Top-level browsing methods - by artist/album/etc
 ;; --------------------------------------------------
 
-(defmacro emms-browser-add-category (name track-type &optional expand-func)
+;; Since the number of tracks may be rather large, we use a hash to
+;; sort the top level elements into various categories. All
+;; subelements will be stored in a bdata alist structure.
+
+(defmacro emms-browser-add-category (name type)
   "Create an interactive function emms-browse-by-NAME."
   (let ((funname (intern (concat "emms-browse-by-" name)))
         (modedesc (concat "Browsing by: " name))
@@ -278,47 +301,42 @@ example function is `emms-browse-by-artist'."
   `(defun ,funname ()
      ,funcdesc
      (interactive)
-     (emms-browser-clear)
-     (rename-buffer ,modedesc)
-     (emms-browser-display-by ,track-type ,expand-func)
-     (goto-char (point-min)))))
+     (let ((hash (emms-browser-make-hash-by ,type)))
+       (emms-browser-clear)
+       (rename-buffer ,modedesc)
+       (emms-browser-render-hash hash ,type)
+       (setq emms-browser-top-level-hash hash)
+       (goto-char (point-min))))))
 
-(emms-browser-add-category "artist" 'info-artist 'emms-browser-show-albums)
-(emms-browser-add-category "album" 'info-album 'emms-browser-show-titles)
-(emms-browser-add-category "genre" 'info-genre 'emms-browser-show-artists)
-(emms-browser-add-category "year" 'info-year 'emms-browser-show-artists)
+(emms-browser-add-category "artist" 'info-artist)
+(emms-browser-add-category "album" 'info-album)
+(emms-browser-add-category "genre" 'info-genre)
+(emms-browser-add-category "year" 'info-year)
 
-(defun emms-browser-make-by (field-type)
-  "Make a mapping with FIELD-TYPE, eg artist -> tracks."
-  (let ((db (make-hash-table
+(defun emms-browser-make-hash-by (type)
+  "Make a hash, mapping with TYPE, eg artist -> tracks."
+  (let ((hash (make-hash-table
              :test emms-browser-comparison-test))
         field existing-entry)
     (maphash (lambda (path track)
-               (setq field (emms-track-get track field-type "misc"))
-               (setq existing-entry (gethash field db))
+               (setq field (emms-track-get track type "misc"))
+               (setq existing-entry (gethash field hash))
                (if existing-entry
-                   (puthash field (cons track existing-entry) db)
-                 (puthash field (list track) db)))
+                   (puthash field (cons track existing-entry) hash)
+                 (puthash field (list track) hash)))
              emms-cache-db)
-    db))
+    hash))
 
-(defun emms-browser-display-by (field-type &optional expand-func)
-  "Render a mapping into a browser buffer.
-Optional EXPAND-FUNC is a function to call when expanding a
-line."
-  (let ((db (emms-browser-make-by field-type)))
-    (maphash (lambda (desc data)
-               (emms-browser-insert-entry desc data expand-func))
-             db)
-    ;; sort
-    (setq emms-browser-current-mapping db)
-    ;; FIXME: currently we use a hash for the 'level 1' information,
-    ;; and an alist for subinfo. that means that this sorting is done
-    ;; differently to subinfo..
-    ;; should we use emms-browser-alpha-sort-function instead?
-    (emms-with-inhibit-read-only-t
-     (let ((sort-fold-case t))
-       (sort-lines nil (point-min) (point-max))))))
+(defun emms-browser-render-hash (db type)
+  "Render a mapping (DB) into a browser buffer."
+  (maphash (lambda (desc data)
+             ;; reverse the entries so that unsorted tracks are displayed in
+             ;; ascending order
+             (emms-browser-insert-top-level-entry desc (nreverse data) type))
+           db)
+  (emms-with-inhibit-read-only-t
+   (let ((sort-fold-case t))
+     (sort-lines nil (point-min) (point-max)))))
 
 (defun case-fold-string= (a b)
   (compare-strings a nil nil b nil nil t))
@@ -329,216 +347,143 @@ line."
 (define-hash-table-test 'case-fold
   'case-fold-string= 'case-fold-string-hash)
 
-;; --------------------------------------------------
-;; Operations on individual lines
-;; --------------------------------------------------
-
-(defun emms-browser-insert-entry (entry tracks &optional expand-func)
-  "Add a single ENTRY -> TRACKS mapping to the buffer.
-EXPAND-FUNC is an optional func to call when expanding a line."
+(defun emms-browser-insert-top-level-entry (entry tracks type)
+  "Insert a single top level entry into the buffer."
   (emms-browser-ensure-browser-buffer)
   (emms-with-inhibit-read-only-t
-   (insert (emms-propertize entry
-                            'emms-browser-data tracks
-                            'emms-browser-level 1
-                            'emms-browser-expand-func expand-func
-                            'face 'emms-browser-tracks-face) "\n")))
-
-(defun emms-browser-add-tracks ()
-  "Add all the tracks on the current line to the playlist."
-  (interactive)
-  (let ((tracks (emms-browser-data-at))
-        (count 0)
-        old-max new-max type name)
-    (unless tracks
-      (error "No tracks on current line!"))
-    (with-current-emms-playlist
-      (setq old-max (point-max)))
-    ;; add each of the tracks
-    (dolist (track tracks)
-      (setq type (emms-track-get track 'type))
-      (setq name (emms-track-get track 'name))
-      (cond
-       ((eq type 'file)
-        (emms-add-file name))
-       ((eq type 'url)
-        (emms-add-url name)))
-      (setq count (1+ count)))
-    (run-mode-hooks 'emms-browser-tracks-added-hook)
-    (message "Added %d tracks." count)))
-
-(defun emms-browser-add-tracks-and-play ()
-  "Add all the tracks on the current line, play the first file."
-  (interactive)
-  (let (old-pos)
-    (with-current-emms-playlist
-      (setq old-pos (point-max)))
-    (emms-browser-add-tracks)
-    (with-current-emms-playlist
-      (goto-char old-pos)
-      (emms-playlist-select (point)))
-    ;; FIXME: is there a better way of doing this?
-    (emms-stop)
-    (emms-start)))
-
-(defun emms-browser-data-at (&optional pos)
-  "Return the tracks at POS (point if not given), or nil if none."
-  (emms-browser-ensure-browser-buffer)
-  (save-excursion
-    ;; move the point to the start of the line, since the trailing new
-    ;; line is not propertized
-    (move-beginning-of-line nil)
-    (emms-with-widened-buffer
-     (get-text-property (or pos (point))
-                        'emms-browser-data))))
-
-(defun emms-isearch-buffer ()
-  "Isearch through the buffer."
-  (interactive)
-  (goto-char (point-min))
-  (when (isearch-forward)
-    (unless (emms-browser-subitems-visible)
-      (emms-browser-show-subitems)
-      (next-line))))
+   (insert (emms-propertize
+            entry
+            'emms-browser-bdata
+            (emms-browser-make-bdata-tree
+             type 1 tracks)
+            'face 'emms-browser-tracks-face) "\n")))
 
 ;; --------------------------------------------------
-;; Expansion/subitem support (experimental)
+;; Building a subitem tree
 ;; --------------------------------------------------
 
-(defmacro emms-browser-add-show-category (name field-type &optional
-                                               expand-func sort-func)
-  "Create an interactive function emms-browser-show-FIELD-TYPE.
-EXPAND-FUNC is used to further expand subitems if not already
-expanded.
-SORT-FUNC is called to sort retrieved data."
-  (let ((fname (intern (concat "emms-browser-show-" name)))
-        (fdesc (concat "Show " name " under current line")))
-  `(defun ,fname ()
-     ,fdesc
-     (interactive)
-     (unless (emms-browser-subitems-visible)
-       (let ((data (emms-browser-make-alist-from-field
-                    ,field-type
-                    (emms-browser-data-at))))
-         (when ,sort-func
-           (setq data (funcall ,sort-func data)))
-         (emms-browser-insert-subitems data ,expand-func))))))
+(defun emms-browser-next-mapping-type (current-mapping)
+  "Return the next sensible mapping.
+Eg. if current-mapping is currently 'info-artist, return 'info-album."
+  (cond
+   ((eq current-mapping 'info-artist) 'info-album)
+   ((eq current-mapping 'info-album) 'info-title)
+   ((eq current-mapping 'info-genre) 'info-artist)
+   ((eq current-mapping 'info-year) 'info-artist)))
 
-;;
-;; create emms-browser-show-*
-;;
-(emms-browser-add-show-category
- "albums" 'info-album
- 'emms-browser-show-titles
- 'emms-browser-sort-by-name)
+(defun emms-browser-make-bdata-tree (type level tracks)
+  "Build a tree of browser DB elements for tracks."
+  (emms-browser-make-bdata
+   (emms-browser-make-bdata-tree-recurse
+    type level tracks)
+   ;; with the current hash code, we're guaranteed to have only one
+   ;; element at the top
+   (emms-track-get (car tracks) type)
+   type level))
 
-(emms-browser-add-show-category
- "artists" 'info-artist
- 'emms-browser-show-albums
- 'emms-browser-sort-by-name)
+(defun emms-browser-make-bdata-tree-recurse (type level tracks)
+  "Build a tree of alists based on a list of tracks, TRACKS.
+For example, if TYPE is 'info-year, return an alist like:
+artist1 -> album1 -> *track* 1.."
+  (let* ((next-type (emms-browser-next-mapping-type type))
+         (next-level (1+ level))
+         alist name new-db new-tracks)
+    ;; if we're at a leaf, the db data is a list of tracks
+    (if (eq type 'info-title)
+        tracks
+      ;; otherwise, make DBs from the sub elements
+      (setq alist
+            (emms-browser-make-sorted-alist
+             next-type tracks))
+      (mapcar (lambda (entry)
+                (setq name (emms-browser-make-name
+                            entry next-type))
+                (setq new-tracks (cdr entry))
+                (emms-browser-make-bdata
+                 (emms-browser-make-bdata-tree-recurse
+                  next-type next-level new-tracks)
+                 name next-type next-level))
+              alist))))
 
-(emms-browser-add-show-category
- "titles" 'info-title
- nil
- 'emms-browser-sort-by-tracks)
+(defun emms-browser-make-name (entry type)
+  "Return a name for ENTRY, used for making a bdata object.
+This uses `emms-browser-make-name-function'"
+  ;; we use cadr because we are guaranteed only one track in entry.
+  (funcall emms-browser-make-name-function entry type))
 
-(defun emms-browser-level-at-point ()
-  "Return the current level at point.
-Actually this function returns the value of the first character
-on the line, because if point is on a trailing \n it will fail.
-Returns 0 if the current line is not an entry."
-  (let ((val
-         (get-text-property (line-beginning-position)
-                            'emms-browser-level)))
-    (if val
-        val
-      0)))
+(defun emms-browser-make-name-standard (entry type)
+  "Add track numbers to track names.
+Apart from tracks, names are displayed without modification."
+  (if (eq type 'info-title)
+      (emms-browser-make-name-with-track-number (cadr entry))
+    (car entry)))
 
-(defun emms-browser-find-entry-more-than-level (level)
-  "Move point to next entry more than LEVEL and return point.
-If no entry exits, return nil.
-Returns point if currently on a an entry more than LEVEL."
-  (let ((old-pos (point))
-        level-at-point)
-    (re-search-forward "\n" nil t)
-    (if (> (emms-browser-level-at-point) level)
-        (point)
-      (goto-char old-pos)
-      nil)))
+(defun emms-browser-make-name-with-track-number (track)
+  "Concat a track number to the name of track, if one exists."
+  (let ((tracknum (emms-track-get track 'info-tracknumber)))
+    (concat
+     (if (string= tracknum "0")
+         ""
+       (concat
+        (if (eq (length tracknum) 1)
+            (concat "0" tracknum)
+          tracknum)
+        ". "))
+     (emms-track-get track 'info-title))))
 
-(defun emms-browser-subitems-visible ()
-  "True if there are any subentries under point."
-  (let ((current-level (emms-browser-level-at-point))
-        new-level)
-    (save-excursion
-      (re-search-forward "\n" nil t)
-      (when (setq new-level (emms-browser-level-at-point))
-        (> new-level current-level)))))
+(defun emms-browser-make-bdata (data name type level)
+  "Return a browser data item from ALIST.
+DATA should be a list of DB items, or a list of tracks.
+NAME is a name for the DB item.
+TYPE is a category the data is organised by, such as 'info-artist.
+LEVEL is the number of the sublevel the db item will be placed in."
+  (list (cons 'type type)
+        (cons 'level level)
+        (cons 'name name)
+        (cons 'data data)))
 
-(defun emms-browser-toggle-subitems ()
-  "Show or hide (kill) subitems under the current line."
-  (interactive)
-  (if (emms-browser-subitems-visible)
-      (emms-browser-kill-subitems)
-    (emms-browser-show-subitems)))
-
-(defun emms-browser-show-subitems ()
-  "Show subitems under the current line."
-  (let ((func (get-text-property (line-beginning-position)
-                                 'emms-browser-expand-func)))
-  (if func
-      (funcall func)
-    (message "Can't expand further!"))))
-
-(defun emms-browser-kill-subitems ()
-  "Remove all subitems under the current line.
-Stops at the next line at the same level, or EOF."
-  (let ((current-level (emms-browser-level-at-point))
-        (kill-whole-line t))
-    (save-excursion
-      (emms-with-inhibit-read-only-t
-       (while (emms-browser-find-entry-more-than-level current-level)
-         (kill-line)
-         (previous-line))))))
-
-(defun emms-browser-insert-subitems (subitems &optional expand-func)
-  "Insert SUBITEMS under the current item.
-SUBITEMS is a list of cons cells (desc . data).
-emms-browser-level will be set to 1 more than the current level.
-Don't add anything if there are already subitems below."
-  (let ((new-level (1+ (emms-browser-level-at-point)))
-        desc data)
-    (save-excursion
-      (next-line)
-      (beginning-of-line)
-      (emms-with-inhibit-read-only-t
-       (dolist (item subitems)
-         (setq desc (car item))
-         (setq data (cdr item))
-         (insert
-          (emms-propertize (concat (make-string (* 2 (1- new-level)) ?\  ) desc)
-                           'emms-browser-data data
-                           'emms-browser-level new-level
-                           'emms-browser-expand-func expand-func
-                           'face
-                           (intern
-                            (concat
-                             "emms-browser-tracks-sub-face-"
-                             (int-to-string
-                              (1- new-level)))))
-          "\n"))))))
-
-(defun emms-browser-make-alist-from-field (field-type tracks)
-  "Make an alist mapping of FIELD-TYPE -> TRACKS.
-Items with no metadata for FIELD-TYPE will be placed in 'misc'"
+(defun emms-browser-make-alist (type tracks)
+  "Make an alist mapping of TYPE -> TRACKS.
+Items with no metadata for TYPE will be placed in 'misc'"
   (let (db key existing)
     (dolist (track tracks)
-      (setq key (emms-track-get track field-type "misc"))
+      (setq key (emms-track-get track type "misc"))
       (setq existing (assoc key db))
       (if existing
           (setcdr existing (cons track (cdr existing)))
         (push (cons key (list track)) db)))
+    ;; sort the entries we've built
+    (dolist (item db)
+      (setcdr item (nreverse (cdr item))))
     db))
+
+(defun emms-browser-make-sorted-alist (type tracks)
+  "Return a sorted alist of TRACKS.
+TYPE is the metadata to make the alist by - eg. if it's
+'info-artist, an alist of artists will be made."
+  (emms-browser-sort-alist
+   (emms-browser-make-alist type tracks)
+   type))
+
+;; --------------------------------------------------
+;; BDATA accessors and predicates
+;; --------------------------------------------------
+
+(defun emms-browser-bdata-level (bdata)
+  (cdr (assq 'level bdata)))
+
+(defun emms-browser-bdata-name (bdata)
+  (cdr (assq 'name bdata)))
+
+(defun emms-browser-bdata-type (bdata)
+  (cdr (assq 'type bdata)))
+
+(defun emms-browser-bdata-data (bdata)
+  (cdr (assq 'data bdata)))
+
+(defun emms-browser-bdata-p (obj)
+  "True if obj is a BDATA object."
+  (consp (assq 'data obj)))
 
 ;; --------------------------------------------------
 ;; Sorting expanded entries
@@ -560,24 +505,253 @@ SORT-FUNC should be a playlist sorting predicate like
   `(lambda (a b)
      (funcall ,sort-func (car a) (car b))))
 
-(defun emms-browser-sort-by-tracks (data)
-  "Sort an alist DATA by the tracks in each entry.
+(defun emms-browser-sort-by-track (alist)
+  "Sort an ALIST by the tracks in each entry.
 Uses `emms-browser-track-sort-function'."
   (if emms-browser-track-sort-function
-      (sort data (emms-browser-sort-cadr
+      (sort alist (emms-browser-sort-cadr
                   emms-browser-track-sort-function))
-    data))
+    alist))
 
-(defun emms-browser-sort-by-name (data)
-  "Sort an alist DATA by keys.
+(defun emms-browser-sort-by-name (alist)
+  "Sort ALIST by keys alphabetically.
 Uses `emms-browser-alpha-sort-function'."
   (if emms-browser-alpha-sort-function
-      (sort data (emms-browser-sort-car
+      (sort alist (emms-browser-sort-car
                   emms-browser-alpha-sort-function))
-    data))
+    alist))
+
+(defun emms-browser-sort-alist (alist type)
+  "Sort ALIST using the sorting function for TYPE."
+  (let ((sort-func
+         (cond
+          ((or
+            (eq type 'info-album)
+            (eq type 'info-artist)
+            (eq type 'info-year)
+            (eq type 'info-genre))
+           'emms-browser-sort-by-name)
+          ((eq type 'info-title)
+           'emms-browser-sort-by-track)
+          (t (message "Can't sort unknown mapping!")))))
+    (funcall sort-func alist)))
 
 ;; --------------------------------------------------
-;; Linked browser and playlist windows (experimental)
+;; Subitem operations on the buffer
+;; --------------------------------------------------
+
+(defun emms-browser-bdata-at-point ()
+  "Return the bdata object at point.
+Includes information at point (such as album name), and metadata."
+  (get-text-property (line-beginning-position)
+                     'emms-browser-bdata))
+
+(defun emms-browser-data-at-point ()
+  "Return the data stored under point.
+This will be a list of DB items."
+  (emms-browser-bdata-data (emms-browser-bdata-at-point)))
+
+(defun emms-browser-level-at-point ()
+  "Return the current level at point."
+  (emms-browser-bdata-level (emms-browser-bdata-at-point)))
+
+(defun emms-browser-expand-one-level ()
+  "Expand the current line by one sublevel."
+  (interactive)
+  (let* ((data (emms-browser-data-at-point)))
+    (save-excursion
+      (next-line)
+      (beginning-of-line)
+      (dolist (data-item data)
+        (emms-browser-insert-data-item data-item)))))
+
+(defun emms-browser-insert-data-item (data-item)
+  "Insert DATA-ITEM into the buffer.
+This checks DATA-ITEM's level to determine how much to indent.
+The line will have a property emms-browser-bdata storing subitem
+information."
+  (let* ((level (emms-browser-bdata-level data-item))
+         (name (emms-browser-bdata-name data-item))
+         (indent (emms-browser-make-indent-for-level level)))
+    (emms-with-inhibit-read-only-t
+     (insert
+      (emms-propertize
+       (concat indent name)
+       'emms-browser-bdata data-item
+       'face (emms-browser-face-from-level level))
+      "\n"))))
+
+(defun emms-browser-make-indent-for-level (level)
+  (make-string (* 2 (1- level)) ?\  ))
+
+(defun emms-browser-face-from-level (level)
+  "Return a face appropriate for LEVEL."
+  (intern
+   (concat "emms-browser-tracks-sub-face-"
+           (int-to-string (1- level)))))
+
+(defun emms-browser-find-entry-more-than-level (level)
+  "Move point to next entry more than LEVEL and return point.
+If no entry exits, return nil.
+Returns point if currently on a an entry more than LEVEL."
+  (let ((old-pos (point))
+        level-at-point)
+    (forward-line 1)
+    (setq level-at-point (emms-browser-level-at-point))
+    (if (and level-at-point
+             (> level-at-point level))
+        (point)
+      (goto-char old-pos)
+      nil)))
+
+(defun emms-browser-subitems-visible ()
+  "True if there are any subentries visible point."
+  (let ((current-level (emms-browser-level-at-point))
+        new-level)
+    (save-excursion
+      (re-search-forward "\n" nil t)
+      (when (setq new-level (emms-browser-level-at-point))
+        (> new-level current-level)))))
+
+(defun emms-browser-subitems-exist ()
+  "True if it's possible to expand the current line."
+  (not (eq (emms-browser-bdata-type
+            (emms-browser-bdata-at-point))
+           'info-title)))
+
+(defun emms-browser-move-up-level ()
+  "Move up one level if possible.
+Return true if we were able to move up."
+  (let ((moved nil)
+        (continue t)
+        (current-level (emms-browser-level-at-point)))
+    (while (and
+            continue
+            (zerop (forward-line -1)))
+      (when (> current-level (emms-browser-level-at-point))
+        (setq moved t)
+        (setq continue nil)))
+    moved))
+
+(defun emms-browser-toggle-subitems ()
+  "Show or hide (kill) subitems under the current line."
+  (interactive)
+  (if (emms-browser-subitems-visible)
+      (emms-browser-kill-subitems)
+    (if (emms-browser-subitems-exist)
+        (emms-browser-show-subitems)
+      (assert (emms-browser-move-up-level))
+      (emms-browser-kill-subitems))))
+
+(defun emms-browser-show-subitems ()
+  "Show subitems under the current line."
+  (emms-browser-expand-one-level))
+
+(defun emms-browser-kill-subitems ()
+  "Remove all subitems under the current line.
+Stops at the next line at the same level, or EOF."
+  (let ((current-level (emms-browser-level-at-point))
+        (next-line (line-beginning-position 2)))
+    (emms-with-inhibit-read-only-t
+     (delete-region next-line
+                    (save-excursion
+                      (while
+                          (emms-browser-find-entry-more-than-level
+                           current-level))
+                      (line-beginning-position 2))))))
+
+
+;; --------------------------------------------------
+;; Dealing with the playlist (queuing songs, etc)
+;; --------------------------------------------------
+
+(defun emms-browser-insert-playlist-group (type group level)
+  "Insert a group description into the playlist buffer.
+Eg. [album] foo bar"
+  (let ((short-type (substring (symbol-name type) 5)))
+    (with-current-emms-playlist
+      (goto-char (point-max))
+      (insert
+       (emms-browser-make-indent-for-level level)
+       (format "[%s] %s\n" short-type group)))))
+
+(defun emms-browser-insert-track (track name level)
+  "Insert a track into the playlist buffer, called NAME.
+LEVEL is used to control indentation."
+  (funcall emms-browser-insert-track-function track name level))
+
+(defun emms-browser-insert-track-standard (track name level)
+  (with-current-emms-playlist
+    (goto-char (point-max))
+    (insert  (emms-propertize
+              (concat
+               (emms-browser-make-indent-for-level level)
+               name)
+              'face 'emms-playlist-track-face
+              'emms-track track)
+            "\n")))
+
+(defun emms-browser-add-tracks ()
+  "Add all tracks at point."
+  (interactive)
+  (let ((bdata (emms-browser-bdata-at-point)))
+    (emms-browser-add-bdata-to-playlist
+     bdata (emms-browser-bdata-level bdata)))
+  (run-hooks 'emms-browser-tracks-added-hook))
+
+(defun emms-browser-add-tracks-and-play ()
+  "Add all tracks at point, and play the first added track."
+  (interactive)
+  (let (old-pos)
+    (with-current-emms-playlist
+      (setq old-pos (point-max)))
+    (emms-browser-add-tracks)
+    (with-current-emms-playlist
+      (goto-char old-pos)
+      (emms-playlist-next)
+      (emms-playlist-select (point)))
+    ;; FIXME: is there a better way of doing this?
+    (emms-stop)
+    (emms-start)))
+
+(defun emms-browser-add-bdata-to-playlist (bdata starting-level)
+  "Add all tracks in BDATA to the playlist."
+  (let ((type (emms-browser-bdata-type bdata))
+        (name (emms-browser-bdata-name bdata))
+        (level (emms-browser-bdata-level bdata)))
+
+    ;; adjust the indentation relative to the starting level
+    (when starting-level
+      (setq level (- level (1- starting-level))))
+
+    (unless (eq type 'info-title)
+      (emms-browser-insert-playlist-group
+       type name level))
+
+    (dolist (item (emms-browser-bdata-data bdata))
+      (if (not (eq type 'info-title))
+          (emms-browser-add-bdata-to-playlist item starting-level)
+        ;; add full track name as there may not be enough context
+        (setq name (concat (emms-track-get item 'info-artist)
+                           " - "
+                           ;; track numbers don't make much sense
+                           ;; for individual files
+                           (or (and (> level 1)
+                                    name)
+                               (emms-track-get item 'info-title))))
+        (emms-browser-insert-track
+         item name level)))))
+
+(defun emms-isearch-buffer ()
+  "Isearch through the buffer."
+  (interactive)
+  (goto-char (point-min))
+  (when (isearch-forward)
+    (unless (emms-browser-subitems-visible)
+      (emms-browser-show-subitems))))
+
+;; --------------------------------------------------
+;; Linked browser and playlist windows
 ;; --------------------------------------------------
 
 (defcustom emms-browser-switch-to-playlist-on-add
@@ -689,6 +863,5 @@ Returns the playlist window."
     ;; linked buffer
     (bury-buffer other-buf)))
 
-;(defun emms
 (provide 'emms-browser)
 ;;; emms-browser.el ends here
