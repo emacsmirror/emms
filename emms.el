@@ -504,6 +504,11 @@ whenever possible."
     (run-hook-with-args 'emms-track-initialize-functions track)
     track))
 
+(defun emms-track-p (obj)
+  "True if OBJ is an emms track."
+  (and (listp obj)
+       (eq (car obj) '*track*)))
+
 (defun emms-track-type (track)
   "Return the type of TRACK."
   (emms-track-get track 'type))
