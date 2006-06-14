@@ -130,43 +130,46 @@ at time-i, display lyric-i.")
   "current lyric.")
 
 (defun emms-lyrics-read-file (file)
-  "Read a lyric file(LRC format). File should end up with \".lrc\", its
-contents look like one of the following:
+  "Read a lyric file(LRC format). FILE should end up with \".lrc\", its
+content looks like one of the following:
 
     [1:39]I love you, Emacs!
     [00:39]I love you, Emacs!
     [00:39.67]I love you, Emacs!
 
 To find FILE, will look up in current directory and `emms-lyrics-dir'."
-  (unless (file-exists-p file)
-    (setq file (emms-lyrics-find-lyric file)))
-  (when (and file (not (string= file "")) (file-exists-p file))
-    (with-temp-buffer
-      (let ((coding-system-for-read emms-lyrics-coding-system))
-      (insert-file-contents file)
-      (while (search-forward-regexp "\\[[0-9:.]+\\].*" nil t)
-	(let ((lyric-string (match-string 0))
-	      (time 0)
-	      (lyric ""))
-	  (setq lyric
-		(emms-replace-regexp-in-string ".*\\]" "" lyric-string))
-	  (while (string-match "\\[[0-9:.]+\\]" lyric-string)
-	    (let* ((time-string (match-string 0 lyric-string))
-		   (semi-pos (string-match ":" time-string)))
-	      (setq time
-		    (+ (* (string-to-number
-			   (substring time-string 1 semi-pos))
-			  60)
-		       (string-to-number
-			(substring time-string
-				   (1+ semi-pos)
-				   (1- (length time-string))))))
-	      (setq lyric-string
-		    (substring lyric-string (length time-string)))
-	      (setq emms-lyrics-alist
-		    (append emms-lyrics-alist `((,time ,lyric))))
-	      (setq time 0))))))
-      t)))
+  (when (eq 'file (emms-track-get
+                   (emms-playlist-current-selected-track)
+                   'type))
+    (unless (file-exists-p file)
+      (setq file (emms-lyrics-find-lyric file)))
+    (when (and file (not (string= file "")) (file-exists-p file))
+      (with-temp-buffer
+        (let ((coding-system-for-read emms-lyrics-coding-system))
+          (insert-file-contents file)
+          (while (search-forward-regexp "\\[[0-9:.]+\\].*" nil t)
+            (let ((lyric-string (match-string 0))
+                  (time 0)
+                  (lyric ""))
+              (setq lyric
+                    (emms-replace-regexp-in-string ".*\\]" "" lyric-string))
+              (while (string-match "\\[[0-9:.]+\\]" lyric-string)
+                (let* ((time-string (match-string 0 lyric-string))
+                       (semi-pos (string-match ":" time-string)))
+                  (setq time
+                        (+ (* (string-to-number
+                               (substring time-string 1 semi-pos))
+                              60)
+                           (string-to-number
+                            (substring time-string
+                                       (1+ semi-pos)
+                                       (1- (length time-string))))))
+                  (setq lyric-string
+                        (substring lyric-string (length time-string)))
+                  (setq emms-lyrics-alist
+                        (append emms-lyrics-alist `((,time ,lyric))))
+                  (setq time 0))))))
+        t))))
 
 (defun emms-lyrics-start ()
   "Start displaying lryics."
