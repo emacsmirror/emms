@@ -160,6 +160,13 @@ Use nil for no sorting."
     (define-key map (kbd "SPC") 'emms-browser-toggle-subitems)
     (define-key map (kbd "RET") 'emms-browser-add-tracks)
     (define-key map (kbd "<C-return>") 'emms-browser-add-tracks-and-play)
+    (define-key map (kbd "<tab>") 'emms-browser-next-non-track)
+    (define-key map (kbd "<backtab>") 'emms-browser-prev-non-track)
+    (define-key map (kbd "E") 'emms-browser-expand-all)
+    (define-key map (kbd "1") 'emms-browser-collapse-all)
+    (define-key map (kbd "2") 'emms-browser-expand-to-level-2)
+    (define-key map (kbd "3") 'emms-browser-expand-to-level-3)
+    (define-key map (kbd "4") 'emms-browser-expand-to-level-4)
     map)
   "Keymap for `emms-browser-mode'.")
 
@@ -619,15 +626,17 @@ Returns point if currently on a an entry more than LEVEL."
             (emms-browser-bdata-at-point))
            'info-title)))
 
-(defun emms-browser-move-up-level ()
+(defun emms-browser-move-up-level (&optional direction)
   "Move up one level if possible.
-Return true if we were able to move up."
+Return true if we were able to move up.
+If DIRECTION is 1, move forward, otherwise move backwards."
   (let ((moved nil)
         (continue t)
         (current-level (emms-browser-level-at-point)))
     (while (and
             continue
-            (zerop (forward-line -1)))
+            (zerop (forward-line
+                    (or direction -1))))
       (when (> current-level (emms-browser-level-at-point))
         (setq moved t)
         (setq continue nil)))
@@ -645,21 +654,23 @@ Return true if we were able to move up."
 
 (defun emms-browser-show-subitems ()
   "Show subitems under the current line."
-  (emms-browser-expand-one-level))
+  (unless (emms-browser-subitems-visible)
+    (if (emms-browser-subitems-exist)
+        (emms-browser-expand-one-level))))
 
 (defun emms-browser-kill-subitems ()
   "Remove all subitems under the current line.
 Stops at the next line at the same level, or EOF."
-  (let ((current-level (emms-browser-level-at-point))
-        (next-line (line-beginning-position 2)))
-    (emms-with-inhibit-read-only-t
-     (delete-region next-line
-                    (save-excursion
-                      (while
-                          (emms-browser-find-entry-more-than-level
-                           current-level))
-                      (line-beginning-position 2))))))
-
+  (when (emms-browser-subitems-visible)
+    (let ((current-level (emms-browser-level-at-point))
+          (next-line (line-beginning-position 2)))
+      (emms-with-inhibit-read-only-t
+       (delete-region next-line
+                      (save-excursion
+                        (while
+                            (emms-browser-find-entry-more-than-level
+                             current-level))
+                        (line-beginning-position 2)))))))
 
 ;; --------------------------------------------------
 ;; Dealing with the playlist (queuing songs, etc)
@@ -749,6 +760,58 @@ LEVEL is used to control indentation."
   (when (isearch-forward)
     (unless (emms-browser-subitems-visible)
       (emms-browser-show-subitems))))
+
+(defun emms-browser-next-non-track (&optional direction)
+  "Jump to the next non-track element."
+  (interactive)
+  (let ((continue t))
+    (while (and continue
+                (forward-line (or direction 1)))
+      (unless (eq (emms-browser-bdata-type
+                   (emms-browser-bdata-at-point)) 'info-title)
+        (setq continue)))))
+
+(defun emms-browser-prev-non-track ()
+  "Jump to the previous non-track element."
+  (interactive)
+  (emms-browser-next-non-track -1))
+
+(defun emms-browser-expand-all ()
+  "Expand everything."
+  (interactive)
+  (emms-browser-expand-to-level 99))
+
+(defun emms-browser-expand-to-level-2 ()
+  "Expand all top level items one level."
+  (interactive)
+  (emms-browser-expand-to-level 2))
+
+(defun emms-browser-expand-to-level-3 ()
+  "Expand all top level items two levels."
+  (interactive)
+  (emms-browser-expand-to-level 3))
+
+(defun emms-browser-expand-to-level-4 ()
+  "Expand all top level items three levels."
+  (interactive)
+  (emms-browser-expand-to-level 4))
+
+(defun emms-browser-expand-to-level (level)
+  "Expand to an a depth specified by LEVEL."
+  (goto-char (point-min))
+  (while (not (eq (buffer-end 1) (point)))
+    (if (< (emms-browser-level-at-point) level)
+        (emms-browser-show-subitems))
+    (emms-browser-next-non-track))
+  (goto-char (point-min)))
+
+(defun emms-browser-collapse-all ()
+  "Collapse everything."
+  (interactive)
+  (goto-char (point-max))
+  (while (not (eq (buffer-end -1) (point)))
+    (emms-browser-prev-non-track)
+    (emms-browser-kill-subitems)))
 
 ;; --------------------------------------------------
 ;; Linked browser and playlist windows
