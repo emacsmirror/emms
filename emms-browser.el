@@ -84,13 +84,13 @@
 
 (defcustom emms-browser-default-browsing-function
   'emms-browse-by-artist
-  "The default browsing mode."
+  "*The default browsing mode."
   :group 'emms-browser
   :type 'function)
 
 (defcustom emms-browser-make-name-function
   'emms-browser-make-name-standard
-  "A function to make names for entries and subentries.
+  "*A function to make names for entries and subentries.
 Overriding this function allows you to customise how various elements
 are displayed. It is called with two arguments - track and type."
   :group 'emms-browser
@@ -98,7 +98,7 @@ are displayed. It is called with two arguments - track and type."
 
 (defcustom emms-browser-insert-track-function
   'emms-browser-insert-track-standard
-  "A function to insert a track into the playlist.
+  "*A function to insert a track into the playlist.
 The default behaviour indents tracks depending on whether you're
 adding an album, artist, etc."
   :group 'emms-browser
@@ -106,37 +106,37 @@ adding an album, artist, etc."
 
 (defcustom emms-browser-comparison-test
   'case-fold
-  "A method for comparing entries in the cache.
+  "*A method for comparing entries in the cache.
 The default is to compare case-insensitively."
   :group 'emms-browser
   :type 'symbol)
 
 (defcustom emms-browser-track-sort-function
   'emms-sort-natural-order-less-p
-  "How to sort tracks in the browser.
+  "*How to sort tracks in the browser.
 Ues nil for no sorting."
   :group 'emms-browser
   :type 'function)
 
 (defcustom emms-browser-alpha-sort-function
   'string<
-  "How to sort artists/albums/etc. in the browser.
+  "*How to sort artists/albums/etc. in the browser.
 Use nil for no sorting."
   :group 'emms-browser
   :type 'function)
 
 (defcustom emms-browser-show-display-hook nil
-  "Hooks to run when starting or switching to a browser buffer."
+  "*Hooks to run when starting or switching to a browser buffer."
   :group 'emms-browser
   :type 'hook)
 
 (defcustom emms-browser-hide-display-hook nil
-  "Hooks to run when burying or removing a browser buffer."
+  "*Hooks to run when burying or removing a browser buffer."
   :group 'emms-browser
   :type 'hook)
 
 (defcustom emms-browser-tracks-added-hook nil
-  "Hooks to run when tracks are added to the playlist."
+  "*Hooks to run when tracks are added to the playlist."
   :group 'emms-browser
   :type 'hook)
 
