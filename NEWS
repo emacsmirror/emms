@@ -1,5 +1,8 @@
 News since version 2:
 
+  - A new player that uses mpg321's remote mode is now available
+    (emms-player-mpg321-remote) - this allows seeking and copes with
+    errors in files.
   - A metadata browser has been added in emms-browser.el.
   - Recording of the time a track was last played is now supported.
   - emms-play-* and emms-add-* functions now toggle their play/add
@@ -10,5 +13,7 @@ News since version 2:
   - When playing a playlist from emms-playlist-mode, EMMS now
     optionally opens a new buffer for this playlist.
 
-  User-visible bug fixes:
+User-visible bug fixes:
+
   - The emms-playlist-mode is now much faster
+  - MP3s with errors are now playable when using the remote player.
