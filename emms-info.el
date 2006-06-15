@@ -60,6 +60,13 @@ This requires `later-do', which should come with EMMS."
   :type 'boolean
   :group 'emms-info)
 
+(defcustom emms-info-report-each-num-tracks 200
+  "*Non-zero will report progress information every number of tracks.
+The default is to display a message every 200 tracks.
+This variable is only used when adding tracks asynchronously."
+  :type 'integer
+  :group 'emms-info)
+
 (defcustom emms-info-functions nil
   "*Functions which add information to tracks.
 Each is called with a track as argument."
@@ -96,9 +103,14 @@ Return t when the track got changed."
 
     (when emms-info-asynchronously
       (setq emms-info-asynchronous-tracks (1- emms-info-asynchronous-tracks))
-      (when (zerop emms-info-asynchronous-tracks)
-        (message "EMMS: All track information loaded.")))
-    t))
+      (if (zerop emms-info-asynchronous-tracks)
+          (message "EMMS: All track information loaded.")
+        (unless (zerop emms-info-report-each-num-tracks)
+          (if (zerop
+               (mod emms-info-asynchronous-tracks
+                    emms-info-report-each-num-tracks))
+              (message "EMMS: %d tracks to go.."
+                       emms-info-asynchronous-tracks)))))))
 
 (defun emms-info-track-file-mtime (track)
   "Return the mtime of the file of TRACK, if any.
