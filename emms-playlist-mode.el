@@ -106,6 +106,7 @@ composed of other playlists."
     (define-key map (kbd "C-k") 'emms-playlist-mode-kill-track)
     (define-key map (kbd "C-w") 'emms-playlist-mode-kill)
     (define-key map (kbd "C-_") 'emms-playlist-mode-undo)
+    (define-key map (kbd "C-/") 'emms-playlist-mode-undo)
     (define-key map (kbd "C-n") 'next-line)
     (define-key map (kbd "C-p") 'previous-line)
     (define-key map (kbd "C-j") 'emms-playlist-mode-insert-newline)
@@ -423,7 +424,8 @@ WINDOW-WIDTH is `emms-playlist-mode-window-width'."
    (add-text-properties (point-min)
                         (point-max)
                         '(face emms-playlist-track-face)))
-  (setq buffer-read-only t))
+  (setq buffer-read-only t)
+  (setq buffer-undo-list nil))
 
 ;;;###autoload
 (defun emms-playlist-mode ()
