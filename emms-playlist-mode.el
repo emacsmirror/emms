@@ -122,6 +122,7 @@ composed of other playlists."
     (define-key map (kbd "k") 'emms-playlist-current-kill)
     (define-key map (kbd "?") 'describe-mode)
     (define-key map (kbd "r") 'emms-random)
+    (define-key map (kbd "C") 'emms-playlist-clear)
     (define-key map (kbd "<mouse-2>") 'emms-playlist-mode-play-current-track)
     (define-key map (kbd "RET") 'emms-playlist-mode-play-dtrt)
     map)
