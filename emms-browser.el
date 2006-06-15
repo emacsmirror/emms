@@ -68,6 +68,7 @@
 (require 'emms)
 (require 'emms-cache)
 (require 'emms-source-file)
+(require 'emms-playlist-sort)
 
 (eval-when-compile
   (require 'cl))
