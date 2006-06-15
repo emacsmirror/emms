@@ -74,6 +74,9 @@ For example: (list \"-o\" \"alsa\")"
 (defvar emms-player-mpg321-remote-process-name "emms-player-mpg321-remote-proc"
   "The name of the mpg321 remote player process")
 
+(defvar emms-player-mpg321-remote-mask-stop-message nil
+  "True if we should ignore the next stop message.")
+
 (defmacro emms-player-mpg321-remote-add (cmd func)
   `(emms-player-set 'emms-player-mpg321-remote
                     ,cmd ,func))
