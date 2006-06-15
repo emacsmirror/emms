@@ -430,7 +430,7 @@ Apart from tracks, names are displayed without modification."
   "Concat a track number to the name of track, if one exists."
   (let ((tracknum (emms-track-get track 'info-tracknumber)))
     (concat
-     (if (string= tracknum "0")
+     (if (or (not (stringp tracknum) (string= tracknum "0")))
          ""
        (concat
         (if (eq (length tracknum) 1)
