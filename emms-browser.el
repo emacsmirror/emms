@@ -783,37 +783,74 @@ LEVEL is used to control indentation."
 (defun emms-browser-expand-to-level-2 ()
   "Expand all top level items one level."
   (interactive)
-  (emms-browser-collapse-all)
+  (emms-browser-mark-and-collapse)
   (emms-browser-expand-to-level 2))
 
 (defun emms-browser-expand-to-level-3 ()
   "Expand all top level items two levels."
   (interactive)
-  (emms-browser-collapse-all)
+  (emms-browser-mark-and-collapse)
   (emms-browser-expand-to-level 3))
 
 (defun emms-browser-expand-to-level-4 ()
   "Expand all top level items three levels."
   (interactive)
-  (emms-browser-collapse-all)
+  (emms-browser-mark-and-collapse)
   (emms-browser-expand-to-level 4))
 
 (defun emms-browser-expand-to-level (level)
-  "Expand to an a depth specified by LEVEL."
+  "Expand to a depth specified by LEVEL.
+After expanding, jump to the currently marked entry."
   (goto-char (point-min))
   (while (not (eq (buffer-end 1) (point)))
     (if (< (emms-browser-level-at-point) level)
         (emms-browser-show-subitems))
     (emms-browser-next-non-track))
-  (goto-char (point-min)))
+  (emms-browser-pop-mark)
+  (recenter '(4)))
 
 (defun emms-browser-collapse-all ()
-  "Collapse everything."
+  "Collapse everything, saving and restoring the mark."
   (interactive)
+  (emms-browser-mark-and-collapse)
+  (emms-browser-pop-mark)
+  (recenter '(4)))
+
+(defun emms-browser-mark-and-collapse ()
+  "Save the current top level element, and collapse."
+  (emms-browser-mark-entry)
   (goto-char (point-max))
   (while (not (eq (buffer-end -1) (point)))
     (emms-browser-prev-non-track)
     (emms-browser-kill-subitems)))
+
+(defun emms-browser-find-top-level ()
+  "Move up until reaching a top-level element."
+  (while (not (eq (emms-browser-level-at-point) 1))
+    (forward-line -1)))
+
+(defun emms-browser-mark-entry ()
+  "Mark the current top level entry."
+  (save-excursion
+    (emms-browser-find-top-level)
+    (emms-with-inhibit-read-only-t
+     (add-text-properties (line-beginning-position)
+                          (line-end-position)
+                          (list 'emms-browser-mark t)))))
+
+(defun emms-browser-pop-mark ()
+  "Return to the last marked entry, and remove the mark."
+  (goto-char (point-min))
+  (let ((pos (text-property-any (point-min) (point-max)
+                                'emms-browser-mark t)))
+    (if pos
+        (progn
+          (goto-char pos)
+          (emms-with-inhibit-read-only-t
+           (remove-text-properties (line-beginning-position)
+                                   (line-end-position)
+                                   (list 'emms-browser-mark))))
+      (message "No mark saved!"))))
 
 ;; --------------------------------------------------
 ;; Linked browser and playlist windows
