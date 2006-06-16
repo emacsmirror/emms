@@ -783,16 +783,19 @@ LEVEL is used to control indentation."
 (defun emms-browser-expand-to-level-2 ()
   "Expand all top level items one level."
   (interactive)
+  (emms-browser-collapse-all)
   (emms-browser-expand-to-level 2))
 
 (defun emms-browser-expand-to-level-3 ()
   "Expand all top level items two levels."
   (interactive)
+  (emms-browser-collapse-all)
   (emms-browser-expand-to-level 3))
 
 (defun emms-browser-expand-to-level-4 ()
   "Expand all top level items three levels."
   (interactive)
+  (emms-browser-collapse-all)
   (emms-browser-expand-to-level 4))
 
 (defun emms-browser-expand-to-level (level)
