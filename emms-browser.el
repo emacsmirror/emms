@@ -704,10 +704,13 @@ LEVEL is used to control indentation."
 (defun emms-browser-add-tracks ()
   "Add all tracks at point."
   (interactive)
-  (let ((bdata (emms-browser-bdata-at-point)))
-    (emms-browser-add-bdata-to-playlist
-     bdata (emms-browser-bdata-level bdata)))
-  (run-hooks 'emms-browser-tracks-added-hook))
+  (let ((first-new-track
+         (with-current-emms-playlist
+           (point-max))))
+    (let ((bdata (emms-browser-bdata-at-point)))
+      (emms-browser-add-bdata-to-playlist
+       bdata (emms-browser-bdata-level bdata)))
+    (run-hook-with-args 'emms-browser-tracks-added-hook first-new-track)))
 
 (defun emms-browser-add-tracks-and-play ()
   "Add all tracks at point, and play the first added track."
@@ -874,19 +877,18 @@ configuration."
                'emms-browser-hide-linked-window)
   ;; switch to the playlist window when adding tracks?
   (add-to-list 'emms-browser-tracks-added-hook
-               (lambda () (interactive)
+               (lambda (start-of-tracks) (interactive)
                  (let (playlist-window)
                    (when emms-browser-switch-to-playlist-on-add
                      (emms-smart-browse))
-                   ;; recenter
+                   ;; center on the first added track/group name
                    (when
                        (setq playlist-window
                              (emms-browser-get-linked-window))
                      (with-selected-window
                          playlist-window
-                       ;; FIXME: how do we achieve the same behaviour as
-                       ;; c-u when calling interactively?
-                       (recenter))))))
+                       (goto-char start-of-tracks)
+                       (recenter '(4)))))))
   (let (wind buf)
   (cond
    ((eq major-mode 'emms-browser-mode)
