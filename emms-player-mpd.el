@@ -803,7 +803,11 @@ Execute CALLBACK with CLOSURE as its first argument when done."
   "Return non-nil when we can play this track."
   (and (memq (emms-track-type track) '(file url playlist streamlist))
        (string-match (emms-player-get emms-player-mpd 'regex)
-                     (emms-track-name track))))
+                     (emms-track-name track))
+       (condition-case nil
+           (progn (emms-player-mpd-ensure-process)
+                  t)
+         (error nil))))
 
 (defun emms-player-mpd-play (&optional id)
   "Play whatever is in the current MusicPD playlist.
@@ -1087,6 +1091,8 @@ The track should be an alist as per `emms-player-mpd-get-alist'."
 This is useful to do when you have recently acquired new music."
   (interactive
    (list (read-string "Directory: ")))
+  (unless (string= dir "")
+    (setq dir (emms-player-mpd-get-mpd-filename dir)))
   (if emms-cache-set-function
       (progn
         (message "Dumping MusicPD data to cache...")
