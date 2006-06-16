@@ -420,22 +420,25 @@ This uses `emms-browser-make-name-function'"
 (defun emms-browser-make-name-standard (entry type)
   "Add track numbers to track names.
 Apart from tracks, names are displayed without modification."
+  (let ((key (car entry))
+        (track (cadr entry)))
   (if (eq type 'info-title)
-      (emms-browser-make-name-with-track-number (cadr entry))
-    (car entry)))
+      (concat (emms-browser-track-number track)
+              (emms-track-get track 'info-title))
+    key)))
 
-(defun emms-browser-make-name-with-track-number (track)
-  "Concat a track number to the name of track, if one exists."
+(defun emms-browser-track-number (track)
+  "Return a string representation of a track number.
+The string will end in a space. If no track number is available,
+return an empty string."
   (let ((tracknum (emms-track-get track 'info-tracknumber)))
-    (concat
-     (if (or (not (stringp tracknum)) (string= tracknum "0"))
-         ""
-       (concat
-        (if (eq (length tracknum) 1)
-            (concat "0" tracknum)
-          tracknum)
-        ". "))
-     (emms-track-get track 'info-title))))
+    (if (or (not (stringp tracknum)) (string= tracknum "0"))
+        ""
+      (concat
+       (if (eq (length tracknum) 1)
+           (concat "0" tracknum)
+         tracknum)
+       ". "))))
 
 (defun emms-browser-make-bdata (data name type level)
   "Return a browser data item from ALIST.
@@ -745,13 +748,15 @@ LEVEL is used to control indentation."
       (if (not (eq type 'info-title))
           (emms-browser-add-bdata-to-playlist item starting-level)
         ;; add full track name as there may not be enough context
-        (setq name (concat (emms-track-get item 'info-artist)
-                           " - "
-                           ;; track numbers don't make much sense
-                           ;; for individual files
-                           (or (and (> level 1)
-                                    name)
-                               (emms-track-get item 'info-title))))
+        (setq name (concat
+                    ;; place the track number first - this looks
+                    ;; better for multi-artist albums especially.
+                    (or (and (> level 1)
+                             (emms-browser-track-number item))
+                        "")
+                    (emms-track-get item 'info-artist)
+                    " - "
+                    (emms-track-get item 'info-title)))
         (emms-browser-insert-track
          item name level)))))
 
