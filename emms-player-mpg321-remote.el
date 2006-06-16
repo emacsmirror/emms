@@ -74,8 +74,8 @@ For example: (list \"-o\" \"alsa\")"
 (defvar emms-player-mpg321-remote-process-name "emms-player-mpg321-remote-proc"
   "The name of the mpg321 remote player process")
 
-(defvar emms-player-mpg321-remote-stopped-p nil
-  "True if we should ignore the next stop message.")
+(defvar emms-player-mpg321-remote-ignore-stop 0
+  "Number of stop messages to ignore, due to user action.")
 
 (defmacro emms-player-mpg321-remote-add (cmd func)
   `(emms-player-set 'emms-player-mpg321-remote
@@ -141,19 +141,22 @@ For example: (list \"-o\" \"alsa\")"
 ;; --------------------------------------------------
 
 (defun emms-player-mpg321-remote-filter (proc str)
-  (let* ((data (split-string str))
-         (cmd (car data)))
-    (cond
-     ;; stop notice
-     ((and (string= cmd "@P")
-           (string= (cadr data) "0"))
-      (emms-player-mpg321-remote-notify-emms))
-     ;; frame notice
-     ((string= cmd "@F")
-      ;; even though a timer is constantly updating this variable,
-      ;; updating it here will cause it to stay pretty much in sync.
-      (setq emms-playing-time
-            (truncate (string-to-number (nth 3 data))))))))
+  (let* ((data-lines (split-string str "\n" t))
+         data line cmd)
+    (dolist (line data-lines)
+      (setq data (split-string line))
+      (setq cmd (car data))
+      (cond
+       ;; stop notice
+       ((and (string= cmd "@P")
+             (string= (cadr data) "0"))
+        (emms-player-mpg321-remote-notify-emms))
+       ;; frame notice
+       ((string= cmd "@F")
+        ;; even though a timer is constantly updating this variable,
+        ;; updating it here will cause it to stay pretty much in sync.
+        (setq emms-playing-time
+              (truncate (string-to-number (nth 3 data)))))))))
 
 (defun emms-player-mpg321-remote-start-playing (track)
   "Start playing a song by telling the remote process to play it.
@@ -164,16 +167,18 @@ If the remote process is not running, launch it."
 
 (defun emms-player-mpg321-remote-notify-emms (&optional user-action)
   "Tell emms that the current song has finished.
-If USER-ACTION, set `emms-player-mpg321-remote-stopped-p' so that we
+If USER-ACTION, set `emms-player-mpg321-remote-ignore-stop' so that we
 ignore the next message from mpg321."
   (if user-action
-      (let ((emms-player-stopped-p t))
+      (let ((emms-player-ignore-stop t))
         ;; so we ignore the next stop message
-        (setq emms-player-mpg321-remote-stopped-p t)
+        (setq emms-player-mpg321-remote-ignore-stop
+              (1+ emms-player-mpg321-remote-ignore-stop))
         (emms-player-stopped))
     ;; not a user action
-    (if emms-player-mpg321-remote-stopped-p
-        (setq emms-player-mpg321-remote-stopped-p nil)
+    (if (not (zerop emms-player-mpg321-remote-ignore-stop))
+        (setq emms-player-mpg321-remote-ignore-stop
+              (1- emms-player-mpg321-remote-ignore-stop))
       (emms-player-stopped))))
 
 (defun emms-player-mpg321-remote-stop-playing ()
