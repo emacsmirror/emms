@@ -74,7 +74,7 @@ For example: (list \"-o\" \"alsa\")"
 (defvar emms-player-mpg321-remote-process-name "emms-player-mpg321-remote-proc"
   "The name of the mpg321 remote player process")
 
-(defvar emms-player-mpg321-remote-mask-stop-message nil
+(defvar emms-player-mpg321-remote-stopped-p nil
   "True if we should ignore the next stop message.")
 
 (defmacro emms-player-mpg321-remote-add (cmd func)
@@ -147,10 +147,7 @@ For example: (list \"-o\" \"alsa\")"
      ;; stop notice
      ((and (string= cmd "@P")
            (string= (cadr data) "0"))
-      (if emms-player-mpg321-remote-mask-stop-message
-          (setq emms-player-mpg321-remote-mask-stop-message
-                nil)
-        (emms-player-stopped)))
+      (emms-player-mpg321-remote-notify-emms))
      ;; frame notice
      ((string= cmd "@F")
       ;; even though a timer is constantly updating this variable,
@@ -165,11 +162,23 @@ If the remote process is not running, launch it."
     (emms-player-mpg321-remote-start-process))
   (emms-player-mpg321-remote-play-track track))
 
+(defun emms-player-mpg321-remote-notify-emms (&optional user-action)
+  "Tell emms that the current song has finished.
+If USER-ACTION, set `emms-player-mpg321-remote-stopped-p' so that we
+ignore the next message from mpg321."
+  (if user-action
+      (let ((emms-player-stopped-p t))
+        ;; so we ignore the next stop message
+        (setq emms-player-mpg321-remote-stopped-p t)
+        (emms-player-stopped))
+    ;; not a user action
+    (if emms-player-mpg321-remote-stopped-p
+        (setq emms-player-mpg321-remote-stopped-p nil)
+      (emms-player-stopped))))
+
 (defun emms-player-mpg321-remote-stop-playing ()
   "Stop the current song playing."
-  ;; we don't want to tell emms we've stopped playing, or it'll start
-  ;; playing the next track
-  (setq emms-player-mpg321-remote-mask-stop-message t)
+  (emms-player-mpg321-remote-notify-emms t)
   (emms-player-mpg321-remote-send "stop"))
 
 (defun emms-player-mpg321-remote-play-track (track)
