@@ -186,12 +186,20 @@ The score hash is automatically saved."
   (setq emms-score-min-score tolerance)
   (message "Will play songs with a score >= %d" emms-score-min-score))
 
-(defun emms-score-show ()
-  "Show current track's score in minibuf."
+(defun emms-score-show-playing ()
+  "Show score for current playing track in minibuf."
   (interactive)
   (message "track/tolerance score: %d/%d"
 	   (emms-score-get-score
 	    (emms-score-current-selected-track-filename))
+	   emms-score-min-score))
+
+(defun emms-score-show-file-on-line ()
+  "Show score for track at point in emms-playlist buffer."
+  (interactive)
+  (message "track/tolerance score: %d/%d"
+	   (emms-score-get-score
+            (emms-score-track-at-filename))
 	   emms-score-min-score))
 
 
