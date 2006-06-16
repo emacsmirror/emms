@@ -338,9 +338,7 @@ example function is `emms-browse-by-artist'."
 (defun emms-browser-render-hash (db type)
   "Render a mapping (DB) into a browser buffer."
   (maphash (lambda (desc data)
-             ;; reverse the entries so that unsorted tracks are displayed in
-             ;; ascending order
-             (emms-browser-insert-top-level-entry desc (nreverse data) type))
+             (emms-browser-insert-top-level-entry desc data type))
            db)
   (emms-with-inhibit-read-only-t
    (let ((sort-fold-case t))
