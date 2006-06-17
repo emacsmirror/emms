@@ -96,7 +96,8 @@ to call the player and ARGS are the command line arguements."
        (emms-player-simple-stop))
      (defun ,playablep (track)
        "Return non-nil when we can play this track."
-       (and (memq (emms-track-type track) ,types)
+       (and (executable-find ,command-name)
+            (memq (emms-track-type track) ,types)
             (string-match ,regex (emms-track-name track)))))))
 
 ;; Global variables
