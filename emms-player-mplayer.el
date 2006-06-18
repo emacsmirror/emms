@@ -2,7 +2,7 @@
 
 ;; Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
-;; Authors: William XWL <william.xwl@gmail.com>
+;; Authors: William Xu <william.xwl@gmail.com>
 ;;          Jorgen Schaefer <forcer@forcix.cx>
 
 ;; This file is part of EMMS.
@@ -34,11 +34,11 @@
   (regexp-opt '(".ogg" ".mp3" ".wav" ".mpg" ".mpeg" ".wmv" ".wma"
                 ".mov" ".avi" ".divx" ".ogm" ".asf" ".mkv" "http://"
 		".rm" ".rmvb" ".mp4" ".flac"))
-  "mplayer")
+  "mplayer" "-slave")
 
 (define-emms-simple-player mplayer-playlist '(streamlist)
   "http://"
-  "mplayer" "-playlist")
+  "mplayer" "-playlist" "-slave")
 
 (emms-player-set emms-player-mplayer
 		 'pause
