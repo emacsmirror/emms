@@ -126,6 +126,13 @@ Use nil for no sorting."
   :group 'emms-browser
   :type 'function)
 
+(defcustom emms-browser-album-sort-function
+  'emms-browser-sort-by-year-or-name
+  "*How to sort artists/albums/etc. in the browser.
+Use nil for no sorting."
+  :group 'emms-browser
+  :type 'function)
+
 (defcustom emms-browser-show-display-hook nil
   "*Hooks to run when starting or switching to a browser buffer."
   :group 'emms-browser
@@ -168,6 +175,10 @@ Use nil for no sorting."
     (define-key map (kbd "2") 'emms-browser-expand-to-level-2)
     (define-key map (kbd "3") 'emms-browser-expand-to-level-3)
     (define-key map (kbd "4") 'emms-browser-expand-to-level-4)
+    (define-key map (kbd "C-1") 'emms-browse-by-artist)
+    (define-key map (kbd "C-2") 'emms-browse-by-album)
+    (define-key map (kbd "C-3") 'emms-browse-by-genre)
+    (define-key map (kbd "C-4") 'emms-browse-by-year)
     map)
   "Keymap for `emms-browser-mode'.")
 
@@ -353,12 +364,12 @@ example function is `emms-browse-by-artist'."
 (define-hash-table-test 'case-fold
   'case-fold-string= 'case-fold-string-hash)
 
-(defun emms-browser-insert-top-level-entry (entry tracks type)
+(defun emms-browser-insert-top-level-entry (name tracks type)
   "Insert a single top level entry into the buffer."
   (emms-browser-ensure-browser-buffer)
   (emms-with-inhibit-read-only-t
    (insert (emms-propertize
-            entry
+            name
             'emms-browser-bdata
             (emms-browser-make-bdata-tree
              type 1 tracks)
@@ -418,14 +429,21 @@ This uses `emms-browser-make-name-function'"
   (funcall emms-browser-make-name-function entry type))
 
 (defun emms-browser-make-name-standard (entry type)
-  "Add track numbers to track names.
-Apart from tracks, names are displayed without modification."
+  "The standard way of formating names in the browser.
+Individual tracks are in the form 'tracknum. artist - title'
+Albums are in the form '(year) album'."
   (let ((key (car entry))
-        (track (cadr entry)))
-  (if (eq type 'info-title)
-      (concat (emms-browser-track-number track)
-              (emms-track-get track 'info-title))
-    key)))
+        (track (cadr entry))) ;; only the first track
+  (cond
+   ((eq type 'info-title)
+    (concat (emms-browser-track-number track)
+            (emms-track-get track 'info-artist)
+            " - "
+            (emms-track-get track 'info-title)))
+   ((eq type 'info-album)
+    (concat (emms-browser-year-number track)
+            key))
+   (t key))))
 
 (defun emms-browser-track-number (track)
   "Return a string representation of a track number.
@@ -439,6 +457,15 @@ return an empty string."
            (concat "0" tracknum)
          tracknum)
        ". "))))
+
+(defun emms-browser-year-number (track)
+  "Return a string representation of a track's year.
+This will be in the form '(1998) '."
+  (let ((year (emms-track-get track 'info-year)))
+    (if (or (not (stringp year)) (string= year "0"))
+        ""
+      (concat
+       "(" year ") "))))
 
 (defun emms-browser-make-bdata (data name type level)
   "Return a browser data item from ALIST.
@@ -530,16 +557,32 @@ Uses `emms-browser-alpha-sort-function'."
                   emms-browser-alpha-sort-function))
     alist))
 
+(defun emms-browser-sort-by-year-or-name (alist)
+  "Sort based on year or name."
+  (sort alist (emms-browser-sort-cadr
+               'emms-browser-sort-by-year-or-name-p)))
+
+(defun emms-browser-sort-by-year-or-name-p (a b)
+  ;; FIXME: this is a bit of a hack
+  (let ((a-desc (concat
+                 (emms-browser-year-number a)
+                 (emms-track-get a 'info-album "misc")))
+        (b-desc (concat
+                 (emms-browser-year-number b)
+                 (emms-track-get b 'info-album "misc"))))
+    (string< a-desc b-desc)))
+
 (defun emms-browser-sort-alist (alist type)
   "Sort ALIST using the sorting function for TYPE."
   (let ((sort-func
          (cond
           ((or
-            (eq type 'info-album)
             (eq type 'info-artist)
             (eq type 'info-year)
             (eq type 'info-genre))
            'emms-browser-sort-by-name)
+          ((eq type 'info-album)
+           emms-browser-album-sort-function)
           ((eq type 'info-title)
            'emms-browser-sort-by-track)
           (t (message "Can't sort unknown mapping!")))))
@@ -724,7 +767,9 @@ LEVEL is used to control indentation."
     (emms-browser-add-tracks)
     (with-current-emms-playlist
       (goto-char old-pos)
-      (emms-playlist-next)
+      ;; if we're sitting on a group name, move forward
+      (unless (emms-playlist-track-at (point))
+        (emms-playlist-next))
       (emms-playlist-select (point)))
     ;; FIXME: is there a better way of doing this?
     (emms-stop)
