@@ -131,6 +131,28 @@ sources for tracks (trivial file system based sources, such as this
                          emms-player-ogg123
                          emms-player-mplayer))
 
+* Advanced configuration
+========================
+
+** Seeking
+----------
+In most multimedia players, you can seek forward or backward in a
+track. EMMS supports this too. If you're using mplayer, check that
+`emms-player-mplayer-parameters' contains "slave". If you're using
+mpg321, there is a module called emms-player-mpg321.el. To use it,
+simply add the following lines to your configuration :
+
+(require 'emms-player-mpg321-remote)
+(push 'emms-player-mpg321-remote emms-player-list)
+
+Finally, if you are using mpd, no special config is needed.
+
+Seeking works through the following functions :
+
+`emms-seek' which takes a negative or positive amount of seconds.
+`emms-seek-forward' which seeks ten seconds forward.
+`emms-seek-backward' which seeks ten seconds backward.
+
 * Using libtag for reading tags
 ===============================
 
