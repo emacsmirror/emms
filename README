@@ -139,8 +139,8 @@ sources for tracks (trivial file system based sources, such as this
 In most multimedia players, you can seek forward or backward in a
 track. EMMS supports this too. If you're using mplayer, check that
 `emms-player-mplayer-parameters' contains "slave". If you're using
-mpg321, there is a module called emms-player-mpg321.el. To use it,
-simply add the following lines to your configuration :
+mpg321, there is a module called emms-player-mpg321-remote.el. To use
+it, simply add the following lines to your configuration :
 
 (require 'emms-player-mpg321-remote)
 (push 'emms-player-mpg321-remote emms-player-list)
