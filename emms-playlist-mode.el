@@ -125,7 +125,7 @@ composed of other playlists."
     (define-key map (kbd "r") 'emms-random)
     (define-key map (kbd "C") 'emms-playlist-clear)
     (define-key map (kbd "<mouse-2>") 'emms-playlist-mode-play-current-track)
-    (define-key map (kbd "RET") 'emms-playlist-mode-play-dtrt)
+    (define-key map (kbd "RET") 'emms-playlist-mode-play-smart)
     map)
   "Keymap for `emms-playlist-mode'.")
 
@@ -169,7 +169,7 @@ FUN should be a function."
     (emms-stop))
   (emms-start))
 
-(defun emms-playlist-mode-play-dtrt ()
+(defun emms-playlist-mode-play-smart ()
   "Determine the best operation to take on the current track.
 
 If on a playlist, and `emms-playlist-mode-open-playlists' is
