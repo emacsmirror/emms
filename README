@@ -158,10 +158,12 @@ Seeking works through the following functions :
 
 There is a way to read tags using Libtag as your backend for
 emms-info. However, since it requires a binary file (source code
-provided with EMMS), it isn't enabled by default. Moreover, libtag
-overwrites most of the usual methods for providing info, so it's best to
-keep it as the only function in `emms-info-functions'. Here's a way to
-do so:
+provided with EMMS), it isn't enabled by default. To compile it, type
+"make emms-print-metadata". To install it, either put
+emms-print-metadata in your $PATH, or add emms directory to Emacs'
+exec-path. Since, libtag overwrites most of the usual methods for
+providing info, it's best to keep it as the only function in
+`emms-info-functions'. Here's a way to do so:
 
 (require 'emms-info-libtag)
 (setq emms-info-functions '(emms-info-libtag))
