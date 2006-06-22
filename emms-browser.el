@@ -433,14 +433,17 @@ This uses `emms-browser-make-name-function'"
 Individual tracks are in the form 'tracknum. artist - title'
 Albums are in the form '(year) album'."
   (let ((key (car entry))
-        (track (cadr entry))) ;; only the first track
+        (track (cadr entry))
+        artist title) ;; only the first track
   (cond
    ((eq type 'info-title)
-    (concat (emms-browser-track-number track)
-            (emms-track-get track 'info-artist)
-            " - "
-            (emms-track-get track 'info-title)))
-   ((eq type 'info-album)
+    (setq artist (emms-track-get track 'info-artist))
+    (setq title (emms-track-get track 'info-title))
+    (if (not (and artist title))
+        key
+      (concat (emms-browser-track-number track)
+              artist " - " title)))
+    ((eq type 'info-album)
     (concat (emms-browser-year-number track)
             key))
    (t key))))
@@ -481,13 +484,16 @@ LEVEL is the number of the sublevel the db item will be placed in."
 (defun emms-browser-make-alist (type tracks)
   "Make an alist mapping of TYPE -> TRACKS.
 Items with no metadata for TYPE will be placed in 'misc'"
-  (let (db key existing)
+  (let (db key existing tracknum)
     (dolist (track tracks)
       (setq key (emms-track-get track type "misc"))
       (when (eq type 'info-title)
           ;; try and make every track unique
-          (setq key (concat (emms-browser-track-number track)
-                            key)))
+        (setq tracknum (emms-browser-track-number track))
+        (if (string= tracknum "")
+            (setq key (file-name-nondirectory
+                       (emms-track-get track 'name)))
+          (setq key (concat tracknum key))))
       (setq existing (assoc key db))
       (if existing
           (setcdr existing (cons track (cdr existing)))
