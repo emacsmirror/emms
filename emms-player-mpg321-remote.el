@@ -127,13 +127,17 @@ For example: (list \"-o\" \"alsa\")"
   "Sentinel for determining the end of process"
   (when (or (eq (process-status proc) 'exit)
             (eq (process-status proc) 'signal))
-    (emms-player-stopped)))
+    ;; reset
+    (setq emms-player-mpg321-remote-ignore-stop 0)
+    (message "Remote process died!")))
 
 (defun emms-player-mpg321-remote-send (text)
   "Send TEXT to the mpg321 remote process, and add a newline."
-  (let ((proc (emms-player-mpg321-remote-process)))
+  (let (proc)
     ;; we shouldn't be trying to send to a dead process
-    (assert proc)
+    (unless (emms-player-mpg321-remote-running-p)
+      (emms-player-mpg321-remote-start-process))
+    (setq proc  (emms-player-mpg321-remote-process))
     (process-send-string proc (concat text "\n"))))
 
 ;; --------------------------------------------------

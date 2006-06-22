@@ -484,6 +484,10 @@ Items with no metadata for TYPE will be placed in 'misc'"
   (let (db key existing)
     (dolist (track tracks)
       (setq key (emms-track-get track type "misc"))
+      (when (eq type 'info-title)
+          ;; try and make every track unique
+          (setq key (concat (emms-browser-track-number track)
+                            key)))
       (setq existing (assoc key db))
       (if existing
           (setcdr existing (cons track (cdr existing)))
