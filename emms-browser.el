@@ -1043,7 +1043,6 @@ Returns the playlist window."
 ;; Searching
 ;; --------------------------------------------------
 
-
 (defun emms-browser-filter-cache (search-list)
   "Return a list of tracks that match SEARCH-LIST.
 SEARCH-LIST is a list of cons pairs, in the form:
@@ -1078,7 +1077,8 @@ included."
    (get-buffer-create "*emms-browser-search*"))
   (emms-browser-mode t)
   (use-local-map emms-browser-search-mode-map)
-  (delete-region (point-min) (point-max)))
+  (emms-with-inhibit-read-only-t
+   (delete-region (point-min) (point-max))))
 
 (defun emms-browser-search (fields)
   "Search for STR using FIELDS."
@@ -1095,10 +1095,10 @@ included."
 (defun emms-browser-render-search (tracks)
   (let ((entries
          (emms-browser-make-sorted-alist 'info-artist tracks)))
-  (dolist (entry entries)
-    (emms-browser-insert-top-level-entry (car entry)
-                                         (cdr entry)
-                                         'info-artist))))
+    (dolist (entry entries)
+      (emms-browser-insert-top-level-entry (car entry)
+                                           (cdr entry)
+                                           'info-artist))))
 
 ;; hmm - should we be doing this?
 (defun emms-browser-kill-search ()
