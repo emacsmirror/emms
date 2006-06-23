@@ -1085,9 +1085,10 @@ included."
   (let* ((prompt (format "Searching with %S: " fields))
          (str (read-string prompt)))
     (emms-browser-search-buffer-go)
-    (emms-browser-render-search
-     (emms-browser-filter-cache
-      (list (list fields str))))
+    (emms-with-inhibit-read-only-t
+     (emms-browser-render-search
+      (emms-browser-filter-cache
+       (list (list fields str)))))
     (emms-browser-expand-all)
     (goto-char (point-min))))
 
