@@ -163,6 +163,7 @@ Use nil for no sorting."
     (set-keymap-parent map text-mode-map)
     (define-key map (kbd "q") 'emms-browser-bury-buffer)
     (define-key map (kbd "/") 'emms-isearch-buffer)
+    (define-key map (kbd "s") 'emms-browser-search)
     (define-key map (kbd "?") 'describe-mode)
     (define-key map (kbd "C-/") 'emms-playlist-mode-undo)
     (define-key map (kbd "SPC") 'emms-browser-toggle-subitems)
@@ -1026,6 +1027,64 @@ Returns the playlist window."
     ;; bury the buffer, or it becomes visible when we hide the
     ;; linked buffer
     (bury-buffer other-buf)))
+
+;; --------------------------------------------------
+;; Searching
+;; --------------------------------------------------
+
+
+(defun emms-browser-filter-cache (search-list)
+  "Return a list of tracks that match SEARCH-LIST.
+SEARCH-LIST is a list of cons pairs, in the form:
+
+  ((field1 field2) string)
+
+If string matches any of the fields in a cons pair, it will be
+included."
+
+  (let (tracks)
+    (maphash (lambda (k track)
+               (when (emms-browser-matches-p track search-list)
+                 (push track tracks)))
+             emms-cache-db)
+    tracks))
+
+(defun emms-browser-matches-p (track search-list)
+  (let (no-match matched)
+    (dolist (item search-list)
+      (setq matched nil)
+      (dolist (field (car item))
+        (when (string-match (cadr item)
+                            (emms-track-get track field ""))
+          (setq matched t)))
+      (unless matched
+        (setq no-match t)))
+    (not no-match)))
+
+(emms-browser-filter-cache '(((info-title) "requiem")))
+
+(defun emms-browser-search-buffer-go ()
+  (switch-to-buffer
+   (get-buffer-create "*emms-browser-search*"))
+  (emms-browser-mode))
+
+(defun emms-browser-search (str)
+  (interactive "MSearch for: ")
+  (emms-browser-search-buffer-go)
+  (emms-browser-render-search
+   (emms-browser-filter-cache
+    (list (list '(info-artist info-title info-album)
+                str))))
+  (emms-browser-expand-all)
+  (goto-char (point-min)))
+
+(defun emms-browser-render-search (tracks)
+  (let ((entries
+         (emms-browser-make-sorted-alist 'info-artist tracks)))
+  (dolist (entry entries)
+    (emms-browser-insert-top-level-entry (car entry)
+                                         (cdr entry)
+                                         'info-artist))))
 
 (provide 'emms-browser)
 ;;; emms-browser.el ends here
