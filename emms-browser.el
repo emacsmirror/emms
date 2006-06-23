@@ -163,7 +163,6 @@ Use nil for no sorting."
     (set-keymap-parent map text-mode-map)
     (define-key map (kbd "q") 'emms-browser-bury-buffer)
     (define-key map (kbd "/") 'emms-isearch-buffer)
-    (define-key map (kbd "s") 'emms-browser-search)
     (define-key map (kbd "?") 'describe-mode)
     (define-key map (kbd "C-/") 'emms-playlist-mode-undo)
     (define-key map (kbd "SPC") 'emms-browser-toggle-subitems)
@@ -180,6 +179,17 @@ Use nil for no sorting."
     (define-key map (kbd "C-2") 'emms-browse-by-album)
     (define-key map (kbd "C-3") 'emms-browse-by-genre)
     (define-key map (kbd "C-4") 'emms-browse-by-year)
+    (define-key map (kbd "s a") 'emms-browser-search-by-artist)
+    (define-key map (kbd "s A") 'emms-browser-search-by-album)
+    (define-key map (kbd "s t") 'emms-browser-search-by-title)
+    (define-key map (kbd "s s") 'emms-browser-search-by-names)
+    map)
+  "Keymap for `emms-browser-mode'.")
+
+(defconst emms-browser-search-mode-map
+  (let ((map (make-sparse-keymap)))
+    (set-keymap-parent map emms-browser-mode-map)
+    (define-key map (kbd "q") 'emms-browser-kill-search)
     map)
   "Keymap for `emms-browser-mode'.")
 
@@ -261,7 +271,7 @@ example function is `emms-browse-by-artist'."
   (emms-browser-mode)
   (run-mode-hooks 'emms-browser-show-display-hook))
 
-(defun emms-browser-mode ()
+(defun emms-browser-mode (&optional no-update)
   "A major mode for the Emms browser.
 \\{emms-browser-mode-map}"
       ;; create a new buffer
@@ -272,7 +282,8 @@ example function is `emms-browse-by-artist'."
         mode-name "Emms-Browser")
 
   (setq buffer-read-only t)
-  (setq emms-browser-buffer (current-buffer)))
+  (unless no-update
+    (setq emms-browser-buffer (current-buffer))))
 
 (defun emms-browser-new-buffer ()
   "Create a new browser buffer, and switch to it."
@@ -1061,22 +1072,24 @@ included."
         (setq no-match t)))
     (not no-match)))
 
-(emms-browser-filter-cache '(((info-title) "requiem")))
-
 (defun emms-browser-search-buffer-go ()
+  "Create a new search buffer, or clean the existing one."
   (switch-to-buffer
    (get-buffer-create "*emms-browser-search*"))
-  (emms-browser-mode))
+  (emms-browser-mode t)
+  (use-local-map emms-browser-search-mode-map)
+  (delete-region (point-min) (point-max)))
 
-(defun emms-browser-search (str)
-  (interactive "MSearch for: ")
-  (emms-browser-search-buffer-go)
-  (emms-browser-render-search
-   (emms-browser-filter-cache
-    (list (list '(info-artist info-title info-album)
-                str))))
-  (emms-browser-expand-all)
-  (goto-char (point-min)))
+(defun emms-browser-search (fields)
+  "Search for STR using FIELDS."
+  (let* ((prompt (format "Searching with %S: " fields))
+         (str (read-string prompt)))
+    (emms-browser-search-buffer-go)
+    (emms-browser-render-search
+     (emms-browser-filter-cache
+      (list (list fields str))))
+    (emms-browser-expand-all)
+    (goto-char (point-min))))
 
 (defun emms-browser-render-search (tracks)
   (let ((entries
@@ -1085,6 +1098,28 @@ included."
     (emms-browser-insert-top-level-entry (car entry)
                                          (cdr entry)
                                          'info-artist))))
+
+;; hmm - should we be doing this?
+(defun emms-browser-kill-search ()
+  "Kill the buffer when q is hit."
+  (interactive)
+  (kill-buffer (current-buffer)))
+
+(defun emms-browser-search-by-artist ()
+  (interactive)
+  (emms-browser-search '(info-artist)))
+
+(defun emms-browser-search-by-title ()
+  (interactive)
+  (emms-browser-search '(info-title)))
+
+(defun emms-browser-search-by-album ()
+  (interactive)
+  (emms-browser-search '(info-album)))
+
+(defun emms-browser-search-by-names ()
+  (interactive)
+  (emms-browser-search '(info-artist info-title info-album)))
 
 (provide 'emms-browser)
 ;;; emms-browser.el ends here
