@@ -151,7 +151,7 @@ been modified."
                        (run-hook-with-args 'emms-info-functions track))))))
              emms-cache-db)
     (when removed
-      (setq emms-cache-dirty t))
+      (setq emms-cache-dirty t)))
   (message "Syncing emms track cache...done"))
 
 (provide 'emms-cache)
