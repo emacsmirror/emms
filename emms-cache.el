@@ -129,30 +129,29 @@ This is used to cache over emacs sessions.")
   (load emms-cache-file t nil t)
   (setq emms-cache-dirty nil))
 
-(defun emms-cache-refresh ()
-  "Update entries in the cache where the file is newer."
-  (interactive)
-  (message "Updating emms track cache...")
-  (maphash (lambda (path track)
-             (when (eq (emms-track-get track 'type) 'file)
-               ;; if no longer here, remove
-               (if (not (file-exists-p path))
-                   (remhash path emms-cache-db)
-                 (let ((file-mtime (emms-info-track-file-mtime track))
-                       (info-mtime (emms-track-get track 'info-mtime)))
-                   (when (or (not info-mtime)
-                           (emms-time-less-p
-                            info-mtime file-mtime))
-                     (run-hook-with-args 'emms-info-functions track))))))
-           emms-cache-db)
-  (setq emms-cache-dirty t)
-  (message "Updating emms track cache...done"))
-
 (defun emms-cache-sync ()
-  "Remove old entries and update modified files."
+  "Sync the cache with the data on disc.
+Remove non-existent files, and update data for files which have
+been modified."
   (interactive)
-  (emms-cache-prune)
-  (emms-cache-refresh))
+  (message "Syncing emms track cache...")
+  (let (removed)
+    (maphash (lambda (path track)
+               (when (eq (emms-track-get track 'type) 'file)
+                 ;; if no longer here, remove
+                 (if (not (file-exists-p path))
+                     (progn
+                       (remhash path emms-cache-db)
+                       (setq removed t))
+                   (let ((file-mtime (emms-info-track-file-mtime track))
+                         (info-mtime (emms-track-get track 'info-mtime)))
+                     (when (or (not info-mtime)
+                               (emms-time-less-p
+                                info-mtime file-mtime))
+                       (run-hook-with-args 'emms-info-functions track))))))
+             emms-cache-db)
+    (setq emms-cache-dirty (or emms-cache-dirty removed)))
+  (message "Syncing emms track cache...done"))
 
 (provide 'emms-cache)
 ;;; emms-cache.el ends here
