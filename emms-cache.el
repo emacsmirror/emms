@@ -150,7 +150,8 @@ been modified."
                                 info-mtime file-mtime))
                        (run-hook-with-args 'emms-info-functions track))))))
              emms-cache-db)
-    (setq emms-cache-dirty (or emms-cache-dirty removed)))
+    (when removed
+      (setq emms-cache-dirty t))
   (message "Syncing emms track cache...done"))
 
 (provide 'emms-cache)
