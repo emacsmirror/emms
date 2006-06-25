@@ -32,6 +32,10 @@
 
 (require 'emms)
 
+(defvar emms-last-played-keep-count t
+  "Specifies if EMMS should record the number of times you play a track.
+Set it to t if you want such a feature, and to nil if you don't.")
+
 (defvar emms-last-played-format-alist
   '(((emms-last-played-seconds-today) . "%k:%M")
     (604800 . "%a %k:%M")                   ;;that's one week
@@ -62,9 +66,19 @@ of this year, respectively.")
   "Updates the last-played time of TRACK."
   (emms-track-set track 'last-played (current-time)))
 
+(defun emms-last-played-increment-count (track)
+  "Increments the play-count property of TRACK.
+If non-existent, it is set to 1."
+  (let ((play-count (emms-track-get track 'play-count)))
+    (if play-count
+        (emms-track-set track 'play-count (1+ play-count))
+      (emms-track-set track 'play-count 1))))
+
 (defun emms-last-played-update-current ()
   "Updates the current track."
-  (emms-last-played-update-track (emms-playlist-current-selected-track)))
+  (emms-last-played-update-track (emms-playlist-current-selected-track))
+  (if emms-last-played-keep-count
+      (emms-last-played-increment-count (emms-playlist-current-selected-track))))
 
 (defun emms-last-played-seconds-today ()
   "Return the number of seconds passed today."
