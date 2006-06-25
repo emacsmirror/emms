@@ -129,32 +129,23 @@ This is used to cache over emacs sessions.")
   (load emms-cache-file t nil t)
   (setq emms-cache-dirty nil))
 
-(defun emms-cache-prune ()
-  "Remove invalid entries from the cache."
-  ;; FIXME: at the moment, only supports files
-  (interactive)
-  (message "Pruning emms track cache...")
-  (maphash (lambda (path track)
-             (when (eq (emms-track-get track 'type) 'file)
-               (unless (file-exists-p path)
-                 (remhash path emms-cache-db))))
-           emms-cache-db)
-  (setq emms-cache-dirty t)
-  (message "Pruning emms track cache...done"))
-
 (defun emms-cache-refresh ()
   "Update entries in the cache where the file is newer."
   (interactive)
   (message "Updating emms track cache...")
   (maphash (lambda (path track)
              (when (eq (emms-track-get track 'type) 'file)
-               (let ((file-mtime (emms-info-track-file-mtime track))
-                     (info-mtime (emms-track-get track 'info-mtime)))
-                 (when (or (not info-mtime)
+               ;; if no longer here, remove
+               (if (not (file-exists-p path))
+                   (remhash path emms-cache-db)
+                 (let ((file-mtime (emms-info-track-file-mtime track))
+                       (info-mtime (emms-track-get track 'info-mtime)))
+                   (when (or (not info-mtime)
                            (emms-time-less-p
                             info-mtime file-mtime))
-                   (run-hook-with-args 'emms-info-functions track)))))
+                     (run-hook-with-args 'emms-info-functions track))))))
            emms-cache-db)
+  (setq emms-cache-dirty t)
   (message "Updating emms track cache...done"))
 
 (defun emms-cache-sync ()
