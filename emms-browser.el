@@ -163,6 +163,7 @@ Use nil for no sorting."
     (set-keymap-parent map text-mode-map)
     (define-key map (kbd "q") 'emms-browser-bury-buffer)
     (define-key map (kbd "/") 'emms-isearch-buffer)
+    (define-key map (kbd "?") 'emms-browser-goto-random)
     (define-key map (kbd "?") 'describe-mode)
     (define-key map (kbd "C-/") 'emms-playlist-mode-undo)
     (define-key map (kbd "SPC") 'emms-browser-toggle-subitems)
@@ -1121,6 +1122,10 @@ included."
 (defun emms-browser-search-by-names ()
   (interactive)
   (emms-browser-search '(info-artist info-title info-album)))
+
+(defun emms-browser-goto-random ()
+  (interactive)
+  (goto-line (random (count-lines (point-min) (point-max)))))
 
 (provide 'emms-browser)
 ;;; emms-browser.el ends here
