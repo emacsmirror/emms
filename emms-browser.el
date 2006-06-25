@@ -163,7 +163,7 @@ Use nil for no sorting."
     (set-keymap-parent map text-mode-map)
     (define-key map (kbd "q") 'emms-browser-bury-buffer)
     (define-key map (kbd "/") 'emms-isearch-buffer)
-    (define-key map (kbd "?") 'emms-browser-goto-random)
+    (define-key map (kbd "r") 'emms-browser-goto-random)
     (define-key map (kbd "?") 'describe-mode)
     (define-key map (kbd "C-/") 'emms-playlist-mode-undo)
     (define-key map (kbd "SPC") 'emms-browser-toggle-subitems)
