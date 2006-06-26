@@ -143,14 +143,25 @@ FUN should be a function."
 (emms-playlist-mode-move-wrapper emms-playlist-mode-first
 				 emms-playlist-first)
 
-(emms-playlist-mode-move-wrapper emms-playlist-mode-last
-				 emms-playlist-last)
-
 (emms-playlist-mode-move-wrapper emms-playlist-mode-select-next
 				 emms-playlist-next)
 
 (emms-playlist-mode-move-wrapper emms-playlist-mode-select-previous
 				 emms-playlist-previous)
+
+(defun emms-playlist-mode-last ()
+  "Move to directly after the last track in the current buffer."
+  (interactive)
+  (emms-playlist-ensure-playlist-buffer)
+  (let ((last (condition-case nil
+                  (save-excursion
+                    (goto-char (point-max))
+                    (point))
+                (error
+                 nil))))
+    (if last
+        (goto-char last)
+      (error "No last track"))))
 
 (defun emms-playlist-mode-center-current ()
   "Move point to the currently selected track."
