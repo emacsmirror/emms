@@ -50,9 +50,6 @@
 (defvar emms-playlist-mode-switched-buffer nil
   "Last buffer visited before calling `emms-playlist-mode-switch-buffer'.")
 
-(defvar emms-playlist-mode-window-width -25
-  "Width for the emms-playlist-mode pop-up window.")
-
 (make-variable-buffer-local
  'emms-playlist-mode-selected-overlay)
 
@@ -65,6 +62,18 @@
   "*Determine whether to open playlists in a new EMMS buffer on RET.
 This is useful if you have a master playlist buffer that is
 composed of other playlists."
+  :type 'boolean
+  :group 'emms-playlist-mode)
+
+(defcustom emms-playlist-mode-window-width 25
+  "*Determine the width of the Emms popup window.
+The value should a positive integer."
+  :type 'integer
+  :group 'emms-playlist-mode)
+
+(defcustom emms-playlist-mode-center-when-go nil
+  "*Determine whether to center on the currently selected track.
+This is true for every invocation of `emms-playlist-mode-go'."
   :type 'boolean
   :group 'emms-playlist-mode)
 
@@ -406,15 +415,19 @@ When NO-NEWLINE is non-nil, do not insert a newline after the track."
     (switch-to-buffer emms-playlist-buffer)
     (when (and (not (eq major-mode 'emms-playlist-mode))
 	       emms-playlist-buffer-p)
-      (emms-playlist-mode))))
+      (emms-playlist-mode))
+    (when emms-playlist-mode-center-when-go
+      (emms-playlist-mode-center-current))))
 
 (defun emms-playlist-mode-go-popup (&optional window-width)
-  "Popup emms-playlist buffer as a side window. Default value for
-WINDOW-WIDTH is `emms-playlist-mode-window-width'."
+  "Popup emms-playlist buffer as a side window. 
+
+Default value for WINDOW-WIDTH is `emms-playlist-mode-window-width'.
+WINDOW-WIDTH should be a positive integer."
   (interactive)
   (setq emms-playlist-mode-window-width
 	(or window-width emms-playlist-mode-window-width))
-  (split-window-horizontally emms-playlist-mode-window-width)
+  (split-window-horizontally (- emms-playlist-mode-window-width))
   (other-window 1)
   (emms-playlist-mode-go))
 
