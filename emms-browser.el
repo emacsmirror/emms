@@ -169,6 +169,7 @@ Use nil for no sorting."
     (define-key map (kbd "SPC") 'emms-browser-toggle-subitems)
     (define-key map (kbd "RET") 'emms-browser-add-tracks)
     (define-key map (kbd "<C-return>") 'emms-browser-add-tracks-and-play)
+    (define-key map (kbd "C-j") 'emms-browser-add-tracks-and-play)
     (define-key map (kbd "<tab>") 'emms-browser-next-non-track)
     (define-key map (kbd "<backtab>") 'emms-browser-prev-non-track)
     (define-key map (kbd "E") 'emms-browser-expand-all)
