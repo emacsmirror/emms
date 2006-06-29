@@ -1011,6 +1011,17 @@ After expanding, jump to the currently marked entry."
   (interactive)
   (goto-line (random (count-lines (point-min) (point-max)))))
 
+(defun emms-browser-view-in-dired (&optional bdata)
+  "View the current directory in dired."
+  ;; FIXME: currently just grabs the directory from the first track
+  (interactive)
+  (if bdata
+      (if (eq (emms-browser-bdata-type bdata) 'info-title)
+          (let* ((track (car (emms-browser-bdata-data bdata)))
+                 (path (emms-track-get track 'name))))
+        (emms-browser-view-in-dired (emms-browser-bdata-data bdata)))
+    (emms-browser-view-in-dired (emms-browser-bdata-at-point))))
+
 ;; --------------------------------------------------
 ;; Linked browser and playlist windows
 ;; --------------------------------------------------
