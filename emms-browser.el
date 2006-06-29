@@ -1234,7 +1234,8 @@ included."
                      (nth 1 emms-browser-covers))
                     ((eq size 'large)
                      (nth 2 emms-browser-covers))))))))
-    (when (file-readable-p cover)
+    (when (and cover
+               (file-readable-p cover))
       cover)))
 
 (defun emms-browser-insert-cover (path)
