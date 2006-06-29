@@ -97,6 +97,27 @@ are displayed. It is called with two arguments - track and type."
   :group 'emms-browser
   :type 'function)
 
+(defcustom emms-browser-get-track-field-function
+  'emms-browser-get-track-field-simple
+  "*A function to get an element from a track.
+Change this to customize the way data is organized in the
+browser. For example,
+`emms-browser-get-track-field-use-directory-name' uses the
+directory name to determine the artist. This means that
+soundtracks, compilations and so on don't populate the artist
+view with lots of 1-track elements."
+  :group 'emms-browser
+  :type 'function)
+
+(defcustom emms-browser-covers
+  '("cover_small.jpg" "cover_med.jpg" "cover_large.jpg")
+  "*Control how cover images are found.
+Can be either a list of small, medium and large images (large
+currently not used), a function which takes a directory, and should
+return a path to the cover, or nil to turn off cover loading."
+  :group 'emms-browser
+  :type '(choice list function boolean))
+
 (defcustom emms-browser-insert-track-function
   'emms-browser-insert-track-standard
   "*A function to insert a track into the playlist.
@@ -346,13 +367,37 @@ example function is `emms-browse-by-artist'."
 (emms-browser-add-category "genre" 'info-genre)
 (emms-browser-add-category "year" 'info-year)
 
+(defun emms-browser-get-track-field (track type)
+  "Return TYPE from TRACK.
+This can be customized to group different artists into one for
+compilations, etc."
+  (funcall emms-browser-get-track-field-function track type))
+
+(defun emms-browser-get-track-field-simple (track type)
+  (emms-track-get track type "misc"))
+
+(defun emms-browser-get-track-field-use-directory-name (track type)
+  (if (eq type 'info-artist)
+      (emms-browser-get-artist-from-path
+       track)
+    (emms-track-get track type "misc")))
+
+(defun emms-browser-get-artist-from-path (track)
+  (let* ((path (emms-track-get track 'name))
+         (dir (file-name-directory path))
+         (basedir
+          (file-name-nondirectory
+           (directory-file-name
+            (file-name-directory dir)))))
+    (car (split-string basedir " - "))))
+
 (defun emms-browser-make-hash-by (type)
   "Make a hash, mapping with TYPE, eg artist -> tracks."
   (let ((hash (make-hash-table
              :test emms-browser-comparison-test))
         field existing-entry)
     (maphash (lambda (path track)
-               (setq field (emms-track-get track type "misc"))
+               (setq field (emms-browser-get-track-field track type))
                (setq existing-entry (gethash field hash))
                (if existing-entry
                    (puthash field (cons track existing-entry) hash)
@@ -381,13 +426,29 @@ example function is `emms-browse-by-artist'."
 (defun emms-browser-insert-top-level-entry (name tracks type)
   "Insert a single top level entry into the buffer."
   (emms-browser-ensure-browser-buffer)
-  (emms-with-inhibit-read-only-t
-   (insert (emms-propertize
-            name
-            'emms-browser-bdata
-            (emms-browser-make-bdata-tree
-             type 1 tracks)
-            'face 'emms-browser-tracks-face) "\n")))
+  (let ((bdata (emms-browser-make-bdata-tree
+                type 1 tracks)))
+    ;; this code duplication is ugly, but necessary at the moment
+    ;; because the top level data is stored differently
+    (emms-with-inhibit-read-only-t
+     (if (eq (emms-browser-bdata-type bdata) 'info-album)
+         (let ((cover (emms-browser-get-cover-from-album
+                       bdata 'small)))
+           (when cover
+             (emms-browser-insert-cover cover))
+           ;; if the album is a top-level element, display the artist
+           ;; name, too
+           (insert name
+                   " ("
+                   (emms-browser-get-track-field (car tracks)
+                                                 'info-artist)
+                   ")"))
+       (insert name))
+     (add-text-properties (line-beginning-position) (point)
+                          (list
+                           'emms-browser-bdata bdata
+                           'face 'emms-browser-tracks-face))
+     (insert "\n"))))
 
 ;; --------------------------------------------------
 ;; Building a subitem tree
@@ -395,7 +456,7 @@ example function is `emms-browse-by-artist'."
 
 (defun emms-browser-next-mapping-type (current-mapping)
   "Return the next sensible mapping.
-Eg. if current-mapping is currently 'info-artist, return 'info-album."
+Eg. if CURRENT-MAPPING is currently 'info-artist, return 'info-album."
   (cond
    ((eq current-mapping 'info-artist) 'info-album)
    ((eq current-mapping 'info-album) 'info-title)
@@ -500,7 +561,7 @@ LEVEL is the number of the sublevel the db item will be placed in."
 Items with no metadata for TYPE will be placed in 'misc'"
   (let (db key existing tracknum)
     (dolist (track tracks)
-      (setq key (emms-track-get track type "misc"))
+      (setq key (emms-browser-get-track-field track type))
       (when (eq type 'info-title)
           ;; try and make every track unique
         (setq tracknum (emms-browser-track-number track))
@@ -651,11 +712,18 @@ information."
          (indent (emms-browser-make-indent-for-level level)))
     (emms-with-inhibit-read-only-t
      (insert
-      (emms-propertize
-       (concat indent name)
-       'emms-browser-bdata data-item
-       'face (emms-browser-face-from-level level))
-      "\n"))))
+      indent)
+     (when (eq (emms-browser-bdata-type data-item) 'info-album)
+       (let ((cover (emms-browser-get-cover-from-album
+                     data-item 'small)))
+         (when cover
+           (emms-browser-insert-cover cover))))
+     (insert name)
+     (add-text-properties (line-beginning-position) (point)
+                          (list
+                           'emms-browser-bdata data-item
+                           'face (emms-browser-face-from-level level)))
+     (insert "\n"))))
 
 (defun emms-browser-make-indent-for-level (level)
   (make-string (* 2 (1- level)) ?\  ))
@@ -745,15 +813,25 @@ Stops at the next line at the same level, or EOF."
 ;; Dealing with the playlist (queuing songs, etc)
 ;; --------------------------------------------------
 
-(defun emms-browser-insert-playlist-group (type group level)
+(defun emms-browser-insert-playlist-group (type bdata level)
   "Insert a group description into the playlist buffer.
 Eg. [album] foo bar"
-  (let ((short-type (substring (symbol-name type) 5)))
+  (let ((short-type (substring (symbol-name type) 5))
+        (group (emms-browser-bdata-name bdata))
+        cover)
     (with-current-emms-playlist
       (goto-char (point-max))
       (insert
-       (emms-browser-make-indent-for-level level)
-       (format "[%s] %s\n" short-type group)))))
+       (emms-browser-make-indent-for-level level))
+      (if (eq type 'info-album)
+          (progn
+            (setq cover
+                  (emms-browser-get-cover-from-album bdata 'medium))
+            (when cover
+              (emms-browser-insert-cover cover))
+            (insert " " group "\n"))
+        (insert
+         (format "[%s] %s\n" short-type group))))))
 
 (defun emms-browser-insert-track (track name level)
   "Insert a track into the playlist buffer, called NAME.
@@ -811,7 +889,7 @@ LEVEL is used to control indentation."
 
     (unless (eq type 'info-title)
       (emms-browser-insert-playlist-group
-       type name level))
+       type bdata level))
 
     (dolist (item (emms-browser-bdata-data bdata))
       (if (not (eq type 'info-title))
@@ -928,6 +1006,10 @@ After expanding, jump to the currently marked entry."
                                    (line-end-position)
                                    (list 'emms-browser-mark))))
       (message "No mark saved!"))))
+
+(defun emms-browser-goto-random ()
+  (interactive)
+  (goto-line (random (count-lines (point-min) (point-max)))))
 
 ;; --------------------------------------------------
 ;; Linked browser and playlist windows
@@ -1124,9 +1206,47 @@ included."
   (interactive)
   (emms-browser-search '(info-artist info-title info-album)))
 
-(defun emms-browser-goto-random ()
-  (interactive)
-  (goto-line (random (count-lines (point-min) (point-max)))))
+;; --------------------------------------------------
+;; Album covers
+;; --------------------------------------------------
 
-(provide 'emms-browser)
+(defun emms-browser-get-cover-from-album (bdata &optional size)
+  (assert (eq (emms-browser-bdata-type bdata) 'info-album))
+  (let* ((track1data (emms-browser-bdata-data bdata))
+         (track1 (car (emms-browser-bdata-data (car track1data))))
+         (path (emms-track-get track1 'name)))
+    (emms-browser-get-cover-from-path path size)))
+
+(defun emms-browser-get-cover-from-path (path &optional size)
+  "Return a cover filename, if it exists."
+  (unless size
+    (setq size 'medium))
+  (let ((cover
+         (cond
+          ((functionp emms-browser-covers)
+           (funcall emms-browser-covers path size))
+          ((listp emms-browser-covers)
+           (concat (file-name-directory path)
+                   (cond
+                    ((eq size 'small)
+                     (nth 0 emms-browser-covers))
+                    ((eq size 'medium)
+                     (nth 1 emms-browser-covers))
+                    ((eq size 'large)
+                     (nth 2 emms-browser-covers))))))))
+    (when (file-readable-p cover)
+      cover)))
+
+(defun emms-browser-insert-cover (path)
+  (insert (emms-browser-make-cover path)))
+
+(defun emms-browser-make-cover (path)
+  (emms-propertize " "
+                   'display `(image
+                              :type jpeg
+                              :margin 5
+                              :file ,path)
+                   'rear-nonsticky '(display)))
+
+  (provide 'emms-browser)
 ;;; emms-browser.el ends here
