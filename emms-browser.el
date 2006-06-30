@@ -193,6 +193,7 @@ Use nil for no sorting."
     (define-key map (kbd "C-j") 'emms-browser-add-tracks-and-play)
     (define-key map (kbd "<tab>") 'emms-browser-next-non-track)
     (define-key map (kbd "<backtab>") 'emms-browser-prev-non-track)
+    (define-key map (kbd "d") 'emms-browser-view-in-dired)
     (define-key map (kbd "E") 'emms-browser-expand-all)
     (define-key map (kbd "1") 'emms-browser-collapse-all)
     (define-key map (kbd "2") 'emms-browser-expand-to-level-2)
@@ -1018,8 +1019,10 @@ After expanding, jump to the currently marked entry."
   (if bdata
       (if (eq (emms-browser-bdata-type bdata) 'info-title)
           (let* ((track (car (emms-browser-bdata-data bdata)))
-                 (path (emms-track-get track 'name))))
-        (emms-browser-view-in-dired (emms-browser-bdata-data bdata)))
+                 (path (emms-track-get track 'name))
+                 (dir (file-name-directory path)))
+            (find-file dir))
+        (emms-browser-view-in-dired (car (emms-browser-bdata-data bdata))))
     (emms-browser-view-in-dired (emms-browser-bdata-at-point))))
 
 ;; --------------------------------------------------
