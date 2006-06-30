@@ -185,6 +185,7 @@ Use nil for no sorting."
     (define-key map (kbd "q") 'emms-browser-bury-buffer)
     (define-key map (kbd "/") 'emms-isearch-buffer)
     (define-key map (kbd "r") 'emms-browser-goto-random)
+    (define-key map (kbd "C") 'emms-browser-clear-playlist)
     (define-key map (kbd "?") 'describe-mode)
     (define-key map (kbd "C-/") 'emms-playlist-mode-undo)
     (define-key map (kbd "SPC") 'emms-browser-toggle-subitems)
@@ -1024,6 +1025,11 @@ After expanding, jump to the currently marked entry."
             (find-file dir))
         (emms-browser-view-in-dired (car (emms-browser-bdata-data bdata))))
     (emms-browser-view-in-dired (emms-browser-bdata-at-point))))
+
+(defun emms-browser-clear-playlist ()
+  (interactive)
+  (with-current-emms-playlist
+    (emms-playlist-clear)))
 
 ;; --------------------------------------------------
 ;; Linked browser and playlist windows
