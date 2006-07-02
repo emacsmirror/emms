@@ -29,6 +29,9 @@
 ;; emms-add-directory-tree to all the files you own at least once so
 ;; that the cache is fully populated.
 
+;; Usage
+;; -------------------------------------------------------------------
+
 ;; To use, run (emms-devel) and then bind emms-smart-browse to a key,
 ;; like:
 
@@ -44,11 +47,7 @@
 
 ;; Some useful keybindings in the browser buffer:
 
-;; SPC      - expand/contract current item
-;; RET      - add current artist/album/title/etc
-;; C-RET    - as above, but select the first added file and play
-;; /        - isearch through the available items
-;; q        - bury both buffers (if you use emms-smart-browse)
+;; (out of date, hit c-h b in the buffer to find out)
 
 ;; If you just want access to the browser, try M-x
 ;; emms-browse-by-TYPE, where TYPE is one of artist, album, genre or
@@ -62,6 +61,22 @@
 
 ;; Note this code is very new and is still prone to big changes in the
 ;; API and breakage. Bug reports are welcome.
+
+;; Displaying covers
+;; -------------------------------------------------------------------
+
+;; The browser will attempt to display cover images if they're
+;; available. By default it looks for images cover_small.jpg,
+;; cover_med.jpg, etc. Customize emms-browser-covers to use your own
+;; covers. Note that you'll probably want to resize your existing
+;; covers to particular sizes. Suggested sizes are 100x100 for small,
+;; and 200x200 for medium.
+
+;; Also emacs by default will jump around a lot when scrolling a
+;; buffer with images. Set the following variables to prevent that:
+
+;;   scroll-up-aggressively 0.0
+;;   scroll-down-aggressively 0.0
 
 ;;; Code:
 
@@ -202,10 +217,10 @@ Use nil for no sorting."
     (define-key map (kbd "2") 'emms-browser-expand-to-level-2)
     (define-key map (kbd "3") 'emms-browser-expand-to-level-3)
     (define-key map (kbd "4") 'emms-browser-expand-to-level-4)
-    (define-key map (kbd "C-1") 'emms-browse-by-artist)
-    (define-key map (kbd "C-2") 'emms-browse-by-album)
-    (define-key map (kbd "C-3") 'emms-browse-by-genre)
-    (define-key map (kbd "C-4") 'emms-browse-by-year)
+    (define-key map (kbd "b 1") 'emms-browse-by-artist)
+    (define-key map (kbd "b 2") 'emms-browse-by-album)
+    (define-key map (kbd "b 3") 'emms-browse-by-genre)
+    (define-key map (kbd "b 4") 'emms-browse-by-year)
     (define-key map (kbd "s a") 'emms-browser-search-by-artist)
     (define-key map (kbd "s A") 'emms-browser-search-by-album)
     (define-key map (kbd "s t") 'emms-browser-search-by-title)
@@ -219,50 +234,6 @@ Use nil for no sorting."
     (define-key map (kbd "q") 'emms-browser-kill-search)
     map)
   "Keymap for `emms-browser-mode'.")
-
-(defface emms-browser-tracks-face
-  '((((class color) (background dark))
-     (:foreground "#aaaaff"))
-    (((class color) (background light))
-     (:foreground "Blue"))
-    (((type tty) (class mono))
-     (:inverse-video t))
-    (t (:background "Blue")))
-  "Face for the tracks in a playlist buffer."
-  :group 'emms-browser-mode)
-
-(defface emms-browser-tracks-sub-face-1
-  '((((class color) (background dark))
-     (:foreground "#7777ff"))
-    (((class color) (background light))
-     (:foreground "Blue"))
-    (((type tty) (class mono))
-     (:inverse-video t))
-    (t (:background "Blue")))
-  "Face for the tracks in a playlist buffer."
-  :group 'emms-browser-mode)
-
-(defface emms-browser-tracks-sub-face-2
-  '((((class color) (background dark))
-     (:foreground "#4444ff"))
-    (((class color) (background light))
-     (:foreground "Blue"))
-    (((type tty) (class mono))
-     (:inverse-video t))
-    (t (:background "Blue")))
-  "Face for the tracks in a playlist buffer."
-  :group 'emms-browser-mode)
-
-(defface emms-browser-tracks-sub-face-3
-  '((((class color) (background dark))
-     (:foreground "#3333ff"))
-    (((class color) (background light))
-     (:foreground "Blue"))
-    (((type tty) (class mono))
-     (:inverse-video t))
-    (t (:background "Blue")))
-  "Face for the tracks in a playlist buffer."
-  :group 'emms-browser-mode)
 
 ;; --------------------------------------------------
 ;; General mode setup
@@ -449,7 +420,7 @@ compilations, etc."
                                                  'info-artist)
                    ")"))
        (insert name))
-     (add-text-properties (point-at-bol) (point)
+     (add-text-properties (line-beginning-position) (point)
                           (list
                            'emms-browser-bdata bdata
                            'face 'emms-browser-tracks-face))
@@ -503,15 +474,7 @@ artist1 -> album1 -> *track* 1.."
               alist))))
 
 (defun emms-browser-make-name (entry type)
-  "Return a name for ENTRY, used for making a bdata object.
-This uses `emms-browser-make-name-function'"
-  ;; we use cadr because we are guaranteed only one track in entry.
-  (funcall emms-browser-make-name-function entry type))
-
-(defun emms-browser-make-name-standard (entry type)
-  "The standard way of formating names in the browser.
-Individual tracks are in the form 'tracknum. artist - title'
-Albums are in the form '(year) album'."
+  "Return a name for ENTRY, used for making a bdata object."
   (let ((key (car entry))
         (track (cadr entry))
         artist title) ;; only the first track
@@ -521,11 +484,7 @@ Albums are in the form '(year) album'."
     (setq title (emms-track-get track 'info-title))
     (if (not (and artist title))
         key
-      (concat (emms-browser-track-number track)
-              artist " - " title)))
-    ((eq type 'info-album)
-    (concat (emms-browser-year-number track)
-            key))
+      (concat artist " - " title)))
    (t key))))
 
 (defun emms-browser-track-number (track)
@@ -538,8 +497,7 @@ return an empty string."
       (concat
        (if (eq (length tracknum) 1)
            (concat "0" tracknum)
-         tracknum)
-       ". "))))
+         tracknum)))))
 
 (defun emms-browser-year-number (track)
   "Return a string representation of a track's year.
@@ -724,7 +682,7 @@ information."
          (when cover
            (emms-browser-insert-cover cover))))
      (insert name)
-     (add-text-properties (point-at-bol) (point)
+     (add-text-properties (line-beginning-position) (point)
                           (list
                            'emms-browser-bdata data-item
                            'face (emms-browser-face-from-level level)))
@@ -822,21 +780,14 @@ Stops at the next line at the same level, or EOF."
   "Insert a group description into the playlist buffer.
 Eg. [album] foo bar"
   (let ((short-type (substring (symbol-name type) 5))
-        (group (emms-browser-bdata-name bdata))
-        cover)
+        group cover)
+    (setq group (emms-browser-format-line bdata 'playlist))
     (with-current-emms-playlist
       (goto-char (point-max))
       (insert
        (emms-browser-make-indent-for-level level))
-      (if (eq type 'info-album)
-          (progn
-            (setq cover
-                  (emms-browser-get-cover-from-album bdata 'medium))
-            (when cover
-              (emms-browser-insert-cover cover))
-            (insert " " group "\n"))
-        (insert
-         (format "[%s] %s\n" short-type group))))))
+      ;; FIXME - we've cut out [type] - support it in format strings
+      (insert group "\n"))))
 
 (defun emms-browser-insert-track (track name level)
   "Insert a track into the playlist buffer, called NAME.
@@ -852,7 +803,7 @@ LEVEL is used to control indentation."
                name)
               'face 'emms-playlist-track-face
               'emms-track track)
-            "\n")))
+             "\n")))
 
 (defun emms-browser-add-tracks ()
   "Add all tracks at point."
@@ -899,16 +850,9 @@ LEVEL is used to control indentation."
     (dolist (item (emms-browser-bdata-data bdata))
       (if (not (eq type 'info-title))
           (emms-browser-add-bdata-to-playlist item starting-level)
-        ;; add full track name as there may not be enough context
-        (setq name (concat
-                    ;; place the track number first - this looks
-                    ;; better for multi-artist albums especially.
-                    (or (and (> level 1)
-                             (emms-browser-track-number item))
-                        "")
-                    (emms-track-get item 'info-artist)
-                    " - "
-                    (emms-track-get item 'info-title)))
+        ;; there should only be one track in this bdata, so use the
+        ;; bdata
+        (setq name (emms-browser-format-line bdata 'playlist))
         (emms-browser-insert-track
          item name level)))))
 
@@ -1272,5 +1216,223 @@ included."
                               :file ,path)
                    'rear-nonsticky '(display)))
 
-  (provide 'emms-browser)
+(defun emms-browser-get-cover-str (path size)
+  (let ((cover (emms-browser-get-cover-from-path path size)))
+    (if cover
+        (emms-browser-make-cover cover)
+      ;; we use a single space so that cover & no cover tracks line up
+      ;; in a terminal
+      " ")))
+
+;; --------------------------------------------------
+;; Display formats & fonts
+;; --------------------------------------------------
+
+(defvar emms-browser-default-format "%i%n"
+  "indent + name")
+
+(defvar emms-browser-info-title-format "%i%T. %n")
+(defvar emms-browser-playlist-info-title-format
+  emms-browser-info-title-format)
+
+(defvar emms-browser-info-album-format
+  'emms-browser-year-and-album-fmt)
+(defvar emms-browser-playlist-info-album-format
+  'emms-browser-year-and-album-fmt-med)
+
+;; FIXME: make this nicer
+(defun emms-browser-year-and-album-fmt (bdata fmt)
+  (concat
+   "%cS"
+   (let ((year (emms-browser-format-elem fmt "%y")))
+     (if (and year (not (eq year 0)))
+         "(%y) "
+       ""))
+   "%n"))
+
+(defun emms-browser-year-and-album-fmt-med (bdata fmt)
+  (concat
+   "%cM"
+   (let ((year (emms-browser-format-elem fmt "%y")))
+     (if (and year (not (eq year 0)))
+         "(%y) "
+       ""))
+   "%n"))
+
+(defface emms-browser-tracks-sub-face-1
+  '((((class color) (background dark))
+     (:foreground "#aaaaff"))
+    (((class color) (background light))
+     (:foreground "Blue"))
+    (((type tty) (class mono))
+     (:inverse-video t))
+    (t (:background "Blue")))
+  "Face for the tracks in a playlist buffer."
+  :group 'emms-browser-mode)
+
+(defface emms-browser-tracks-sub-face-2
+  '((((class color) (background dark))
+     (:foreground "#7777ff"))
+    (((class color) (background light))
+     (:foreground "Blue"))
+    (((type tty) (class mono))
+     (:inverse-video t))
+    (t (:background "Blue")))
+  "Face for the tracks in a playlist buffer."
+  :group 'emms-browser-mode)
+
+(defface emms-browser-tracks-sub-face-3
+  '((((class color) (background dark))
+     (:foreground "#4444ff"))
+    (((class color) (background light))
+     (:foreground "Blue"))
+    (((type tty) (class mono))
+     (:inverse-video t))
+    (t (:background "Blue")))
+  "Face for the tracks in a playlist buffer."
+  :group 'emms-browser-mode)
+
+(defface emms-browser-tracks-sub-face-4
+  '((((class color) (background dark))
+     (:foreground "#3333ff"))
+    (((class color) (background light))
+     (:foreground "Blue"))
+    (((type tty) (class mono))
+     (:inverse-video t))
+    (t (:background "Blue")))
+  "Face for the tracks in a playlist buffer."
+  :group 'emms-browser-mode)
+
+(defun emms-browser-bdata-first-track (bdata)
+  "Return the first track from a given bdata.
+If > album level, most of the track data will not make sense."
+  (let ((type (emms-browser-bdata-type bdata)))
+    (if (eq type 'info-title)
+        (car (emms-browser-bdata-data bdata))
+      ;; recurse
+      (emms-browser-bdata-first-track
+       (car (emms-browser-bdata-data bdata))))))
+
+(defun emms-browser-insert-format (bdata)
+  (emms-with-inhibit-read-only-t
+   (insert
+    (emms-browser-format-line bdata)
+    "\n")))
+
+(defun emms-browser-make-indent-for-level (level)
+  (make-string (* 1 (1- level)) ?\  ))
+
+(defun emms-browser-get-format (bdata target)
+  (let* ((type (emms-browser-bdata-type bdata))
+         (target-str (or
+                      (and (eq target 'browser) "")
+                      (concat (symbol-name target) "-")))
+         (sym
+          (intern
+           (concat "emms-browser-"
+                   target-str
+                   (symbol-name type)
+                   "-format"))))
+    (if (boundp sym)
+        (symbol-value sym)
+      emms-browser-default-format)))
+
+(defun emms-browser-format-elem (format-string elem)
+  (cdr (assoc elem format-string)))
+
+(defun emms-browser-format-line (bdata &optional target)
+  "Return a propertized string to be inserted in the buffer."
+  (unless target
+    (setq target 'browser))
+  (let* ((name (emms-browser-bdata-name bdata))
+         (lvl (emms-browser-bdata-level bdata))
+         (type (emms-browser-bdata-type bdata))
+         (indent (or
+                  (and (eq target 'browser)
+                       (emms-browser-make-indent-for-level lvl))
+                  ""))
+         (track (emms-browser-bdata-first-track bdata))
+         (path (emms-track-get track 'name))
+         (face (emms-browser-get-face bdata))
+         (format (emms-browser-get-format bdata target))
+         (format-choices
+          `(("i" . ,indent)
+            ("n" . ,name)
+            ("y" . ,(emms-track-get track 'info-year))
+            ("A" . ,(emms-track-get track 'info-album))
+            ("a" . ,(emms-track-get track 'info-artist))
+            ("t" . ,(emms-track-get track 'info-title))
+            ("T" . ,(emms-browser-track-number track))
+            ("cS" . ,(emms-browser-get-cover-str path 'small))
+            ("cM" . ,(emms-browser-get-cover-str path 'medium))
+            ("cL" . ,(emms-browser-get-cover-str path 'large))))
+         str)
+
+    (when (functionp format)
+      (setq format (funcall format bdata format-choices)))
+
+    (setq str
+          (with-temp-buffer
+            (insert format)
+            (goto-char (point-min))
+            (let ((start (point-min)))
+              (when (re-search-forward "%c[SML]" nil t)
+                (setq start (point)))
+              (add-text-properties start (point-max)
+                                   (list 'face face)))
+            (buffer-string)))
+
+    (setq str (emms-browser-format-spec str format-choices))
+
+    ;; add the bdata object to the whole string
+    (add-text-properties
+     0 (length str)
+     (list 'emms-browser-bdata bdata) str)
+    str))
+
+(defun emms-browser-get-face (bdata)
+  "Return a suitable face for BDATA."
+  (let ((lvl (emms-browser-bdata-level bdata))
+        (type (emms-browser-bdata-type bdata)))
+    (intern
+     (concat "emms-browser-tracks-sub-face-"
+             (int-to-string lvl)))))
+
+;; based on gnus code
+(defun emms-browser-format-spec (format specification)
+  "Return a string based on FORMAT and SPECIFICATION.
+FORMAT is a string containing `format'-like specs like \"bash %u %k\",
+while SPECIFICATION is an alist mapping from format spec characters
+to values.  Any text properties on a %-spec itself are propagated to
+the text that it generates."
+  (with-temp-buffer
+    (insert format)
+    (goto-char (point-min))
+    (while (search-forward "%" nil t)
+      (cond
+       ;; Quoted percent sign.
+       ((eq (char-after) ?%)
+        (delete-char 1))
+       ;; Valid format spec.
+       ((looking-at "\\([-0-9.]*\\)\\([a-zA-Z]+\\)")
+        (let* ((num (match-string 1))
+               (spec (match-string 2))
+               (val (cdr (assoc spec specification))))
+          (unless val
+            (error "Invalid format character: %s" spec))
+          ;; Pad result to desired length.
+          (let ((text (format (concat "%" num "s") val)))
+            ;; Insert first, to preserve text properties.
+            (insert-and-inherit text)
+            ;; Delete the specifier body.
+            (delete-region (+ (match-beginning 0) (length text))
+                           (+ (match-end 0) (length text)))
+            ;; Delete the percent sign.
+            (delete-region (1- (match-beginning 0)) (match-beginning 0)))))
+       ;; Signal an error on bogus format strings.
+       (t
+        (error "Invalid format string"))))
+    (buffer-string)))
+
+(provide 'emms-browser)
 ;;; emms-browser.el ends here
