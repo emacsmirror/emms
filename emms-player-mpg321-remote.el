@@ -159,8 +159,8 @@ For example: (list \"-o\" \"alsa\")"
        ((string= cmd "@F")
         ;; even though a timer is constantly updating this variable,
         ;; updating it here will cause it to stay pretty much in sync.
-        (setq emms-playing-time
-              (truncate (string-to-number (nth 3 data)))))))))
+        (run-hook-with-args 'emms-player-time-set-functions
+                            (truncate (string-to-number (nth 3 data)))))))))
 
 (defun emms-player-mpg321-remote-start-playing (track)
   "Start playing a song by telling the remote process to play it.

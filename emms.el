@@ -214,6 +214,13 @@ seconds the player did seek."
   :group 'emms
   :type 'hook)
 
+(defcustom emms-player-time-set-functions nil
+  "*Functions called when a player is setting the elapsed time of a track.
+The functions are called with a single argument, the time elapsed
+since the beginning of the current track."
+  :group 'emms
+  :type 'hook)
+
 (defcustom emms-cache-get-function nil
   "A function to retrieve a track entry from the cache.
 This is called with two arguments, the type and the name."

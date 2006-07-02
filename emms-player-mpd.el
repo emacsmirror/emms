@@ -675,7 +675,7 @@ MusicPD playlist."
                                        (point))))
              (emms-player-started 'emms-player-mpd)
              (when time
-               (run-hook-with-args 'emms-player-seeked-functions time)))))))
+               (run-hook-with-args 'emms-player-time-set-functions time)))))))
 
 (defun emms-player-mpd-detect-song-change (&optional info)
   "Detect whether a song change has occurred.

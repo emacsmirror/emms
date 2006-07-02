@@ -230,6 +230,12 @@ To find FILE, will look up in current directory and `emms-lyrics-dir'."
       (setq emms-player-paused-p paused-orig))
     (emms-lyrics-set-timer)))
 
+(defun emms-lyrics-sync (sec)
+  "Synchronize the lyric display at SEC seconds."
+  (setq emms-lyrics-start-time (current-time)
+        emms-lyrics-elapsed-time 0)
+  (emms-lyrics-seek sec))
+
 (defun emms-lyrics-toggle-display-on-minibuffer ()
   "Toggle display lyrics on minibbufer."
   (interactive)
@@ -261,7 +267,8 @@ To find FILE, will look up in current directory and `emms-lyrics-dir'."
         (add-hook 'emms-player-stopped-hook     'emms-lyrics-stop)
         (add-hook 'emms-player-finished-hook    'emms-lyrics-stop)
         (add-hook 'emms-player-paused-hook      'emms-lyrics-pause)
-        (add-hook 'emms-player-seeked-functions 'emms-lyrics-seek))
+        (add-hook 'emms-player-seeked-functions 'emms-lyrics-seek)
+        (add-hook 'emms-player-time-set-functions 'emms-lyrics-sync))
     (emms-lyrics-stop)
     (setq emms-lyrics-display-p nil)
     (emms-lyrics-restore-mode-line)
@@ -269,7 +276,8 @@ To find FILE, will look up in current directory and `emms-lyrics-dir'."
     (remove-hook 'emms-player-stopped-hook     'emms-lyrics-stop)
     (remove-hook 'emms-player-finished-hook    'emms-lyrics-stop)
     (remove-hook 'emms-player-paused-hook      'emms-lyrics-pause)
-    (remove-hook 'emms-player-seeked-functions 'emms-lyrics-seek)))
+    (remove-hook 'emms-player-seeked-functions 'emms-lyrics-seek)
+    (remove-hook 'emms-player-time-set-functions 'emms-lyrics-sync)))
 
 ;;;###autoload
 (defun emms-lyrics-enable ()

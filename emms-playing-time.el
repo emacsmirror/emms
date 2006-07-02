@@ -103,6 +103,12 @@ should enable `emms-playing-time-display-p' first, though."
   (when (< emms-playing-time 0)		; back to start point
     (setq emms-playing-time 0)))
 
+(defun emms-playing-time-set (sec)
+  "Set the playing time to SEC."
+  (setq emms-playing-time sec)
+  (when (< emms-playing-time 0)		; back to start point
+    (setq emms-playing-time 0)))
+
 (defun emms-playing-time (arg)
   "Turn on emms playing time if ARG is positive, off otherwise."
   (interactive "p")
@@ -114,7 +120,8 @@ should enable `emms-playing-time-display-p' first, though."
 	(add-hook 'emms-player-stopped-hook     'emms-playing-time-stop)
 	(add-hook 'emms-player-finished-hook    'emms-playing-time-stop)
 	(add-hook 'emms-player-paused-hook      'emms-playing-time-pause)
-	(add-hook 'emms-player-seeked-functions 'emms-playing-time-seek))
+	(add-hook 'emms-player-seeked-functions 'emms-playing-time-seek)
+	(add-hook 'emms-player-time-set-functions 'emms-playing-time-set))
     (setq emms-playing-time-display-p nil)
     (emms-playing-time-stop)
     (emms-playing-time-restore-mode-line)
@@ -122,7 +129,8 @@ should enable `emms-playing-time-display-p' first, though."
     (remove-hook 'emms-player-stopped-hook     'emms-playing-time-stop)
     (remove-hook 'emms-player-finished-hook    'emms-playing-time-stop)
     (remove-hook 'emms-player-paused-hook      'emms-playing-time-pause)
-    (remove-hook 'emms-player-seeked-functions 'emms-playing-time-seek)))
+    (remove-hook 'emms-player-seeked-functions 'emms-playing-time-seek)
+    (remove-hook 'emms-player-time-set-functions 'emms-playing-time-set)))
 
 ;;;###autoload
 (defun emms-playing-time-enable ()
