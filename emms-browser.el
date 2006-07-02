@@ -127,7 +127,9 @@ adding an album, artist, etc."
   :type 'function)
 
 (defcustom emms-browser-comparison-test
-  'case-fold
+  (if (fboundp 'define-hash-table-test)
+      'case-fold
+    'equal)
   "*A method for comparing entries in the cache.
 The default is to compare case-insensitively."
   :group 'emms-browser
@@ -396,7 +398,7 @@ compilations, etc."
 (defun emms-browser-make-hash-by (type)
   "Make a hash, mapping with TYPE, eg artist -> tracks."
   (let ((hash (make-hash-table
-             :test emms-browser-comparison-test))
+               :test emms-browser-comparison-test))
         field existing-entry)
     (maphash (lambda (path track)
                (setq field (emms-browser-get-track-field track type))
@@ -422,8 +424,9 @@ compilations, etc."
 (defun case-fold-string-hash (a)
   (sxhash (upcase a)))
 
-(define-hash-table-test 'case-fold
-  'case-fold-string= 'case-fold-string-hash)
+(when (fboundp 'define-hash-table-test)
+  (define-hash-table-test 'case-fold
+    'case-fold-string= 'case-fold-string-hash))
 
 (defun emms-browser-insert-top-level-entry (name tracks type)
   "Insert a single top level entry into the buffer."
