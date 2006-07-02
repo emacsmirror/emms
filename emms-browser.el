@@ -449,7 +449,7 @@ compilations, etc."
                                                  'info-artist)
                    ")"))
        (insert name))
-     (add-text-properties (line-beginning-position) (point)
+     (add-text-properties (point-at-bol) (point)
                           (list
                            'emms-browser-bdata bdata
                            'face 'emms-browser-tracks-face))
@@ -685,7 +685,7 @@ Uses `emms-browser-alpha-sort-function'."
 (defun emms-browser-bdata-at-point ()
   "Return the bdata object at point.
 Includes information at point (such as album name), and metadata."
-  (get-text-property (line-beginning-position)
+  (get-text-property (point-at-bol)
                      'emms-browser-bdata))
 
 (defun emms-browser-data-at-point ()
@@ -724,7 +724,7 @@ information."
          (when cover
            (emms-browser-insert-cover cover))))
      (insert name)
-     (add-text-properties (line-beginning-position) (point)
+     (add-text-properties (point-at-bol) (point)
                           (list
                            'emms-browser-bdata data-item
                            'face (emms-browser-face-from-level level)))
@@ -805,14 +805,14 @@ If DIRECTION is 1, move forward, otherwise move backwards."
 Stops at the next line at the same level, or EOF."
   (when (emms-browser-subitems-visible)
     (let ((current-level (emms-browser-level-at-point))
-          (next-line (line-beginning-position 2)))
+          (next-line (point-at-bol 2)))
       (emms-with-inhibit-read-only-t
        (delete-region next-line
                       (save-excursion
                         (while
                             (emms-browser-find-entry-more-than-level
                              current-level))
-                        (line-beginning-position 2)))))))
+                        (point-at-bol 2)))))))
 
 ;; --------------------------------------------------
 ;; Dealing with the playlist (queuing songs, etc)
@@ -994,8 +994,8 @@ After expanding, jump to the currently marked entry."
   (save-excursion
     (emms-browser-find-top-level)
     (emms-with-inhibit-read-only-t
-     (add-text-properties (line-beginning-position)
-                          (line-end-position)
+     (add-text-properties (point-at-bol)
+                          (point-at-eol)
                           (list 'emms-browser-mark t)))))
 
 (defun emms-browser-pop-mark ()
@@ -1007,8 +1007,8 @@ After expanding, jump to the currently marked entry."
         (progn
           (goto-char pos)
           (emms-with-inhibit-read-only-t
-           (remove-text-properties (line-beginning-position)
-                                   (line-end-position)
+           (remove-text-properties (point-at-bol)
+                                   (point-at-eol)
                                    (list 'emms-browser-mark))))
       (message "No mark saved!"))))
 
