@@ -200,7 +200,7 @@ Otherwise play the track immediately."
   (save-excursion
     ;; move to the start of the line, in case the point is on the \n,
     ;; which isn't propertized
-    (move-beginning-of-line nil)
+    (emms-move-beginning-of-line nil)
     (if (not emms-playlist-mode-open-playlists)
         (emms-playlist-mode-play-current-track)
       (let* ((track (emms-playlist-track-at))
