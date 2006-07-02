@@ -472,6 +472,16 @@ whenever possible."
       (setq next (cdr ptr))))
   seq)
 
+(defun emms-move-beginning-of-line (arg)
+  "Move point to beginning of current line as displayed.
+If there's an image in the line, this disregards newlines
+which are part of the text that the image rests on."
+  (if (fboundp 'move-beginning-of-line)
+      (move-beginning-of-line arg)
+    (if (numberp arg)
+        (forward-line (1- arg))
+      (forward-line 0))))
+
 
 ;;; Convenient macros
 
