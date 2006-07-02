@@ -118,6 +118,7 @@ This is used to cache over emacs sessions.")
     (message "Saving emms track cache...")
     (set-buffer (get-buffer-create " emms-cache "))
     (erase-buffer)
+    (insert ";;; .emms-cache -*- mode: emacs-lisp; coding: utf-8; -*-\n")
     (maphash (lambda (k v)
                (insert (format
                         "(puthash %S '%S emms-cache-db)\n" k v)))
