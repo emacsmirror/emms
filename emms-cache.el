@@ -42,8 +42,13 @@
 
 (require 'emms)
 
-(define-hash-table-test 'string-hash 'string= 'sxhash)
-(defvar emms-cache-db (make-hash-table :test 'string-hash)
+(when (fboundp 'define-hash-table-test)
+  (define-hash-table-test 'string-hash 'string= 'sxhash))
+
+(defvar emms-cache-db (make-hash-table
+                       :test (if (fboundp 'define-hash-table-test)
+                                 'string-hash
+                               'equal))
   "A mapping of paths to file info.
 This is used to cache over emacs sessions.")
 
