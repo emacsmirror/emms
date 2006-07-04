@@ -1215,7 +1215,7 @@ included."
 ;; FIXME: make this nicer
 (defun emms-browser-year-and-album-fmt (bdata fmt)
   (concat
-   "%cS"
+   "%i%cS"
    (let ((year (emms-browser-format-elem fmt "y")))
      (if (and year (not (string= year "0")))
          "(%y) "
@@ -1224,7 +1224,7 @@ included."
 
 (defun emms-browser-year-and-album-fmt-med (bdata fmt)
   (concat
-   "%cM"
+   "%i%cM"
    (let ((year (emms-browser-format-elem fmt "y")))
      (if (and year (not (string= year "0")))
          "(%y) "
@@ -1326,7 +1326,11 @@ If > album level, most of the track data will not make sense."
             (insert format)
             (goto-char (point-min))
             (let ((start (point-min)))
+              ;; jump over any image
               (when (re-search-forward "%c[SML]" nil t)
+                (setq start (point)))
+              ;; jump over the indent
+              (when (re-search-forward "%i" nil t)
                 (setq start (point)))
               (add-text-properties start (point-max)
                                    (list 'face face)))
