@@ -1316,7 +1316,7 @@ If > album level, most of the track data will not make sense."
   "Return a propertized string to be inserted in the buffer."
   (unless target
     (setq target 'browser))
-  (let* ((name (emms-browser-bdata-name bdata))
+  (let* ((name (or (emms-browser-bdata-name bdata) "misc"))
          (lvl (emms-browser-bdata-level bdata))
          (type (emms-browser-bdata-type bdata))
          (indent (or
