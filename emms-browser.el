@@ -133,6 +133,11 @@ return a path to the cover, or nil to turn off cover loading."
   :group 'emms-browser
   :type '(choice list function boolean))
 
+(defcustom emms-browser-default-covers nil
+  "*A list of default images to use if a cover isn't found."
+  :group 'emms-browser
+  :type 'string)
+
 (defcustom emms-browser-insert-track-function
   'emms-browser-insert-track-standard
   "*A function to insert a track into the playlist.
@@ -1188,22 +1193,23 @@ included."
   "Return a cover filename, if it exists."
   (unless size
     (setq size 'medium))
-  (let ((cover
-         (cond
-          ((functionp emms-browser-covers)
-           (funcall emms-browser-covers path size))
-          ((listp emms-browser-covers)
-           (concat (file-name-directory path)
-                   (cond
-                    ((eq size 'small)
-                     (nth 0 emms-browser-covers))
-                    ((eq size 'medium)
-                     (nth 1 emms-browser-covers))
-                    ((eq size 'large)
-                     (nth 2 emms-browser-covers))))))))
-    (when (and cover
-               (file-readable-p cover))
-      cover)))
+  (let* ((size-idx (cond
+                    ((eq size 'small) 0)
+                    ((eq size 'medium) 1)
+                    ((eq size 'large) 2)))
+         (cover
+          (cond
+           ((functionp emms-browser-covers)
+            (funcall emms-browser-covers path size))
+           ((listp emms-browser-covers)
+            (concat (file-name-directory path)
+                    (nth size-idx emms-browser-covers))))))
+    (if (and cover
+             (file-readable-p cover))
+        cover
+      ;; no cover found, use default
+      (when emms-browser-default-covers
+        (nth size-idx emms-browser-default-covers)))))
 
 (defun emms-browser-insert-cover (path)
   (insert (emms-browser-make-cover path)))
@@ -1244,8 +1250,8 @@ included."
 (defun emms-browser-year-and-album-fmt (bdata fmt)
   (concat
    "%cS"
-   (let ((year (emms-browser-format-elem fmt "%y")))
-     (if (and year (not (eq year 0)))
+   (let ((year (emms-browser-format-elem fmt "y")))
+     (if (and year (not (string= year "0")))
          "(%y) "
        ""))
    "%n"))
@@ -1253,8 +1259,8 @@ included."
 (defun emms-browser-year-and-album-fmt-med (bdata fmt)
   (concat
    "%cM"
-   (let ((year (emms-browser-format-elem fmt "%y")))
-     (if (and year (not (eq year 0)))
+   (let ((year (emms-browser-format-elem fmt "y")))
+     (if (and year (not (string= year "0")))
          "(%y) "
        ""))
    "%n"))
