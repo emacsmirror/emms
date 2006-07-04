@@ -1231,49 +1231,27 @@ included."
        ""))
    "%n"))
 
-(defface emms-browser-tracks-sub-face-1
-  '((((class color) (background dark))
-     (:foreground "#aaaaff"))
-    (((class color) (background light))
-     (:foreground "Blue"))
-    (((type tty) (class mono))
-     (:inverse-video t))
-    (t (:background "Blue")))
-  "Face for the tracks in a playlist buffer."
-  :group 'emms-browser-mode)
+(defmacro emms-browser-make-face (name dark-col light-col height)
+  (let ((face-name (intern (concat "emms-browser-" name "-face"))))
+    `(defface ,face-name
+       '((((class color) (background dark))
+          (:foreground ,dark-col
+                       :height ,height))
+         (((class color) (background light))
+          (:foreground ,light-col
+                       :height ,height))
+         (((type tty) (class mono))
+          (:inverse-video t))
+         (t (:background ,dark-col)))
+       ,(concat "Face for "
+                name
+                " in a browser/playlist buffer.")
+       :group 'emms-browser-mode)))
 
-(defface emms-browser-tracks-sub-face-2
-  '((((class color) (background dark))
-     (:foreground "#7777ff"))
-    (((class color) (background light))
-     (:foreground "Blue"))
-    (((type tty) (class mono))
-     (:inverse-video t))
-    (t (:background "Blue")))
-  "Face for the tracks in a playlist buffer."
-  :group 'emms-browser-mode)
-
-(defface emms-browser-tracks-sub-face-3
-  '((((class color) (background dark))
-     (:foreground "#4444ff"))
-    (((class color) (background light))
-     (:foreground "Blue"))
-    (((type tty) (class mono))
-     (:inverse-video t))
-    (t (:background "Blue")))
-  "Face for the tracks in a playlist buffer."
-  :group 'emms-browser-mode)
-
-(defface emms-browser-tracks-sub-face-4
-  '((((class color) (background dark))
-     (:foreground "#3333ff"))
-    (((class color) (background light))
-     (:foreground "Blue"))
-    (((type tty) (class mono))
-     (:inverse-video t))
-    (t (:background "Blue")))
-  "Face for the tracks in a playlist buffer."
-  :group 'emms-browser-mode)
+(emms-browser-make-face "year/genre" "#aaaaff" "#444477" 1.5)
+(emms-browser-make-face "artist"     "#aaaaff" "#444477" 1.3)
+(emms-browser-make-face "album"      "#aaaaff" "#444477" 1.1)
+(emms-browser-make-face "track"      "#aaaaff" "#444477" 1.0)
 
 (defun emms-browser-bdata-first-track (bdata)
   "Return the first track from a given bdata.
@@ -1364,11 +1342,15 @@ If > album level, most of the track data will not make sense."
 
 (defun emms-browser-get-face (bdata)
   "Return a suitable face for BDATA."
-  (let ((lvl (emms-browser-bdata-level bdata))
-        (type (emms-browser-bdata-type bdata)))
+  (let* ((type (emms-browser-bdata-type bdata))
+         (name (cond
+                ((or (eq type 'info-year)
+                     (eq type 'info-genre)) "year/genre")
+                 ((eq type 'info-artist) "artist")
+                 ((eq type 'info-album) "album")
+                 ((eq type 'info-title) "track"))))
     (intern
-     (concat "emms-browser-tracks-sub-face-"
-             (int-to-string lvl)))))
+     (concat "emms-browser-" name "-face"))))
 
 ;; based on gnus code
 (defun emms-browser-format-spec (format specification)
