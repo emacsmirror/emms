@@ -409,27 +409,7 @@ compilations, etc."
   (emms-browser-ensure-browser-buffer)
   (let ((bdata (emms-browser-make-bdata-tree
                 type 1 tracks)))
-    ;; this code duplication is ugly, but necessary at the moment
-    ;; because the top level data is stored differently
-    (emms-with-inhibit-read-only-t
-     (if (eq (emms-browser-bdata-type bdata) 'info-album)
-         (let ((cover (emms-browser-get-cover-from-album
-                       bdata 'small)))
-           (when cover
-             (emms-browser-insert-cover cover))
-           ;; if the album is a top-level element, display the artist
-           ;; name, too
-           (insert name
-                   " ("
-                   (emms-browser-get-track-field (car tracks)
-                                                 'info-artist)
-                   ")"))
-       (insert name))
-     (add-text-properties (line-beginning-position) (point)
-                          (list
-                           'emms-browser-bdata bdata
-                           'face 'emms-browser-tracks-face))
-     (insert "\n"))))
+    (emms-browser-insert-format bdata)))
 
 ;; --------------------------------------------------
 ;; Building a subitem tree
@@ -675,32 +655,7 @@ This will be a list of DB items."
 This checks DATA-ITEM's level to determine how much to indent.
 The line will have a property emms-browser-bdata storing subitem
 information."
-  (let* ((level (emms-browser-bdata-level data-item))
-         (name (emms-browser-bdata-name data-item))
-         (indent (emms-browser-make-indent-for-level level)))
-    (emms-with-inhibit-read-only-t
-     (insert
-      indent)
-     (when (eq (emms-browser-bdata-type data-item) 'info-album)
-       (let ((cover (emms-browser-get-cover-from-album
-                     data-item 'small)))
-         (when cover
-           (emms-browser-insert-cover cover))))
-     (insert name)
-     (add-text-properties (line-beginning-position) (point)
-                          (list
-                           'emms-browser-bdata data-item
-                           'face (emms-browser-face-from-level level)))
-     (insert "\n"))))
-
-(defun emms-browser-make-indent-for-level (level)
-  (make-string (* 2 (1- level)) ?\  ))
-
-(defun emms-browser-face-from-level (level)
-  "Return a face appropriate for LEVEL."
-  (intern
-   (concat "emms-browser-tracks-sub-face-"
-           (int-to-string (1- level)))))
+  (emms-browser-insert-format data-item))
 
 (defun emms-browser-find-entry-more-than-level (level)
   "Move point to next entry more than LEVEL and return point.
