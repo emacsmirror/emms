@@ -78,6 +78,17 @@
 ;;   scroll-up-aggressively 0.0
 ;;   scroll-down-aggressively 0.0
 
+;; To show a 'no cover' image for albums which don't have a cover, add
+;; the following code to your .emacs:
+
+;; (setq emms-browser-default-covers
+;;   (list "/path/to/cover_small.jpg" nil nil)
+
+;; (the medium and large images can be set too, if you want)
+
+;; You can download an example 'no cover' image from:
+;; http://repose.cx/cover_small.jpg
+
 ;;; Code:
 
 (require 'emms)
