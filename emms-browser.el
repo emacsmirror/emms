@@ -149,14 +149,6 @@ return a path to the cover, or nil to turn off cover loading."
   :group 'emms-browser
   :type 'string)
 
-(defcustom emms-browser-insert-track-function
-  'emms-browser-insert-track-standard
-  "*A function to insert a track into the playlist.
-The default behaviour indents tracks depending on whether you're
-adding an album, artist, etc."
-  :group 'emms-browser
-  :type 'function)
-
 (defcustom emms-browser-comparison-test
   (if (fboundp 'define-hash-table-test)
       'case-fold
@@ -211,6 +203,9 @@ Use nil for no sorting."
 (defvar emms-browser-top-level-hash nil
   "The current mapping db, eg. artist -> track.")
 (make-variable-buffer-local 'emms-browser-top-level-hash)
+
+(defvar emms-browser-current-indent nil
+  "Used to override the current indent, for the playlist, etc.")
 
 (defconst emms-browser-mode-map
   (let ((map (make-sparse-keymap)))
@@ -747,53 +742,122 @@ Stops at the next line at the same level, or EOF."
 ;; Dealing with the playlist (queuing songs, etc)
 ;; --------------------------------------------------
 
-(defun emms-browser-insert-playlist-group (type bdata level)
-  "Insert a group description into the playlist buffer.
-Eg. [album] foo bar"
-  (let ((short-type (substring (symbol-name type) 5))
-        group cover)
-    (setq group (emms-browser-format-line bdata 'playlist))
+(defun emms-browser-playlist-insert-group (bdata)
+  "Insert a group description into the playlist buffer."
+  (let* ((type (emms-browser-bdata-type bdata))
+         (short-type (substring (symbol-name type) 5))
+         (name (emms-browser-format-line bdata 'playlist)))
     (with-current-emms-playlist
       (goto-char (point-max))
-      (insert
-       (emms-browser-make-indent-for-level level))
-      ;; FIXME - we've cut out [type] - support it in format strings
-      (insert group "\n"))))
+      (insert name "\n"))))
 
-(defun emms-browser-insert-track (track name level)
-  "Insert a track into the playlist buffer, called NAME.
-LEVEL is used to control indentation."
-  (funcall emms-browser-insert-track-function track name level))
+(defun emms-browser-playlist-insert-track (bdata)
+  "Insert a track into the playlist buffer."
+  (let ((name (emms-browser-format-line bdata 'playlist))
+        (track (car (emms-browser-bdata-data bdata))))
+    (with-current-emms-playlist
+      (goto-char (point-max))
+      (insert  (emms-propertize
+                name
+                'face 'emms-playlist-track-face
+                'emms-track track)
+               "\n"))))
 
-(defun emms-browser-insert-track-standard (track name level)
-  (with-current-emms-playlist
-    (goto-char (point-max))
-    (insert  (emms-propertize
-              (concat
-               (emms-browser-make-indent-for-level level)
-               name)
-              'face 'emms-playlist-track-face
-              'emms-track track)
-             "\n")))
+(defun emms-browser-playlist-insert-bdata (bdata starting-level)
+  "Add all tracks in BDATA to the playlist."
+  (let ((type (emms-browser-bdata-type bdata))
+        (name (emms-browser-bdata-name bdata))
+        (level (emms-browser-bdata-level bdata))
+        emms-browser-current-indent)
+
+    ;; adjust the indentation relative to the starting level
+    (when starting-level
+      (setq level (- level (1- starting-level))))
+    ;; we temporarily rebind the current indent to the relative indent
+    (setq emms-browser-current-indent
+          (emms-browser-make-indent level))
+
+    ;; add a group heading?
+    (unless (eq type 'info-title)
+      (emms-browser-playlist-insert-group bdata))
+
+    ;; recurse or add tracks
+    (dolist (item (emms-browser-bdata-data bdata))
+      (if (not (eq type 'info-title))
+          (emms-browser-playlist-insert-bdata item starting-level)
+        (emms-browser-playlist-insert-track bdata)))))
+
+;; --------------------------------------------------
+;; Expanding/contracting
+;; --------------------------------------------------
+
+(defun emms-browser-expand-to-level (level)
+  "Expand to a depth specified by LEVEL.
+After expanding, jump to the currently marked entry."
+  (goto-char (point-min))
+  (while (not (eq (buffer-end 1) (point)))
+    (if (< (emms-browser-level-at-point) level)
+        (emms-browser-show-subitems))
+    (emms-browser-next-non-track))
+  (emms-browser-pop-mark)
+  (recenter '(4)))
+
+(defun emms-browser-mark-and-collapse ()
+  "Save the current top level element, and collapse."
+  (emms-browser-mark-entry)
+  (goto-char (point-max))
+  (while (not (eq (buffer-end -1) (point)))
+    (emms-browser-prev-non-track)
+    (emms-browser-kill-subitems)))
+
+(defun emms-browser-find-top-level ()
+  "Move up until reaching a top-level element."
+  (while (not (eq (emms-browser-level-at-point) 1))
+    (forward-line -1)))
+
+(defun emms-browser-mark-entry ()
+  "Mark the current top level entry."
+  (save-excursion
+    (emms-browser-find-top-level)
+    (emms-with-inhibit-read-only-t
+     (add-text-properties (point-at-bol)
+                          (point-at-eol)
+                          (list 'emms-browser-mark t)))))
+
+(defun emms-browser-pop-mark ()
+  "Return to the last marked entry, and remove the mark."
+  (goto-char (point-min))
+  (let ((pos (text-property-any (point-min) (point-max)
+                                'emms-browser-mark t)))
+    (if pos
+        (progn
+          (goto-char pos)
+          (emms-with-inhibit-read-only-t
+           (remove-text-properties (point-at-bol)
+                                   (point-at-eol)
+                                   (list 'emms-browser-mark))))
+      (message "No mark saved!"))))
+
+;; --------------------------------------------------
+;; User-visible commands
+;; --------------------------------------------------
 
 (defun emms-browser-add-tracks ()
-  "Add all tracks at point."
+  "Add all tracks at point.
+Return the previous point-max before adding."
   (interactive)
-  (let ((first-new-track
-         (with-current-emms-playlist
-           (point-max))))
-    (let ((bdata (emms-browser-bdata-at-point)))
-      (emms-browser-add-bdata-to-playlist
-       bdata (emms-browser-bdata-level bdata)))
-    (run-hook-with-args 'emms-browser-tracks-added-hook first-new-track)))
+  (let ((first-new-track (with-current-emms-playlist (point-max)))
+        (bdata (emms-browser-bdata-at-point)))
+    (emms-browser-playlist-insert-bdata
+     bdata (emms-browser-bdata-level bdata))
+    (run-hook-with-args 'emms-browser-tracks-added-hook
+                        first-new-track)
+    first-new-track))
 
 (defun emms-browser-add-tracks-and-play ()
   "Add all tracks at point, and play the first added track."
   (interactive)
-  (let (old-pos)
-    (with-current-emms-playlist
-      (setq old-pos (point-max)))
-    (emms-browser-add-tracks)
+  (let ((old-pos (emms-browser-add-tracks)))
     (with-current-emms-playlist
       (goto-char old-pos)
       ;; if we're sitting on a group name, move forward
@@ -803,29 +867,6 @@ LEVEL is used to control indentation."
     ;; FIXME: is there a better way of doing this?
     (emms-stop)
     (emms-start)))
-
-(defun emms-browser-add-bdata-to-playlist (bdata starting-level)
-  "Add all tracks in BDATA to the playlist."
-  (let ((type (emms-browser-bdata-type bdata))
-        (name (emms-browser-bdata-name bdata))
-        (level (emms-browser-bdata-level bdata)))
-
-    ;; adjust the indentation relative to the starting level
-    (when starting-level
-      (setq level (- level (1- starting-level))))
-
-    (unless (eq type 'info-title)
-      (emms-browser-insert-playlist-group
-       type bdata level))
-
-    (dolist (item (emms-browser-bdata-data bdata))
-      (if (not (eq type 'info-title))
-          (emms-browser-add-bdata-to-playlist item starting-level)
-        ;; there should only be one track in this bdata, so use the
-        ;; bdata
-        (setq name (emms-browser-format-line bdata 'playlist))
-        (emms-browser-insert-track
-         item name level)))))
 
 (defun emms-isearch-buffer ()
   "Isearch through the buffer."
@@ -873,59 +914,12 @@ LEVEL is used to control indentation."
   (emms-browser-mark-and-collapse)
   (emms-browser-expand-to-level 4))
 
-(defun emms-browser-expand-to-level (level)
-  "Expand to a depth specified by LEVEL.
-After expanding, jump to the currently marked entry."
-  (goto-char (point-min))
-  (while (not (eq (buffer-end 1) (point)))
-    (if (< (emms-browser-level-at-point) level)
-        (emms-browser-show-subitems))
-    (emms-browser-next-non-track))
-  (emms-browser-pop-mark)
-  (recenter '(4)))
-
 (defun emms-browser-collapse-all ()
   "Collapse everything, saving and restoring the mark."
   (interactive)
   (emms-browser-mark-and-collapse)
   (emms-browser-pop-mark)
   (recenter '(4)))
-
-(defun emms-browser-mark-and-collapse ()
-  "Save the current top level element, and collapse."
-  (emms-browser-mark-entry)
-  (goto-char (point-max))
-  (while (not (eq (buffer-end -1) (point)))
-    (emms-browser-prev-non-track)
-    (emms-browser-kill-subitems)))
-
-(defun emms-browser-find-top-level ()
-  "Move up until reaching a top-level element."
-  (while (not (eq (emms-browser-level-at-point) 1))
-    (forward-line -1)))
-
-(defun emms-browser-mark-entry ()
-  "Mark the current top level entry."
-  (save-excursion
-    (emms-browser-find-top-level)
-    (emms-with-inhibit-read-only-t
-     (add-text-properties (point-at-bol)
-                          (point-at-eol)
-                          (list 'emms-browser-mark t)))))
-
-(defun emms-browser-pop-mark ()
-  "Return to the last marked entry, and remove the mark."
-  (goto-char (point-min))
-  (let ((pos (text-property-any (point-min) (point-max)
-                                'emms-browser-mark t)))
-    (if pos
-        (progn
-          (goto-char pos)
-          (emms-with-inhibit-read-only-t
-           (remove-text-properties (point-at-bol)
-                                   (point-at-eol)
-                                   (list 'emms-browser-mark))))
-      (message "No mark saved!"))))
 
 (defun emms-browser-goto-random ()
   (interactive)
@@ -1269,8 +1263,10 @@ If > album level, most of the track data will not make sense."
     (emms-browser-format-line bdata)
     "\n")))
 
-(defun emms-browser-make-indent-for-level (level)
-  (make-string (* 1 (1- level)) ?\  ))
+(defun emms-browser-make-indent (level)
+  (or
+   emms-browser-current-indent
+   (make-string (* 2 (1- level)) ?\  )))
 
 (defun emms-browser-get-format (bdata target)
   (let* ((type (emms-browser-bdata-type bdata))
@@ -1297,10 +1293,7 @@ If > album level, most of the track data will not make sense."
   (let* ((name (or (emms-browser-bdata-name bdata) "misc"))
          (lvl (emms-browser-bdata-level bdata))
          (type (emms-browser-bdata-type bdata))
-         (indent (or
-                  (and (eq target 'browser)
-                       (emms-browser-make-indent-for-level lvl))
-                  ""))
+         (indent (emms-browser-make-indent lvl))
          (track (emms-browser-bdata-first-track bdata))
          (path (emms-track-get track 'name))
          (face (emms-browser-get-face bdata))
@@ -1337,6 +1330,10 @@ If > album level, most of the track data will not make sense."
             (buffer-string)))
 
     (setq str (emms-browser-format-spec str format-choices))
+
+    ;; give tracks a 'boost' (covers take up an extra space)
+    (when (eq type 'info-title)
+      (setq str (concat "  " str)))
 
     ;; add the bdata object to the whole string
     (add-text-properties
