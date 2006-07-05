@@ -1287,9 +1287,9 @@ If > album level, most of the track data will not make sense."
   (unless target
     (setq target 'browser))
   (let* ((name (or (emms-browser-bdata-name bdata) "misc"))
-         (lvl (emms-browser-bdata-level bdata))
+         (level (emms-browser-bdata-level bdata))
          (type (emms-browser-bdata-type bdata))
-         (indent (emms-browser-make-indent lvl))
+         (indent (emms-browser-make-indent level))
          (track (emms-browser-bdata-first-track bdata))
          (path (emms-track-get track 'name))
          (face (emms-browser-get-face bdata))
