@@ -746,14 +746,14 @@ Stops at the next line at the same level, or EOF."
   "Insert a group description into the playlist buffer."
   (let* ((type (emms-browser-bdata-type bdata))
          (short-type (substring (symbol-name type) 5))
-         (name (emms-browser-format-line bdata)))
+         (name (emms-browser-format-line bdata 'playlist)))
     (with-current-emms-playlist
       (goto-char (point-max))
       (insert name "\n"))))
 
 (defun emms-browser-playlist-insert-track (bdata)
   "Insert a track into the playlist buffer."
-  (let ((name (emms-browser-format-line bdata 'track))
+  (let ((name (emms-browser-format-line bdata 'playlist))
         (track (car (emms-browser-bdata-data bdata))))
     (with-current-emms-playlist
       (goto-char (point-max))
@@ -1329,11 +1329,13 @@ If > album level, most of the track data will not make sense."
     (setq str (emms-browser-format-spec str format-choices))
 
     ;; give tracks a 'boost' (covers take up an extra space)
-    (when (eq type 'info-title)
+    (when (and (eq type 'info-title)
+               (> level 1))
       (setq str (concat " " str)))
 
     ;; if we're in playlist mode, add a track
-    (when (eq target 'track)
+    (when (and (eq target 'playlist)
+               (eq type 'info-title))
       (setq props
             (append props `(emms-track ,track))))
 
