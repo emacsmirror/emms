@@ -746,22 +746,18 @@ Stops at the next line at the same level, or EOF."
   "Insert a group description into the playlist buffer."
   (let* ((type (emms-browser-bdata-type bdata))
          (short-type (substring (symbol-name type) 5))
-         (name (emms-browser-format-line bdata 'playlist)))
+         (name (emms-browser-format-line bdata)))
     (with-current-emms-playlist
       (goto-char (point-max))
       (insert name "\n"))))
 
 (defun emms-browser-playlist-insert-track (bdata)
   "Insert a track into the playlist buffer."
-  (let ((name (emms-browser-format-line bdata 'playlist))
+  (let ((name (emms-browser-format-line bdata 'track))
         (track (car (emms-browser-bdata-data bdata))))
     (with-current-emms-playlist
       (goto-char (point-max))
-      (insert  (emms-propertize
-                name
-                'face 'emms-playlist-track-face
-                'emms-track track)
-               "\n"))))
+      (insert name "\n"))))
 
 (defun emms-browser-playlist-insert-bdata (bdata starting-level)
   "Add all tracks in BDATA to the playlist."
@@ -1266,7 +1262,7 @@ If > album level, most of the track data will not make sense."
 (defun emms-browser-make-indent (level)
   (or
    emms-browser-current-indent
-   (make-string (* 2 (1- level)) ?\  )))
+   (make-string (* 1 (1- level)) ?\  )))
 
 (defun emms-browser-get-format (bdata target)
   (let* ((type (emms-browser-bdata-type bdata))
@@ -1298,6 +1294,7 @@ If > album level, most of the track data will not make sense."
          (path (emms-track-get track 'name))
          (face (emms-browser-get-face bdata))
          (format (emms-browser-get-format bdata target))
+         (props (list 'emms-browser-bdata bdata))
          (format-choices
           `(("i" . ,indent)
             ("n" . ,name)
@@ -1333,12 +1330,15 @@ If > album level, most of the track data will not make sense."
 
     ;; give tracks a 'boost' (covers take up an extra space)
     (when (eq type 'info-title)
-      (setq str (concat "  " str)))
+      (setq str (concat " " str)))
 
-    ;; add the bdata object to the whole string
-    (add-text-properties
-     0 (length str)
-     (list 'emms-browser-bdata bdata) str)
+    ;; if we're in playlist mode, add a track
+    (when (eq target 'track)
+      (setq props
+            (append props `(emms-track ,track))))
+
+    ;; add properties to the whole string
+    (add-text-properties 0 (length str) props str)
     str))
 
 (defun emms-browser-get-face (bdata)
