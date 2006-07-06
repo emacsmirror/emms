@@ -427,7 +427,8 @@ compilations, etc."
     (maphash (lambda (path track)
                (unless (run-hook-with-args-until-success
                         'emms-browser-filter-tracks-hook track)
-                 (setq field (emms-browser-get-track-field track type))
+                 (setq field
+                       (emms-browser-get-track-field track type))
                  (setq existing-entry (gethash field hash))
                  (if existing-entry
                      (puthash field (cons track existing-entry) hash)
@@ -457,8 +458,7 @@ compilations, etc."
 (defun emms-browser-insert-top-level-entry (name tracks type)
   "Insert a single top level entry into the buffer."
   (emms-browser-ensure-browser-buffer)
-  (let ((bdata (emms-browser-make-bdata-tree
-                type 1 tracks)))
+  (let ((bdata (emms-browser-make-bdata-tree type 1 tracks name)))
     (emms-browser-insert-format bdata)))
 
 ;; --------------------------------------------------
@@ -474,14 +474,12 @@ Eg. if CURRENT-MAPPING is currently 'info-artist, return 'info-album."
    ((eq current-mapping 'info-genre) 'info-artist)
    ((eq current-mapping 'info-year) 'info-artist)))
 
-(defun emms-browser-make-bdata-tree (type level tracks)
+(defun emms-browser-make-bdata-tree (type level tracks name)
   "Build a tree of browser DB elements for tracks."
   (emms-browser-make-bdata
    (emms-browser-make-bdata-tree-recurse
     type level tracks)
-   ;; with the current hash code, we're guaranteed to have only one
-   ;; element at the top
-   (emms-track-get (car tracks) type)
+   name
    type level))
 
 (defun emms-browser-make-bdata-tree-recurse (type level tracks)
