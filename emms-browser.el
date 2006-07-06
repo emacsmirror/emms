@@ -240,7 +240,6 @@ Use nil for no sorting."
 
 (defconst emms-browser-mode-map
   (let ((map (make-sparse-keymap)))
-    (set-keymap-parent map text-mode-map)
     (define-key map (kbd "q") 'emms-browser-bury-buffer)
     (define-key map (kbd "/") 'emms-isearch-buffer)
     (define-key map (kbd "r") 'emms-browser-goto-random)
