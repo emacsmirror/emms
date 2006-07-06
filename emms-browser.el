@@ -89,6 +89,25 @@
 ;; You can download an example 'no cover' image from:
 ;; http://repose.cx/cover_small.jpg
 
+;; Filtering tracks
+;; -------------------------------------------------------------------
+
+;; If you want to display a subset of your collection (such as a
+;; directory of 80s music, only avi files, etc), then you can make
+;; some filters using code like this:
+
+;; (emms-browser-make-filter "all" 'ignore)
+;; (emms-browser-make-filter
+;;  "80s" (emms-browser-filter-only-dir "~/Mp3s/80s"))
+
+;; After executing the above commands, you can use M-x
+;; emms-browser-show-all and M-x emms-browser-show-80s to toggle
+;; between different collections.
+
+;; The second argument to make-filter is a function which returns t if
+;; a single track should be filtered. You can write your own filter
+;; functions to check the type of a file, etc.
+
 ;;; Code:
 
 (require 'emms)
@@ -109,8 +128,8 @@
   :group 'multimedia
   :group 'applications)
 
-(defcustom emms-browser-default-browsing-function
-  'emms-browse-by-artist
+(defcustom emms-browser-default-browse-type
+  'info-artist
   "*The default browsing mode."
   :group 'emms-browser
   :type 'function)
@@ -194,6 +213,11 @@ Use nil for no sorting."
   :group 'emms-browser
   :type 'hook)
 
+(defcustom emms-browser-filter-tracks-hook nil
+  "*Given a track, return t if the track should be ignored."
+  :group 'emms-browser
+  :type 'hook)
+
 (defvar emms-browser-buffer nil
   "The current browser buffer, if any.")
 
@@ -204,8 +228,15 @@ Use nil for no sorting."
   "The current mapping db, eg. artist -> track.")
 (make-variable-buffer-local 'emms-browser-top-level-hash)
 
+(defvar emms-browser-top-level-type nil
+  "The current mapping type, eg. 'info-artist.")
+(make-variable-buffer-local 'emms-browser-top-level-hash)
+
 (defvar emms-browser-current-indent nil
   "Used to override the current indent, for the playlist, etc.")
+
+(defvar emms-browser-current-filter-name nil
+  "The name of the current filter in place, if any.")
 
 (defconst emms-browser-mode-map
   (let ((map (make-sparse-keymap)))
@@ -254,9 +285,9 @@ Use nil for no sorting."
   "Launch or switch to the EMMS Browser."
   (interactive)
   (emms-browser-create-or-focus
-   emms-browser-default-browsing-function))
+   emms-browser-default-browse-type))
 
-(defun emms-browser-create-or-focus (browse-func)
+(defun emms-browser-create-or-focus (type)
   "Create a new browser buffer with BROWSE-FUNC, or switch.
 BROWSE-FUNC should fill the buffer with something of interest. An
 example function is `emms-browse-by-artist'."
@@ -272,7 +303,7 @@ example function is `emms-browse-by-artist'."
           (run-mode-hooks 'emms-browser-show-display-hook))
       ;; if there's no buffer, create a new window
       (emms-browser-create)
-      (funcall browse-func))))
+      (emms-browse-by type))))
 
 (defun emms-browser-create ()
   "Create a new emms-browser buffer and start emms-browser-mode."
@@ -336,17 +367,27 @@ example function is `emms-browse-by-artist'."
 (defmacro emms-browser-add-category (name type)
   "Create an interactive function emms-browse-by-NAME."
   (let ((funname (intern (concat "emms-browse-by-" name)))
-        (modedesc (concat "Browsing by: " name))
         (funcdesc (concat "Browse by " name ".")))
   `(defun ,funname ()
      ,funcdesc
      (interactive)
-     (let ((hash (emms-browser-make-hash-by ,type)))
-       (emms-browser-clear)
-       (rename-buffer ,modedesc)
-       (emms-browser-render-hash hash ,type)
-       (setq emms-browser-top-level-hash hash)
-       (goto-char (point-min))))))
+     (emms-browse-by ,type))))
+
+(defun emms-browse-by (type)
+  "Render a top level buffer based on TYPE."
+  ;; FIXME: assumes we only browse by info-*
+  (let* ((name (substring (symbol-name type) 5))
+         (modedesc (concat "Browsing by: " name))
+         (hash (emms-browser-make-hash-by type)))
+    (when emms-browser-current-filter-name
+      (setq modedesc (concat modedesc
+                             " [" emms-browser-current-filter-name "]")))
+    (emms-browser-clear)
+    (rename-buffer modedesc)
+    (emms-browser-render-hash hash type)
+    (setq emms-browser-top-level-hash hash)
+    (setq emms-browser-top-level-type type)
+    (goto-char (point-min))))
 
 (emms-browser-add-category "artist" 'info-artist)
 (emms-browser-add-category "album" 'info-album)
@@ -383,11 +424,13 @@ compilations, etc."
                :test emms-browser-comparison-test))
         field existing-entry)
     (maphash (lambda (path track)
-               (setq field (emms-browser-get-track-field track type))
-               (setq existing-entry (gethash field hash))
-               (if existing-entry
-                   (puthash field (cons track existing-entry) hash)
-                 (puthash field (list track) hash)))
+               (unless (run-hook-with-args-until-success
+                        'emms-browser-filter-tracks-hook track)
+                 (setq field (emms-browser-get-track-field track type))
+                 (setq existing-entry (gethash field hash))
+                 (if existing-entry
+                     (puthash field (cons track existing-entry) hash)
+                   (puthash field (list track) hash))))
              emms-cache-db)
     hash))
 
@@ -1390,6 +1433,36 @@ the text that it generates."
        (t
         (error "Invalid format string"))))
     (buffer-string)))
+
+;; --------------------------------------------------
+;; Filtering
+;; --------------------------------------------------
+
+(defmacro emms-browser-make-filter (name filter)
+  "Make a user-level function for filtering tracks."
+  (let ((func (intern (concat "emms-browser-show-" name)))
+        (desc (concat "Filter the cache using rule '"
+                      name "'")))
+    `(defun ,func ()
+       ,desc
+       (interactive)
+       (emms-browser-refilter ,filter ,name))))
+
+(defun emms-browser-refilter (filter name)
+  "Filter and render the top-level tracks."
+  (interactive)
+  ;; FIXME: don't clobber
+  (setq emms-browser-filter-tracks-hook filter)
+  (setq emms-browser-current-filter-name name)
+  (emms-browse-by (or emms-browser-top-level-type
+                      emms-browser-default-browse-type)))
+
+(defmacro emms-browser-filter-only-dir (path)
+  "Generate a function which checks if a track is in path.
+If the track is not in path, return t."
+  `(lambda (track)
+     (not (string-match ,(concat "^" (expand-file-name path))
+                        (emms-track-get track 'name)))))
 
 (provide 'emms-browser)
 ;;; emms-browser.el ends here
