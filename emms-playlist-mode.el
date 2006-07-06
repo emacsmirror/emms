@@ -184,6 +184,8 @@ FUN should be a function."
   "Start playing track at point."
   (interactive)
   (emms-playlist-set-playlist-buffer)
+  (unless (emms-playlist-track-at (point))
+    (emms-playlist-next))
   (emms-playlist-select (point))
   (when emms-player-playing-p
     (emms-stop))
