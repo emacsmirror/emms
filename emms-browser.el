@@ -267,6 +267,8 @@ Use nil for no sorting."
     (define-key map (kbd "s A") 'emms-browser-search-by-album)
     (define-key map (kbd "s t") 'emms-browser-search-by-title)
     (define-key map (kbd "s s") 'emms-browser-search-by-names)
+    (define-key map (kbd "W A") 'emms-browser-lookup-artist-on-wikipedia)
+    (define-key map (kbd "W a") 'emms-browser-lookup-album-on-wikipedia)
     map)
   "Keymap for `emms-browser-mode'.")
 
@@ -981,6 +983,25 @@ Return the previous point-max before adding."
   (interactive)
   (with-current-emms-playlist
     (emms-playlist-clear)))
+
+(defun emms-browser-lookup-wikipedia (field)
+  (let ((data
+         (emms-track-get (emms-browser-bdata-first-track
+                          (emms-browser-bdata-at-point))
+                         field)))
+    (when data
+      (browse-url
+       (concat
+        "http://en.wikipedia.org/wiki/Special:Search?search="
+        data)))))
+
+(defun emms-browser-lookup-artist-on-wikipedia ()
+  (interactive)
+  (emms-browser-lookup-wikipedia 'info-artist))
+
+(defun emms-browser-lookup-album-on-wikipedia ()
+  (interactive)
+  (emms-browser-lookup-wikipedia 'info-album))
 
 ;; --------------------------------------------------
 ;; Linked browser and playlist windows
