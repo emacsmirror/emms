@@ -38,7 +38,7 @@
 
 (define-emms-simple-player mplayer-playlist '(streamlist)
   "http://"
-  "mplayer" "-playlist" "-slave" "-quiet" "-really-quiet")
+  "mplayer" "-slave" "-quiet" "-really-quiet" "-playlist")
 
 (emms-player-set emms-player-mplayer
 		 'pause
