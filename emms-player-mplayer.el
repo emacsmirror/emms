@@ -34,11 +34,11 @@
   (regexp-opt '(".ogg" ".mp3" ".wav" ".mpg" ".mpeg" ".wmv" ".wma"
                 ".mov" ".avi" ".divx" ".ogm" ".asf" ".mkv" "http://"
 		".rm" ".rmvb" ".mp4" ".flac"))
-  "mplayer" "-slave")
+  "mplayer" "-slave" "-quiet")
 
 (define-emms-simple-player mplayer-playlist '(streamlist)
   "http://"
-  "mplayer" "-playlist" "-slave")
+  "mplayer" "-playlist" "-slave" "-quiet")
 
 (emms-player-set emms-player-mplayer
 		 'pause
