@@ -102,7 +102,7 @@
 ;; ;; Set "all" as the default filter
 ;; (emms-browser-set-filter (assoc "all" emms-browser-filters))
 
-;; ;; show all files (no streamlists,etc)
+;; ;; show all files (no streamlists, etc)
 ;; (emms-browser-make-filter
 ;;  "all-files" (emms-browser-filter-only-type 'file))
 
@@ -281,6 +281,8 @@ Use nil for no sorting."
     (define-key map (kbd "s s") 'emms-browser-search-by-names)
     (define-key map (kbd "W A") 'emms-browser-lookup-artist-on-wikipedia)
     (define-key map (kbd "W a") 'emms-browser-lookup-album-on-wikipedia)
+    (define-key map (kbd "M->") 'emms-browser-next-filter)
+    (define-key map (kbd "M-<") 'emms-browser-previous-filter)
     map)
   "Keymap for `emms-browser-mode'.")
 
@@ -1499,10 +1501,27 @@ This does not refresh the current buffer."
 
 (defun emms-browser-refilter (filter)
   "Filter and render the top-level tracks."
-  (interactive)
   (emms-browser-set-filter filter)
   (emms-browse-by (or emms-browser-top-level-type
                       emms-browser-default-browse-type)))
+
+(defun emms-browser-next-filter (&optional reverse)
+  "Redisplay with the next filter."
+  (interactive)
+  (let* ((list (if reverse
+                  (reverse emms-browser-filters)
+                 emms-browser-filters))
+         (key emms-browser-current-filter-name)
+         (next (cadr (member (assoc key list) list))))
+    ;; wrapped
+    (unless next
+      (setq next (car list)))
+    (emms-browser-refilter next)))
+
+(defun emms-browser-previous-filter ()
+  "Redisplay with the previous filter."
+  (interactive)
+  (emms-browser-next-filter t))
 
 (defun emms-browser-filter-only-dir (path)
   "Generate a function which checks if a track is in path.
