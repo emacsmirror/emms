@@ -50,6 +50,9 @@
 (defvar emms-playlist-mode-switched-buffer nil
   "Last buffer visited before calling `emms-playlist-mode-switch-buffer'.")
 
+(defvar emms-playlist-mode-popup-enabled nil
+  "True when the playlist was called as a popup window.")
+
 (make-variable-buffer-local
  'emms-playlist-mode-selected-overlay)
 
@@ -128,7 +131,7 @@ This is true for every invocation of `emms-playlist-mode-go'."
     (define-key map (kbd "s") 'emms-stop)
     (define-key map (kbd "f") 'emms-show)
     (define-key map (kbd "c") 'emms-playlist-mode-center-current)
-    (define-key map (kbd "q") 'bury-buffer)
+    (define-key map (kbd "q") 'emms-playlist-mode-bury-buffer)
     (define-key map (kbd "k") 'emms-playlist-current-kill)
     (define-key map (kbd "?") 'describe-mode)
     (define-key map (kbd "r") 'emms-random)
@@ -157,6 +160,15 @@ FUN should be a function."
 
 (emms-playlist-mode-move-wrapper emms-playlist-mode-select-previous
 				 emms-playlist-previous)
+
+(defun emms-playlist-mode-bury-buffer ()
+  "Wrapper around `bury-buffer' for popup windows."
+  (interactive)
+  (if emms-playlist-mode-popup-enabled
+      (unwind-protect
+	  (delete-window)
+	(setq emms-playlist-mode-popup-enabled nil))
+    (bury-buffer)))
 
 (defun emms-playlist-mode-last ()
   "Move to directly after the last track in the current buffer."
@@ -431,7 +443,8 @@ WINDOW-WIDTH should be a positive integer."
 	(or window-width emms-playlist-mode-window-width))
   (split-window-horizontally (- emms-playlist-mode-window-width))
   (other-window 1)
-  (emms-playlist-mode-go))
+  (emms-playlist-mode-go)
+  (setq emms-playlist-mode-popup-enabled t))
 
 (defun emms-playlist-mode-startup ()
   "Instigate emms-playlist-mode on the current buffer."
