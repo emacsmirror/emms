@@ -96,13 +96,26 @@
 ;; directory of 80s music, only avi files, etc), then you can make
 ;; some filters using code like this:
 
+;; ;; show everything
 ;; (emms-browser-make-filter "all" 'ignore)
+
+;; ;; Set "all" as the default filter
+;; (emms-browser-set-filter (assoc "all" emms-browser-filters))
+
+;; ;; show all files (no streamlists,etc)
+;; (emms-browser-make-filter
+;;  "all-files" (emms-browser-filter-only-type 'file))
+
+;; ;; show only tracks in one folder
 ;; (emms-browser-make-filter
 ;;  "80s" (emms-browser-filter-only-dir "~/Mp3s/80s"))
 
 ;; After executing the above commands, you can use M-x
-;; emms-browser-show-all and M-x emms-browser-show-80s to toggle
+;; emms-browser-show-all, emms-browser-show-80s, etc to toggle
 ;; between different collections.
+
+;; The above will set the first-defined filter as the default. You can
+;; use any of the filters in emms-browser-filters.
 
 ;; The second argument to make-filter is a function which returns t if
 ;; a single track should be filtered. You can write your own filter
@@ -1456,31 +1469,53 @@ the text that it generates."
 ;; Filtering
 ;; --------------------------------------------------
 
-(defmacro emms-browser-make-filter (name filter)
-  "Make a user-level function for filtering tracks."
-  (let ((func (intern (concat "emms-browser-show-" name)))
-        (desc (concat "Filter the cache using rule '"
-                      name "'")))
-    `(defun ,func ()
-       ,desc
-       (interactive)
-       (emms-browser-refilter ,filter ,name))))
+(defvar emms-browser-filters nil
+  "A list of available filters.")
 
-(defun emms-browser-refilter (filter name)
+(defmacro emms-browser-make-filter (name func)
+  "Make a user-level function for filtering tracks.
+This:
+ - defines an interactive function M-x emms-browser-show-NAME.
+ - defines a variable emms-browser-filter-NAME of (name . func).
+ - adds the filter to emms-browser-filters."
+  (let ((funcnam (intern (concat "emms-browser-show-" name)))
+        (var  (intern (concat "emms-browser-filter-" name)))
+        (desc (concat "Filter the cache using rule '"
+                       name "'")))
+    `(progn
+       (defvar ,var nil ,desc)
+       (setq ,var (cons ,name ,func))
+       (add-to-list 'emms-browser-filters ,var)
+       (defun ,funcnam ()
+         ,desc
+         (interactive)
+         (emms-browser-refilter ,var)))))
+
+(defun emms-browser-set-filter (filter)
+  "Set the current filter to be used on next update.
+This does not refresh the current buffer."
+  (setq emms-browser-filter-tracks-hook (cdr filter))
+  (setq emms-browser-current-filter-name (car filter)))
+
+(defun emms-browser-refilter (filter)
   "Filter and render the top-level tracks."
   (interactive)
-  ;; FIXME: don't clobber
-  (setq emms-browser-filter-tracks-hook filter)
-  (setq emms-browser-current-filter-name name)
+  (emms-browser-set-filter filter)
   (emms-browse-by (or emms-browser-top-level-type
                       emms-browser-default-browse-type)))
 
-(defmacro emms-browser-filter-only-dir (path)
+(defun emms-browser-filter-only-dir (path)
   "Generate a function which checks if a track is in path.
 If the track is not in path, return t."
   `(lambda (track)
      (not (string-match ,(concat "^" (expand-file-name path))
                         (emms-track-get track 'name)))))
+
+(defun emms-browser-filter-only-type (type)
+  "Generate a function which checks a track's type.
+If the track is not of TYPE, return t."
+  `(lambda (track)
+     (not (eq (quote ,type) (emms-track-get track 'type)))))
 
 (provide 'emms-browser)
 ;;; emms-browser.el ends here
