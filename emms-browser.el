@@ -281,8 +281,8 @@ Use nil for no sorting."
     (define-key map (kbd "s s") 'emms-browser-search-by-names)
     (define-key map (kbd "W A") 'emms-browser-lookup-artist-on-wikipedia)
     (define-key map (kbd "W a") 'emms-browser-lookup-album-on-wikipedia)
-    (define-key map (kbd "M->") 'emms-browser-next-filter)
-    (define-key map (kbd "M-<") 'emms-browser-previous-filter)
+    (define-key map (kbd ">") 'emms-browser-next-filter)
+    (define-key map (kbd "<") 'emms-browser-previous-filter)
     map)
   "Keymap for `emms-browser-mode'.")
 
