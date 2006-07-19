@@ -231,6 +231,11 @@ Use nil for no sorting."
   :group 'emms-browser
   :type 'hook)
 
+(defcustom emms-browser-filter-changed-hook nil
+  "*Hook run after the filter has changed."
+  :group 'emms-browser
+  :type 'hook)
+
 (defvar emms-browser-buffer nil
   "The current browser buffer, if any.")
 
@@ -279,8 +284,10 @@ Use nil for no sorting."
     (define-key map (kbd "s A") 'emms-browser-search-by-album)
     (define-key map (kbd "s t") 'emms-browser-search-by-title)
     (define-key map (kbd "s s") 'emms-browser-search-by-names)
-    (define-key map (kbd "W A") 'emms-browser-lookup-artist-on-wikipedia)
-    (define-key map (kbd "W a") 'emms-browser-lookup-album-on-wikipedia)
+    (define-key map (kbd "W A w") 'emms-browser-lookup-artist-on-wikipedia)
+    (define-key map (kbd "W A p") 'emms-browser-lookup-artist-on-pitchfork)
+    (define-key map (kbd "W a w") 'emms-browser-lookup-album-on-wikipedia)
+    (define-key map (kbd "W a p") 'emms-browser-lookup-album-on-pitchfork)
     (define-key map (kbd ">") 'emms-browser-next-filter)
     (define-key map (kbd "<") 'emms-browser-previous-filter)
     map)
@@ -996,16 +1003,23 @@ Return the previous point-max before adding."
   (with-current-emms-playlist
     (emms-playlist-clear)))
 
-(defun emms-browser-lookup-wikipedia (field)
+
+(defun emms-browser-lookup (field url)
   (let ((data
          (emms-track-get (emms-browser-bdata-first-track
                           (emms-browser-bdata-at-point))
                          field)))
     (when data
       (browse-url
-       (concat
-        "http://en.wikipedia.org/wiki/Special:Search?search="
-        data)))))
+       (concat url data)))))
+
+(defun emms-browser-lookup-wikipedia (field)
+  (emms-browser-lookup
+   field "http://en.wikipedia.org/wiki/Special:Search?search="))
+
+(defun emms-browser-lookup-pitchfork (field)
+  (emms-browser-lookup
+   field "http://pitchforkmedia.com/search/record_reviews/query?keywords="))
 
 (defun emms-browser-lookup-artist-on-wikipedia ()
   (interactive)
@@ -1014,6 +1028,14 @@ Return the previous point-max before adding."
 (defun emms-browser-lookup-album-on-wikipedia ()
   (interactive)
   (emms-browser-lookup-wikipedia 'info-album))
+
+(defun emms-browser-lookup-artist-on-pitchfork ()
+  (interactive)
+  (emms-browser-lookup-pitchfork 'info-artist))
+
+(defun emms-browser-lookup-album-on-pitchfork ()
+  (interactive)
+  (emms-browser-lookup-pitchfork 'info-album))
 
 ;; --------------------------------------------------
 ;; Linked browser and playlist windows
@@ -1404,9 +1426,10 @@ If > album level, most of the track data will not make sense."
 
     (setq str (emms-browser-format-spec str format-choices))
 
-    ;; give tracks a 'boost' (covers take up an extra space)
+    ;; give tracks a 'boost' if they're not top-level
+    ;; (covers take up an extra space)
     (when (and (eq type 'info-title)
-               (> level 1))
+               (not (string= indent "")))
       (setq str (concat " " str)))
 
     ;; if we're in playlist mode, add a track
@@ -1497,7 +1520,8 @@ This:
   "Set the current filter to be used on next update.
 This does not refresh the current buffer."
   (setq emms-browser-filter-tracks-hook (cdr filter))
-  (setq emms-browser-current-filter-name (car filter)))
+  (setq emms-browser-current-filter-name (car filter))
+  (run-hooks 'emms-browser-filter-changed-hook))
 
 (defun emms-browser-refilter (filter)
   "Filter and render the top-level tracks."
