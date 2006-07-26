@@ -112,7 +112,8 @@
 
 ;; After executing the above commands, you can use M-x
 ;; emms-browser-show-all, emms-browser-show-80s, etc to toggle
-;; between different collections.
+;; between different collections. Alternatively you can use '<' and
+;; '>' to cycle through the available filters.
 
 ;; The above will set the first-defined filter as the default. You can
 ;; use any of the filters in emms-browser-filters.
@@ -120,6 +121,25 @@
 ;; The second argument to make-filter is a function which returns t if
 ;; a single track should be filtered. You can write your own filter
 ;; functions to check the type of a file, etc.
+
+;; Changing display layout
+;; -------------------------------------------------------------------
+
+;; You can change the way the tree is displayed by modifying
+;; `emms-browser-next-mapping-type'. The following code displays
+;; artist->track instead of artist->album->track when you switch to
+;; the 'singles' filter.
+
+;; (defadvice emms-browser-next-mapping-type (after no-album (current-mapping))
+;;   (when (eq ad-return-value 'info-album)
+;;     (setq ad-return-value 'info-title)))
+
+;; (defun toggle-album-display ()
+;;   (if (string= emms-browser-current-filter-name "singles")
+;;       (ad-activate 'emms-browser-next-mapping-type)
+;;     (ad-deactivate 'emms-browser-next-mapping-type)))
+
+;; (add-hook 'emms-browser-filter-changed-hook 'toggle-album-display)
 
 ;;; Code:
 
