@@ -179,7 +179,7 @@ return a path to the cover, or nil to turn off cover loading."
 (defcustom emms-browser-default-covers nil
   "*A list of default images to use if a cover isn't found."
   :group 'emms-browser
-  :type 'string)
+  :type 'list)
 
 (defcustom emms-browser-comparison-test
   (if (fboundp 'define-hash-table-test)
@@ -1255,7 +1255,8 @@ included."
           (cond
            ((functionp emms-browser-covers)
             (funcall emms-browser-covers path size))
-           ((listp emms-browser-covers)
+           ((and (listp emms-browser-covers)
+                 (nth size-idx emms-browser-covers))
             (concat (file-name-directory path)
                     (nth size-idx emms-browser-covers))))))
     (if (and cover
