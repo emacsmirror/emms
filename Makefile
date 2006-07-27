@@ -35,7 +35,7 @@ emms-auto.el: emms-auto.in $(SOURCE)
 		-f batch-byte-compile $<
 
 %.info: %.texinfo
-	makeinfo $<
+	makeinfo --no-split $<
 
 %.html: %.texinfo
 	makeinfo --html --no-split $<
