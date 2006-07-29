@@ -93,12 +93,13 @@ Return t when the track got changed."
         (name (emms-track-get track 'name)))
 
     ;; if the file's been modified or is new
-    (when (and file-mtime
-               (or (not info-mtime)
-                   (emms-time-less-p info-mtime file-mtime)))
+    (when (or (not file-mtime)
+              (not info-mtime)
+              (emms-time-less-p info-mtime file-mtime))
       (run-hook-with-args 'emms-info-functions track)
       ;; not set by info functions
-      (emms-track-set track 'info-mtime file-mtime)
+      (when file-mtime
+        (emms-track-set track 'info-mtime file-mtime))
       (emms-track-updated track))
 
     (when emms-info-asynchronously
