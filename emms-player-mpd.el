@@ -23,7 +23,7 @@
 
 ;;; Commentary:
 
-;;; Benefits
+;;; Benefits of MusicPD
 
 ;; MusicPD features crossfade, very little skipping, minor CPU usage,
 ;; many clients, many supported output formats, fast manipulation via
@@ -66,6 +66,11 @@
 ;;
 ;; (setq emms-player-mpd-server-name "localhost")
 ;; (setq emms-player-mpd-server-port "6600")
+
+;; If your MusicPD setup requires a password, you will need to do the
+;; following.
+;;
+;; (setq emms-player-mpd-server-password "mypassword")
 
 ;; To get track info from MusicPD, do the following.
 ;;
@@ -165,6 +170,12 @@ It should take same arguments as `open-network-stream' does."
 (defcustom emms-player-mpd-server-port (or (getenv "MPD_PORT") "6600")
   "The port of the MusicPD server that we should connect to."
   :type '(choice number string)
+  :group 'emms-player-mpd)
+
+(defcustom emms-player-mpd-server-password nil
+  "The port of the MusicPD server that we should connect to."
+  :type '(choice (const :tag "None" nil)
+                 string)
   :group 'emms-player-mpd)
 
 (defcustom emms-player-mpd-check-interval 1
@@ -355,7 +366,13 @@ return at the end of a request.")
           (emms-player-mpd-tq-create emms-player-mpd-process))
     (if (fboundp 'set-process-query-on-exit-flag)
         (set-process-query-on-exit-flag emms-player-mpd-process nil)
-      (process-kill-without-query emms-player-mpd-process))))
+      (process-kill-without-query emms-player-mpd-process))
+    ;; send password
+    (when (stringp emms-player-mpd-server-password)
+      (emms-player-mpd-tq-enqueue
+       emms-player-mpd-queue
+       (concat "password " emms-player-mpd-server-password "\n")
+       emms-player-mpd-status-regexp nil #'ignore))))
 
 (defun emms-player-mpd-send (question closure fn)
   "Send the given QUESTION to the MusicPD server.
