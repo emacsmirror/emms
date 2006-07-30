@@ -1107,7 +1107,10 @@ The track should be an alist as per `emms-player-mpd-get-alist'."
   "Dump all MusicPD data from DIR into the EMMS cache.
 This is useful to do when you have recently acquired new music."
   (interactive
-   (list (read-string "Directory: ")))
+   (list (if emms-player-mpd-music-directory
+             (read-directory-name "Directory: "
+                                  emms-player-mpd-music-directory)
+           (read-string "Directory: "))))
   (unless (string= dir "")
     (setq dir (emms-player-mpd-get-mpd-filename dir)))
   (if emms-cache-set-function
@@ -1131,6 +1134,33 @@ This is useful to do once, just before using emms-browser.el, in
 order to prime the cache."
   (interactive)
   (emms-cache-set-from-mpd-directory ""))
+
+;;; Updating tracks
+
+(defun emms-player-mpd-update-directory (dir)
+  "Cause the tracks in DIR to be updated in the MusicPD database."
+  (interactive
+   (list (if emms-player-mpd-music-directory
+             (read-directory-name "Directory: "
+                                  emms-player-mpd-music-directory)
+           (read-string "Directory: "))))
+  (unless (string= dir "")
+    (setq dir (emms-player-mpd-get-mpd-filename dir)))
+  (emms-player-mpd-send
+   (concat "update " dir) nil
+   (lambda (closure response)
+     (let ((id (cdr (assoc "updating_db"
+                           (emms-player-mpd-get-alist
+                            (emms-player-mpd-parse-response response))))))
+       (if id
+           (message "Updating DB with ID %s" id)
+         (message "Could not update the DB"))))))
+
+(defun emms-player-mpd-update-all ()
+  "Cause all tracks in the MusicPD music directory to be updated in
+the MusicPD database."
+  (interactive)
+  (emms-player-mpd-update-directory ""))
 
 (provide 'emms-player-mpd)
 
