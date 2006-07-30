@@ -1167,6 +1167,13 @@ Set the variables @var{emms-player-mpd-server-name} and
 (setq emms-player-mpd-server-port "6600")
 @end lisp
 
+If your MusicPD setup requires a password, you will to set
+@var{emms-player-mpd-server-password} as follows.
+
+@lisp
+(setq emms-player-mpd-server-password "mypassword")
+@end lisp
+
 To get track information from MusicPD, invoke the following:
 
 @lisp
