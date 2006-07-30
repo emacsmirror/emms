@@ -294,11 +294,13 @@ POPUP-HEIGHT is the height of the new frame, defaulting to
 
 (defun emms-stream-display-line (line)
   (insert (emms-stream-name line))
-  (add-text-properties (point-at-bol) (point-at-eol) '(face emms-stream-name-face))
+  (add-text-properties (point-at-bol) (point-at-eol)
+                       '(face emms-stream-name-face))
   (add-text-properties (point-at-bol) (point-at-eol) `(emms-stream ,line))
   (insert "\n      ")
   (insert (emms-stream-url  line))
-  (add-text-properties (point-at-bol) (point-at-eol) '(face emms-stream-url-face))
+  (add-text-properties (point-at-bol) (point-at-eol)
+                       '(face emms-stream-url-face))
   (insert "\n"))
 
 (defun emms-stream-display ()
@@ -358,6 +360,16 @@ Positions are counted starting with 0."
     (goto-char (point-min))
     (emms-stream-display)))
 
+(defun emms-stream-determine-fd (name)
+  "Return a feed descriptor, given NAME.
+This is the count of the times NAME appears in the bookmark list,
+plus one."
+  (let ((count 1))
+    (dolist (feed emms-stream-list)
+      (when (string= (emms-stream-name feed) name)
+        (setq count (1+ count))))
+    count))
+
 (defun emms-stream-add-bookmark (name url fd type)
   "Creates a new bookmark, and inserts it at point position.
 
@@ -366,10 +378,11 @@ Don't forget to run `emms-stream-save-bookmarks-file' after !"
    (list
     (read-string "Name of the bookmark: ")
     (read-string "URL: ")
-    (string-to-number (read-string "Feed descriptor (use 1 if unsure): "))
+    nil
     (completing-read
      "Type (url or streamlist): "
      (mapcar #'list '("url" "streamlist")))))
+  (unless fd (setq fd (emms-stream-determine-fd name)))
   (let* ((line     (emms-line-number-at-pos (point)))
          (index    (+ (/ line 2) 1)))
     (setq emms-stream-list (emms-stream-insert-at index (list name url fd type)
