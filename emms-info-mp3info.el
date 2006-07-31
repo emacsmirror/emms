@@ -79,16 +79,20 @@ This is a useful element for `emms-info-functions'."
              (string-match "\\.[Mm][Pp]3\\'" (emms-track-name track)))
     (with-temp-buffer
       (when (zerop
-             (let ((coding-system-for-read emms-info-mp3info-coding-system))
-               (apply 'call-process
-                      emms-info-mp3info-program-name
-                      nil t nil
-                      (emms-track-name track)
-                      emms-info-mp3find-arguments)))
+             (apply 'call-process
+                    emms-info-mp3info-program-name
+                    nil t nil
+                    (emms-track-name track)
+                    emms-info-mp3find-arguments))
         (goto-char (point-min))
         (while (looking-at "^\\([^=\n]+\\)=\\(.*\\)$")
           (let ((name (intern (match-string 1)))
                 (value (match-string 2)))
+            (unless (eq emms-info-mp3info-coding-system
+                        emms-cache-file-coding-system)
+              (setq value (emms-iconv value
+                                      emms-info-mp3info-coding-system
+                                      emms-cache-file-coding-system)))
             (when (> (length value)
                      0)
               (emms-track-set track
@@ -97,6 +101,15 @@ This is a useful element for `emms-info-functions'."
                                   (string-to-number value)
                                 value))))
           (forward-line 1))))))
+
+(defun emms-iconv (str from to)
+  "Convert STR from FROM coding to TO coding."
+  (and (symbolp from) (setq from (symbol-name from)))
+  (and (symbolp to) (setq to (symbol-name to)))
+  (car
+   (split-string
+    (shell-command-to-string
+     (concat "echo \"" str "\" | iconv -f " from " -t " to)))))
 
 (provide 'emms-info-mp3info)
 ;;; emms-info-mp3info.el ends here
