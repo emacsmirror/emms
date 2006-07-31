@@ -60,6 +60,11 @@ This is used to cache over emacs sessions.")
   :group 'emms
   :type 'file)
 
+(defcustom emms-cache-file-coding-system 'latin-1
+  "Coding system used for saving `emms-cache-file'."
+  :group 'emms
+  :type 'coding-system)
+
 (defun emms-cache (arg)
   "Turn on Emms caching if ARG is positive, off otherwise."
   (interactive "p")
@@ -118,7 +123,10 @@ This is used to cache over emacs sessions.")
     (message "Saving emms track cache...")
     (set-buffer (get-buffer-create " emms-cache "))
     (erase-buffer)
-    (insert ";;; .emms-cache -*- mode: emacs-lisp; coding: utf-8; -*-\n")
+    (insert
+     (concat ";;; .emms-cache -*- mode: emacs-lisp; coding: "
+             (symbol-name emms-cache-file-coding-system)
+             "; -*-\n"))
     (maphash (lambda (k v)
                (insert (format
                         "(puthash %S '%S emms-cache-db)\n" k v)))
