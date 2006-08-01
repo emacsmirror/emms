@@ -88,11 +88,12 @@ This is a useful element for `emms-info-functions'."
         (while (looking-at "^\\([^=\n]+\\)=\\(.*\\)$")
           (let ((name (intern (match-string 1)))
                 (value (match-string 2)))
-            (unless (eq emms-info-mp3info-coding-system
-                        emms-cache-file-coding-system)
-              (setq value (emms-iconv value
-                                      emms-info-mp3info-coding-system
-                                      emms-cache-file-coding-system)))
+            (and (boundp 'emms-cache-file-coding-system)
+                 (not (eq emms-info-mp3info-coding-system
+                          emms-cache-file-coding-system))
+                 (setq value (emms-iconv value
+                                         emms-info-mp3info-coding-system
+                                         emms-cache-file-coding-system)))
             (when (> (length value)
                      0)
               (emms-track-set track

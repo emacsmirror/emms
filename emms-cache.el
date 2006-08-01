@@ -60,7 +60,7 @@ This is used to cache over emacs sessions.")
   :group 'emms
   :type 'file)
 
-(defcustom emms-cache-file-coding-system 'latin-1
+(defcustom emms-cache-file-coding-system 'utf-8
   "Coding system used for saving `emms-cache-file'."
   :group 'emms
   :type 'coding-system)
