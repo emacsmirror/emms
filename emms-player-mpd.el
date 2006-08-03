@@ -667,15 +667,13 @@ MusicPD playlist."
         (time (emms-player-mpd-get-playing-time nil #'ignore info)))
     (cond ((string= status "stop")
            (emms-player-mpd-disconnect t)
-           (if (with-current-emms-playlist
-                 (save-excursion
-                   (forward-line 1)
-                   (emms-playlist-track-at (point))))
-               ;; a track remains, so use the conservative stop method
+           (if song
+               ;; a track remains: the user probably stopped MusicPD
+               ;; manually, so we'll stop EMMS completely
                (let ((emms-player-stopped-p t))
                  (emms-player-stopped))
-             ;; at the last track: we probably ran out of stuff to
-             ;; play, so let EMMS do something further if it wants to
+             ;; no more tracks are left: we probably ran out of things
+             ;; to play, so let EMMS do something further if it wants
              (emms-player-stopped)))
           ((string= status "pause")
            nil)
