@@ -1072,12 +1072,12 @@ info from MusicPD."
   (if info
       (emms-info-mpd-process track info)
     (let (file)
-      (when (and (eq 'file (emms-track-type track))
-                 emms-player-mpd-music-directory
-                 (setq file (emms-player-mpd-get-mpd-filename
-                             (emms-track-name track)))
-                 (string-match emms-player-mpd-supported-regexp file)
-                 (not (string-match "\\`http://" file)))
+      (when (or emms-player-mpd-music-directory
+                (and (eq 'file (emms-track-type track))
+                     (setq file (emms-player-mpd-get-mpd-filename
+                                 (emms-track-name track)))
+                     (string-match emms-player-mpd-supported-regexp file)
+                     (not (string-match "\\`http://" file))))
         (condition-case nil
             (emms-player-mpd-send
              (concat "find filename "
