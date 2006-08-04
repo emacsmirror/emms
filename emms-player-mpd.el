@@ -1071,20 +1071,19 @@ If INFO is specified, use that instead of acquiring the necessary
 info from MusicPD."
   (if info
       (emms-info-mpd-process track info)
-    (let (file)
-      (when (or emms-player-mpd-music-directory
-                (and (eq 'file (emms-track-type track))
-                     (setq file (emms-player-mpd-get-mpd-filename
-                                 (emms-track-name track)))
-                     (string-match emms-player-mpd-supported-regexp file)
-                     (not (string-match "\\`http://" file))))
-        (condition-case nil
-            (emms-player-mpd-send
-             (concat "find filename "
-                     (emms-player-mpd-quote-file file))
-             track
-             #'emms-info-mpd-1)
-          (error nil))))))
+    (when (and (eq 'file (emms-track-type track))
+               (not (string-match "\\`http://" file)))
+      (let ((file (emms-player-mpd-get-mpd-filename (emms-track-name track))))
+        (when (or emms-player-mpd-music-directory
+                  (and file
+                       (string-match emms-player-mpd-supported-regexp file)))
+          (condition-case nil
+              (emms-player-mpd-send
+               (concat "find filename "
+                       (emms-player-mpd-quote-file file))
+               track
+               #'emms-info-mpd-1)
+            (error nil)))))))
 
 ;;; Caching
 
