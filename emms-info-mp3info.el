@@ -110,7 +110,8 @@ This is a useful element for `emms-info-functions'."
   (car
    (split-string
     (shell-command-to-string
-     (concat "echo \"" str "\" | iconv -f " from " -t " to)))))
+     (concat "echo \"" str "\" | iconv -f " from " -t " to))
+    "\n")))
 
 (provide 'emms-info-mp3info)
 ;;; emms-info-mp3info.el ends here
