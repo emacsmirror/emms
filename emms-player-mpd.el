@@ -1105,8 +1105,8 @@ The track should be an alist as per `emms-player-mpd-get-alist'."
 This is useful to do when you have recently acquired new music."
   (interactive
    (list (if emms-player-mpd-music-directory
-             (read-directory-name "Directory: "
-                                  emms-player-mpd-music-directory)
+             (emms-read-directory-name "Directory: "
+                                       emms-player-mpd-music-directory)
            (read-string "Directory: "))))
   (unless (string= dir "")
     (setq dir (emms-player-mpd-get-mpd-filename dir)))
@@ -1138,8 +1138,8 @@ order to prime the cache."
   "Cause the tracks in DIR to be updated in the MusicPD database."
   (interactive
    (list (if emms-player-mpd-music-directory
-             (read-directory-name "Directory: "
-                                  emms-player-mpd-music-directory)
+             (emms-read-directory-name "Directory: "
+                                       emms-player-mpd-music-directory)
            (read-string "Directory: "))))
   (unless (string= dir "")
     (setq dir (emms-player-mpd-get-mpd-filename dir)))
