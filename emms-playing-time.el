@@ -39,7 +39,6 @@
 
 (eval-when-compile (require 'cl))
 (require 'emms-info)
-(require 'emms-info-mp3info)
 (require 'emms-player-simple)
 
 ;;; Customizations
