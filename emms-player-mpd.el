@@ -103,6 +103,29 @@
 (require 'emms-player-simple)
 (require 'emms-source-playlist)  ; for emms-source-file-parse-playlist
 
+(defgroup emms-player-mpd nil
+  "EMMS player for MusicPD."
+  :group 'emms-player
+  :prefix "emms-player-mpd-")
+
+(defcustom emms-player-mpd (emms-player 'emms-player-mpd-start
+                                        'emms-player-mpd-stop
+                                        'emms-player-mpd-playable-p)
+ "*Parameters for the MusicPD player."
+ :type '(cons symbol alist)
+ :group 'emms-player-mpd)
+
+(defcustom emms-player-mpd-music-directory nil
+  "The value of 'music_directory' in your MusicPD configuration file.
+You need this if your playlists use absolute file names, otherwise
+leave it set to nil."
+  ;; The :format part ensures that entering directories happens on the
+  ;; next line, where there is more space to work with
+  :type '(choice :format "%{%t%}:\n   %[Value Menu%] %v"
+                 (const nil)
+                 directory)
+  :group 'emms-player-mpd)
+
 (defun emms-player-mpd-get-supported-regexp ()
   "Returns a regexp of file extensions that MusicPD supports,
 or nil if we cannot figure it out."
@@ -126,34 +149,17 @@ or nil if we cannot figure it out."
                          "\\|")
               "\\)\\'"))))
 
-(defvar emms-player-mpd-supported-regexp
+(defcustom emms-player-mpd-supported-regexp
   ;; Use a sane default, just in case
   (or (emms-player-mpd-get-supported-regexp)
       (concat "\\`http://\\|"
               "\\.\\(m3u\\|ogg\\|flac\\|mp3\\|wav\\|mod\\|au\\|aiff\\)\\'"))
-  "Formats supported by MusicPD Client.")
-
-(defgroup emms-player-mpd nil
-  "EMMS player for MusicPD."
-  :group 'emms-player
-  :prefix "emms-player-mpd-")
-
-(defcustom emms-player-mpd (emms-player 'emms-player-mpd-start
-                                        'emms-player-mpd-stop
-                                        'emms-player-mpd-playable-p)
- "*Parameters for the MusicPD player."
- :type '(cons symbol alist)
- :group 'emms-player-mpd)
-
-(defcustom emms-player-mpd-music-directory nil
-  "The value of 'music_directory' in your MusicPD configuration file.
-You need this if your playlists use absolute file names, otherwise
-leave it set to nil."
-  ;; The :format part ensures that entering directories happens on the
-  ;; next line, where there is more space to work with
-  :type '(choice :format "%{%t%}:\n   %[Value Menu%] %v"
-                 (const nil)
-                 directory)
+  "Formats supported by MusicPD Client."
+  :type 'regexp
+  :set (function
+        (lambda (sym value)
+          (set sym value)
+          (emms-player-set emms-player-mpd 'regex value)))
   :group 'emms-player-mpd)
 
 (defcustom emms-player-mpd-connect-function 'open-network-stream
