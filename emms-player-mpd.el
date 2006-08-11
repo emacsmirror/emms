@@ -926,6 +926,9 @@ from other functions."
   (emms-cancel-timer emms-player-mpd-status-timer)
   (setq emms-player-mpd-status-timer nil)
   (setq emms-player-mpd-current-song nil)
+  (when (and (processp emms-player-mpd-process)
+             (memq (process-status emms-player-mpd-process) '(run open)))
+    (delete-process emms-player-mpd-process))
   (unless no-stop
     (let ((emms-player-stopped-p t))
       (emms-player-stopped))))
@@ -933,10 +936,10 @@ from other functions."
 (defun emms-player-mpd-stop ()
   "Stop the currently playing song."
   (interactive)
-  (emms-player-mpd-disconnect t)
   (condition-case nil
       (emms-player-mpd-send "stop" nil #'ignore)
     (error nil))
+  (emms-player-mpd-disconnect t)
   (let ((emms-player-stopped-p t))
     (emms-player-stopped)))
 
