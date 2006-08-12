@@ -226,6 +226,15 @@ may be supplied using `emms-source-file-gnu-find'."
                                             (point-max))
                           "\n"))))
 
+(defmacro emms-with-excluded-directories (directory-list &rest body)
+  "Run BODY while excluding DIRECTORY-LIST."
+  `(let ((emms-source-file-exclude-regexp
+	  (concat (or ,emms-source-file-exclude-regexp "")
+		  "\\|\\("
+		  (or (regexp-opt ,directory-list) "")
+		  "\\)")))
+     ,@body))
+
 ;;;###autoload
 (defun emms-source-file-regex ()
   "Return a regexp that matches everything any player (that supports
