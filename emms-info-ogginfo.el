@@ -33,7 +33,7 @@
 program"
   :group 'emms-info)
 
-(defcustom emms-info-ogginfo-coding-system 'latin-1
+(defcustom emms-info-ogginfo-coding-system 'utf-8
   "*Coding system used in the output of ogginfo."
   :type 'coding-system
   :group 'emms-info-ogginfo)

@@ -48,7 +48,7 @@
 external mp3info program"
   :group 'emms-info)
 
-(defcustom emms-info-mp3info-coding-system 'latin-1
+(defcustom emms-info-mp3info-coding-system 'utf-8
   "*Coding system used in the output of mp3info."
   :type 'coding-system
   :group 'emms-info-mp3info)

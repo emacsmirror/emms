@@ -95,7 +95,7 @@ for lyrics in current directory and this directory."
   :type 'string
   :group 'emms-lyrics)
 
-(defcustom emms-lyrics-coding-system 'latin-1
+(defcustom emms-lyrics-coding-system 'utf-8
   "Coding system used in the output of lyrics."
   :type 'coding-system
   :group 'emms-lyrics)
