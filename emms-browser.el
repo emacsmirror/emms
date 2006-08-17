@@ -110,6 +110,10 @@
 ;; (emms-browser-make-filter
 ;;  "80s" (emms-browser-filter-only-dir "~/Mp3s/80s"))
 
+;; ;; show all tracks played in the last month
+;; (emms-browser-make-filter
+;;  "last-month" (emms-browser-filter-only-recent 30))
+
 ;; After executing the above commands, you can use M-x
 ;; emms-browser-show-all, emms-browser-show-80s, etc to toggle
 ;; between different collections. Alternatively you can use '<' and
@@ -1580,6 +1584,18 @@ If the track is not in path, return t."
 If the track is not of TYPE, return t."
   `(lambda (track)
      (not (eq (quote ,type) (emms-track-get track 'type)))))
+
+;; seconds in a day (* 60 60 24) = 86400
+(defun emms-browser-filter-only-recent (days)
+  "Show only tracks played within the last number of DAYS."
+  `(lambda (track)
+     (let ((min-date (time-subtract
+                      (current-time)
+                      (seconds-to-time (* ,days 86400))))
+           last-played)
+       (not (and (setq last-played
+                       (emms-track-get track 'last-played nil))
+                 (time-less-p min-date last-played))))))
 
 (provide 'emms-browser)
 ;;; emms-browser.el ends here
