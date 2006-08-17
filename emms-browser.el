@@ -1403,61 +1403,8 @@ included."
       " ")))
 
 ;; --------------------------------------------------
-;; Display formats & fonts
+;; Display formats
 ;; --------------------------------------------------
-
-(defvar emms-browser-default-format "%i%n"
-  "indent + name")
-
-(defvar emms-browser-info-title-format "%i%T. %n")
-(defvar emms-browser-playlist-info-title-format
-  emms-browser-info-title-format)
-
-(defvar emms-browser-info-album-format
-  'emms-browser-year-and-album-fmt)
-(defvar emms-browser-playlist-info-album-format
-  'emms-browser-year-and-album-fmt-med)
-
-;; FIXME: optional format strings would be nice
-(defun emms-browser-year-and-album-fmt (bdata fmt)
-  (concat
-   "%i%cS"
-   (let ((year (emms-browser-format-elem fmt "y")))
-     (if (and year (not (string= year "0")))
-         "(%y) "
-       ""))
-   "%n"))
-
-(defun emms-browser-year-and-album-fmt-med (bdata fmt)
-  (concat
-   "%i%cM"
-   (let ((year (emms-browser-format-elem fmt "y")))
-     (if (and year (not (string= year "0")))
-         "(%y) "
-       ""))
-   "%n"))
-
-(defmacro emms-browser-make-face (name dark-col light-col height)
-  (let ((face-name (intern (concat "emms-browser-" name "-face"))))
-    `(defface ,face-name
-       '((((class color) (background dark))
-          (:foreground ,dark-col
-                       :height ,height))
-         (((class color) (background light))
-          (:foreground ,light-col
-                       :height ,height))
-         (((type tty) (class mono))
-          (:inverse-video t))
-         (t (:background ,dark-col)))
-       ,(concat "Face for "
-                name
-                " in a browser/playlist buffer.")
-       :group 'emms-browser-mode)))
-
-(emms-browser-make-face "year/genre" "#aaaaff" "#444477" 1.5)
-(emms-browser-make-face "artist"     "#aaaaff" "#444477" 1.3)
-(emms-browser-make-face "album"      "#aaaaff" "#444477" 1.1)
-(emms-browser-make-face "track"      "#aaaaff" "#444477" 1.0)
 
 (defun emms-browser-bdata-first-track (bdata)
   "Return the first track from a given bdata.
@@ -1607,6 +1554,82 @@ the text that it generates."
        (t
         (error "Invalid format string"))))
     (buffer-string)))
+
+;; --------------------------------------------------
+;; Display formats - defaults
+;; --------------------------------------------------
+
+;; FIXME: optional format strings would avoid having to define a
+;; function for specifiers which may be empty.
+
+(defvar emms-browser-default-format "%i%n"
+  "indent + name")
+
+;; tracks
+(defvar emms-browser-info-title-format
+  'emms-browser-track-artist-and-title-format)
+(defvar emms-browser-playlist-info-title-format
+  'emms-browser-track-artist-and-title-format)
+
+(defun emms-browser-track-artist-and-title-format (bdata fmt)
+  (concat
+   "%i"
+   (let ((track (emms-browser-format-elem fmt "T")))
+     (if (and track (not (string= track "0")))
+         "%T. "
+       ""))
+   "%n"))
+
+;; albums - we define two formats, one for a small cover (browser),
+;; and one for a medium sized cover (playlist).
+(defvar emms-browser-info-album-format
+  'emms-browser-year-and-album-fmt)
+(defvar emms-browser-playlist-info-album-format
+  'emms-browser-year-and-album-fmt-med)
+
+(defun emms-browser-year-and-album-fmt (bdata fmt)
+  (concat
+   "%i%cS"
+   (let ((year (emms-browser-format-elem fmt "y")))
+     (if (and year (not (string= year "0")))
+         "(%y) "
+       ""))
+   "%n"))
+
+(defun emms-browser-year-and-album-fmt-med (bdata fmt)
+  (concat
+   "%i%cM"
+   (let ((year (emms-browser-format-elem fmt "y")))
+     (if (and year (not (string= year "0")))
+         "(%y) "
+       ""))
+   "%n"))
+
+;; --------------------------------------------------
+;; Display faces
+;; --------------------------------------------------
+
+(defmacro emms-browser-make-face (name dark-col light-col height)
+  (let ((face-name (intern (concat "emms-browser-" name "-face"))))
+    `(defface ,face-name
+       '((((class color) (background dark))
+          (:foreground ,dark-col
+                       :height ,height))
+         (((class color) (background light))
+          (:foreground ,light-col
+                       :height ,height))
+         (((type tty) (class mono))
+          (:inverse-video t))
+         (t (:background ,dark-col)))
+       ,(concat "Face for "
+                name
+                " in a browser/playlist buffer.")
+       :group 'emms-browser-mode)))
+
+(emms-browser-make-face "year/genre" "#aaaaff" "#444477" 1.5)
+(emms-browser-make-face "artist"     "#aaaaff" "#444477" 1.3)
+(emms-browser-make-face "album"      "#aaaaff" "#444477" 1.1)
+(emms-browser-make-face "track"      "#aaaaff" "#444477" 1.0)
 
 ;; --------------------------------------------------
 ;; Filtering
