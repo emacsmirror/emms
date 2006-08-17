@@ -1,4 +1,4 @@
-;;; emms-browser.el --- provide a buffer to browse files
+;;; emms-browser.el --- a track browser supporting covers and filtering
 
 ;; Copyright (C) 2006  Damien Elmes <emacs@repose.cx>
 
@@ -45,10 +45,6 @@
 ;; b) focus switched to the playlist window
 ;; c) the extra window closed, and both buffers buried
 
-;; Some useful keybindings in the browser buffer:
-
-;; (out of date, hit c-h b in the buffer to find out)
-
 ;; If you just want access to the browser, try M-x
 ;; emms-browse-by-TYPE, where TYPE is one of artist, album, genre or
 ;; year. These commands can also be used while smart browsing to
@@ -59,8 +55,45 @@
 
 ;; (require 'emms-browser)
 
-;; Note this code is very new and is still prone to big changes in the
-;; API and breakage. Bug reports are welcome.
+;; Key bindings
+;; -------------------------------------------------------------------
+
+;; C-j             emms-browser-add-tracks-and-play
+;; RET             emms-browser-add-tracks
+;; SPC             emms-browser-toggle-subitems
+;; /               emms-isearch-buffer
+;; 1               emms-browser-collapse-all
+;; 2               emms-browser-expand-to-level-2
+;; 3               emms-browser-expand-to-level-3
+;; 4               emms-browser-expand-to-level-4
+;; <               emms-browser-previous-filter
+;; >               emms-browser-next-filter
+;; ?               describe-mode
+;; C               emms-browser-clear-playlist
+;; E               emms-browser-expand-all
+;; d               emms-browser-view-in-dired
+;; q               emms-browser-bury-buffer
+;; r               emms-browser-goto-random
+;; C-/             emms-playlist-mode-undo
+;; <C-return>      emms-browser-add-tracks-and-play
+;; <backtab>       emms-browser-prev-non-track
+;; <tab>           emms-browser-next-non-track
+
+;; s A             emms-browser-search-by-album
+;; s a             emms-browser-search-by-artist
+;; s s             emms-browser-search-by-names
+;; s t             emms-browser-search-by-title
+
+;; b 1             emms-browse-by-artist
+;; b 2             emms-browse-by-album
+;; b 3             emms-browse-by-genre
+;; b 4             emms-browse-by-year
+
+;; W a p           emms-browser-lookup-album-on-pitchfork
+;; W a w           emms-browser-lookup-album-on-wikipedia
+
+;; W A p           emms-browser-lookup-artist-on-pitchfork
+;; W A w           emms-browser-lookup-artist-on-wikipedia
 
 ;; Displaying covers
 ;; -------------------------------------------------------------------
@@ -119,14 +152,27 @@
 ;; between different collections. Alternatively you can use '<' and
 ;; '>' to cycle through the available filters.
 
-;; The above will set the first-defined filter as the default. You can
-;; use any of the filters in emms-browser-filters.
-
 ;; The second argument to make-filter is a function which returns t if
 ;; a single track should be filtered. You can write your own filter
 ;; functions to check the type of a file, etc.
 
-;; Changing display layout
+;; Some more examples:
+
+;; ;; show only tracks not played in the last year
+;; (emms-browser-make-filter "not-played"
+;;  (lambda (track)
+;;   (not (funcall (emms-browser-filter-only-recent 365) track))))
+
+;; ;; show all files that are not in the pending directory
+;; (emms-browser-make-filter
+;;  "all"
+;;  (lambda (track)
+;;    (or
+;;     (funcall (emms-browser-filter-only-type 'file) track)
+;;     (not (funcall
+;;           (emms-browser-filter-only-dir "~/Media/pending") track)))))
+
+;; Changing tree structure
 ;; -------------------------------------------------------------------
 
 ;; You can change the way the tree is displayed by modifying
@@ -134,7 +180,8 @@
 ;; artist->track instead of artist->album->track when you switch to
 ;; the 'singles' filter.
 
-;; (defadvice emms-browser-next-mapping-type (after no-album (current-mapping))
+;; (defadvice emms-browser-next-mapping-type
+;;                                 (after no-album (current-mapping))
 ;;   (when (eq ad-return-value 'info-album)
 ;;     (setq ad-return-value 'info-title)))
 
@@ -144,6 +191,52 @@
 ;;     (ad-deactivate 'emms-browser-next-mapping-type)))
 
 ;; (add-hook 'emms-browser-filter-changed-hook 'toggle-album-display)
+
+;; Changing display format
+;; -------------------------------------------------------------------
+
+;; Format strings govern the way items are displayed in the browser
+;; and playlist. You can customize these if you wish.
+
+;; `emms-browser-default-format' controls the format to use when no
+;; other format has been explicitly defined. By default, only track and
+;; albums deviate from the default.
+
+;; To customise the format of a particular type, find the name of the
+;; field you want to use (eg `info-artist', `info-title', etc), and
+;; insert that into emms-browser-<type>-format or
+;; emms-browser-playlist-<type>-format. For example, if you wanted to
+;; remove track numbers from tracks in both the browser and playlist,
+;; you could do:
+
+;; (defvar emms-browser-info-title-format "%i%n")
+;; (defvar emms-browser-playlist-info-title-format
+;;   emms-browser-info-title-format)
+
+;; The format specifiers available include:
+
+;; %i    indent relative to the current level
+;; %n    the value of the item - eg -info-artist might be "pink floyd"
+;; %y    the album year
+;; %A    the album name
+;; %a    the artist name of the track
+;; %t    the title of the track
+;; %T    the track number
+;; %cS   a small album cover
+;; %cM   a medium album cover
+;; %cL   a big album cover
+
+;; Note that if you use track-related items like %t, it will take the
+;; data from the first track.
+
+;; Changing display faces
+;; -------------------------------------------------------------------
+
+;; The faces used to display the various fields are also customizable.
+;; They are in the format emms-browser-<type>-face, where type is one
+;; of "year/genre", "artist", "album" or "track". Note that faces lack
+;; the initial "info-" part. For example, to change the artist face,
+;; type M-x customize-face emms-browser-artist-face.
 
 ;;; Code:
 
@@ -1325,7 +1418,7 @@ included."
 (defvar emms-browser-playlist-info-album-format
   'emms-browser-year-and-album-fmt-med)
 
-;; FIXME: make this nicer
+;; FIXME: optional format strings would be nice
 (defun emms-browser-year-and-album-fmt (bdata fmt)
   (concat
    "%i%cS"
