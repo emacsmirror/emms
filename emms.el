@@ -190,7 +190,7 @@ See `emms-player-finished-hook'."
   :group 'emms
   :type 'hook)
 
-(defcustom emms-player-finished-hook '(emms-next-noerror)
+(defcustom emms-player-finished-hook nil
   "*Hook run when an EMMS player finishes playing a track.
 Please pay attention to the differences between
 `emms-player-finished-hook' and `emms-player-stopped-hook'.
@@ -198,8 +198,14 @@ The former is called only when the player actually finishes
 playing a track; the latter, only when the player is stopped
 interactively."
   :group 'emms
-  :type 'hook
-  :options '(emms-next-noerror))
+  :type 'hook)
+
+(defcustom emms-player-next-function 'emms-next-noerror
+  "*A function run when EMMS thinks the next song should be played."
+  :group 'emms
+  :type 'function
+  :options '(emms-next-noerror
+             emms-random))
 
 (defcustom emms-player-paused-hook nil
   "*Hook run when a player is paused or resumed.
@@ -268,7 +274,7 @@ being the playlist buffer.")
 
 (defun emms-next ()
   "Start playing the next track in the EMMS playlist.
-This might behave funny if called from `emms-player-finished-hook',
+This might behave funny if called from `emms-player-next-function',
 so use `emms-next-noerror' in that case."
   (interactive)
   (when emms-player-playing-p
@@ -281,7 +287,7 @@ so use `emms-next-noerror' in that case."
 Unlike `emms-next', this function doesn't signal an error when called
 at the end of the playlist.
 This function should only be called when no player is playing.
-This is a good function to put in `emms-player-finished-hook'."
+This is a good function to put in `emms-player-next-function'."
   (interactive)
   (when emms-player-playing-p
     (error "A track is already being played"))
@@ -1278,7 +1284,8 @@ This should only be done by the current player itself."
   (if emms-player-stopped-p
       (run-hooks 'emms-player-stopped-hook)
     (sleep-for emms-player-delay)
-    (run-hooks 'emms-player-finished-hook)))
+    (run-hooks 'emms-player-finished-hook)
+    (funcall emms-player-next-function)))
 
 (defun emms-player-pause ()
   "Pause the current EMMS player."
