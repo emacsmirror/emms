@@ -60,11 +60,6 @@
 
 ;;; Code:
 
-;; TODO: (xwl)
-;; 1. show score on playlist buffer?
-;; 2. bug: everything(playing time, lyrics, ...) disppears on mode line
-;;    when calling `emms-score-next-noerror'.
-
 (require 'emms)
 
 (defvar emms-scores-list nil)
@@ -90,14 +85,12 @@ off otherwise."
   (if (and arg (> arg 0))
       (progn
 	(setq emms-score-enabled-p t)
+        (setq emms-player-next-function 'emms-score-next-noerror)
 	(emms-score-load-hash)
-	(remove-hook 'emms-player-finished-hook 'emms-next-noerror)
-	(add-hook 'emms-player-finished-hook 'emms-score-next-noerror)
 	(add-hook 'kill-emacs-hook 'emms-score-save-hash))
     (setq emms-score-enabled-p nil)
+    (setq emms-player-next-function 'emms-next-noerror)
     (emms-score-save-hash)
-    (remove-hook 'emms-player-finished-hook 'emms-score-next-noerror)
-    (add-hook 'emms-player-finished-hook 'emms-next-noerror)
     (remove-hook 'kill-emacs-hook 'emms-score-save-hash)))
 
 ;;;###autoload
@@ -213,11 +206,9 @@ The score hash is automatically saved."
   "Return file of track at point in emms-playlist buffer."
   (emms-track-get (emms-playlist-track-at) 'name))
 
-;; TODO: Better merge this into `emms-next-noerror' in `emms.el'.(xwl)
 (defun emms-score-next-noerror ()
-  "Modify `emms-next-noerror' with score check.
-
-Better merge this into `emms-next-noerror' in `emms.el'."
+  "Run `emms-next-noerror' with score check.
+See also `emms-next-noerror'."
   (interactive)
   (when emms-player-playing-p
     (error "A track is already being played"))
