@@ -290,35 +290,40 @@ that's how we tell where the answer ends."
 
 (defun emms-player-mpd-tq-filter (tq string)
   "Append STRING to the TQ's buffer; then process the new data."
-  (with-current-buffer (emms-player-mpd-tq-buffer tq)
-    (goto-char (point-max))
-    (insert string)
-    (emms-player-mpd-tq-process-buffer tq)))
+  (let ((buffer (emms-player-mpd-tq-buffer tq)))
+    (when (buffer-live-p buffer)
+      (with-current-buffer buffer
+        (goto-char (point-max))
+        (insert string)
+        (emms-player-mpd-tq-process-buffer tq)))))
 
 (defun emms-player-mpd-tq-process-buffer (tq)
   "Check TQ's buffer for the regexp at the head of the queue."
-  (set-buffer (emms-player-mpd-tq-buffer tq))
-  (if (= 0 (buffer-size)) ()
-    (if (emms-player-mpd-tq-queue-empty tq)
-        (let ((buf (generate-new-buffer "*spurious*")))
-          (copy-to-buffer buf (point-min) (point-max))
-          (delete-region (point-min) (point))
-          (pop-to-buffer buf nil)
-          (error "Spurious communication from process %s, see buffer %s"
-                 (process-name (emms-player-mpd-tq-process tq))
-                 (buffer-name buf)))
-      (goto-char (point-min))
-      (if (re-search-forward (emms-player-mpd-tq-queue-head-regexp tq) nil t)
-          (let ((answer (buffer-substring (point-min) (point))))
-            (delete-region (point-min) (point))
-            (unwind-protect
-                (condition-case nil
-                    (funcall (emms-player-mpd-tq-queue-head-fn tq)
-                             (emms-player-mpd-tq-queue-head-closure tq)
-                             answer)
-                  (error nil))
-              (emms-player-mpd-tq-queue-pop tq))
-            (emms-player-mpd-tq-process-buffer tq))))))
+  (let ((buffer (emms-player-mpd-tq-buffer tq)))
+    (when (buffer-live-p buffer)
+      (set-buffer buffer)
+      (if (= 0 (buffer-size)) ()
+        (if (emms-player-mpd-tq-queue-empty tq)
+            (let ((buf (generate-new-buffer "*spurious*")))
+              (copy-to-buffer buf (point-min) (point-max))
+              (delete-region (point-min) (point))
+              (pop-to-buffer buf nil)
+              (error "Spurious communication from process %s, see buffer %s"
+                     (process-name (emms-player-mpd-tq-process tq))
+                     (buffer-name buf)))
+          (goto-char (point-min))
+          (if (re-search-forward (emms-player-mpd-tq-queue-head-regexp tq)
+                                 nil t)
+              (let ((answer (buffer-substring (point-min) (point))))
+                (delete-region (point-min) (point))
+                (unwind-protect
+                    (condition-case nil
+                        (funcall (emms-player-mpd-tq-queue-head-fn tq)
+                                 (emms-player-mpd-tq-queue-head-closure tq)
+                                 answer)
+                      (error nil))
+                  (emms-player-mpd-tq-queue-pop tq))
+                (emms-player-mpd-tq-process-buffer tq))))))))
 
 ;;; Dealing with the MusicPD network process
 
@@ -336,21 +341,22 @@ that's how we tell where the answer ends."
   "Regexp that matches the valid status strings that MusicPD can
 return at the end of a request.")
 
-(defun emms-player-mpd-sentinel (proc str)
+(defun emms-player-mpd-sentinel (proc event)
   "The process sentinel for MusicPD."
   (let ((status (process-status proc)))
-    (cond ((memq status '(exit signal closed))
+    (cond ((string-match "^deleted" event)
            (when emms-player-mpd-verbose
-             (message "Closed MusicPD process"))
-           (emms-player-mpd-tq-close emms-player-mpd-queue)
-           (setq emms-player-mpd-queue nil)
-           (setq emms-player-mpd-process nil))
+             (message "MusicPD process was deleted")))
+          ((memq status '(exit signal closed))
+           (emms-player-mpd-close-process t)
+           (when emms-player-mpd-verbose
+             (message "Closed MusicPD process")))
           ((memq status '(run open))
            (when emms-player-mpd-verbose
              (message "MusicPD process started successfully")))
           (t
            (when emms-player-mpd-verbose
-             (message "Other MusicPD status change: %s" status))))))
+             (message "Other MusicPD status change: %s, %s" status event))))))
 
 ;; Ignore a useless byte-compile warning
 (eval-when-compile
@@ -379,6 +385,17 @@ return at the end of a request.")
        emms-player-mpd-queue
        (concat "password " emms-player-mpd-server-password "\n")
        emms-player-mpd-status-regexp nil #'ignore))))
+
+(defun emms-player-mpd-close-process (&optional from-sentinel)
+  "Terminate the current MusicPD client process.
+FROM-SENTINEL indicates whether this was called by the process sentinel,
+in which case certain checks should not be made."
+  (when (or from-sentinel
+            (and (processp emms-player-mpd-process)
+                 (memq (process-status emms-player-mpd-process) '(run open))))
+    (emms-player-mpd-tq-close emms-player-mpd-queue)
+    (setq emms-player-mpd-queue nil)
+    (setq emms-player-mpd-process nil)))
 
 (defun emms-player-mpd-send (question closure fn)
   "Send the given QUESTION to the MusicPD server.
@@ -926,9 +943,7 @@ from other functions."
   (emms-cancel-timer emms-player-mpd-status-timer)
   (setq emms-player-mpd-status-timer nil)
   (setq emms-player-mpd-current-song nil)
-  (when (and (processp emms-player-mpd-process)
-             (memq (process-status emms-player-mpd-process) '(run open)))
-    (delete-process emms-player-mpd-process))
+  (emms-player-mpd-close-process)
   (unless no-stop
     (let ((emms-player-stopped-p t))
       (emms-player-stopped))))
