@@ -101,7 +101,8 @@ stable features which come with the Emms distribution."
     (require 'emms-lyrics)
     (require 'emms-playing-time)
     (require 'emms-player-mpd)
-    (require 'emms-playlist-sort))
+    (require 'emms-playlist-sort)
+    (require 'emms-browser))
   ;; setup
   (emms-mode-line 1)
   (emms-mode-line-blank)
@@ -122,7 +123,6 @@ on the edge."
   (require 'emms-stream-info)
   (require 'emms-score)
   (require 'emms-last-played)
-  (require 'emms-browser)
   ;; setup
   (add-hook 'emms-player-started-hook 'emms-last-played-update-current))
 

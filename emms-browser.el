@@ -32,7 +32,7 @@
 ;; Usage
 ;; -------------------------------------------------------------------
 
-;; To use, run (emms-devel) and then bind emms-smart-browse to a key,
+;; To use, run (emms-all) and then bind `emms-smart-browse' to a key,
 ;; like:
 
 ;; (global-set-key (kbd "<f2>") 'emms-smart-browse)
