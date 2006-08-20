@@ -1052,7 +1052,7 @@ Now we have a ready player and we could add commands like
 @chapter The Browser
 
 The Browser allows you to browse the metadata cache and add tracks to
-your playlist. It includes a powerfull interactive mode.
+your playlist. It includes a powerful interactive mode.
 
 The Browser is defined in @file{emms-browser.el} and is included in
 the @command{emms-all} setup level. For more information about Emms
