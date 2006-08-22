@@ -418,6 +418,24 @@ Use nil for no sorting."
   "Keymap for `emms-browser-mode'.")
 
 ;; --------------------------------------------------
+;; Compatability functions
+;; --------------------------------------------------
+
+(eval-and-compile
+  (if (fboundp 'with-selected-window)
+      (defalias 'emms-browser-with-selected-window 'with-selected-window)
+    (defmacro emms-browser-with-selected-window (window &rest body)
+      ;; this emulates the behavior introduced earlier, though it
+      ;; might be best to do something with `window'
+      `(save-selected-window ,body)))
+  (put 'emms-browser-with-selected-window 'lisp-indent-function 1)
+  (put 'emms-browser-with-selected-window 'edebug-form-spec '(form body))
+
+  (if (fboundp 'run-mode-hooks)
+      (defalias 'emms-browser-run-mode-hooks 'run-mode-hooks)
+    (defalias 'emms-browser-run-mode-hooks 'run-hooks)))
+
+;; --------------------------------------------------
 ;; General mode setup
 ;; --------------------------------------------------
 
@@ -440,7 +458,7 @@ example function is `emms-browse-by-artist'."
           (if wind
               (select-window wind)
             (switch-to-buffer buf))
-          (run-mode-hooks 'emms-browser-show-display-hook))
+          (emms-browser-run-mode-hooks 'emms-browser-show-display-hook))
       ;; if there's no buffer, create a new window
       (emms-browser-create)
       (emms-browse-by type))))
@@ -449,7 +467,7 @@ example function is `emms-browse-by-artist'."
   "Create a new emms-browser buffer and start emms-browser-mode."
   (emms-browser-new-buffer)
   (emms-browser-mode)
-  (run-mode-hooks 'emms-browser-show-display-hook))
+  (emms-browser-run-mode-hooks 'emms-browser-show-display-hook))
 
 (defun emms-browser-mode (&optional no-update)
   "A major mode for the Emms browser.
@@ -493,7 +511,7 @@ example function is `emms-browse-by-artist'."
 (defun emms-browser-bury-buffer ()
   "Bury the browser buffer, running hooks."
   (interactive)
-  (run-mode-hooks 'emms-browser-hide-display-hook)
+  (emms-browser-run-mode-hooks 'emms-browser-hide-display-hook)
   (bury-buffer))
 
 ;; --------------------------------------------------
@@ -1184,7 +1202,7 @@ configuration."
                    (when
                        (setq playlist-window
                              (emms-browser-get-linked-window))
-                     (with-selected-window
+                     (emms-browser-with-selected-window
                          playlist-window
                        (goto-char start-of-tracks)
                        (recenter '(4)))))))
@@ -1427,21 +1445,6 @@ If > album level, most of the track data will not make sense."
    emms-browser-current-indent
    (make-string (* 1 (1- level)) ?\  )))
 
-(defun emms-browser-get-format (bdata target)
-  (let* ((type (emms-browser-bdata-type bdata))
-         (target-str (or
-                      (and (eq target 'browser) "")
-                      (concat (symbol-name target) "-")))
-         (sym
-          (intern
-           (concat "emms-browser-"
-                   target-str
-                   (symbol-name type)
-                   "-format"))))
-    (if (boundp sym)
-        (symbol-value sym)
-      emms-browser-default-format)))
-
 (defun emms-browser-format-elem (format-string elem)
   (cdr (assoc elem format-string)))
 
@@ -1570,6 +1573,21 @@ the text that it generates."
   'emms-browser-track-artist-and-title-format)
 (defvar emms-browser-playlist-info-title-format
   'emms-browser-track-artist-and-title-format)
+
+(defun emms-browser-get-format (bdata target)
+  (let* ((type (emms-browser-bdata-type bdata))
+         (target-str (or
+                      (and (eq target 'browser) "")
+                      (concat (symbol-name target) "-")))
+         (sym
+          (intern
+           (concat "emms-browser-"
+                   target-str
+                   (symbol-name type)
+                   "-format"))))
+    (if (boundp sym)
+        (symbol-value sym)
+      emms-browser-default-format)))
 
 (defun emms-browser-track-artist-and-title-format (bdata fmt)
   (concat
@@ -1712,16 +1730,6 @@ If the track is not of TYPE, return t."
        (not (and (setq last-played
                        (emms-track-get track 'last-played nil))
                  (time-less-p min-date last-played))))))
-
-;; --------------------------------------------------
-;; Compatability functions
-;; --------------------------------------------------
-
-(unless (fboundp 'with-selected-window)
-  (defalias 'with-selected-window 'save-selected-window))
-
-(unless (fboundp 'run-mode-hooks)
-  (defalias 'run-mode-hooks 'run-hooks))
 
 (provide 'emms-browser)
 ;;; emms-browser.el ends here
