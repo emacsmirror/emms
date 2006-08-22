@@ -41,6 +41,7 @@
 ;;; Code:
 
 (require 'emms)
+(require 'emms-info)
 
 (when (fboundp 'define-hash-table-test)
   (define-hash-table-test 'string-hash 'string= 'sxhash))
