@@ -832,7 +832,7 @@ This will be a list of DB items."
   (interactive)
   (let* ((data (emms-browser-data-at-point)))
     (save-excursion
-      (next-line)
+      (next-line 1)
       (beginning-of-line)
       (dolist (data-item data)
         (emms-browser-insert-data-item data-item)))))
@@ -1712,6 +1712,16 @@ If the track is not of TYPE, return t."
        (not (and (setq last-played
                        (emms-track-get track 'last-played nil))
                  (time-less-p min-date last-played))))))
+
+;; --------------------------------------------------
+;; Compatability functions
+;; --------------------------------------------------
+
+(unless (fboundp 'with-selected-window)
+  (defalias 'with-selected-window 'save-selected-window))
+
+(unless (fboundp 'run-mode-hooks)
+  (defalias 'run-mode-hooks 'run-hooks))
 
 (provide 'emms-browser)
 ;;; emms-browser.el ends here
