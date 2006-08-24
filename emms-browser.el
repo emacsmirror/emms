@@ -1154,7 +1154,7 @@ Return the previous point-max before adding."
 
 (defun emms-browser-lookup-pitchfork (field)
   (emms-browser-lookup
-   field "http://pitchforkmedia.com/search/record_reviews/query?keywords="))
+   field "http://www.pitchforkmedia.com/search/record_reviews/query?query[keywords]="))
 
 (defun emms-browser-lookup-artist-on-wikipedia ()
   (interactive)
