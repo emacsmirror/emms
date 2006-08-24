@@ -1268,8 +1268,7 @@ Returns the playlist window."
               (interactive)
               (emms-browser-hide-linked-window)
               (bury-buffer))))
-        (setq pwin (get-buffer-window pbuf))
-        (goto-char (point-max))))
+        (setq pwin (get-buffer-window pbuf))))
     pwin))
 
 (defun emms-browser-hide-linked-window ()
