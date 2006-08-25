@@ -146,8 +146,7 @@ or nil if we cannot figure it out."
     (when (and (stringp supported)
                (not (string= supported "")))
       (concat "\\`http://\\|\\.\\(m3u\\|pls\\|"
-              (mapconcat 'identity (delq nil (split-string supported))
-                         "\\|")
+              (regexp-opt (delq nil (split-string supported)))
               "\\)\\'"))))
 
 (defcustom emms-player-mpd-supported-regexp
