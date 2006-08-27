@@ -102,6 +102,7 @@
 
 (require 'emms-player-simple)
 (require 'emms-source-playlist)  ; for emms-source-file-parse-playlist
+(require 'tq)
 
 (defgroup emms-player-mpd nil
   "EMMS player for MusicPD."
@@ -224,107 +225,6 @@ If your EMMS playlist contains stored playlists, set this to nil."
                  'seek
                  'emms-player-mpd-seek)
 
-;;; Transaction Queue (with some improvements) based on tq.el
-
-(defun emms-player-mpd-tq-create (process)
-  "Create and return a transaction queue communicating with PROCESS.
-PROCESS should be a subprocess capable of sending and receiving
-streams of bytes.  It may be a local process, or it may be connected
-to a tcp server on another machine."
-  (let ((tq (cons nil (cons process
-                            (generate-new-buffer
-                             (concat " emms-player-mpd-tq-temp-"
-                                     (process-name process)))))))
-    (set-process-filter process
-                        `(lambda (proc string)
-                           (emms-player-mpd-tq-filter ',tq string)))
-    tq))
-
-;; accessors
-(defun emms-player-mpd-tq-queue (tq)
-  (car tq))
-(defun emms-player-mpd-tq-process (tq)
-  (car (cdr tq)))
-(defun emms-player-mpd-tq-buffer (tq)
-  (cdr (cdr tq)))
-(defun emms-player-mpd-tq-queue-head-question (tq)
-  (car (car (emms-player-mpd-tq-queue tq))))
-(defun emms-player-mpd-tq-queue-head-regexp (tq)
-  (car (cdr (car (emms-player-mpd-tq-queue tq)))))
-(defun emms-player-mpd-tq-queue-head-closure (tq)
-  (car (cdr (cdr (car (emms-player-mpd-tq-queue tq))))))
-(defun emms-player-mpd-tq-queue-head-fn (tq)
-  (cdr (cdr (cdr (car (emms-player-mpd-tq-queue tq))))))
-
-(defun emms-player-mpd-tq-queue-empty (tq)
-  (not (emms-player-mpd-tq-queue tq)))
-
-(defun emms-player-mpd-tq-queue-add (tq question re closure fn)
-  (setcar tq (nconc (emms-player-mpd-tq-queue tq)
-                    (cons (cons question (cons re (cons closure fn))) nil)))
-  'ok)
-
-(defun emms-player-mpd-tq-queue-pop (tq)
-  (setcar tq (cdr (car tq)))
-  (let ((question (emms-player-mpd-tq-queue-head-question tq)))
-    (when question
-      (process-send-string (emms-player-mpd-tq-process tq) question)))
-  (null (car tq)))
-
-(defun emms-player-mpd-tq-enqueue (tq question regexp closure fn)
-  "Add a transaction to transaction queue TQ.
-This sends the string QUESTION to the process that TQ communicates with.
-When the corresponding answer comes back, we call FN
-with two arguments: CLOSURE, and the answer to the question.
-REGEXP is a regular expression to match the entire answer;
-that's how we tell where the answer ends."
-  (let ((sendp (not (emms-player-mpd-tq-queue-head-question tq))))
-    (emms-player-mpd-tq-queue-add tq question regexp closure fn)
-    (when sendp
-      (process-send-string (emms-player-mpd-tq-process tq) question))))
-
-(defun emms-player-mpd-tq-close (tq)
-  "Shut down transaction queue TQ, terminating the process."
-  (delete-process (emms-player-mpd-tq-process tq))
-  (kill-buffer (emms-player-mpd-tq-buffer tq)))
-
-(defun emms-player-mpd-tq-filter (tq string)
-  "Append STRING to the TQ's buffer; then process the new data."
-  (let ((buffer (emms-player-mpd-tq-buffer tq)))
-    (when (buffer-live-p buffer)
-      (with-current-buffer buffer
-        (goto-char (point-max))
-        (insert string)
-        (emms-player-mpd-tq-process-buffer tq)))))
-
-(defun emms-player-mpd-tq-process-buffer (tq)
-  "Check TQ's buffer for the regexp at the head of the queue."
-  (let ((buffer (emms-player-mpd-tq-buffer tq)))
-    (when (buffer-live-p buffer)
-      (set-buffer buffer)
-      (if (= 0 (buffer-size)) ()
-        (if (emms-player-mpd-tq-queue-empty tq)
-            (let ((buf (generate-new-buffer "*spurious*")))
-              (copy-to-buffer buf (point-min) (point-max))
-              (delete-region (point-min) (point))
-              (pop-to-buffer buf nil)
-              (error "Spurious communication from process %s, see buffer %s"
-                     (process-name (emms-player-mpd-tq-process tq))
-                     (buffer-name buf)))
-          (goto-char (point-min))
-          (if (re-search-forward (emms-player-mpd-tq-queue-head-regexp tq)
-                                 nil t)
-              (let ((answer (buffer-substring (point-min) (point))))
-                (delete-region (point-min) (point))
-                (unwind-protect
-                    (condition-case nil
-                        (funcall (emms-player-mpd-tq-queue-head-fn tq)
-                                 (emms-player-mpd-tq-queue-head-closure tq)
-                                 answer)
-                      (error nil))
-                  (emms-player-mpd-tq-queue-pop tq))
-                (emms-player-mpd-tq-process-buffer tq))))))))
-
 ;;; Dealing with the MusicPD network process
 
 (defvar emms-player-mpd-process nil)
@@ -375,16 +275,15 @@ return at the end of a request.")
     (set-process-sentinel emms-player-mpd-process
                           'emms-player-mpd-sentinel)
     (setq emms-player-mpd-queue
-          (emms-player-mpd-tq-create emms-player-mpd-process))
+          (tq-create emms-player-mpd-process))
     (if (fboundp 'set-process-query-on-exit-flag)
         (set-process-query-on-exit-flag emms-player-mpd-process nil)
       (process-kill-without-query emms-player-mpd-process))
     ;; send password
     (when (stringp emms-player-mpd-server-password)
-      (emms-player-mpd-tq-enqueue
-       emms-player-mpd-queue
-       (concat "password " emms-player-mpd-server-password "\n")
-       emms-player-mpd-status-regexp nil #'ignore))))
+      (tq-enqueue emms-player-mpd-queue
+                  (concat "password " emms-player-mpd-server-password "\n")
+                  emms-player-mpd-status-regexp nil #'ignore t))))
 
 (defun emms-player-mpd-close-process (&optional from-sentinel)
   "Terminate the current MusicPD client process.
@@ -393,7 +292,7 @@ in which case certain checks should not be made."
   (when (or from-sentinel
             (and (processp emms-player-mpd-process)
                  (memq (process-status emms-player-mpd-process) '(run open))))
-    (emms-player-mpd-tq-close emms-player-mpd-queue)
+    (tq-close emms-player-mpd-queue)
     (setq emms-player-mpd-queue nil)
     (setq emms-player-mpd-process nil)))
 
@@ -403,9 +302,9 @@ When a reply comes, call FN with CLOSURE and the result."
   (emms-player-mpd-ensure-process)
   (unless (string= (substring question -1) "\n")
     (setq question (concat question "\n")))
-  (emms-player-mpd-tq-enqueue emms-player-mpd-queue question
-                              emms-player-mpd-status-regexp
-                              closure fn))
+  (tq-enqueue emms-player-mpd-queue question
+              emms-player-mpd-status-regexp
+              closure fn t))
 
 ;;; Helper functions
 
