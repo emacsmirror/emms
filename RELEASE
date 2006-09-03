@@ -1,8 +1,10 @@
 This file tries to list the things people have to do before they do a
 release.
 
-1) cvs2cl - This generates our ChangeLog
-2) Increase all version numbers in the files
-3) Try to compile
-4) make dist VER=2.3 [FIXME! make dist doesn't work yet *g*]
-5) Put the .tar.gz on the website and dupload the .deb
+1) Increase the version number in emms.el
+2) Add version to debian/changelog
+3) darcs changes > ChangeLog
+4) Create .tar.gz
+5) Build deb
+6) Put the .tar.gz on the website and dupload the .deb
+7) Update NEWS
