@@ -72,6 +72,7 @@
 ;; C               emms-browser-clear-playlist
 ;; E               emms-browser-expand-all
 ;; d               emms-browser-view-in-dired
+;; d               emms-browser-delete-files
 ;; q               emms-browser-bury-buffer
 ;; r               emms-browser-goto-random
 ;; C-/             emms-playlist-mode-undo
@@ -238,6 +239,36 @@
 ;; the initial "info-" part. For example, to change the artist face,
 ;; type M-x customize-face emms-browser-artist-face.
 
+;; Deleting files
+;; -------------------------------------------------------------------
+
+;; You can use the browser to delete tracks from your hard disk.
+;; Because this is dangerous, it is disabled by default.
+
+;; The following code will delete covers at the same time, and remove
+;; parent directories if they're now empty.
+
+;; (defun de-kill-covers-and-parents (dir tracks)
+;;   (when (> (length tracks) 1)
+;;     ;; if we're not deleting an individual file, delete covers too
+;;     (dolist (cover '("cover.jpg"
+;;                      "cover_med.jpg"
+;;                      "cover_small.jpg"
+;;                      "folder.jpg"))
+;;       (condition-case nil
+;;           (delete-file (concat dir cover))
+;;         (error nil)))
+;;     ;; try and delete empty parents - we actually do the work of the
+;;     ;; calling function here, too
+;;     (let (failed)
+;;       (while (and (not (string= dir "/"))
+;;                   (not failed))
+;;         (condition-case nil
+;;             (delete-directory dir)
+;;           (error (setq failed t)))
+;;         (setq dir (file-name-directory (directory-file-name dir)))))))
+;; (add-hook 'emms-browser-delete-files-hook 'de-kill-covers-and-parents)
+
 ;;; Code:
 
 (require 'emms)
@@ -353,6 +384,13 @@ Use nil for no sorting."
   :group 'emms-browser
   :type 'hook)
 
+(defcustom emms-browser-delete-files-hook nil
+  "*Hook run after files have been deleted.
+This hook can be used to clean up extra files, such as album covers.
+Called once for each directory."
+  :group 'emms-browser
+  :type 'hook)
+
 (defvar emms-browser-buffer nil
   "The current browser buffer, if any.")
 
@@ -388,6 +426,7 @@ Use nil for no sorting."
     (define-key map (kbd "<tab>") 'emms-browser-next-non-track)
     (define-key map (kbd "<backtab>") 'emms-browser-prev-non-track)
     (define-key map (kbd "d") 'emms-browser-view-in-dired)
+    (define-key map (kbd "D") 'emms-browser-delete-files)
     (define-key map (kbd "E") 'emms-browser-expand-all)
     (define-key map (kbd "1") 'emms-browser-collapse-all)
     (define-key map (kbd "2") 'emms-browser-expand-to-level-2)
@@ -845,6 +884,20 @@ This will be a list of DB items."
   "Return the current level at point."
   (emms-browser-bdata-level (emms-browser-bdata-at-point)))
 
+(defun emms-browser-tracks-at-point (&optional node)
+  "Return a list of tracks at point."
+  (let (tracks)
+    (dolist (node (if node
+                      node
+                    (emms-browser-data-at-point)))
+      (if (not (emms-browser-bdata-p node))
+          (setq tracks (cons node tracks))
+        (setq tracks
+              (append tracks
+                      (emms-browser-tracks-at-point
+                       (emms-browser-bdata-data node))))))
+    tracks))
+
 (defun emms-browser-expand-one-level ()
   "Expand the current line by one sublevel."
   (interactive)
@@ -1033,6 +1086,45 @@ After expanding, jump to the currently marked entry."
                                    (list 'emms-browser-mark))))
       (message "No mark saved!"))))
 
+(defun emms-browser-go-to-parent ()
+  "Move point to the parent of the current node.
+Return point. If at level one, return the current point."
+  (let ((current-level (emms-browser-level-at-point)))
+    (unless (eq current-level 1)
+      (while (<= current-level (emms-browser-level-at-point))
+        (forward-line -1)))
+    (point)))
+
+(defun emms-browser-delete-current-node ()
+  "Remove the current node, and empty parents."
+  ;; set the data to empty
+  (setcdr (assq 'data (emms-browser-bdata-at-point)) nil)
+  (emms-browser-delete-node-if-empty))
+
+(defun emms-browser-delete-node-if-empty ()
+  "If empty, remove node and empty parents."
+  (when (zerop (length (emms-browser-data-at-point)))
+    (save-excursion
+      (let ((child-bdata (emms-browser-bdata-at-point))
+            parent-data parent-point)
+        ;; record the parent's position before we delete anything
+        (save-excursion
+          (setq parent-point (emms-browser-go-to-parent)))
+        ;; delete the current line
+        (when (emms-browser-subitems-visible)
+          (emms-browser-kill-subitems))
+        (emms-with-inhibit-read-only-t
+         (goto-char (point-at-bol))
+         (kill-line 1))
+        (unless (eq (emms-browser-bdata-level child-bdata) 1)
+          ;; remove the node from the parent, and recurse
+          (goto-char parent-point)
+          (setq parent-bdata (emms-browser-bdata-at-point))
+          (setcdr (assq 'data parent-bdata)
+                  (delq child-bdata
+                        (emms-browser-bdata-data parent-bdata)))
+          (emms-browser-delete-node-if-empty))))))
+
 ;; --------------------------------------------------
 ;; User-visible commands
 ;; --------------------------------------------------
@@ -1133,11 +1225,36 @@ Return the previous point-max before adding."
         (emms-browser-view-in-dired (car (emms-browser-bdata-data bdata))))
     (emms-browser-view-in-dired (emms-browser-bdata-at-point))))
 
+(defun emms-browser-delete-files ()
+  "Delete all files under point.
+Disabled by default."
+  (interactive)
+  (let ((tracks (emms-browser-tracks-at-point))
+        dirs path)
+    (unless (yes-or-no-p
+             (format "Really permanently delete these %d tracks? "
+                     (length tracks)))
+      (error "Cancelled!"))
+    (dolist (track tracks)
+      (setq path (emms-track-get track 'name))
+      (delete-file path)
+      (add-to-list 'dirs (file-name-directory path))
+      (emms-cache-del path))
+    ;; remove empty dirs
+    (dolist (dir dirs)
+      (run-hook-with-args 'emms-browser-delete-files-hook dir tracks)
+      (condition-case nil
+          (delete-directory dir)
+        (error nil)))
+    ;; remove the item from the browser
+    (emms-browser-delete-current-node)))
+
+(put 'emms-browser-delete-files 'disabled t)
+
 (defun emms-browser-clear-playlist ()
   (interactive)
   (with-current-emms-playlist
     (emms-playlist-clear)))
-
 
 (defun emms-browser-lookup (field url)
   (let ((data

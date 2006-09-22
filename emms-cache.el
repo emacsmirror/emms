@@ -104,7 +104,7 @@ This is used to cache over emacs sessions.")
       (emms-cache-disable)
     (emms-cache-enable)))
 
-(defun emms-cache-dirty (&rest ignored)
+(defsubst emms-cache-dirty (&rest ignored)
   "Mark the cache as dirty."
   (setq emms-cache-dirty t))
 
@@ -112,9 +112,15 @@ This is used to cache over emacs sessions.")
   "Return a cache element for PATH, or nil."
   (gethash path emms-cache-db))
 
+;; Note we ignore TYPE, as it's stored in TRACK
 (defun emms-cache-set (type path track)
   "Set PATH to TRACK in the cache."
   (puthash path track emms-cache-db)
+  (emms-cache-dirty))
+
+(defun emms-cache-del (path)
+  "Remove a track from the cache, with key PATH."
+  (remhash path emms-cache-db)
   (emms-cache-dirty))
 
 (defun emms-cache-save ()
