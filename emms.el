@@ -219,6 +219,13 @@ seconds the player did seek."
   :group 'emms
   :type 'hook)
 
+(defcustom emms-player-seeked-to-functions nil
+  "*Functions called when a player is seeking.
+The functions are called with a single argument, the amount of
+seconds the player did seek."
+  :group 'emms
+  :type 'hook)
+
 (defcustom emms-player-time-set-functions nil
   "*Functions called when a player is setting the elapsed time of a track.
 The functions are called with a single argument, the time elapsed
@@ -330,6 +337,14 @@ It can also be negative to seek backwards."
   (interactive "nSeconds to seek: ")
   (emms-ensure-player-playing-p)
   (emms-player-seek seconds))
+
+(defun emms-seek-to (seconds)
+  "Seek the current player to SECONDS seconds.
+This can be a floating point number for sub-second fractions.
+It can also be negative to seek backwards."
+  (interactive "nSeconds to seek to: ")
+  (emms-ensure-player-playing-p)
+  (emms-player-seek-to seconds))
 
 (defun emms-seek-forward ()
   "Seek ten seconds forward."
@@ -1323,6 +1338,18 @@ or negative to seek backwards."
           (error "Player does not know how to seek")
         (funcall seek seconds)
         (run-hook-with-args 'emms-player-seeked-functions seconds)))))
+
+(defun emms-player-seek-to (seconds)
+  "Seek the current player to SECONDS seconds.
+This can be a floating point number for fractions of a second,
+or negative to seek backwards."
+  (if (not emms-player-playing-p)
+      (error "Can't seek-to player, nothing playing right now")
+    (let ((seek (emms-player-get emms-player-playing-p 'seek-to)))
+      (if (not seek)
+          (error "Player does not know how to seek-to")
+        (funcall seek seconds)
+        (run-hook-with-args 'emms-player-seeked-to-functions seconds)))))
 
 
 ;;; Dictionaries

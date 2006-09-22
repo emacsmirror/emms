@@ -53,6 +53,10 @@
 		 'seek
 		 'emms-player-mplayer-seek)
 
+(emms-player-set emms-player-mplayer
+		 'seek-to
+		 'emms-player-mplayer-seek-to)
+
 (defun emms-player-mplayer-pause ()
   "Depends on mplayer's -slave mode."
   (process-send-string
@@ -63,6 +67,12 @@
   (process-send-string
    emms-player-simple-process-name
    (format "seek %d\n" sec)))
+
+(defun emms-player-mplayer-seek-to (sec)
+  "Depends on mplayer's -slave mode."
+  (process-send-string
+   emms-player-simple-process-name
+   (format "seek %d 2\n" sec)))
 
 (provide 'emms-player-mplayer)
 ;;; emms-player-mplayer.el ends here
