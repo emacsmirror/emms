@@ -120,6 +120,7 @@ should enable `emms-playing-time-display-p' first, though."
 	(add-hook 'emms-player-finished-hook    'emms-playing-time-stop)
 	(add-hook 'emms-player-paused-hook      'emms-playing-time-pause)
 	(add-hook 'emms-player-seeked-functions 'emms-playing-time-seek)
+	(add-hook 'emms-player-seeked-to-functions 'emms-playing-time-set)
 	(add-hook 'emms-player-time-set-functions 'emms-playing-time-set))
     (setq emms-playing-time-display-p nil)
     (emms-playing-time-stop)

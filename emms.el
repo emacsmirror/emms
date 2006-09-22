@@ -222,7 +222,7 @@ seconds the player did seek."
 (defcustom emms-player-seeked-to-functions nil
   "*Functions called when a player is seeking.
 The functions are called with a single argument, the amount of
-seconds the player did seek."
+seconds the player seeked to."
   :group 'emms
   :type 'hook)
 
