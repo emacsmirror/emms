@@ -1235,6 +1235,7 @@ Disabled by default."
              (format "Really permanently delete these %d tracks? "
                      (length tracks)))
       (error "Cancelled!"))
+    (message "Deleting files..")
     (dolist (track tracks)
       (setq path (emms-track-get track 'name))
       (delete-file path)
@@ -1247,7 +1248,8 @@ Disabled by default."
           (delete-directory dir)
         (error nil)))
     ;; remove the item from the browser
-    (emms-browser-delete-current-node)))
+    (emms-browser-delete-current-node)
+    (message "Deleting files..done")))
 
 (put 'emms-browser-delete-files 'disabled t)
 
