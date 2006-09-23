@@ -123,6 +123,10 @@ players. Many of its ideas are derived from
 @uref{http://www.nongnu.org/mp3player, MpthreePlayer}, but it tries to
 be more general and more clean.
 
+This manual tries to be the definitive source of information about
+Emms, an online version of the manual is available at:
+@uref{http://www.gnu.org/software/emms/manual/}.
+
 The basic functionality of Emms consists of three parts: The core, the
 sources, and the players.
 
