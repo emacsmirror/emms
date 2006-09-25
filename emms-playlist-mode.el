@@ -128,6 +128,7 @@ This is true for every invocation of `emms-playlist-mode-go'."
     (define-key map (kbd "d") 'emms-playlist-mode-kill-entire-track)
     (define-key map (kbd "n") 'emms-next)
     (define-key map (kbd "p") 'emms-previous)
+    (define-key map (kbd "P") 'emms-pause)
     (define-key map (kbd "s") 'emms-stop)
     (define-key map (kbd "f") 'emms-show)
     (define-key map (kbd "c") 'emms-playlist-mode-center-current)

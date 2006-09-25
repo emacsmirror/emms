@@ -830,6 +830,9 @@ Start playing the previous track in the playlist.
 @item s
 @findex emms-stop
 Stop playing.
+@item P
+@findex emms-pause
+Pause.
 @item f
 @findex emms-show
 Describe the currently playing track in the minibuffer.
