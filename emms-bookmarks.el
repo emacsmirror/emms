@@ -120,6 +120,13 @@ FAILURE-MESSAGE should be a string."
 		       (emms-playlist-current-selected-track)
 		       "No previous bookmark"))
 
+(defmacro emms-bookmarks-with-paused-player (&rest body)
+  "Eval BODY with player paused."
+  `(progn
+     (when (not emms-player-paused-p) (emms-pause))
+     ,@body
+     (when emms-player-paused-p (emms-pause))))
+
 ;; can't use `interactive' to promt the user here because we want to
 ;; pause the player before the prompt appears.
 (defun emms-bookmarks-add ()
@@ -129,12 +136,11 @@ This function pauses the player while promting the user for a
 description of the bookmark.  The function resumes the player
 after the prompt."
   (interactive)
-  (emms-pause)
-  (let ((desc (read-string "Description: ")))
-    (if (emms-playlist-current-selected-track)
-	(emms-bookmarks-set-current desc)
-      (error "No current track to bookmark")))
-  (emms-pause))
+  (emms-bookmarks-with-paused-player
+   (let ((desc (read-string "Description: ")))
+     (if (emms-playlist-current-selected-track)
+	 (emms-bookmarks-set-current desc)
+       (error "No current track to bookmark")))))
 
 (defun emms-bookmarks-clear ()
   "Remove all the bookmarks from the current track."
