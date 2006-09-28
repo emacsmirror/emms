@@ -182,5 +182,17 @@ PLAYER is the name of the current player."
   (emms-player-simple-regexp ".ogg" ".mp3" ".wav" ".flac" ".pls" ".m3u" "http://")
   "alsaplayer" "--quiet" "--nosave" "\"--interface text\"")
 
+(emms-player-set emms-player-alsaplayer
+		 'pause
+		 'emms-player-alsaplayer-pause)
+
+;;; Pause is also resume for alsaplayer
+(emms-player-set emms-player-alsaplayer
+                 'resume
+                 nil)
+
+(defun emms-player-alsaplayer-pause ()
+  (call-process "alsaplayer" nil nil nil "--pause"))
+
 (provide 'emms-player-simple)
 ;;; emms-player-simple.el ends here
