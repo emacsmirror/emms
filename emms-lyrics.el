@@ -33,18 +33,6 @@
 ;; Then either `M-x emms-lyrics-enable' or add (emms-lyrics 1) in
 ;; your .emacs to enable.
 
-;;; Change Log:
-
-;; v 0.3 [2005/07/19 17:53:25] Add `emms-lyric-find-lyric' for find
-;;       lyric files in local repository `emms-lyric-dir'. Rewrite
-;;       `emms-lyric-setup' to support more lyric formats.
-
-;; v 0.2 [2005/07/18 16:10:02] Fix `emms-lyric-pause' bug. Now it works
-;;       fine. Add `emms-lyric-seek', but which does not work very well
-;;       currently.
-
-;; v 0.1 [2005/07/17 20:07:30] Initial version.
-
 ;;; Known bugs:
 
 ;; 1. Sometimes music playing would be blocked by some process, like
@@ -58,10 +46,6 @@
 ;; 3. Search lyrics from internet ?
 
 ;;; Code:
-
-(defvar emms-lyrics-version "0.5 $Revision: 1.14 $"
-  "EMMS lyric version string.")
-;; $Id: emms-lyric.el,v 1.14 2005/08/25 13:03:02 xwl Exp $
 
 (require 'emms)
 (require 'emms-player-simple)
@@ -105,6 +89,7 @@ for lyrics in current directory and this directory."
   :type 'hook
   :group 'emms-lyrics)
 
+
 ;;; Emms Lyrics
 
 (defvar emms-lyrics-display-p t
@@ -130,14 +115,16 @@ at time-i, display lyric-i.")
   "current lyric.")
 
 (defun emms-lyrics-read-file (file)
-  "Read a lyric file(LRC format). FILE should end up with \".lrc\", its
-content looks like one of the following:
+  "Read a lyric file(LRC format).
+FILE should end up with \".lrc\", its content looks like one of the
+following:
 
     [1:39]I love you, Emacs!
     [00:39]I love you, Emacs!
     [00:39.67]I love you, Emacs!
 
-To find FILE, will look up in current directory and `emms-lyrics-dir'."
+FILE should be under the same directory as the music file, or under
+`emms-lyrics-dir'."
   (when (eq 'file (emms-track-get
                    (emms-playlist-current-selected-track)
                    'type))
@@ -364,6 +351,7 @@ a valid `emms-lyrics-dir'."
 		   "'"))
 	  "\n"))))
 
+
 ;;; emms-lyrics-mode
 
 (defvar emms-lyrics-mode-map
