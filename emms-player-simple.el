@@ -194,8 +194,15 @@ PLAYER is the name of the current player."
                  'resume
                  nil)
 
+(emms-player-set emms-player-alsaplayer
+		 'seek
+		 'emms-player-alsaplayer-seek)
+
 (defun emms-player-alsaplayer-pause ()
   (call-process "alsaplayer" nil nil nil "--pause"))
+
+(defun emms-player-alsaplayer-seek (sec)
+  (call-process "alsaplayer" nil nil nil "--relative" (format "%d" sec)))
 
 (provide 'emms-player-simple)
 ;;; emms-player-simple.el ends here
