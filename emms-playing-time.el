@@ -33,10 +33,6 @@
 
 ;;; Code:
 
-(defvar emms-playing-time-version "0.1 $Revision: 1.7 $"
-  "EMMS playing time version string.")
-;; $Id: emms-playing-time.el,v 1.7 2005/09/08 16:07:20 xwl Exp $
-
 (eval-when-compile (require 'cl))
 (require 'emms-info)
 (require 'emms-player-simple)
@@ -59,7 +55,8 @@ should enable `emms-playing-time-display-p' first, though."
   :type 'string
   :group 'emms-playing-time)
 
-;;; Emms playing time
+
+;;; Emms Playing Time
 
 (defvar emms-playing-time-display-p nil
   "Whether emms playing time is enabled or not")
