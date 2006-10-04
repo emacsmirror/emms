@@ -686,12 +686,10 @@ Execute CALLBACK with CLOSURE as its first argument when done."
 
 Execute CALLBACK with CLOSURE as its first argument when done."
   ;; This is useful with emms-streams.el
-  (condition-case nil
-      (progn
-        (require 'url)
-        (with-temp-buffer
-          (url-insert-file-contents url)
-          (emms-player-mpd-add-buffer-contents closure callback)))
+  (if (fboundp 'url-insert-file-contents)
+      (with-temp-buffer
+        (url-insert-file-contents url)
+        (emms-player-mpd-add-buffer-contents closure callback))
     (error (message (concat "You need to install url.el so that"
                             " Emms can retrieve this stream")))))
 
