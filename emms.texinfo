@@ -833,6 +833,12 @@ Stop playing.
 @item P
 @findex emms-pause
 Pause.
+@item C-f
+@findex emms-seek-forward
+Seek ten seconds forward.
+@item C-b
+@findex emms-seek-backward
+Seek ten seconds backward.
 @item f
 @findex emms-show
 Describe the currently playing track in the minibuffer.
