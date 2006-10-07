@@ -833,10 +833,10 @@ Stop playing.
 @item P
 @findex emms-pause
 Pause.
-@item C-f
+@item >
 @findex emms-seek-forward
 Seek ten seconds forward.
-@item C-b
+@item <
 @findex emms-seek-backward
 Seek ten seconds backward.
 @item f
