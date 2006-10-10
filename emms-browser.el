@@ -275,6 +275,7 @@
 (require 'emms-cache)
 (require 'emms-source-file)
 (require 'emms-playlist-sort)
+(require 'sort)
 
 (eval-when-compile
   (require 'cl))
