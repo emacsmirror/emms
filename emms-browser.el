@@ -1209,8 +1209,14 @@ Return the previous point-max before adding."
   (emms-browser-pop-mark)
   (recenter '(4)))
 
+(defvar emms-browser-seed-pending t
+  "Do we need to seed (random)?")
+
 (defun emms-browser-goto-random ()
   (interactive)
+  (when emms-browser-seed-pending
+    (random t)
+    (setq emms-browser-seed-pending nil))
   (goto-line (random (count-lines (point-min) (point-max)))))
 
 (defun emms-browser-view-in-dired (&optional bdata)
