@@ -1,3 +1,21 @@
+News since version 2.1:
+
+  - Saving bookmarks in individual tracks is now supported.
+  - Support deleting files from the cache.
+  - Add mms:// URL support for emms-player-mplayer.
+  - Implement pause, resume, and seek support for
+    emms-player-alsaplayer.
+  - A new player called emms-player-timidity has been implemented
+    which is capable of playing midi files.
+  - Hitting "<" or ">" in emms-playlist-mode causes seeking backward
+    and forward, respectively.
+  - emms-player-mpd:
+    - Display the correct error message if an error occurs while
+      trying to play a stream.
+    - When using the emms-volume interface, allow the amount of change
+      in the volume to be specified using the
+      `emms-player-mpd-volume-change-amount' option.
+
 News since version 2:
 
   - A new player that uses mpg321's remote mode is now available
