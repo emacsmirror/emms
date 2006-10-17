@@ -224,6 +224,10 @@ If your EMMS playlist contains stored playlists, set this to nil."
                  'seek
                  'emms-player-mpd-seek)
 
+(emms-player-set emms-player-mpd
+                 'seek-to
+                 'emms-player-mpd-seek-to)
+
 ;;; Dealing with the MusicPD network process
 
 (defvar emms-player-mpd-process nil)
@@ -871,6 +875,17 @@ from other functions."
          (emms-player-mpd-send
           (concat "seek " song " " (number-to-string (+ secs amount)))
           nil #'ignore))))))
+
+(defun emms-player-mpd-seek-to (pos)
+  "Seek to POS seconds from the start of the current track."
+  (interactive)
+  (emms-player-mpd-get-current-song
+   pos
+   (lambda (pos song)
+     (when (and song pos)
+       (emms-player-mpd-send
+        (concat "seek " song " " (number-to-string pos))
+        nil #'ignore)))))
 
 (defun emms-player-mpd-next ()
   "Move forward by one track in MusicPD's internal playlist."
