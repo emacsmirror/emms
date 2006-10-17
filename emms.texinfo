@@ -1653,6 +1653,13 @@ order to prime the cache.
 
 @subsubheading emms-volume.el integration
 
+@defopt emms-player-mpd-volume-change-amount
+The amount to use when raising or lowering the volume using the
+emms-volume interface.
+
+This should be a positive integer.
+@end defopt
+
 @defun emms-volume-mpd-change amount
 Change volume up or down by AMOUNT, depending on whether it is
 positive or negative.
