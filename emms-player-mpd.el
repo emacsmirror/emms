@@ -185,12 +185,20 @@ It should take same arguments as `open-network-stream' does."
                  string)
   :group 'emms-player-mpd)
 
+(defcustom emms-player-mpd-volume-change-amount 5
+  "The amount to use when raising or lowering the volume using the
+emms-volume interface.
+
+This should be a positive integer."
+  :type 'integer
+  :group 'emms-player-mpd)
+
 (defcustom emms-player-mpd-check-interval 1
   "How often to check to see whether MusicPD has advanced to the
 next song.  This may be an integer or a floating point number.
 
 This is used only if `emms-player-mpd-sync-playlist' is non-nil"
-  :type 'integer
+  :type 'number
   :group 'emms-player-mpd)
 
 (defcustom emms-player-mpd-verbose nil
@@ -918,12 +926,12 @@ positive or negative."
 (defun emms-volume-mpd-raise ()
   "Increase the volume."
   (interactive)
-  (emms-volume-mpd-change 5))
+  (emms-volume-mpd-change emms-player-mpd-volume-change-amount))
 
 (defun emms-volume-mpd-lower ()
   "Decrease the volume."
   (interactive)
-  (emms-volume-mpd-change -5))
+  (emms-volume-mpd-change (- 0 emms-player-mpd-volume-change-amount)))
 
 ;;; Now playing
 
