@@ -1106,7 +1106,7 @@ Return point. If at level one, return the current point."
   (when (zerop (length (emms-browser-data-at-point)))
     (save-excursion
       (let ((child-bdata (emms-browser-bdata-at-point))
-            parent-data parent-point)
+            parent-bdata parent-point)
         ;; record the parent's position before we delete anything
         (save-excursion
           (setq parent-point (emms-browser-go-to-parent)))
