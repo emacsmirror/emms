@@ -239,11 +239,16 @@ OUT should be the buffer where tracks are stored in the native EMMS format."
 ; emms-source-playlist-unparse-m3u
 
 (defun emms-source-playlist-m3u-p ()
-  "Return non-nil if the current buffer contains a native EMMS playlist."
+  "Return non-nil if the current buffer contains an m3u playlist.
+
+We currently have no metric for determining whether a buffer is
+an .m3u playlist based on its contents alone, so we assume that
+the more restrictive playlist formats have already been
+detected and simply return non-nil always."
   t)
 
 (defun emms-source-playlist-parse-m3u ()
-  "Parse the native EMMS playlist in the current buffer."
+  "Parse the m3u playlist in the current buffer."
   (mapcar (lambda (file)
             (if (string-match "\\`http://" file)
                 (emms-track 'url file)
@@ -251,7 +256,8 @@ OUT should be the buffer where tracks are stored in the native EMMS format."
           (emms-source-playlist-m3u-files)))
 
 (defun emms-source-playlist-m3u-files ()
-  "Extract a list of filenames from the given .m3u playlist.
+  "Extract a list of filenames from the given m3u playlist.
+
 Empty lines and lines starting with '#' are ignored."
   (let ((files nil))
     (save-excursion
@@ -262,7 +268,7 @@ Empty lines and lines starting with '#' are ignored."
 
 (defun emms-source-playlist-unparse-m3u (in out)
   "Unparse an m3u playlist from IN to OUT.
-IN should be a buffer with a EMMS playlist in it.
+IN should be a buffer containing an m3u playlist.
 OUT should be the buffer where tracks are stored in m3u format."
   (with-current-buffer in ;; Don't modify the position
     (save-excursion       ;; in the IN buffer
@@ -302,7 +308,7 @@ OUT should be the buffer where tracks are stored in m3u format."
 ; emms-source-playlist-unparse-pls
 
 (defun emms-source-playlist-pls-p ()
-  "Return non-nil if the current buffer contains a native EMMS playlist."
+  "Return non-nil if the current buffer contains a pls playlist."
   (save-excursion
     (goto-char (point-min))
     (if (re-search-forward "^File[0-9]*=.+$" nil t)
@@ -310,7 +316,7 @@ OUT should be the buffer where tracks are stored in m3u format."
       nil)))
 
 (defun emms-source-playlist-parse-pls ()
-  "Parse the native EMMS playlist in the current buffer."
+  "Parse the pls playlist in the current buffer."
   (mapcar (lambda (file)
             (if (string-match "\\`http://" file)
                 (emms-track 'url file)
@@ -318,7 +324,8 @@ OUT should be the buffer where tracks are stored in m3u format."
           (emms-source-playlist-pls-files)))
 
 (defun emms-source-playlist-pls-files ()
-  "Extract a list of filenames from the given .pls playlist.
+  "Extract a list of filenames from the given pls playlist.
+
 Empty lines and lines starting with '#' are ignored."
   (let ((files nil))
     (save-excursion
@@ -329,7 +336,7 @@ Empty lines and lines starting with '#' are ignored."
 
 (defun emms-source-playlist-unparse-pls (in out)
   "Unparse a pls playlist from IN to OUT.
-IN should be a buffer with a EMMS playlist in it.
+IN should be a buffer conatining a pls playlist.
 OUT should be the buffer where tracks are stored in pls format."
   (with-current-buffer in ;; Don't modify the position
     (save-excursion       ;; in the IN buffer

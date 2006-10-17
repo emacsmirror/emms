@@ -118,6 +118,7 @@
 
 (defcustom emms-player-mpd-music-directory nil
   "The value of 'music_directory' in your MusicPD configuration file.
+
 You need this if your playlists use absolute file names, otherwise
 leave it set to nil."
   ;; The :format part ensures that entering directories happens on the
@@ -154,7 +155,7 @@ or nil if we cannot figure it out."
   (or (emms-player-mpd-get-supported-regexp)
       (concat "\\`http://\\|"
               "\\.\\(m3u\\|ogg\\|flac\\|mp3\\|wav\\|mod\\|au\\|aiff\\)\\'"))
-  "Formats supported by MusicPD Client."
+  "Formats supported by MusicPD."
   :type 'regexp
   :set (function
         (lambda (sym value)
@@ -313,6 +314,7 @@ When a reply comes, call FN with CLOSURE and the result."
 
 (defun emms-player-mpd-get-mpd-filename (file)
   "Turn FILE into something that MusicPD can understand.
+
 This usually means removing a prefix."
   (if (or (not emms-player-mpd-music-directory)
           (not (eq (aref file 0) ?/))
@@ -322,6 +324,7 @@ This usually means removing a prefix."
 
 (defun emms-player-mpd-get-emms-filename (file)
   "Turn FILE into something that EMMS can understand.
+
 This usually means adding a prefix."
   (if (or (not emms-player-mpd-music-directory)
           (eq (aref file 0) ?/)
@@ -331,6 +334,7 @@ This usually means adding a prefix."
 
 (defun emms-player-mpd-parse-response (response)
   "Convert the given MusicPD response into a list.
+
 The car of the list is special:
 If an error has occurred, it will contain a cons cell whose car is
 an error number and whose cdr is the corresponding message.
@@ -356,6 +360,7 @@ Otherwise, it will be nil."
 
 (defun emms-player-mpd-parse-line (line)
   "Turn the given LINE from MusicPD into a cons cell.
+
 The format of the cell is (name . value)."
   (when (string-match "\\`\\([^:\n]+\\):\\s-*\\(.+\\)" line)
     (let ((name (match-string 1 line))
@@ -368,6 +373,7 @@ The format of the cell is (name . value)."
 
 (defun emms-player-mpd-get-alist (info)
   "Turn the given parsed INFO from MusicPD into an alist.
+
 The format of the alist is (name . value)."
   (when (and info
              (null (car info))          ; no error has occurred
@@ -383,6 +389,7 @@ The format of the alist is (name . value)."
 
 (defun emms-player-mpd-get-alists (info)
   "Turn the given parsed INFO from MusicPD into an list of alists.
+
 The format of the alist is (name . value).
 
 The list will be in reverse order."
@@ -646,9 +653,9 @@ info from MusicPD."
 
 (defun emms-player-mpd-add-file (file closure callback)
   "Add FILE to the current MusicPD playlist.
-If an error occurs, display a relevant message.
+Execute CALLBACK with CLOSURE as its first argument when done.
 
-Execute CALLBACK with CLOSURE as its first argument when done."
+If an error occurs, display a relevant message."
   (setq file (emms-player-mpd-get-mpd-filename file))
   (emms-player-mpd-send
    (concat "add " (emms-player-mpd-quote-file file))
@@ -665,9 +672,9 @@ Execute CALLBACK with CLOSURE as its first argument when done."
 
 (defun emms-player-mpd-add-buffer-contents (closure callback)
   "Load contents of the current buffer into MusicPD by adding each line.
-This handles both m3u and pls type playlists.
+Execute CALLBACK with CLOSURE as its first argument when done.
 
-Execute CALLBACK with CLOSURE as its first argument when done."
+This handles both m3u and pls type playlists."
   (goto-char (point-min))
   (let ((format (emms-source-playlist-determine-format)))
     (when format
@@ -677,9 +684,9 @@ Execute CALLBACK with CLOSURE as its first argument when done."
 
 (defun emms-player-mpd-add-playlist (playlist closure callback)
   "Load contents of PLAYLIST into MusicPD by adding each line.
-This handles both m3u and pls type playlists.
+Execute CALLBACK with CLOSURE as its first argument when done.
 
-Execute CALLBACK with CLOSURE as its first argument when done."
+This handles both m3u and pls type playlists."
   ;; This is useful for playlists of playlists
   (with-temp-buffer
     (insert-file-contents playlist)
@@ -687,7 +694,6 @@ Execute CALLBACK with CLOSURE as its first argument when done."
 
 (defun emms-player-mpd-add-streamlist (url closure callback)
   "Download contents of URL and then add its feeds into MusicPD.
-
 Execute CALLBACK with CLOSURE as its first argument when done."
   ;; This is useful with emms-streams.el
   (if (fboundp 'url-insert-file-contents)
@@ -699,7 +705,6 @@ Execute CALLBACK with CLOSURE as its first argument when done."
 
 (defun emms-player-mpd-add (track closure callback)
   "Add TRACK to the MusicPD playlist.
-
 Execute CALLBACK with CLOSURE as its first argument when done."
   (let ((name (emms-track-get track 'name))
         (type (emms-track-get track 'type)))
@@ -715,7 +720,6 @@ Execute CALLBACK with CLOSURE as its first argument when done."
 
 (defun emms-player-mpd-add-several-tracks (tracks closure callback)
   "Add TRACKS to the MusicPD playlist.
-
 Execute CALLBACK with CLOSURE as its first argument when done."
   (when (consp tracks)
     (while (cdr tracks)
@@ -726,7 +730,6 @@ Execute CALLBACK with CLOSURE as its first argument when done."
 
 (defun emms-player-mpd-add-several-files (files closure callback)
   "Add FILES to the MusicPD playlist.
-
 Execute CALLBACK with CLOSURE as its first argument when done."
   (when (consp files)
     (while (cdr files)
@@ -814,6 +817,7 @@ This is called if `emms-player-mpd-sync-playlist' is non-nil."
 ;;;###autoload
 (defun emms-player-mpd-connect ()
   "Connect to MusicPD and retrieve its current playlist.
+
 Afterward, the status of MusicPD will be tracked."
   (interactive)
   (when emms-player-mpd-status-timer
@@ -963,8 +967,13 @@ positive or negative."
 ;;;###autoload
 (defun emms-player-mpd-show (&optional insertp callback)
   "Describe the current EMMS track in the minibuffer.
-If INSERTP is non-nil, insert the description into the current buffer instead.
-If CALLBACK is a function, call it with the current buffer and description.
+
+If INSERTP is non-nil, insert the description into the current
+buffer instead.
+
+If CALLBACK is a function, call it with the current buffer and
+description.
+
 This function uses `emms-show-format' to format the current track.
 It differs from `emms-show' in that it asks MusicPD for the current track,
 rather than EMMS."
@@ -1001,9 +1010,10 @@ rather than EMMS."
 
 (defun emms-info-mpd (track &optional info)
   "Add track information to TRACK.
-This is a useful addition to `emms-info-functions'.
 If INFO is specified, use that instead of acquiring the necessary
-info from MusicPD."
+info from MusicPD.
+
+This is a useful addition to `emms-info-functions'."
   (if info
       (emms-info-mpd-process track info)
     (when (and (eq 'file (emms-track-type track))
@@ -1024,6 +1034,7 @@ info from MusicPD."
 
 (defun emms-cache-set-from-mpd-track (track-info)
   "Dump TRACK-INFO into the EMMS cache.
+
 The track should be an alist as per `emms-player-mpd-get-alist'."
   (when emms-cache-set-function
     (let ((track (emms-dictionary '*track*))
@@ -1037,6 +1048,7 @@ The track should be an alist as per `emms-player-mpd-get-alist'."
 
 (defun emms-cache-set-from-mpd-directory (dir)
   "Dump all MusicPD data from DIR into the EMMS cache.
+
 This is useful to do when you have recently acquired new music."
   (interactive
    (list (if emms-player-mpd-music-directory
@@ -1062,6 +1074,7 @@ This is useful to do when you have recently acquired new music."
 
 (defun emms-cache-set-from-mpd-all ()
   "Dump all MusicPD data into the EMMS cache.
+
 This is useful to do once, just before using emms-browser.el, in
 order to prime the cache."
   (interactive)
