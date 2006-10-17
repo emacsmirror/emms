@@ -219,13 +219,6 @@ seconds the player did seek."
   :group 'emms
   :type 'hook)
 
-(defcustom emms-player-seeked-to-functions nil
-  "*Functions called when a player is seeking.
-The functions are called with a single argument, the amount of
-seconds the player seeked to."
-  :group 'emms
-  :type 'hook)
-
 (defcustom emms-player-time-set-functions nil
   "*Functions called when a player is setting the elapsed time of a track.
 The functions are called with a single argument, the time elapsed
@@ -1349,7 +1342,7 @@ or negative to seek backwards."
       (if (not seek)
           (error "Player does not know how to seek-to")
         (funcall seek seconds)
-        (run-hook-with-args 'emms-player-seeked-to-functions seconds)))))
+        (run-hook-with-args 'emms-player-time-set-functions seconds)))))
 
 
 ;;; Dictionaries
