@@ -493,7 +493,7 @@ WINDOW-WIDTH should be a positive integer."
 
   (emms-playlist-mode-startup)
 
-  (run-hooks 'emms-playlist-mode-hooks))
+  (run-hooks 'emms-playlist-mode-hook))
 
 (provide 'emms-playlist-mode)
 
