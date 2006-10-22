@@ -298,10 +298,11 @@ function switches back to the remembered buffer."
   (interactive)
   (emms-with-inhibit-read-only-t
    ;; Are we killing the playing/selected track?
-   (when (emms-playlist-mode-between-p
-          (marker-position emms-playlist-selected-marker)
-          (region-beginning)
-          (region-end))
+   (when (and (markerp emms-playlist-selected-marker)
+              (emms-playlist-mode-between-p
+               (marker-position emms-playlist-selected-marker)
+               (region-beginning)
+               (region-end)))
      (emms-stop)
      (delete-overlay emms-playlist-mode-selected-overlay)
      (setq emms-playlist-mode-selected-overlay nil))
