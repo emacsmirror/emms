@@ -638,30 +638,38 @@ MusicPD playlist."
 (defun emms-player-mpd-detect-song-change-1 (closure info)
   (let ((song (emms-player-mpd-get-current-song nil #'ignore info))
         (status (emms-player-mpd-get-mpd-state nil #'ignore info))
-        (time (emms-player-mpd-get-playing-time nil #'ignore info)))
-    (cond ((string= status "stop")
-           (emms-player-mpd-disconnect t)
-           (if song
-               ;; a track remains: the user probably stopped MusicPD
-               ;; manually, so we'll stop EMMS completely
+        (time (emms-player-mpd-get-playing-time nil #'ignore info))
+        (err-msg (cdr (assoc "error" info))))
+    (if (stringp err-msg)
+        (progn
+          (message (concat "MusicPD error: " err-msg))
+          (emms-player-mpd-send
+           "clearerror"
+           nil #'ignore))
+      (cond ((string= status "stop")
+             (emms-player-mpd-disconnect t)
+             (if song
+                 ;; a track remains: the user probably stopped MusicPD
+                 ;; manually, so we'll stop EMMS completely
+                 (let ((emms-player-stopped-p t))
+                   (emms-player-stopped))
+               ;; no more tracks are left: we probably ran out of things
+               ;; to play, so let EMMS do something further if it wants
+               (emms-player-stopped)))
+            ((string= status "pause")
+             nil)
+            ((string= status "play")
+             (unless (or (null song)
+                         (and (stringp emms-player-mpd-current-song)
+                              (string= song emms-player-mpd-current-song)))
                (let ((emms-player-stopped-p t))
                  (emms-player-stopped))
-             ;; no more tracks are left: we probably ran out of things
-             ;; to play, so let EMMS do something further if it wants
-             (emms-player-stopped)))
-          ((string= status "pause")
-           nil)
-          ((string= status "play")
-           (unless (or (null song)
-                       (and (stringp emms-player-mpd-current-song)
-                            (string= song emms-player-mpd-current-song)))
-             (let ((emms-player-stopped-p t))
-               (emms-player-stopped))
-             (emms-player-mpd-select-song emms-player-mpd-current-song song)
-             (setq emms-player-mpd-current-song song)
-             (emms-player-started 'emms-player-mpd)
-             (when time
-               (run-hook-with-args 'emms-player-time-set-functions time)))))))
+               (emms-player-mpd-select-song emms-player-mpd-current-song song)
+               (setq emms-player-mpd-current-song song)
+               (emms-player-started 'emms-player-mpd)
+               (when time
+                 (run-hook-with-args 'emms-player-time-set-functions
+                                     time))))))))
 
 (defun emms-player-mpd-detect-song-change (&optional info)
   "Detect whether a song change has occurred.
@@ -812,10 +820,7 @@ playlist."
      (lambda (closure response)
        (emms-player-started 'emms-player-mpd)))))
 
-(defun emms-player-mpd-start-and-sync-1 (buffer id)
-  (when emms-player-mpd-status-timer
-    (emms-cancel-timer emms-player-mpd-status-timer)
-    (setq emms-player-mpd-status-timer nil))
+(defun emms-player-mpd-start-and-sync-2 (buffer id)
   (when (buffer-live-p buffer)
     (let ((emms-playlist-buffer buffer))
       (with-current-emms-playlist
@@ -835,21 +840,31 @@ playlist."
               (error nil)))
           (emms-player-mpd-play track-cnt))))))
 
+(defun emms-player-mpd-start-and-sync-1 (closure id)
+  (let ((buf-id (with-current-emms-playlist
+                  emms-player-mpd-playlist-id)))
+    (if (and (not (buffer-modified-p emms-playlist-buffer))
+             (stringp buf-id)
+             (string= buf-id id))
+        (emms-player-mpd-start-and-sync-2 emms-playlist-buffer id)
+      (emms-player-mpd-sync-from-emms
+       #'emms-player-mpd-start-and-sync-2))))
+
 (defun emms-player-mpd-start-and-sync ()
   "Ensure that MusicPD's playlist is up-to-date with EMMS's
 playlist, and then play the current track.
 
 This is called if `emms-player-mpd-sync-playlist' is non-nil."
-  (emms-player-mpd-get-playlist-id
+  (when emms-player-mpd-status-timer
+    (emms-cancel-timer emms-player-mpd-status-timer)
+    (setq emms-player-mpd-status-timer nil))
+  (emms-player-mpd-send
+   "clearerror"
    nil
-   (lambda (closure id)
-     (let ((buf-id (with-current-emms-playlist emms-player-mpd-playlist-id)))
-       (if (and (not (buffer-modified-p emms-playlist-buffer))
-                (stringp buf-id)
-                (string= buf-id id))
-           (emms-player-mpd-start-and-sync-1 emms-playlist-buffer id)
-         (emms-player-mpd-sync-from-emms
-          #'emms-player-mpd-start-and-sync-1))))))
+   (lambda (closure response)
+     (emms-player-mpd-get-playlist-id
+      nil
+      #'emms-player-mpd-start-and-sync-1))))
 
 (defun emms-player-mpd-connect-1 (closure info)
   (setq emms-player-mpd-current-song nil)
