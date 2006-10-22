@@ -536,6 +536,44 @@ info from MusicPD."
                      (string-to-number (match-string 1 time)))))
      "time" info)))
 
+(defun emms-player-mpd-select-song (prev-song new-song)
+  "Move to the given song position.
+
+The amount to move is the number difference between PREV-SONG and
+NEW-SONG.  NEW-SONG should be a string containing a number.
+PREV-SONG may be either a string containing a number or nil,
+which indicates that we should start from the beginning of the
+buffer and move to NEW-SONG."
+  (with-current-emms-playlist
+    ;; move to current track
+    (goto-char (if (and (stringp prev-song)
+                        emms-playlist-selected-marker
+                        (marker-position emms-playlist-selected-marker))
+                   emms-playlist-selected-marker
+                 (point-min)))
+    ;; seek forward or backward
+    (let ((diff (if (stringp prev-song)
+                    (- (string-to-number new-song)
+                       (string-to-number prev-song))
+                  (string-to-number new-song))))
+      (condition-case nil
+          (progn
+            ;; skip to first track if not on one
+            (when (and (> diff 0)
+                       (not (emms-playlist-track-at (point))))
+              (emms-playlist-next))
+            ;; move to new track
+            (while (> diff 0)
+              (emms-playlist-next)
+              (setq diff (- diff 1)))
+            (while (< diff 0)
+              (emms-playlist-previous)
+              (setq diff (+ diff 1)))
+            ;; select track at point
+            (unless (emms-playlist-selected-track-at-p)
+              (emms-playlist-select (point))))
+        (error (concat "Could not move to position " new-song))))))
+
 (defun emms-player-mpd-sync-from-emms-1 (closure)
   (emms-player-mpd-get-playlist-id
    closure
@@ -575,9 +613,7 @@ errors."
           (setq emms-player-mpd-playlist-id id)
           (set-buffer-modified-p nil)
           (if song
-              (progn
-                (goto-line (1+ (string-to-number song)))
-                (emms-playlist-select (point)))
+              (emms-player-mpd-select-song nil song)
             (goto-char (point-min)))))
       (when (functionp fn)
         (funcall fn close info)))))
@@ -621,13 +657,10 @@ MusicPD playlist."
            (unless (or (null song)
                        (and (stringp emms-player-mpd-current-song)
                             (string= song emms-player-mpd-current-song)))
-             (setq emms-player-mpd-current-song song)
              (let ((emms-player-stopped-p t))
                (emms-player-stopped))
-             (with-current-emms-playlist
-               (emms-playlist-select (progn
-                                       (goto-line (1+ (string-to-number song)))
-                                       (point))))
+             (emms-player-mpd-select-song emms-player-mpd-current-song song)
+             (setq emms-player-mpd-current-song song)
              (emms-player-started 'emms-player-mpd)
              (when time
                (run-hook-with-args 'emms-player-time-set-functions time)))))))
@@ -790,8 +823,19 @@ playlist."
       (with-current-emms-playlist
         (setq emms-player-mpd-playlist-id id)
         (set-buffer-modified-p nil)
-        (emms-player-mpd-play (1- (emms-line-number-at-pos
-                                   emms-playlist-selected-marker)))))))
+        (let ((track-cnt 0))
+          (save-excursion
+            (goto-char
+             (if (and emms-playlist-selected-marker
+                      (marker-position emms-playlist-selected-marker))
+                 emms-playlist-selected-marker
+               (point-min)))
+            (condition-case nil
+                (while t
+                  (emms-playlist-previous)
+                  (setq track-cnt (1+ track-cnt)))
+              (error nil)))
+          (emms-player-mpd-play track-cnt))))))
 
 (defun emms-player-mpd-start-and-sync ()
   "Ensure that MusicPD's playlist is up-to-date with EMMS's
