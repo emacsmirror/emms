@@ -36,9 +36,7 @@
 ;; installation is needed.
 
 ;; The website is at http://musicpd.org/.  Debian packages are
-;; available.  I recommend getting the latest development version; see
-;; http://mpd.wikicities.com/wiki/Subversion for nightly Debian
-;; packages and the svn repo.
+;; available.  It is recommended to use mpd version 0.12.0 or higher.
 ;;
 ;; Copy the example configuration for mpd into ~/.mpdconf and edit it
 ;; to your needs.  Use your top level music directory for
@@ -870,7 +868,12 @@ This is called if `emms-player-mpd-sync-playlist' is non-nil."
 (defun emms-player-mpd-connect ()
   "Connect to MusicPD and retrieve its current playlist.
 
-Afterward, the status of MusicPD will be tracked."
+Afterward, the status of MusicPD will be tracked.
+
+This also has the effect of changing the current EMMS playlist to
+be the same as the curreent MusicPD playlist.  Thus, this
+function is useful to call if the contents of the EMMS playlist
+buffer get out-of-sync for some reason."
   (interactive)
   (when emms-player-mpd-status-timer
     (emms-cancel-timer emms-player-mpd-status-timer)
