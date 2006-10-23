@@ -18,7 +18,7 @@ News since version 2.1:
       in the volume to be specified using the
       `emms-player-mpd-volume-change-amount' option.
 
-News since version 2:
+News since version 2.0:
 
   - A new player that uses mpg321's remote mode is now available
     (emms-player-mpg321-remote) - this allows seeking and copes with
