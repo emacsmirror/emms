@@ -257,6 +257,38 @@ This can be used if the source depends on the current buffer not
 being the playlist buffer.")
 
 
+;;; Macros
+
+;;; These need to be at the top of the file so that compilation works.
+
+(defmacro with-current-emms-playlist (&rest body)
+  "Run BODY with the current buffer being the current playlist buffer.
+This also disables any read-onliness of the current buffer."
+  `(progn
+     (when (or (not emms-playlist-buffer)
+               (not (buffer-live-p emms-playlist-buffer)))
+       (emms-playlist-current-clear))
+     (let ((emms-source-old-buffer (or emms-source-old-buffer
+                                       (current-buffer))))
+      (with-current-buffer emms-playlist-buffer
+        (let ((inhibit-read-only t))
+          ,@body)))))
+(put 'with-current-emms-playlist 'lisp-indent-function 0)
+(put 'with-current-emms-playlist 'edebug-form-spec '(body))
+
+(defmacro emms-with-inhibit-read-only-t (&rest body)
+  "Simple wrapper around `inhibit-read-only'."
+  `(let ((inhibit-read-only t))
+     ,@body))
+(put 'emms-with-inhibit-read-only-t 'edebug-form-spec '(body))
+
+(defmacro emms-with-widened-buffer (&rest body)
+  `(save-restriction
+     (widen)
+     ,@body))
+(put 'emms-with-widened-buffer 'edebug-form-spec '(body))
+
+
 ;;; User Interface
 
 (defun emms-start ()
@@ -497,21 +529,6 @@ which are part of the text that the image rests on."
       (forward-line 0))))
 
 
-;;; Convenient macros
-
-(defmacro emms-with-inhibit-read-only-t (&rest body)
-  "Simple wrapper around `inhibit-read-only'."
-  `(let ((inhibit-read-only t))
-     ,@body))
-(put 'emms-with-inhibit-read-only-t 'edebug-form-spec '(body))
-
-(defmacro emms-with-widened-buffer (&rest body)
-  `(save-restriction
-     (widen)
-     ,@body))
-(put 'emms-with-widened-buffer 'edebug-form-spec '(body))
-
-
 ;;; Tracks
 
 ;; This is a simple datatype to store track information.
@@ -619,21 +636,6 @@ for that purpose.")
   "Throw an error if we're not in a playlist-buffer."
   (when (not emms-playlist-buffer-p)
     (error "Not an EMMS playlist buffer")))
-
-(defmacro with-current-emms-playlist (&rest body)
-  "Run BODY with the current buffer being the current playlist buffer.
-This also disables any read-onliness of the current buffer."
-  `(progn
-     (when (or (not emms-playlist-buffer)
-               (not (buffer-live-p emms-playlist-buffer)))
-       (emms-playlist-current-clear))
-     (let ((emms-source-old-buffer (or emms-source-old-buffer
-                                       (current-buffer))))
-      (with-current-buffer emms-playlist-buffer
-        (let ((inhibit-read-only t))
-          ,@body)))))
-(put 'with-current-emms-playlist 'lisp-indent-function 0)
-(put 'with-current-emms-playlist 'edebug-form-spec '(body))
 
 (defun emms-playlist-set-playlist-buffer (&optional buffer)
   "Set the current playlist buffer."
