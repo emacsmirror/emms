@@ -137,8 +137,9 @@ or nil if we cannot figure it out."
     (while (car out)
       (cond ((string= (car out) "Supported formats:")
              (setq found-start t))
-            ((and found-start
-                  (not (string= (car out) "")))
+            ((string= (car out) "")
+             (setq found-start nil))
+            (found-start
              (setq supported (concat supported (car out)))))
       (setq out (cdr out)))
     ;; Create regexp
