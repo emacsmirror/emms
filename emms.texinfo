@@ -849,6 +849,9 @@ Display the current track in the center of the screen.
 @findex emms-playlist-mode-play-current-track
 Start playing the track under point. Note that this is also available
 with @kbd{<mouse-2>}.
+@item SPC
+@findex scroll-up
+Scroll up a near full page.
 @item M-<
 @findex emms-playlist-mode-first
 Go to the first track in the playlist. @kbd{M->} completes this
