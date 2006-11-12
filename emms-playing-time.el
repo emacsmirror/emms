@@ -44,15 +44,20 @@
   :group 'emms)
 
 (defcustom emms-playing-time-display-short-p nil
-  "If non-nil, only display elapsed time, don't display total
-playing time. e.g., display 02:37 instead of 02:37/05:49. You
-should enable `emms-playing-time-display-p' first, though."
+  "Non-nil will only display elapsed time.
+e.g., display 02:37 instead of 02:37/05:49."
   :type 'boolean
   :group 'emms-playing-time)
 
 (defcustom emms-playing-time-display-format " %s "
   "Format used for displaying playing time."
   :type 'string
+  :group 'emms-playing-time)
+
+(defcustom emms-playing-time-style 'time
+  "Style used for displaying playing time.
+Valid styles are `time' (e.g., 01:30/4:20) and `bar' (e.g., [===>  ])."
+  :type 'symbol
   :group 'emms-playing-time)
 
 
@@ -162,17 +167,33 @@ should enable `emms-playing-time-display-p' first, though."
 	      0))
 	 (total-min-only (/ total-playing-time 60))
 	 (total-sec-only (% total-playing-time 60)))
+    (case emms-playing-time-style
+      ((bar)
+       (if (zerop total-playing-time)
+           (setq emms-playing-time-string "[==>........]")
+         (let ((progress "[")
+               ;; percent based on 10
+               (percent (/ (* emms-playing-time 10) total-playing-time)))
+           (dotimes (i percent)
+             (setq progress (concat progress "=")))
+           (setq progress (concat progress ">"))
+           (dotimes (i (- 10 percent))
+             (setq progress (concat progress " ")))
+           (setq progress (concat progress "]"))
+           (setq emms-playing-time-string progress))))
+      (t
+       (setq emms-playing-time-string
+             (emms-replace-regexp-in-string
+              " " "0"
+              (if (or emms-playing-time-display-short-p
+                      ;; unable to get total playing-time
+                      (eq total-playing-time 0))
+                  (format "%2d:%2d" min sec)
+                (format "%2d:%2d/%2s:%2s"
+                        min sec total-min-only total-sec-only))))))
     (setq emms-playing-time-string
-	  (format
-	   emms-playing-time-display-format
-	   (emms-replace-regexp-in-string
-	    " " "0"
-	    (if (or emms-playing-time-display-short-p
-		    ;; unable to get total playing-time
-		    (eq total-playing-time 0))
-		(format "%2d:%2d" min sec)
-	      (format "%2d:%2d/%2s:%2s"
-		      min sec total-min-only total-sec-only)))))
+          (format emms-playing-time-display-format
+                  emms-playing-time-string))
     (force-mode-line-update)))
 
 (defun emms-playing-time-mode-line ()
