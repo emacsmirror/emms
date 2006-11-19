@@ -450,8 +450,9 @@ If DIR is not specified, it is queried from the user."
                                           emms-source-file-default-directory
                                           t)))
   (mapc (lambda (file)
-          (unless (let ((case-fold-search nil))
-                    (string-match emms-source-file-exclude-regexp file))
+          (unless (or (let ((case-fold-search nil))
+                        (string-match emms-source-file-exclude-regexp file))
+                      (file-directory-p file))
             (emms-playlist-insert-track
              (emms-track 'playlist (expand-file-name file)))))
         (directory-files dir t "^[^.]")))
