@@ -256,6 +256,9 @@ The modified track is passed as the argument to this function."
 This can be used if the source depends on the current buffer not
 being the playlist buffer.")
 
+(defvar emms-playlist-buffer nil
+  "The current playlist buffer, if any.")
+
 
 ;;; Macros
 
@@ -614,9 +617,6 @@ string), a confusing error message would result."
 ;; remembered in the `emms-playlist' variable. The buffer consists of
 ;; any kind of data. Strings of text with a `emms-track' property are
 ;; the tracks in the buffer.
-
-(defvar emms-playlist-buffer nil
-  "The current playlist buffer, if any.")
 
 (defvar emms-playlist-buffers nil
   "The list of EMMS playlist buffers.
