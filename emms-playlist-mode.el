@@ -126,6 +126,7 @@ This is true for every invocation of `emms-playlist-mode-go'."
     (define-key map (kbd "M-<") 'emms-playlist-mode-first)
     (define-key map (kbd "M->") 'emms-playlist-mode-last)
     (define-key map (kbd "a") 'emms-playlist-mode-add-contents)
+    (define-key map (kbd "b") 'emms-playlist-set-playlist-buffer)
     (define-key map (kbd "d") 'emms-playlist-mode-kill-entire-track)
     (define-key map (kbd "n") 'emms-next)
     (define-key map (kbd "p") 'emms-previous)
