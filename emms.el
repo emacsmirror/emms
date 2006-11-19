@@ -661,7 +661,8 @@ for that purpose.")
       (emms-playlist-ensure-playlist-buffer))
     (setq emms-playlist-buffer buf)
     (when (interactive-p)
-      (message "Set current EMMS playlist buffer"))))
+      (message "Set current EMMS playlist buffer"))
+    buf))
 
 (defun emms-playlist-new (&optional name)
   "Create a new playlist buffer.
