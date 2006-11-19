@@ -821,6 +821,14 @@ When in the interactive playlist mode we can perform different actions
 on the current playlist.
 
 @table @kbd
+@item a
+@findex emms-playlist-mode-add-contents
+Add files in the playlist at point to the current playlist buffer.
+If we are in the current playlist, make a new playlist buffer and
+set it as current.
+@item b
+@findex emms-playlist-set-playlist-buffer
+Set the current playlist buffer.
 @item n
 @findex emms-next
 Start playing the next track in the playlist.
