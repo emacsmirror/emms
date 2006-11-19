@@ -125,6 +125,7 @@ This is true for every invocation of `emms-playlist-mode-go'."
     (define-key map (kbd "M-y") 'emms-playlist-mode-yank-pop)
     (define-key map (kbd "M-<") 'emms-playlist-mode-first)
     (define-key map (kbd "M->") 'emms-playlist-mode-last)
+    (define-key map (kbd "a") 'emms-playlist-mode-add-contents)
     (define-key map (kbd "d") 'emms-playlist-mode-kill-entire-track)
     (define-key map (kbd "n") 'emms-next)
     (define-key map (kbd "p") 'emms-previous)
@@ -254,6 +255,48 @@ function switches back to the remembered buffer."
   (interactive)
   (emms-with-inhibit-read-only-t
    (undo)))
+
+(defun emms-playlist-mode-add-contents ()
+  "Add files in the playlist at point to the current playlist buffer.
+
+If we are in the current playlist, make a new playlist buffer and
+set it as current."
+  (interactive)
+  (save-excursion
+    (emms-move-beginning-of-line nil)
+    (let* ((track (emms-playlist-track-at))
+           (name (emms-track-get track 'name))
+           (type (emms-track-get track 'type))
+           (playlist-p (or (eq type 'playlist)
+                           (and (eq type 'file)
+                                (save-match-data
+                                  (string-match "\\.\\(m3u\\|pls\\)\\'"
+                                                name))))))
+      (emms-playlist-select (point))
+      (unless (and (buffer-live-p emms-playlist-buffer)
+                   (not (eq (current-buffer) emms-playlist-buffer)))
+        (setq emms-playlist-buffer
+              (emms-playlist-set-playlist-buffer (emms-playlist-new))))
+      (with-current-emms-playlist
+        (goto-char (point-max))
+        (when playlist-p
+          (insert (emms-track-description track) "\n"))
+        (let ((beg (point)))
+          (if playlist-p
+              (emms-add-playlist name)
+            (let ((func (intern (concat "emms-add-" (symbol-name type)))))
+              (if (functionp func)
+                  (funcall func name)
+                ;; fallback
+                (emms-add-file name))))
+          (when playlist-p
+            (goto-char (point-max))
+            (while (progn
+                     (forward-line -1)
+                     (>= (point) beg))
+              (insert "  ")))
+          (goto-char (point-min))
+          (message "Added %s" (symbol-name type)))))))
 
 ;;; --------------------------------------------------------
 ;;; Killing and yanking
