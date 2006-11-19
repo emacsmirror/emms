@@ -639,13 +639,23 @@ for that purpose.")
 
 (defun emms-playlist-set-playlist-buffer (&optional buffer)
   "Set the current playlist buffer."
-  (interactive "bNew playlist buffer: ")
+  (interactive
+   (list (let* ((buf-list (mapcar #'(lambda (buf)
+                                      (list (buffer-name buf)))
+                                  (emms-playlist-buffer-list)))
+                (shortest (car (sort buf-list #'(lambda (lbuf rbuf)
+                                                  (< (length (car lbuf))
+                                                     (length (car rbuf))))))))
+           (completing-read "Playlist buffer to make current: "
+                            buf-list nil t shortest))))
   (let ((buf (if buffer
                  (get-buffer buffer)
                (current-buffer))))
     (with-current-buffer buf
       (emms-playlist-ensure-playlist-buffer))
-    (setq emms-playlist-buffer buf)))
+    (setq emms-playlist-buffer buf)
+    (when (interactive-p)
+      (message "Set current EMMS playlist buffer"))))
 
 (defun emms-playlist-new (&optional name)
   "Create a new playlist buffer.
