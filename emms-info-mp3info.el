@@ -91,9 +91,10 @@ This is a useful element for `emms-info-functions'."
             (and (boundp 'emms-cache-file-coding-system)
                  (not (eq emms-info-mp3info-coding-system
                           emms-cache-file-coding-system))
-                 (setq value (emms-iconv value
-                                         emms-info-mp3info-coding-system
-                                         emms-cache-file-coding-system)))
+                 (setq value (decode-coding-string
+                              (encode-coding-string
+                               value emms-cache-file-coding-system)
+                              emms-info-mp3info-coding-system)))
             (when (> (length value)
                      0)
               (emms-track-set track
@@ -103,15 +104,6 @@ This is a useful element for `emms-info-functions'."
                                 value))))
           (forward-line 1))))))
 
-(defun emms-iconv (str from to)
-  "Convert STR from FROM coding to TO coding."
-  (and (symbolp from) (setq from (symbol-name from)))
-  (and (symbolp to) (setq to (symbol-name to)))
-  (car
-   (split-string
-    (shell-command-to-string
-     (concat "echo \"" str "\" | iconv -f " from " -t " to))
-    "\n")))
 
 (provide 'emms-info-mp3info)
 ;;; emms-info-mp3info.el ends here
