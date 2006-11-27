@@ -114,6 +114,7 @@ at time-i, display lyric-i.")
 (defvar emms-lyrics-mode-line-string ""
   "current lyric.")
 
+(defvar emms-lyrics-find-lyric-function nil)
 (defun emms-lyrics-read-file (file)
   "Read a lyric file(LRC format).
 FILE should end up with \".lrc\", its content looks like one of the
@@ -125,38 +126,39 @@ following:
 
 FILE should be under the same directory as the music file, or under
 `emms-lyrics-dir'."
-  (when (eq 'file (emms-track-get
-                   (emms-playlist-current-selected-track)
-                   'type))
-    (unless (file-exists-p file)
-      (setq file (emms-lyrics-find-lyric file)))
-    (when (and file (not (string= file "")) (file-exists-p file))
-      (with-temp-buffer
-        (let ((coding-system-for-read emms-lyrics-coding-system))
-          (insert-file-contents file)
-          (while (search-forward-regexp "\\[[0-9:.]+\\].*" nil t)
-            (let ((lyric-string (match-string 0))
-                  (time 0)
-                  (lyric ""))
-              (setq lyric
-                    (emms-replace-regexp-in-string ".*\\]" "" lyric-string))
-              (while (string-match "\\[[0-9:.]+\\]" lyric-string)
-                (let* ((time-string (match-string 0 lyric-string))
-                       (semi-pos (string-match ":" time-string)))
-                  (setq time
-                        (+ (* (string-to-number
-                               (substring time-string 1 semi-pos))
-                              60)
-                           (string-to-number
-                            (substring time-string
-                                       (1+ semi-pos)
-                                       (1- (length time-string))))))
-                  (setq lyric-string
-                        (substring lyric-string (length time-string)))
-                  (setq emms-lyrics-alist
-                        (append emms-lyrics-alist `((,time ,lyric))))
-                  (setq time 0))))))
-        t))))
+  (if (eq 'file (emms-track-get
+                 (emms-playlist-current-selected-track)
+                 'type))
+      (unless (file-exists-p file)
+        (setq file (emms-lyrics-find-lyric file)))
+    (setq file (funcall emms-lyrics-find-lyric-function file)))
+  (when (and file (not (string= file "")) (file-exists-p file))
+    (with-temp-buffer
+      (let ((coding-system-for-read emms-lyrics-coding-system))
+        (insert-file-contents file)
+        (while (search-forward-regexp "\\[[0-9:.]+\\].*" nil t)
+          (let ((lyric-string (match-string 0))
+                (time 0)
+                (lyric ""))
+            (setq lyric
+                  (emms-replace-regexp-in-string ".*\\]" "" lyric-string))
+            (while (string-match "\\[[0-9:.]+\\]" lyric-string)
+              (let* ((time-string (match-string 0 lyric-string))
+                     (semi-pos (string-match ":" time-string)))
+                (setq time
+                      (+ (* (string-to-number
+                             (substring time-string 1 semi-pos))
+                            60)
+                         (string-to-number
+                          (substring time-string
+                                     (1+ semi-pos)
+                                     (1- (length time-string))))))
+                (setq lyric-string
+                      (substring lyric-string (length time-string)))
+                (setq emms-lyrics-alist
+                      (append emms-lyrics-alist `((,time ,lyric))))
+                (setq time 0))))))
+      t)))
 
 (defun emms-lyrics-start ()
   "Start displaying lryics."
@@ -169,7 +171,7 @@ FILE should be under the same directory as the music file, or under
 		'name)))
 	  (emms-lyrics-read-file
 	   (emms-replace-regexp-in-string
-	    (file-name-extension file) "lrc" file)))
+	    (concat "\\." (file-name-extension file) "\\'") ".lrc" file)))
     (emms-lyrics-set-timer)))
 
 (defun emms-lyrics-stop ()
@@ -332,7 +334,8 @@ display."
 	    (format emms-lyrics-display-format lyric))
       (force-mode-line-update))
     (when emms-lyrics-display-on-minibuffer
-      (message lyric))))
+      (unless (minibuffer-window-active-p (selected-window))
+        (message lyric)))))
 
 (defun emms-lyrics-find-lyric (file)
   "Use `emms-source-file-gnu-find' to find lrc FILE. You should specify
