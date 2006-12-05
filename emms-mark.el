@@ -1,10 +1,10 @@
-;;; emms-mark.el.gz ---
+;;; emms-mark.el ---
 
 ;; Copyright 2006 Ye Wenbin
 ;;
 ;; Author: wenbinye@163.com
-;; Time-stamp: <Ye Wenbin 2006-11-21 17:02:28>
-;; Version: $Id: emms-mark.el,v 0.0 <2006-11-21 14:06:38> ywb Exp $
+;; Time-stamp: <Ye Wenbin 2006-12-04 22:54:28>
+;; Version: $Id: emms-mark.el,v 1.3 2006/12/04 14:54:33 ywb Exp $
 ;; Keywords: 
 ;; X-URL: not distributed yet
 
@@ -36,17 +36,48 @@
 (eval-when-compile
   (require 'cl))
 
+(defvar emms-mark-track-desc-functions
+  '(emms-track-simple-description
+    emms-info-track-description)
+  "A list of track description function. If you want emms support
+mark, you should add your favorite track description function to this
+list and use `emms-mark-select-desc-function' to set the new track
+description function.")
+
+(defvar emms-mark-selected-desc-function
+  emms-track-description-function)
+
 ;;{{{  set new description-function
 (defun emms-mark-track-description (track)
   "Return a description of the current track."
-  (concat "  "                          ; for mark char
-          (let ((artist (emms-track-get track 'info-artist))
-                (title (emms-track-get track 'info-title)))
-            (if (and artist title)
-                (format "%s - %s" artist title)
-              (emms-track-simple-description track)))))
+  (assert (not (eq emms-mark-selected-desc-function
+                   'emms-mark-track-description))
+          nil "Should never set emms-mark-selected-desc-function to emms-mark-track-description.")
+  (concat "  " (funcall emms-mark-selected-desc-function track)))
 
 (setq emms-track-description-function 'emms-mark-track-description)
+
+(defun emms-mark-select-desc-function (func)
+  (interactive
+   (list (intern
+          (completing-read "Set description function to: "
+                           (mapcar 'list
+                                   emms-mark-track-desc-functions) nil
+                           t "emms-"))))
+  (setq emms-mark-selected-desc-function func
+        emms-track-description-function 'emms-mark-track-description)
+  (emms-with-inhibit-read-only-t
+   (save-excursion
+     (dolist (buf (remove-if-not 'buffer-live-p
+                                 (emms-playlist-buffer-list)))
+       (set-buffer buf)
+       (let ((tracks (nreverse
+                      (emms-playlist-tracks-in-region (point-min)
+                                                      (point-max)))))
+         (erase-buffer)
+         (emms-with-inhibit-read-only-t
+          (mapc 'emms-playlist-insert-track
+                tracks)))))))
 ;;}}}
 
 ;;{{{ functions to mark tracks
@@ -121,24 +152,38 @@
             (emms-mark-track)
           (emms-mark-unmark-track))
         (forward-line 1)))))
+
+(defsubst emms-mark-has-markedp ()
+  (save-excursion
+    (goto-char (point-min))
+    (re-search-forward (format "^[%c]" emms-mark-char) nil t)))
+
 ;;}}}
 
 ;;{{{ functions to operate marked tracks
-(defun emms-mark-do-with-marked-track (func)
-  (let ((regexp (format "^[%c]" emms-mark-char)))
+(defun emms-mark-do-with-marked-track (func &optional move)
+  "If your function don't move forward, set move to non-nil."
+  (let ((regexp (format "^[%c]" emms-mark-char))
+        (newfunc func))
+    (if move
+        (setq newfunc (lambda () (funcall func) (forward-line 1))))
     (save-excursion
       (goto-char (point-min))
       (while (re-search-forward regexp nil t)
         (backward-char 1)               ; move to beginning of line
-        (funcall func)))))
+        (funcall newfunc)))))
 
-(defun emms-mark-mapcar-marked-track (func)
-  (let (result)
+(defun emms-mark-mapcar-marked-track (func &optional move)
+  (let ((regexp (format "^[%c]" emms-mark-char))
+        result (newfunc func))
+    (if move
+        (setq newfunc (lambda () (let ((res (funcall func)))
+                                   (forward-line 1) res))))
     (save-excursion
       (goto-char (point-min))
-      (while (re-search-forward "^[*]" nil t)
+      (while (re-search-forward regexp nil t)
         (backward-char 1)               ; move to beginning of line
-        (setq result (cons (funcall func) result)))
+        (setq result (cons (funcall newfunc) result)))
       (nreverse result))))
 
 (defun emms-mark-delete-marked-tracks ()
