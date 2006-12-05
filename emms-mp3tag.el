@@ -3,7 +3,7 @@
 ;; Copyright 2006 Ye Wenbin
 ;;
 ;; Author: wenbinye@163.com
-;; Time-stamp: <Ye Wenbin 2006-12-05 14:52:46>
+;; Time-stamp: <Ye Wenbin 2006-12-05 19:07:12>
 ;; Version: $Id: emms-mp3tag.el,v 1.5 2006/12/05 00:57:14 ywb Exp ywb $
 ;; Keywords:
 ;; X-URL: not distributed yet
@@ -37,7 +37,6 @@
 (require 'emms)
 (require 'emms-info-mp3info)
 (require 'emms-playlist-mode)
-(require 'emms-i18n)
 (require 'emms-mark)
 (require 'format-spec)
 
@@ -120,10 +119,11 @@ newname to the new file name.
 (defun emms-mp3tag-track-at (&optional pos)
   (let ((track (emms-playlist-track-at pos))
         newtrack)
-    (setq newtrack (copy-sequence track))
-    (emms-track-set newtrack 'position (point-marker))
-    (emms-track-set newtrack 'orig-track track)
-    newtrack))
+    (when track
+      (setq newtrack (copy-sequence track))
+      (emms-track-set newtrack 'position (point-marker))
+      (emms-track-set newtrack 'orig-track track)
+      newtrack)))
 
 (defsubst emms-mp3tag-erase-buffer (&optional buf)
   (let ((inhibit-read-only t))
@@ -131,14 +131,19 @@ newname to the new file name.
       (set-buffer (get-buffer-create buf))
       (erase-buffer))))
 
-(defun emms-mp3tag-insert-track (track)
-  (cond ((null track) nil)
-        ((not (eq (emms-track-get track 'type) 'file))
-         (emms-mp3tag-log "Track %s is not a local file!" (emms-track-name track)))
-        ((not (file-writable-p (emms-track-name track)))
-         (emms-mp3tag-log "The file %s is not writable" (emms-track-name track)))
-        (t (insert (emms-mp3tag-format-track
-                    (cadr emms-mp3tag-selected-format) track)))))
+;; (defun emms-mp3tag-insert-track (track)
+;;   (cond ((null track) nil)
+;;         ((not (eq (emms-track-get track 'type) 'file))
+;;          (emms-mp3tag-log "Track %s is not a local file!" (emms-track-name track)))
+;;         ((not (file-writable-p (emms-track-name track)))
+;;          (emms-mp3tag-log "The file %s is not writable" (emms-track-name track)))
+;;         (t (insert (emms-mp3tag-format-track
+;;                     (cadr emms-mp3tag-selected-format) track)))))
+
+(defsubst emms-mp3tag-insert-track (track)
+  (and track
+       (insert (emms-mp3tag-format-track
+                (cadr emms-mp3tag-selected-format) track))))
 
 (defun emms-mp3tag-insert-tracks (tracks)
   (save-excursion
@@ -257,29 +262,44 @@ newname to the new file name.
           (when (emms-track-get track 'tag-modified)
             (setq filename (emms-track-name track)
                   old (emms-track-get track 'orig-track))
-            (when (emms-track-get track 'newname)
+            ;; rename local file
+            (when (and (emms-track-get track 'newname)
+                       (eq (emms-track-get track 'type) 'file)
+                       (file-writable-p (emms-track-name track)))
               (setq filename (emms-track-get track 'newname))
               (rename-file (emms-track-name track) filename)
               (emms-track-set old 'name filename)
               ;; for re-enter this function
-              (setq need-sync t)
               (emms-track-set track 'newname nil)
-              (emms-track-set track 'name filename))
+              (emms-track-set track 'name filename)
+              (setq need-sync t)
+              ;; register to emms-cache-db
+              (funcall emms-cache-modified-function)
+              (funcall emms-cache-set-function filename 'file old))
+            ;; set tags to original track
             (setq args nil)
             (dolist (tag emms-mp3tag-tags)
               (when (setq val (emms-track-get track (car tag)))
                 (emms-track-set old (car tag) val)
                 (setq args (append args (list (concat "-" (cdr tag)) val)))))
-            (unless (zerop (setq exit
+            ;; use mp3info to change tag in mp3 file
+            (if (and (eq (emms-track-get track 'type) 'file)
+                     (file-writable-p (emms-track-name track))
+                     (string-match filename "\\.mp3\\'"))
+                (if (zerop (setq exit
                                  (apply 'call-process emms-info-mp3info-program-name
                                         nil nil nil
                                         filename args)))
-              (emms-mp3tag-log "Change tags of %s failed with exit value %d" filename exit))
+                    ;; for `emms-cache-sync' not call `emms-info-functions' again
+                    (emms-track-get track 'info-mtime (butlast (current-time)))
+                  (emms-mp3tag-log "Change tags of %s failed with exit value %d" filename exit)))
+            ;; update track in playlist
             (when (and (setq pos (emms-track-get track 'position))
                        (marker-position pos))
               (set-buffer (marker-buffer pos))
               (goto-char pos)
               (funcall emms-playlist-update-track-function))
+            ;; clear modified tag
             (emms-track-set track 'tag-modified nil))))
       (if (and need-sync (y-or-n-p "You have change some track names, sync the cache? "))
           (emms-cache-sync))
