@@ -3,8 +3,6 @@
 ;; Copyright 2006 Ye Wenbin
 ;;
 ;; Author: wenbinye@163.com
-;; Time-stamp: <Ye Wenbin 2006-12-05 19:07:12>
-;; Version: $Id: emms-mp3tag.el,v 1.5 2006/12/05 00:57:14 ywb Exp ywb $
 ;; Keywords:
 ;; X-URL: not distributed yet
 
@@ -285,7 +283,7 @@ newname to the new file name.
             ;; use mp3info to change tag in mp3 file
             (if (and (eq (emms-track-get track 'type) 'file)
                      (file-writable-p (emms-track-name track))
-                     (string-match filename "\\.mp3\\'"))
+                     (string-match "\\.mp3\\'" filename))
                 (if (zerop (setq exit
                                  (apply 'call-process emms-info-mp3info-program-name
                                         nil nil nil

@@ -1,10 +1,8 @@
-;;; emms-mark.el ---
+;;; emms-mark.el --- mark track like dired
 
 ;; Copyright 2006 Ye Wenbin
 ;;
 ;; Author: wenbinye@163.com
-;; Time-stamp: <Ye Wenbin 2006-12-04 22:54:28>
-;; Version: $Id: emms-mark.el,v 1.3 2006/12/04 14:54:33 ywb Exp $
 ;; Keywords: 
 ;; X-URL: not distributed yet
 
