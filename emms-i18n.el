@@ -3,8 +3,6 @@
 ;; Copyright 2006 Ye Wenbin
 ;;
 ;; Author: wenbinye@163.com
-;; Time-stamp: <Ye Wenbin 2006-12-05 08:33:11>
-;; Version: $Id: emms-i18n.el,v 1.2 2006/12/04 13:38:17 ywb Exp $
 ;; Keywords: 
 ;; X-URL: not distributed yet
 
