@@ -131,7 +131,9 @@ FILE should be under the same directory as the music file, or under
                  'type))
       (unless (file-exists-p file)
         (setq file (emms-lyrics-find-lyric file)))
-    (setq file (funcall emms-lyrics-find-lyric-function file)))
+    (setq file
+          (and (functionp emms-lyrics-find-lyric-function)
+               (funcall emms-lyrics-find-lyric-function file))))
   (when (and file (not (string= file "")) (file-exists-p file))
     (with-temp-buffer
       (let ((coding-system-for-read emms-lyrics-coding-system))

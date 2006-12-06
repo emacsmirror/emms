@@ -71,7 +71,7 @@ This is a useful element for `emms-info-functions'."
       (goto-char (point-min))
       (when (re-search-forward "^.*\\.\\.\\.$" (point-max) t)
         (while (zerop (forward-line 1))
-          (when (looking-at "^\t\\(.*\\)=\\(.*\\)$")
+          (when (looking-at "^\t\\(.*?\\)=\\(.*\\)$") ; recognize the first '='
             (let ((a (match-string 1))
                   (b (match-string 2)))
               (when (and (< 0 (length a))

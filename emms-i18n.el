@@ -1,4 +1,4 @@
-;;; emms-i18n.el --- 
+;;; emms-i18n.el --- Function for handling coding system
 
 ;; Copyright 2006 Ye Wenbin
 ;;
@@ -63,7 +63,7 @@
 (defun emms-iconv-buffer (from to &optional buf)
   (save-excursion
     (and buf (set-buffer buf))
-    (emms-iconv-region-1 (point-min) (point-max) from to)))
+    (emms-iconv-region (point-min) (point-max) from to)))
 
 (defun emms-set-default-coding-system (read-coding write-coding)
   "Set `emms-default-coding-system'"
@@ -81,17 +81,31 @@
                         (cdr default-process-coding-system))))))
 
 (defun emms-call-process-to-string (program &rest args)
+  "This function run program and return the program result. If the CAR
+part of `emms-default-coding-system' is non-nil, the program result will
+be decode use the CAR part of emms-default-coding-system. Otherwise,
+use `emms-coding-dectect-functions' to detect the coding system of the
+result. If the emms-coding-dectect-functions failed, use
+`emms-detect-coding-function' to detect coding system. If all the
+coding system is nil or in `emms-nerver-used-coding-system', decode
+the result using `emms-coding-system-for-read'.
+
+The result arguments ARGS is a list of string which pass to `call-process'."
   (with-temp-buffer
     (let ((default-process-coding-system (copy-tree default-process-coding-system))
           (process-coding-system-alist nil) exit)
       (setcar default-process-coding-system (car emms-default-coding-system))
       (setq exit (apply 'call-process  (append (list program nil t nil) args)))
       (when (and (zerop exit) (null (car emms-default-coding-system)))
-        (setq coding (emms-detect-buffer-coding-system))
-        (decode-coding-region (point-min) (point-max) coding))
+        (decode-coding-region (point-min) (point-max) (emms-detect-buffer-coding-system)))
       (and (zerop exit) (buffer-string)))))
 
+;; Is this function useful?
 (defun emms-call-process (program &rest args)
+  "Run the program like `call-process'. If
+the cdr part `emms-default-coding-system' is non-nil, the string in
+ARGS will be encode by the CDR part of `emms-default-coding-system',
+otherwise, it is pass all parameter to `call-process'."
   (with-temp-buffer
     (if (cdr emms-default-coding-system)
         (let ((default-process-coding-system emms-default-coding-system)
