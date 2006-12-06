@@ -23,8 +23,7 @@
 ;;; Commentary:
 
 ;; Save playlists when exit emacs.
-;; Next time use M-x emms-playlist-load-saved-list to load saved
-;; playlist
+;; Next time use M-x emms-history-load to load saved playlist
 
 ;; Put this file into your load-path and the following into your ~/.emacs:
 ;;   (require 'emms-history)
@@ -36,10 +35,14 @@
 (eval-when-compile
   (require 'cl))
 
-(defvar emms-history-saved-list-file "~/.emacs.d/.emms-history")
+(defvar emms-history-file "~/.emacs.d/.emms-history"
+  "File to save playlists")
 
-(defun emms-history-save-on-exit ()
-  (when (stringp emms-history-saved-list-file)
+(defun emms-history-save ()
+  "Save all playlists that open in this emacs session when exit. Use
+`emms-history-load' to load saved playlists."
+  (interactive)
+  (when (stringp emms-history-file)
     (let ((oldbuf emms-playlist-buffer)
           emms-playlist-buffer playlists)
       (save-excursion
@@ -71,17 +74,17 @@
                    (emms-repeat-playlist . ,emms-repeat-playlist))
                  (current-buffer))
           (insert "\n)")
-          (write-file emms-history-saved-list-file))))))
+          (write-file emms-history-file))))))
 
-(add-hook 'kill-emacs-hook 'emms-history-save-on-exit)
+(add-hook 'kill-emacs-hook 'emms-history-save)
 
-(defun emms-history-load-saved-list ()
+(defun emms-history-load ()
   (interactive)
-  (when (and (stringp emms-history-saved-list-file)
-             (file-exists-p emms-history-saved-list-file))
+  (when (and (stringp emms-history-file)
+             (file-exists-p emms-history-file))
     (let (history buf)
       (with-temp-buffer
-        (insert-file-contents emms-history-saved-list-file)
+        (insert-file-contents emms-history-file)
         (setq history (read (current-buffer)))
         (dolist (playlist (cadr history))
           (with-current-buffer (emms-playlist-new (car playlist))
@@ -90,12 +93,12 @@
                 (setq buf (current-buffer)))
             (mapc 'emms-playlist-insert-track
                   (nth 2 playlist))
-            (condition-case nil
-                (emms-playlist-select (cadr playlist))
-              (error nil))))
+            (ignore-errors
+              (emms-playlist-select (cadr playlist)))))
         (setq emms-playlist-buffer buf)
         (dolist (method (nth 2 history))
           (set (car method) (cdr method)))
-        (emms-start)))))
+        (ignore-errors
+          (emms-start))))))
 
 ;;; emms-history.el ends here
