@@ -102,7 +102,8 @@ stable features which come with the Emms distribution."
     (require 'emms-playing-time)
     (require 'emms-player-mpd)
     (require 'emms-playlist-sort)
-    (require 'emms-browser))
+    (require 'emms-browser)
+    (require 'emms-lastfm))
   ;; setup
   (emms-mode-line 1)
   (emms-mode-line-blank)
