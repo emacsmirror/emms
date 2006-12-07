@@ -125,6 +125,8 @@ This is true for every invocation of `emms-playlist-mode-go'."
     (define-key map (kbd "M-y") 'emms-playlist-mode-yank-pop)
     (define-key map (kbd "M-<") 'emms-playlist-mode-first)
     (define-key map (kbd "M->") 'emms-playlist-mode-last)
+    (define-key map (kbd "M-n") 'emms-playlist-mode-next)
+    (define-key map (kbd "M-p") 'emms-playlist-mode-previous)
     (define-key map (kbd "a") 'emms-playlist-mode-add-contents)
     (define-key map (kbd "b") 'emms-playlist-set-playlist-buffer)
     (define-key map (kbd "d") 'emms-playlist-mode-kill-entire-track)
@@ -494,6 +496,29 @@ WINDOW-WIDTH should be a positive integer."
   (other-window 1)
   (emms-playlist-mode-go)
   (setq emms-playlist-mode-popup-enabled t))
+
+(defun emms-playlist-mode-next (arg)
+  "Navigate between playlists."
+  (interactive "p")
+  (let ((playlists (remove-if-not 'buffer-live-p
+                                  (emms-playlist-buffer-list)))
+        bufs idx)
+    (if playlists
+        ;; if not in playlist mode, switch to emms-playlist-buffer
+        (if (not (member (current-buffer) playlists))
+            (switch-to-buffer (if (and emms-playlist-buffer
+                                       (buffer-live-p emms-playlist-buffer))
+                                  emms-playlist-buffer
+                                (car playlists)))
+          (setq bufs (member (current-buffer) playlists))
+          (setq idx
+                (+ (- (length playlists) (length bufs))
+                   (if (> arg 0) 1 -1)))
+          (switch-to-buffer (nth (mod idx (length playlists)) playlists)))
+      (message "No playlist found!"))))
+(defun emms-playlist-mode-previous (arg)
+  (interactive "p")
+  (emms-playlist-mode-next (- arg)))
 
 (defun emms-playlist-mode-startup ()
   "Instigate emms-playlist-mode on the current buffer."
