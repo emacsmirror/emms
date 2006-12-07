@@ -500,8 +500,7 @@ WINDOW-WIDTH should be a positive integer."
 (defun emms-playlist-mode-next (arg)
   "Navigate between playlists."
   (interactive "p")
-  (let ((playlists (remove-if-not 'buffer-live-p
-                                  (emms-playlist-buffer-list)))
+  (let ((playlists (emms-playlist-buffer-list))
         bufs idx)
     (if playlists
         ;; if not in playlist mode, switch to emms-playlist-buffer

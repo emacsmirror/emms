@@ -46,6 +46,7 @@
 ;;       needed.
 
 (require 'url)
+(require 'emms)
 
 (defvar emms-lastfm-username ""
   "Your last.fm username")
@@ -62,6 +63,7 @@ procedure. Only for internal use.")
 
 ;; used internally
 (defvar emms-lastfm-buffer nil "-- only used internally --")
+(defvar emms-lastfm-process nil "-- only used internally --")
 (defvar emms-lastfm-md5-challenge nil "-- only used internally --")
 (defvar emms-lastfm-submit-url nil "-- only used internally --")
 (defvar emms-lastfm-current-track nil "-- only used internally --")
@@ -157,7 +159,7 @@ well or if an error occured."
       (if (not (string-match (rx (or "UPTODATE""UPDATE")) response))
           (progn
             (cond ((string-match "FAILED" response)
-                   (message "EMMS: Handshake failed: %s.") response)
+                   (message "EMMS: Handshake failed: %s." response))
                   ((string-match "BADUSER" response)
                    (message "EMMS: Wrong username."))))
         (when (string-match "UPDATE" response)
