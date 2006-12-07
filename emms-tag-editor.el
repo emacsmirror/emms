@@ -1,4 +1,4 @@
-;;; emms-mp3tag.el --- Edit track tags.
+;;; emms-tag-editor.el --- Edit track tags.
 
 ;; Copyright 2006 Ye Wenbin
 ;;
@@ -25,11 +25,11 @@
 ;;
 
 ;; Put this file into your load-path and the following into your ~/.emacs:
-;;   (require 'emms-mp3tag)
+;;   (require 'emms-tag-editor)
 
 ;;; Code:
 
-(provide 'emms-mp3tag)
+(provide 'emms-tag-editor)
 (eval-when-compile
   (require 'cl))
 (require 'emms)
@@ -38,7 +38,7 @@
 (require 'emms-mark)
 (require 'format-spec)
 
-(defvar emms-mp3tag-tags
+(defvar emms-tag-editor-tags
   '((info-artist      . "a")
     (info-title       . "t")
     (info-album       . "l")
@@ -49,25 +49,25 @@
     (info-note        . "c"))
 "A list to setup format.")
 
-(defvar emms-mp3tag-edit-buffer "*EMMS-TAGS*"
-  "Buffer name to edit mp3 tags")
-(defvar emms-mp3tag-log-buffer "*EMMS-LOG*"
-  "Buffer name of mp3tag edit log")
+(defvar emms-tag-editor-edit-buffer "*EMMS-TAGS*"
+  "Buffer name to edit tags")
+(defvar emms-tag-editor-log-buffer "*EMMS-LOG*"
+  "Buffer name of tag edit log")
 
-(defun emms-mp3tag-make-format (tags)
+(defun emms-tag-editor-make-format (tags)
   (format "%%m\n%-16s = %%f\n%s\n\n" "name"
           (mapconcat
            (lambda (tag)
              (concat (propertize (format "%-16s = " (symbol-name tag))
                                  'read-only t 'rear-nonsticky t 'face 'bold)
-                     "%" (cdr (assoc tag emms-mp3tag-tags))))
+                     "%" (cdr (assoc tag emms-tag-editor-tags))))
            tags "\n")))
 
-(defvar emms-mp3tag-formats
-  (let* ((tags (mapcar 'car emms-mp3tag-tags))
-         (default (emms-mp3tag-make-format (remove 'info-date tags))))
+(defvar emms-tag-editor-formats
+  (let* ((tags (mapcar 'car emms-tag-editor-tags))
+         (default (emms-tag-editor-make-format (remove 'info-date tags))))
     `(("mp3" . ,default)
-      ("ogg" . ,(emms-mp3tag-make-format (remove 'info-year tags)))
+      ("ogg" . ,(emms-tag-editor-make-format (remove 'info-year tags)))
       ("default" . ,default)))
   "Format to insert the track. The CAR part is the extension of the
 track name, and the CDR part is the format template. The format
@@ -82,26 +82,26 @@ specification is like:
  g     --     Track info-genre
  c     --     Track info-note
 
-You can add new specification in `emms-mp3tag-tags' and use
-`emms-mp3tag-make-format' to help create a new format.
+You can add new specification in `emms-tag-editor-tags' and use
+`emms-tag-editor-make-format' to help create a new format.
 
 The CDR part also can be a function, which accept one parameter, the
-track, and should return a string to insert to `emms-mp3tag-edit-buffer'.
+track, and should return a string to insert to `emms-tag-editor-edit-buffer'.
 ")
 
-(defvar emms-mp3tag-get-format-function 'emms-mp3tag-get-format
+(defvar emms-tag-editor-get-format-function 'emms-tag-editor-get-format
   "Function to decide which format to use for format the track.")
 
-(defvar emms-mp3tag-parse-function 'emms-mp3tag-default-parser
-  "Function to parse tags in `emms-mp3tag-edit-buffer'. It should find
+(defvar emms-tag-editor-parse-function 'emms-tag-editor-default-parser
+  "Function to parse tags in `emms-tag-editor-edit-buffer'. It should find
 all modified tags, and return all the tracks. The tracks which tag has
 been modified should set a property 'tag-modified to t, and if the
 track name have been change, the function should set a new property
 'newname instead set the 'name directly.
 
-See also `emms-mp3tag-default-parser'.")
+See also `emms-tag-editor-default-parser'.")
 
-(defvar emms-mp3tag-tagfile-functions
+(defvar emms-tag-editor-tagfile-functions
   '(("mp3" "mp3info"
      ((info-artist      . "a")
       (info-title       . "t")
@@ -110,7 +110,7 @@ See also `emms-mp3tag-default-parser'.")
       (info-year        . "y")
       (info-genre       . "g")
       (info-note        . "c")))
-    ("ogg" . emms-mp3tag-tag-ogg))
+    ("ogg" . emms-tag-editor-tag-ogg))
   "A List for change tag in files. If the extern program set tag by
 command line options one by one such as mp3info, the list should like:
  (EXTENSION PROGRAM COMMAND_LINE_OPTIONS)
@@ -118,10 +118,10 @@ command line options one by one such as mp3info, the list should like:
 Otherwise, a function that accept a parameter, the track, should be
 given.
 
-See also `emms-mp3tag-tag-file' and `emms-mp3tag-tag-ogg'.
+See also `emms-tag-editor-tag-file' and `emms-tag-editor-tag-ogg'.
 ")
 
-(defun emms-mp3tag-tag-ogg (track)
+(defun emms-tag-editor-tag-ogg (track)
   (call-process "vorbiscomment" nil nil nil
                 "-w" "-t"
                 (mapconcat
@@ -132,8 +132,8 @@ See also `emms-mp3tag-tag-file' and `emms-mp3tag-tag-ogg'.
                  "\n\t")
                 (emms-track-name track)))
 
-(defun emms-mp3tag-tag-file (track program tags)
-  "Change tag in FILE use PROGRAM. The TAGS is given in `emms-mp3tag-tagfile-functions'."
+(defun emms-tag-editor-tag-file (track program tags)
+  "Change tag in FILE use PROGRAM. The TAGS is given in `emms-tag-editor-tagfile-functions'."
   (let (args val)
     (mapc (lambda (tag)
             (when (> (length (setq val (emms-track-get track (car tag)))) 0)
@@ -143,16 +143,16 @@ See also `emms-mp3tag-tag-file' and `emms-mp3tag-tag-ogg'.
            nil nil nil
            filename args)))
 
-(defun emms-mp3tag-get-format (track)
+(defun emms-tag-editor-get-format (track)
   (let ((format
          (assoc (file-name-extension (emms-track-name track))
-                emms-mp3tag-formats)))
+                emms-tag-editor-formats)))
     (if format
         (cdr format)
-      (cdr (assoc "default" emms-mp3tag-formats)))))
+      (cdr (assoc "default" emms-tag-editor-formats)))))
 
-(defun emms-mp3tag-format-track (track)
-  (let ((format (funcall emms-mp3tag-get-format-function track)))
+(defun emms-tag-editor-format-track (track)
+  (let ((format (funcall emms-tag-editor-get-format-function track)))
     (if (functionp format)
         (funcall format track)
       (format-spec
@@ -166,9 +166,9 @@ See also `emms-mp3tag-tag-file' and `emms-mp3tag-tag-ogg'.
                      (mapcar (lambda (tag)
                                (list (string-to-char (cdr tag))
                                      (or (emms-track-get track (car tag)) "")))
-                             emms-mp3tag-tags)))))))
+                             emms-tag-editor-tags)))))))
 
-(defun emms-mp3tag-track-at (&optional pos)
+(defun emms-tag-editor-track-at (&optional pos)
   (let ((track (emms-playlist-track-at pos))
         newtrack)
     (when track
@@ -177,73 +177,73 @@ See also `emms-mp3tag-tag-file' and `emms-mp3tag-tag-ogg'.
       (emms-track-set newtrack 'orig-track track)
       newtrack)))
 
-(defsubst emms-mp3tag-erase-buffer (&optional buf)
+(defsubst emms-tag-editor-erase-buffer (&optional buf)
   (let ((inhibit-read-only t))
     (save-excursion
       (set-buffer (get-buffer-create buf))
       (erase-buffer))))
 
-(defsubst emms-mp3tag-insert-track (track)
+(defsubst emms-tag-editor-insert-track (track)
   (and track
-       (insert (emms-mp3tag-format-track track))))
+       (insert (emms-tag-editor-format-track track))))
 
-(defsubst emms-mp3tag-display-log-buffer-maybe ()
-  (if (> (buffer-size (get-buffer emms-mp3tag-log-buffer)) 0)
-      (display-buffer emms-mp3tag-log-buffer)))
+(defsubst emms-tag-editor-display-log-buffer-maybe ()
+  (if (> (buffer-size (get-buffer emms-tag-editor-log-buffer)) 0)
+      (display-buffer emms-tag-editor-log-buffer)))
 
-(defun emms-mp3tag-insert-tracks (tracks)
+(defun emms-tag-editor-insert-tracks (tracks)
   (save-excursion
-    (emms-mp3tag-erase-buffer emms-mp3tag-log-buffer)
-    (emms-mp3tag-erase-buffer emms-mp3tag-edit-buffer)
-    (set-buffer (get-buffer emms-mp3tag-edit-buffer))
-    (mapc 'emms-mp3tag-insert-track tracks)
-    (emms-mp3tag-mode)
+    (emms-tag-editor-erase-buffer emms-tag-editor-log-buffer)
+    (emms-tag-editor-erase-buffer emms-tag-editor-edit-buffer)
+    (set-buffer (get-buffer emms-tag-editor-edit-buffer))
+    (mapc 'emms-tag-editor-insert-track tracks)
+    (emms-tag-editor-mode)
     (pop-to-buffer (current-buffer))
     (goto-char (point-min))
-    (emms-mp3tag-display-log-buffer-maybe)))
+    (emms-tag-editor-display-log-buffer-maybe)))
 
-(defun emms-mp3tag-edit-track (track)
-  (interactive (list (emms-mp3tag-track-at)))
+(defun emms-tag-editor-edit-track (track)
+  (interactive (list (emms-tag-editor-track-at)))
   (if (null track)
       (message "No track at point!")
-    (emms-mp3tag-insert-tracks (list track))))
+    (emms-tag-editor-insert-tracks (list track))))
 
-(defun emms-mp3tag-edit-marked-tracks ()
+(defun emms-tag-editor-edit-marked-tracks ()
   (interactive)
-  (let ((tracks (emms-mark-mapcar-marked-track 'emms-mp3tag-track-at t)))
+  (let ((tracks (emms-mark-mapcar-marked-track 'emms-tag-editor-track-at t)))
     (if (null tracks)
         (message "No track marked!")
-      (emms-mp3tag-insert-tracks tracks))))
+      (emms-tag-editor-insert-tracks tracks))))
 
-(defun emms-mp3tag-edit ()
+(defun emms-tag-editor-edit ()
   "Edit tags of track at point or marked tracks"
   (interactive)
   (if (emms-mark-has-markedp)
-      (emms-mp3tag-edit-marked-tracks)
-    (emms-mp3tag-edit-track (emms-mp3tag-track-at))))
+      (emms-tag-editor-edit-marked-tracks)
+    (emms-tag-editor-edit-track (emms-tag-editor-track-at))))
 
-(defvar emms-mp3tag-mode-map
+(defvar emms-tag-editor-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map [tab] 'emms-mp3tag-next-field)
-    (define-key map [backtab] 'emms-mp3tag-prev-field)
-    (define-key map "\C-c\C-n" 'emms-mp3tag-next-track)
-    (define-key map "\C-c\C-p" 'emms-mp3tag-prev-track)
-    (define-key map "\C-c\C-c" 'emms-mp3tag-submit-and-exit)
-    (define-key map "\C-c\C-s" 'emms-mp3tag-submit)
-    (define-key map "\C-c\C-r" 'emms-mp3tag-replace-all)
+    (define-key map [tab] 'emms-tag-editor-next-field)
+    (define-key map [backtab] 'emms-tag-editor-prev-field)
+    (define-key map "\C-c\C-n" 'emms-tag-editor-next-track)
+    (define-key map "\C-c\C-p" 'emms-tag-editor-prev-track)
+    (define-key map "\C-c\C-c" 'emms-tag-editor-submit-and-exit)
+    (define-key map "\C-c\C-s" 'emms-tag-editor-submit)
+    (define-key map "\C-c\C-r" 'emms-tag-editor-replace-all)
     map))
-(define-key emms-playlist-mode-map "E" 'emms-mp3tag-edit)
+(define-key emms-playlist-mode-map "E" 'emms-tag-editor-edit)
 
-(define-derived-mode emms-mp3tag-mode text-mode "Mp3tag"
+(define-derived-mode emms-tag-editor-mode text-mode "Tag-Edit"
   "Major mode to edit track tags.
-\\{emms-mp3tag-mode-map}")
+\\{emms-tag-editor-mode-map}")
 
-(defun emms-mp3tag-replace-all (name value)
+(defun emms-tag-editor-replace-all (name value)
   "Replace all track's NAME to VALUE. If turn transient-mark-mode on,
 you can apply the command to a selected region."
   (interactive
    (list (completing-read "Replace tag: "
-                          emms-mp3tag-tags nil t)
+                          emms-tag-editor-tags nil t)
          (read-from-minibuffer "Set tag to: ")))
   (save-excursion
     (save-restriction
@@ -255,21 +255,21 @@ you can apply the command to a selected region."
         (delete-region (point) (line-end-position))
         (insert value)))))
 
-(defun emms-mp3tag-next-field (arg)
+(defun emms-tag-editor-next-field (arg)
   (interactive "p")
   (if (> arg 0)
       (re-search-forward "\\s-*=[ \t]*" nil nil arg)
-    (emms-mp3tag-prev-field (- arg))))
+    (emms-tag-editor-prev-field (- arg))))
 
-(defun emms-mp3tag-prev-field (arg)
+(defun emms-tag-editor-prev-field (arg)
   (interactive "p")
   (if (< arg 0)
-      (emms-mp3tag-next-field (- arg))
+      (emms-tag-editor-next-field (- arg))
     (skip-chars-backward " \t=")
     (re-search-backward "\\s-*=[ \t]*" nil nil arg)
     (skip-chars-forward " \t=")))
 
-(defun emms-mp3tag-prev-track ()
+(defun emms-tag-editor-prev-track ()
   (interactive)
   (let ((prev (previous-single-property-change (point)
                                                'emms-track)))
@@ -283,7 +283,7 @@ you can apply the command to a selected region."
       (error "No previous track"))
     (goto-char prev)))
 
-(defun emms-mp3tag-next-track ()
+(defun emms-tag-editor-next-track ()
   (interactive)
   (let ((next (next-single-property-change (point)
                                            'emms-track)))
@@ -296,15 +296,15 @@ you can apply the command to a selected region."
       (error "No next track"))
     (goto-char next)))
 
-(defun emms-mp3tag-submit (arg)
+(defun emms-tag-editor-submit (arg)
   "Make modified tags take affect. With prefiex argument, bury tag
 edit buffer."
   (interactive "P")
-  (let ((tracks (funcall emms-mp3tag-parse-function))
+  (let ((tracks (funcall emms-tag-editor-parse-function))
         filename func exit old pos val need-sync)
     (if (not (and tracks (y-or-n-p "Submit changes? ")))
         (message "Nothing have to do!")
-      (emms-mp3tag-erase-buffer emms-mp3tag-log-buffer)
+      (emms-tag-editor-erase-buffer emms-tag-editor-log-buffer)
       (message "Wait while set tags...")
       (save-excursion
         (dolist (track tracks)
@@ -326,20 +326,20 @@ edit buffer."
               (funcall emms-cache-modified-function)
               (funcall emms-cache-set-function filename 'file old))
             ;; set tags to original track
-            (dolist (tag emms-mp3tag-tags)
+            (dolist (tag emms-tag-editor-tags)
               (when (setq val (emms-track-get track (car tag)))
                 (emms-track-set old (car tag) val)))
             ;; use mp3info to change tag in mp3 file
             (when (and (eq (emms-track-get track 'type) 'file)
                        (file-writable-p (emms-track-name track))
-                       (setq func (assoc (file-name-extension filename) emms-mp3tag-tagfile-functions)))
+                       (setq func (assoc (file-name-extension filename) emms-tag-editor-tagfile-functions)))
               (setq exit
                     (if (functionp (cdr func))
                         (funcall (cdr func) track)
-                      (emms-mp3tag-tag-file track (cadr func) (nth 2 func))))
+                      (emms-tag-editor-tag-file track (cadr func) (nth 2 func))))
               (if (zerop exit)
                   (emms-track-get track 'info-mtime (butlast (current-time)))
-                (emms-mp3tag-log "Change tags of %s failed with exit value %d" filename exit)))
+                (emms-tag-editor-log "Change tags of %s failed with exit value %d" filename exit)))
             ;; update track in playlist
             (when (and (setq pos (emms-track-get track 'position))
                        (marker-position pos))
@@ -350,15 +350,15 @@ edit buffer."
             (emms-track-set track 'tag-modified nil))))
       (if (and need-sync (y-or-n-p "You have change some track names, sync the cache? "))
           (emms-cache-sync))
-      (emms-mp3tag-display-log-buffer-maybe)
+      (emms-tag-editor-display-log-buffer-maybe)
       (message "Set all mp3 tag done!")))
   (if arg (bury-buffer)))
 
-(defun emms-mp3tag-submit-and-exit ()
+(defun emms-tag-editor-submit-and-exit ()
   (interactive)
-  (emms-mp3tag-submit t))
+  (emms-tag-editor-submit t))
 
-(defun emms-mp3tag-default-parser ()
+(defun emms-tag-editor-default-parser ()
   (let (next tracks track key val)
     (goto-char (point-min))
     (if (get-text-property (point) 'emms-track)
@@ -392,9 +392,9 @@ edit buffer."
             next))
       tracks)))
 
-(defun emms-mp3tag-log (&rest args)
-  (with-current-buffer (get-buffer-create emms-mp3tag-log-buffer)
+(defun emms-tag-editor-log (&rest args)
+  (with-current-buffer (get-buffer-create emms-tag-editor-log-buffer)
     (goto-char (point-max))
     (insert (apply 'format args) "\n")))
 
-;;; emms-mp3tagedit.el ends here
+;;; emms-tag-editor.el ends here
