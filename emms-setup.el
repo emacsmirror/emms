@@ -125,6 +125,8 @@ on the edge."
   (require 'emms-score)
   (require 'emms-last-played)
   (require 'emms-bookmarks)
+  (require 'emms-history)
+  (require 'emms-mark)
   ;; setup
   (add-hook 'emms-player-started-hook 'emms-last-played-update-current))
 

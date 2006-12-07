@@ -187,6 +187,10 @@ See also `emms-mp3tag-tag-file' and `emms-mp3tag-tag-ogg'.
   (and track
        (insert (emms-mp3tag-format-track track))))
 
+(defsubst emms-mp3tag-display-log-buffer-maybe ()
+  (if (> (buffer-size (get-buffer emms-mp3tag-log-buffer)) 0)
+      (display-buffer emms-mp3tag-log-buffer)))
+
 (defun emms-mp3tag-insert-tracks (tracks)
   (save-excursion
     (emms-mp3tag-erase-buffer emms-mp3tag-log-buffer)
@@ -217,10 +221,6 @@ See also `emms-mp3tag-tag-file' and `emms-mp3tag-tag-ogg'.
   (if (emms-mark-has-markedp)
       (emms-mp3tag-edit-marked-tracks)
     (emms-mp3tag-edit-track (emms-mp3tag-track-at))))
-
-(defsubst emms-mp3tag-display-log-buffer-maybe ()
-  (if (> (buffer-size (get-buffer emms-mp3tag-log-buffer)) 0)
-      (display-buffer emms-mp3tag-log-buffer)))
 
 (defvar emms-mp3tag-mode-map
   (let ((map (make-sparse-keymap)))

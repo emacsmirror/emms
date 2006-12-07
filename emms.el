@@ -110,6 +110,11 @@ songs, increase this number."
   :type 'function
   :group 'emms)
 
+(defcustom emms-playlist-uniq-function 'emms-playlist-simple-uniq
+  "*The function to use for make track uniq in the playlist."
+  :type 'function
+  :group 'emms)
+
 (defcustom emms-sort-lessp-function 'emms-sort-track-name-less-p
   "*Function for comparing two EMMS tracks.
 The function should return non-nil if and only if the first track
@@ -415,6 +420,14 @@ This uses `emms-playlist-sort-function'."
   (with-current-emms-playlist
     (save-excursion
       (funcall emms-playlist-sort-function))))
+
+(defun emms-uniq ()
+  "Uniq the current playlist.
+This uses `emms-playlist-uniq-function'."
+  (interactive)
+  (with-current-emms-playlist
+    (save-excursion
+      (funcall emms-playlist-uniq-function))))
 
 (defun emms-toggle-repeat-playlist ()
   "Toggle whether emms repeats the playlist after it is done.
@@ -1084,6 +1097,35 @@ ignore this."
     (run-hooks 'emms-playlist-cleared-hook)
     (mapc 'emms-playlist-insert-track
           (sort tracks emms-sort-lessp-function))
+    (let ((pos (text-property-any (point-min)
+                                  (point-max)
+                                  'emms-track current)))
+      (if pos
+          (emms-playlist-select pos)
+        (emms-playlist-first)))))
+
+(defun emms-uniq-list (list stringfy)
+  "Compare stringfied element of list, and remove duplicate elements."
+  (let ((hash (make-hash-table :test 'equal))
+        str)
+    (remove-if (lambda (elm)
+                 (setq str (funcall stringfy elm))
+                 (if (gethash str hash) t
+                   (puthash str t hash) nil)) list)))
+
+(defun emms-playlist-simple-uniq ()
+  "Remove duplicate tracks"
+  (emms-playlist-ensure-playlist-buffer)
+  (widen)
+  (let ((inhibit-read-only t)
+        (current (emms-playlist-selected-track))
+        (tracks (emms-playlist-tracks-in-region (point-min)
+                                                (point-max))))
+    (delete-region (point-min) (point-max))
+    (run-hooks 'emms-playlist-cleared-hook)
+    (mapc 'emms-playlist-insert-track
+          (nreverse
+           (emms-uniq-list tracks 'emms-track-name)))
     (let ((pos (text-property-any (point-min)
                                   (point-max)
                                   'emms-track current)))
