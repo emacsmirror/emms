@@ -1104,14 +1104,21 @@ ignore this."
           (emms-playlist-select pos)
         (emms-playlist-first)))))
 
-(defun emms-uniq-list (list stringfy)
+(defun emms-uniq-list (list stringify)
   "Compare stringfied element of list, and remove duplicate elements."
-  (let ((hash (make-hash-table :test 'equal))
-        str)
-    (remove-if (lambda (elm)
-                 (setq str (funcall stringfy elm))
-                 (if (gethash str hash) t
-                   (puthash str t hash) nil)) list)))
+  ;; This uses a fast append list, keeping a pointer to the last cons
+  ;; cell of the list (TAIL). It might be worthwhile to provide an
+  ;; abstraction for this eventually.
+  (let* ((hash (make-hash-table :test 'equal))
+         (result (cons nil nil))
+         (tail result))
+    (dolist (element list)
+      (let ((str (funcall stringify element)))
+        (when (not (gethash str hash))
+          (setcdr tail (cons element nil))
+          (setq tail (cdr tail)))
+        (puthash str t hash)))
+    (cdr result)))
 
 (defun emms-playlist-simple-uniq ()
   "Remove duplicate tracks"
