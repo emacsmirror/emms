@@ -46,8 +46,7 @@
     (let ((oldbuf emms-playlist-buffer)
           emms-playlist-buffer playlists)
       (save-excursion
-        (dolist (buf (remove-if-not 'buffer-live-p
-                                    (emms-playlist-buffer-list)))
+        (dolist (buf (emms-playlist-buffer-list))
           (set-buffer buf)
           (when (> (buffer-size) 0) ; make sure there is track in the buffer
             (setq emms-playlist-buffer buf

@@ -31,6 +31,7 @@
 
 (provide 'emms-mark)
 (require 'emms)
+(require 'emms-playlist-mode)
 (eval-when-compile
   (require 'cl))
 
@@ -66,8 +67,7 @@ description function.")
         emms-track-description-function 'emms-mark-track-description)
   (emms-with-inhibit-read-only-t
    (save-excursion
-     (dolist (buf (remove-if-not 'buffer-live-p
-                                 (emms-playlist-buffer-list)))
+     (dolist (buf (emms-playlist-buffer-list))
        (set-buffer buf)
        (let ((tracks (nreverse
                       (emms-playlist-tracks-in-region (point-min)

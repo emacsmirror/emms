@@ -45,6 +45,25 @@
 (eval-when-compile
   (require 'cl))
 
+;; TODO: Change these to use defcustom
+
+(defvar emms-nerver-used-coding-system
+  '(raw-text undecided)
+  "If the `emms-coding-dectect-functions' return coding system in
+this list, use `emms-default-coding-system' instead.")
+
+(defvar emms-coding-system-for-read 'utf-8
+  "If coding detect failed, use this for decode")
+
+(defvar emms-default-coding-system nil
+  "If non-nil, used for decode and encode")
+
+(defvar emms-coding-dectect-functions nil
+  "A list of function to call to detect codings")
+
+(defvar emms-detect-max-size 10000
+  "Max bytes to detect coding system. Nil mean scan whole buffer.")
+
 (defun emms-iconv (from to str)
   "Convert STR from FROM coding to TO coding."
   (if (and from to)
@@ -118,23 +137,6 @@ otherwise, it is pass all parameter to `call-process'."
               (process-coding-system-alist nil))
           (apply 'call-process args))
       (apply 'call-process args))))
-  
-(defvar emms-nerver-used-coding-system
-  '(raw-text undecided)
-  "If the `emms-coding-dectect-functions' return coding system in
-this list, use `emms-default-coding-system' instead.")
-
-(defvar emms-coding-system-for-read 'utf-8
-  "If coding detect failed, use this for decode")
-
-(defvar emms-default-coding-system nil
-  "If non-nil, used for decode and encode")
-
-(defvar emms-coding-dectect-functions nil
-  "A list of function to call to detect codings")
-
-(defvar emms-detect-max-size 10000
-  "Max bytes to detect coding system. Nil mean scan whole buffer.")
 
 (defun emms-detect-coding-function (size)
   (detect-coding-region (point)
