@@ -1664,6 +1664,13 @@ order to prime the cache.
 
 @subsubheading emms-volume.el integration
 
+To activate this, add the following to your .emacs.
+
+@example
+(setq emms-volume-lower-function 'emms-volume-mpd-lower
+      emms-volume-raise-function 'emms-volume-mpd-raise)
+@end example
+
 @defopt emms-player-mpd-volume-change-amount
 The amount to use when raising or lowering the volume using the
 emms-volume interface.
