@@ -56,33 +56,31 @@
   :group 'emms)
 
 ;; General volume setting related code.
-(defcustom emms-volume-raise-function 'emms-volume-amixer-raise
-  "*The function to use to raise the volume.
-If you have your own functions for changing volume, set this and
- `emms-volume-lower-function' accordingly."
-  :type '(choice (const :tag "Amixer" emms-volume-amixer-raise)
-                 (const :tag "MPD" emms-volume-mpd-raise)
+(defcustom emms-volume-change-function 'emms-volume-amixer-change
+  "*The function to use to change the volume.
+If you have your own functions for changing volume, set this."
+  :type '(choice (const :tag "Amixer" emms-volume-amixer-change)
+                 (const :tag "MPD" emms-volume-mpd-change)
                  (function :tag "Lisp function"))
   :group 'emms-volume)
 
-(defcustom emms-volume-lower-function 'emms-volume-amixer-lower
-  "*The function to use to lower the volume.
-If you have your own functions for changing volume, set this and
- `emms-volume-raise-function' accordingly."
-  :type '(choice (const :tag "Amixer" emms-volume-amixer-lower)
-                 (const :tag "MPD" emms-volume-mpd-lower)
-                 (function :tag "Lisp function"))
+(defcustom emms-volume-change-amount 2
+  "The amount to use when raising or lowering the volume using the
+emms-volume interface.
+
+This should be a positive integer."
+  :type 'integer
   :group 'emms-volume)
 
 (defun emms-volume-raise ()
   "Raise the speaker volume."
   (interactive)
-  (funcall emms-volume-raise-function))
+  (funcall emms-volume-change-function emms-volume-change-amount))
 
 (defun emms-volume-lower ()
   "Lower the speaker volume."
   (interactive)
-  (funcall emms-volume-lower-function))
+  (funcall emms-volume-change-function (- emms-volume-change-amount)))
 
 (define-key emms-playlist-mode-map (kbd "+") 'emms-volume-raise)
 (define-key emms-playlist-mode-map (kbd "-") 'emms-volume-lower)
