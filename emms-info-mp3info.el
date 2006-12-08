@@ -79,7 +79,9 @@ This is a useful element for `emms-info-functions'."
              (string-match "\\.[Mm][Pp]3\\'" (emms-track-name track)))
     (with-temp-buffer
       (when (zerop
-             (apply 'call-process
+             (apply (if (fboundp 'emms-i18n-call-process-simple)
+                        'emms-i18n-call-process-simple
+                      'call-process)
                     emms-info-mp3info-program-name
                     nil t nil
                     (emms-track-name track)
@@ -88,13 +90,6 @@ This is a useful element for `emms-info-functions'."
         (while (looking-at "^\\([^=\n]+\\)=\\(.*\\)$")
           (let ((name (intern (match-string 1)))
                 (value (match-string 2)))
-            (and (boundp 'emms-cache-file-coding-system)
-                 (not (eq emms-info-mp3info-coding-system
-                          emms-cache-file-coding-system))
-                 (setq value (decode-coding-string
-                              (encode-coding-string
-                               value emms-cache-file-coding-system)
-                              emms-info-mp3info-coding-system)))
             (when (> (length value)
                      0)
               (emms-track-set track
@@ -103,7 +98,6 @@ This is a useful element for `emms-info-functions'."
                                   (string-to-number value)
                                 value))))
           (forward-line 1))))))
-
 
 (provide 'emms-info-mp3info)
 ;;; emms-info-mp3info.el ends here
