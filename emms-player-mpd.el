@@ -74,6 +74,11 @@
 ;;
 ;; (add-to-list 'emms-info-functions 'emms-info-mpd)
 
+;; To change the volume using MusicPD, do the following.
+;;
+;; (setq emms-volume-lower-function 'emms-volume-mpd-lower
+;;       emms-volume-raise-function 'emms-volume-mpd-raise)
+
 ;; Add 'emms-player-mpd to the top of `emms-player-list'.
 ;;
 ;; (add-to-list 'emms-player-list 'emms-player-mpd)
