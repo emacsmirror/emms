@@ -47,40 +47,17 @@
                  (string :tag "Something else: "))
   :group 'emms-volume)
 
-(defun emms-volume-amixer-sset-master (var)
-  "Change amixer master volume by VAR."
+(defun emms-volume-amixer-change (amount)
+  "Change amixer master volume by AMOUNT."
   (message "Playback channels: %s"
            (with-temp-buffer
              (when (zerop
                     (call-process "amixer" nil (current-buffer) nil
                                   "sset" emms-volume-amixer-control
-                                  (format "%d%%%s" (abs var)
-                                          (if (< var 0) "-" "+"))))
+                                  (format "%d%%%s" (abs amount)
+                                          (if (< amount 0) "-" "+"))))
                (if (re-search-backward "\\[\\([0-9]+%\\)\\]" nil t)
                    (match-string 1))))))
-
-(defvar emms-volume-amixer-raise-commands
-  '(?p ?k up ?+ ?=))
-(defvar emms-volume-amixer-lower-commands
-  '(?n ?j down ?-))
-
-(defun emms-volume-amixer-raise (&optional arg)
-  (interactive "P")
-  (if arg
-      (emms-volume-amixer-sset-master -2)
-    (emms-volume-amixer-sset-master 2))
-  (let (command)
-    (while (progn
-             (setq command (read-event))
-             (cond ((member command emms-volume-amixer-raise-commands)
-                    (emms-volume-amixer-sset-master 2))
-                   ((member command emms-volume-amixer-lower-commands)
-                    (emms-volume-amixer-sset-master -2)))))
-    (setq unread-command-events (list command))))
-
-(defun emms-volume-amixer-lower ()
-  (interactive)
-  (emms-volume-amixer-raise -1))
 
 (provide 'emms-volume-amixer)
 
