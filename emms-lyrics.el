@@ -24,7 +24,8 @@
 ;;; Commentary:
 
 ;; This package enables you to play music files and display lyrics
-;; synchronically! :-)
+;; synchronically! :-) Plus, it provides a `emms-lyrics-mode' for
+;; making lyric files.
 
 ;; Put this file into your load-path and the following into your
 ;; ~/.emacs:
@@ -89,6 +90,11 @@ for lyrics in current directory and this directory."
   :type 'hook
   :group 'emms-lyrics)
 
+(defcustom emms-lyrics-find-lyric-function 'emms-lyrics-find-lyric
+  "Function for finding lyric files."
+  :type 'symbol
+  :group 'emms-lyrics)
+
 
 ;;; Emms Lyrics
 
@@ -112,9 +118,8 @@ at time-i, display lyric-i.")
   "How long time has emms lyric played.")
 
 (defvar emms-lyrics-mode-line-string ""
-  "current lyric.")
+  "Current lyric.")
 
-(defvar emms-lyrics-find-lyric-function nil)
 (defun emms-lyrics-read-file (file)
   "Read a lyric file(LRC format).
 FILE should end up with \".lrc\", its content looks like one of the
@@ -126,15 +131,8 @@ following:
 
 FILE should be under the same directory as the music file, or under
 `emms-lyrics-dir'."
-  (if (eq 'file (emms-track-get
-                 (emms-playlist-current-selected-track)
-                 'type))
-      (unless (file-exists-p file)
-        (setq file (emms-lyrics-find-lyric file)))
-    (setq file
-          (and (functionp emms-lyrics-find-lyric-function)
-               (funcall emms-lyrics-find-lyric-function file))))
-  (when (and file (not (string= file "")) (file-exists-p file))
+  (setq file (funcall emms-lyrics-find-lyric-function file))
+  (when (and file (file-exists-p file))
     (with-temp-buffer
       (let ((coding-system-for-read emms-lyrics-coding-system))
         (insert-file-contents file)
@@ -340,21 +338,42 @@ display."
         (message lyric)))))
 
 (defun emms-lyrics-find-lyric (file)
-  "Use `emms-source-file-gnu-find' to find lrc FILE. You should specify
-a valid `emms-lyrics-dir'."
-  (unless (string= emms-lyrics-dir "")
+  "Use `emms-source-file-gnu-find' to find lrc FILE in
+`emms-lyrics-dir'."
+  (when (and (eq 'file (emms-track-get
+                        (emms-playlist-current-selected-track)
+                        'type))
+             (not (string= emms-lyrics-dir "")))
     ;; If find two or more lyric files, only return the first one. Good
     ;; luck! :-)
-    (car (split-string
-	  (shell-command-to-string
-	   (concat emms-source-file-gnu-find " "
-		   emms-lyrics-dir " -name "
-		   "'"			; wrap up whitespaces
-		   (emms-replace-regexp-in-string
-		    "'" "*"		; FIX ME, '->\'
-		    (file-name-nondirectory file))
-		   "'"))
-	  "\n"))))
+    (if (file-exists-p file)             ; same directory
+        file
+      (let* ((ret (car (split-string
+                        (shell-command-to-string
+                         (concat emms-source-file-gnu-find " "
+                                 emms-lyrics-dir " -name "
+                                 "'"    ; wrap up whitespaces
+                                 (emms-replace-regexp-in-string
+                                  "'" "*" ; FIX ME, '->\'
+                                  (file-name-nondirectory file))
+                                 "'"))
+                        "\n"))))
+        (unless (equal ret "")
+          ret)))))
+
+(defun emms-lyrics-find-current-lyric ()
+  "Visit current selected track's lyric file."
+  (interactive)
+  (let ((name (emms-track-get (emms-playlist-current-selected-track)
+                              'name)))
+    (condition-case nil
+        (find-file-existing
+         (emms-lyrics-find-lyric
+          (emms-replace-regexp-in-string
+           (concat "\\." (file-name-extension name) "\\'")
+           ".lrc"
+           name)))
+      (error "lyric file does not exist"))))
 
 
 ;;; emms-lyrics-mode
