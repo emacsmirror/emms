@@ -42,9 +42,6 @@
 
 ;; -----------------------------------------------------------------------
 
-;; TODO: Have a look at `emms-playing-time'. Stopping the timer may not be
-;;       needed.
-
 (require 'url)
 (require 'emms)
 
@@ -70,24 +67,37 @@ procedure. Only for internal use.")
 (defvar emms-lastfm-timer nil "-- only used internally --")
 
 (defun emms-lastfm-new-track-function ()
-  "This function runs whenever a new track starts and sets the
-track submission timer."
+  "This function should run whenever a new track starts (or a
+paused track resumes) and sets the track submission timer."
   (setq emms-lastfm-current-track
         (emms-playlist-current-selected-track))
   ;; Tracks should be submitted, if they played 240 secs or half of their
   ;; length, whichever comes first.
-  (let ((secs (/ (emms-track-get emms-lastfm-current-track 'info-playing-time)
-                 2)))
+  (let ((secs (/ (emms-track-get emms-lastfm-current-track
+                                 'info-playing-time)
+                    2)))
     (when (> secs 240)
       (setq secs 240))
     (unless (< secs 15) ;; Skip titles shorter than 30 seconds
-      (setq emms-lastfm-timer
-            (run-with-timer secs nil 'emms-lastfm-submit-track)))))
+      (setq secs (- secs emms-playing-time))
+      (unless (< secs 0)
+        (setq emms-lastfm-timer
+              (run-with-timer secs nil 'emms-lastfm-submit-track))))))
 
 (defun emms-lastfm-cancel-timer ()
+  "Cancels `emms-lastfm-timer' if it is running."
   (when emms-lastfm-timer
     (cancel-timer emms-lastfm-timer)
     (setq emms-lastfm-timer nil)))
+
+(defun emms-lastfm-pause ()
+  "Handles things to be done when the player is paused or
+resumed."
+  (if emms-player-paused-p
+      ;; the player paused
+      (emms-lastfm-cancel-timer)
+    ;; The player resumed
+    (emms-lastfm-new-track-function)))
 
 (defun emms-lastfm-activate (&optional ARG)
   "Start submitting the tracks you listened to to
@@ -109,14 +119,14 @@ the current track, too."
           (add-hook 'emms-player-stopped-hook
                     'emms-lastfm-cancel-timer)
           (add-hook 'emms-player-paused-hook
-                    'emms-lastfm-cancel-timer)
+                    'emms-lastfm-pause)
           (message "EMMS Last.fm plugin activated."))
       (remove-hook 'emms-player-started-hook
                    'emms-lastfm-handshake-if-needed)
       (remove-hook 'emms-player-started-hook
                    'emms-lastfm-new-track-function)
       (remove-hook 'emms-player-stopped-hook
-                   'emms-lastfm-cancel-timer)
+                   'emms-lastfm-pause)
       (remove-hook 'emms-player-paused-hook
                    'emms-lastfm-cancel-timer)
       (cancel-timer emms-lastfm-timer)
