@@ -114,8 +114,10 @@ the current track, too."
         (progn
           (add-hook 'emms-player-started-hook
                     'emms-lastfm-handshake-if-needed)
+          ;; Has to be appended, because it has to run after
+          ;; `emms-playing-time-start'
           (add-hook 'emms-player-started-hook
-                    'emms-lastfm-new-track-function)
+                    'emms-lastfm-new-track-function t)
           (add-hook 'emms-player-stopped-hook
                     'emms-lastfm-cancel-timer)
           (add-hook 'emms-player-paused-hook
@@ -126,16 +128,15 @@ the current track, too."
       (remove-hook 'emms-player-started-hook
                    'emms-lastfm-new-track-function)
       (remove-hook 'emms-player-stopped-hook
-                   'emms-lastfm-pause)
-      (remove-hook 'emms-player-paused-hook
                    'emms-lastfm-cancel-timer)
+      (remove-hook 'emms-player-paused-hook
+                   'emms-lastfm-pause)
       (cancel-timer emms-lastfm-timer)
       (setq emms-lastfm-md5-challenge nil
             emms-lastfm-submit-url    nil
             emms-lastfm-process       nil
             emms-lastfm-current-track nil)
       (message "EMMS Last.fm plugin deactivated."))))
-
 
 (defun read-line ()
   (buffer-substring-no-properties (line-beginning-position)
