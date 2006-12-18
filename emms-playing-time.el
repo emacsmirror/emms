@@ -26,10 +26,16 @@
 
 ;; Put this file into your load-path and the following into your
 ;; ~/.emacs:
-;;              (require 'emms-playing-time)
-;;
-;; Then either `M-x emms-playing-time-enable' or add
-;; (emms-playing-time 1) in your .emacs to enable.
+;;     (require 'emms-playing-time)
+;;     (emms-playing-time 1)
+
+;; Note: `(emms-playing-time -1)' will disable emms-playing-time module
+;; completely, and is not recommended. (since some other emms modules
+;; may rely on it, such as `emms-lastfm.el')
+
+;; Instead, to toggle displaying playing time on mode line, one could
+;; call `emms-playing-time-enable-display' and
+;; `emms-playing-time-disable-display'."
 
 ;;; Code:
 
@@ -64,7 +70,7 @@ Valid styles are `time' (e.g., 01:30/4:20) and `bar' (e.g., [===>  ])."
 ;;; Emms Playing Time
 
 (defvar emms-playing-time-display-p nil
-  "Whether emms playing time is enabled or not")
+  "Whether to display playing time on mode line or not")
 
 (defvar emms-playing-time 0
   "How long has EMMS run up to now.")
@@ -72,6 +78,9 @@ Valid styles are `time' (e.g., 01:30/4:20) and `bar' (e.g., [===>  ])."
 (defvar emms-playing-time-string "")
 
 (defvar emms-playing-time-display-timer nil)
+
+(defvar emms-playing-time-p nil
+  "Whether emms-playing-time module is enabled or not")
 
 (defun emms-playing-time-start ()
   "Get ready for display playing time."
@@ -111,90 +120,91 @@ Valid styles are `time' (e.g., 01:30/4:20) and `bar' (e.g., [===>  ])."
     (setq emms-playing-time 0)))
 
 (defun emms-playing-time (arg)
-  "Turn on emms playing time if ARG is positive, off otherwise."
-  (interactive "p")
+  "Turn on emms playing time if ARG is positive, off otherwise.
+
+Note: `(emms-playing-time -1)' will disable emms-playing-time
+module completely, and is not recommended. (since some other emms
+modules may rely on it, such as `emms-lastfm.el')
+
+Instead, to toggle displaying playing time on mode line, one
+could call `emms-playing-time-enable-display' and
+`emms-playing-time-disable-display'."
   (if (and arg (> arg 0))
       (progn
-	(setq emms-playing-time-display-p t)
+	(setq emms-playing-time-p t
+              emms-playing-time-display-p t)
 	(emms-playing-time-mode-line)
-	(add-hook 'emms-player-started-hook     'emms-playing-time-start)
-	(add-hook 'emms-player-stopped-hook     'emms-playing-time-stop)
-	(add-hook 'emms-player-finished-hook    'emms-playing-time-stop)
-	(add-hook 'emms-player-paused-hook      'emms-playing-time-pause)
-	(add-hook 'emms-player-seeked-functions 'emms-playing-time-seek)
+	(add-hook 'emms-player-started-hook       'emms-playing-time-start)
+	(add-hook 'emms-player-stopped-hook       'emms-playing-time-stop)
+	(add-hook 'emms-player-finished-hook      'emms-playing-time-stop)
+	(add-hook 'emms-player-paused-hook        'emms-playing-time-pause)
+	(add-hook 'emms-player-seeked-functions   'emms-playing-time-seek)
 	(add-hook 'emms-player-time-set-functions 'emms-playing-time-set))
-    (setq emms-playing-time-display-p nil)
+    (setq emms-playing-time-p nil
+          emms-playing-time-display-p nil)
     (emms-playing-time-stop)
     (emms-playing-time-restore-mode-line)
-    (remove-hook 'emms-player-started-hook     'emms-playing-time-start)
-    (remove-hook 'emms-player-stopped-hook     'emms-playing-time-stop)
-    (remove-hook 'emms-player-finished-hook    'emms-playing-time-stop)
-    (remove-hook 'emms-player-paused-hook      'emms-playing-time-pause)
-    (remove-hook 'emms-player-seeked-functions 'emms-playing-time-seek)
+    (remove-hook 'emms-player-started-hook       'emms-playing-time-start)
+    (remove-hook 'emms-player-stopped-hook       'emms-playing-time-stop)
+    (remove-hook 'emms-player-finished-hook      'emms-playing-time-stop)
+    (remove-hook 'emms-player-paused-hook        'emms-playing-time-pause)
+    (remove-hook 'emms-player-seeked-functions   'emms-playing-time-seek)
     (remove-hook 'emms-player-time-set-functions 'emms-playing-time-set)))
 
 ;;;###autoload
-(defun emms-playing-time-enable ()
-  "Enable displaying emms playing time on mode line."
+(defun emms-playing-time-enable-display ()
+  "Display playing time on mode line."
   (interactive)
-  (emms-playing-time 1)
-  (message "emms playing time enabled"))
+  (setq emms-playing-time-display-p t))
 
 ;;;###autoload
-(defun emms-playing-time-disable ()
-  "Disable displaying emms playing time on mode line."
+(defun emms-playing-time-disable-display ()
+  "Remove playing time from mode line."
   (interactive)
-  (emms-playing-time -1)
-  (message "emms playing time disabled"))
-
-;;;###autoload
-(defun emms-playing-time-toggle ()
-  "Toggle displaying emms playing time on mode line."
-  (interactive)
-  (if emms-playing-time-display-p
-      (emms-playing-time-disable)
-    (emms-playing-time-enable)))
+  (setq emms-playing-time-display-p nil))
 
 (defun emms-playing-time-display ()
   "Display playing time on the mode line."
   (setq emms-playing-time (1+ emms-playing-time))
-  (let* ((min (/ emms-playing-time 60))
-	 (sec (% emms-playing-time 60))
-	 (total-playing-time
-	  (or (emms-track-get
-	       (emms-playlist-current-selected-track)
-	       'info-playing-time)
-	      0))
-	 (total-min-only (/ total-playing-time 60))
-	 (total-sec-only (% total-playing-time 60)))
-    (case emms-playing-time-style
-      ((bar)
-       (if (zerop total-playing-time)
-           (setq emms-playing-time-string "[==>........]")
-         (let ((progress "[")
-               ;; percent based on 10
-               (percent (/ (* emms-playing-time 10) total-playing-time)))
-           (dotimes (i percent)
-             (setq progress (concat progress "=")))
-           (setq progress (concat progress ">"))
-           (dotimes (i (- 10 percent))
-             (setq progress (concat progress " ")))
-           (setq progress (concat progress "]"))
-           (setq emms-playing-time-string progress))))
-      (t
-       (setq emms-playing-time-string
-             (emms-replace-regexp-in-string
-              " " "0"
-              (if (or emms-playing-time-display-short-p
-                      ;; unable to get total playing-time
-                      (eq total-playing-time 0))
-                  (format "%2d:%2d" min sec)
-                (format "%2d:%2d/%2s:%2s"
-                        min sec total-min-only total-sec-only))))))
-    (setq emms-playing-time-string
-          (format emms-playing-time-display-format
-                  emms-playing-time-string))
-    (force-mode-line-update)))
+  (setq emms-playing-time-string "")
+  (when emms-playing-time-display-p
+    (let* ((min (/ emms-playing-time 60))
+           (sec (% emms-playing-time 60))
+           (total-playing-time
+            (or (emms-track-get
+                 (emms-playlist-current-selected-track)
+                 'info-playing-time)
+                0))
+           (total-min-only (/ total-playing-time 60))
+           (total-sec-only (% total-playing-time 60)))
+      (case emms-playing-time-style
+        ((bar)
+         (if (zerop total-playing-time)
+             (setq emms-playing-time-string "[==>........]")
+           (let ((progress "[")
+                 ;; percent based on 10
+                 (percent (/ (* emms-playing-time 10) total-playing-time)))
+             (dotimes (i percent)
+               (setq progress (concat progress "=")))
+             (setq progress (concat progress ">"))
+             (dotimes (i (- 10 percent))
+               (setq progress (concat progress " ")))
+             (setq progress (concat progress "]"))
+             (setq emms-playing-time-string progress))))
+        (t
+         (setq emms-playing-time-string
+               (emms-replace-regexp-in-string
+                " " "0"
+                (if (or emms-playing-time-display-short-p
+                        ;; unable to get total playing-time
+                        (eq total-playing-time 0))
+                    (format "%2d:%2d" min sec)
+                  (format "%2d:%2d/%2s:%2s"
+                          min sec total-min-only total-sec-only))))))
+      (setq emms-playing-time-string
+            (format emms-playing-time-display-format
+                    emms-playing-time-string))))
+  (force-mode-line-update))
 
 (defun emms-playing-time-mode-line ()
   "Add playing time to the mode line."
