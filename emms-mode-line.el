@@ -103,7 +103,7 @@
   (message "emms mode line disabled"))
 
 ;;;###autoload
-(defun emms-playing-time-toggle ()
+(defun emms-mode-line-toggle ()
   "Toggle `emms-mode-line'."
   (interactive)
   (if emms-mode-line-active-p
