@@ -1541,16 +1541,20 @@ To use this feature invoke:
 (emms-playing-time 1)
 @end lisp
 
-@defun emms-playing-time-enable
-Enable displaying emms playing time on the mode line.
+Note: `(emms-playing-time -1)' will disable emms-playing-time module
+completely, and is not recommended. (since some other emms modules may
+rely on it, such as `emms-lastfm.el')
+
+Instead, to toggle displaying playing time on mode line, one could call
+`emms-playing-time-enable-display' and
+`emms-playing-time-disable-display'."
+
+@defun emms-playing-time-enable-display
+Display playing time on mode line.
 @end defun
 
-@defun emms-playing-time-disable
-Enable displaying emms playing time on the mode line.
-@end defun
-
-@defun emms-playing-time-toggle
-Toggle displaying emms playing time on the mode line.
+@defun emms-playing-time-disable-display
+Remove playing time from mode line.
 @end defun
 
 @node Music Player Daemon
