@@ -105,15 +105,26 @@ http://www.last.fm, if ARG is positive. If ARG is negative or
 zero submission of the tracks will be stopped. This applies to
 the current track, too."
   (interactive "p")
-  (if (not (and emms-lastfm-username emms-lastfm-password))
-      (message "%s"
-               (concat "EMMS: In order to activate the last.fm plugin you "
-                       "first have to set both `emms-lastfm-username' and "
-                       "`emms-lastfm-password'."))
-    (if (> ARG 0)
+  (cond
+   ((not (and emms-lastfm-username emms-lastfm-password))
+    (message "%s"
+             (concat "EMMS: In order to activate the last.fm plugin you "
+                     "first have to set both `emms-lastfm-username' and "
+                     "`emms-lastfm-password'.")))
+   ((not emms-playing-time-p)
+    (message "%s"
+             (concat "EMMS: The last.fm plugin needs the functionality "
+                     "provided by `emms-playing-time'. It seems that you "
+                     "disabled it explicitly in your init file using code "
+                     "like this: `(emms-playing-time -1)'. Delete that "
+                     "line and have a look at `emms-playing-time's doc "
+                     "string.")))
+   (t
+    (if (and ARG (> ARG 0))
         (progn
+          ;; Append it. Else the playing time could be started a bit too late.
           (add-hook 'emms-player-started-hook
-                    'emms-lastfm-handshake-if-needed)
+                    'emms-lastfm-handshake-if-needed t)
           ;; Has to be appended, because it has to run after
           ;; `emms-playing-time-start'
           (add-hook 'emms-player-started-hook
@@ -131,12 +142,12 @@ the current track, too."
                    'emms-lastfm-cancel-timer)
       (remove-hook 'emms-player-paused-hook
                    'emms-lastfm-pause)
-      (cancel-timer emms-lastfm-timer)
+      (when emms-lastfm-timer (cancel-timer emms-lastfm-timer))
       (setq emms-lastfm-md5-challenge nil
             emms-lastfm-submit-url    nil
             emms-lastfm-process       nil
             emms-lastfm-current-track nil)
-      (message "EMMS Last.fm plugin deactivated."))))
+      (message "EMMS Last.fm plugin deactivated.")))))
 
 (defun read-line ()
   (buffer-substring-no-properties (line-beginning-position)
