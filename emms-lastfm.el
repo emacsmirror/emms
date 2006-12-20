@@ -174,9 +174,9 @@ well or if an error occured."
                    (message "EMMS: Wrong username."))))
         (when (string-match "UPDATE" response)
           (message "EMMS: There's a new last.fm plugin version."))
-        (next-line)
+        (forward-line)
         (setq emms-lastfm-md5-challenge (read-line))
-        (next-line)
+        (forward-line)
         (setq emms-lastfm-submit-url (read-line))
         (message "EMMS: Handshaking with server done.")))))
 
