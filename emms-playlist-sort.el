@@ -33,8 +33,33 @@
 
 (require 'emms-score)
 
-;;; sort macro
+;;; Customizations
 
+(defgroup emms-playlist-sort nil
+  "Sorting Emacs Multimedia System playlists."
+  :prefix "emms-playlist-sort-"
+  :group 'emms)
+
+;; FIXME, Should better avoid relying on setting before loading
+(defcustom emms-playlist-sort-prefix "S"
+  "Prefix key sequence for `emms-playlist-sort-map'.
+If you want to customize it, you must set this variable before
+loading `emms-playlist-sort'."
+  :type 'string
+  :group 'emms-playlist-sort)
+
+(defcustom emms-playlist-sort-list '(info-artist info-album)
+  "Sorting list used by `emms-playlist-sort-by-list'.
+Currently it understands the following fields: name info-artist
+info-title info-album info-genre info-playing-time
+info-tracknumber."
+  :type 'symbol
+  :group 'emms-playlist-sort)
+
+
+;;; Interfaces
+
+;; sort macro
 (defmacro define-emms-playlist-sort (attribute)
   "Macro for defining emms playlist sort functions."
   `(defun ,(intern (format "emms-playlist-sort-by-%s" attribute)) ()
@@ -66,17 +91,12 @@ See `emms-sort-natural-order-less-p'."
   (interactive)
   (emms-playlist-sort 'emms-sort-natural-order-less-p))
 
-(defgroup emms-playlist-sort nil
-  "*Sorting Emacs Multimedia System playlists."
-  :prefix "emms-playlist-sort-"
-  :group 'emms)
-
-;; FIXME: Should better avoid relying on setting before loading.
-(defcustom emms-playlist-sort-prefix "S"
-  "*Prefix key sequence for `emms-playlist-sort-map'.
-You should set this variable before loading this file."
-  :type 'string
-  :group 'emms-playlist-sort)
+(defun emms-playlist-sort-by-list ()
+  "Sort emms playlist by `emms-playlist-sort-list'.
+The sort will be carried out until comparsion succeeds,
+increasingly."
+  (interactive)
+  (emms-playlist-sort 'emms-playlist-sort-by-list-p))
 
 (defvar emms-playlist-sort-map
   (let ((map (make-sparse-keymap)))
@@ -87,6 +107,7 @@ You should set this variable before loading this file."
     (define-key map (kbd "y") 'emms-playlist-sort-by-info-year)
     (define-key map (kbd "o") 'emms-playlist-sort-by-info-note)
     (define-key map (kbd "N") 'emms-playlist-sort-by-natural-order)
+    (define-key map (kbd "l") 'emms-playlist-sort-by-list)
     map))
 
 (eval-after-load "emms-playlist-mode"
@@ -94,6 +115,9 @@ You should set this variable before loading this file."
         (define-key emms-playlist-mode-map
           emms-playlist-sort-prefix
           emms-playlist-sort-map)))
+
+
+;;; Low Level
 
 (defun emms-playlist-sort (predicate &optional start end)
   "Sort the playlist buffer by PREDICATE.
@@ -134,6 +158,23 @@ ie. by album name and then by track number."
 				    "0"))
 	      (string-to-number (or (emms-track-get b 'info-tracknumber)
 				    "0"))))))
+
+(defun emms-playlist-sort-by-list-p (a b)
+  (catch 'return
+    (dolist (info emms-playlist-sort-list)
+      (case info
+        ((name info-artist info-title info-album info-genre)
+         (when (string< (emms-track-get a info)
+                        (emms-track-get b info))
+           (throw 'return t)))
+        ((info-playing-time)
+         (when (< (emms-track-get a info)
+                  (emms-track-get b info))
+           (throw 'return t)))
+        ((info-tracknumber)
+         (when (< (string-to-number (or (emms-track-get a info) "0"))
+                  (string-to-number (or (emms-track-get b info) "0")))
+           (throw 'return t)))))))
 
 (provide 'emms-playlist-sort)
 
