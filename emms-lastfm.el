@@ -35,10 +35,10 @@
 ;;; Usage:
 
 ;; To activate the last.fm emms plugin, run:
-;; `M-x emms-lastfm-activate'
+;; `M-x emms-lastfm-enable'
 
 ;; To deactivate the last.fm emms plugin, run:
-;; `C-u -1 M-x emms-lastfm-activate'
+;; `M-x emms-lastfm-disable'
 
 ;; -----------------------------------------------------------------------
 
@@ -56,7 +56,7 @@ procedure. Only for internal use.")
 (defconst emms-lastfm-client-id "ems"
   "The client ID of EMMS. Don't change it!")
 (defconst emms-lastfm-client-version 0.1
-  "The version regitered at last.fm. Don't change it!")
+  "The version registered at last.fm. Don't change it!")
 
 ;; used internally
 (defvar emms-lastfm-buffer nil "-- only used internally --")
@@ -99,7 +99,7 @@ resumed."
     ;; The player resumed
     (emms-lastfm-new-track-function)))
 
-(defun emms-lastfm-activate (&optional ARG)
+(defun emms-lastfm (&optional ARG)
   "Start submitting the tracks you listened to to
 http://www.last.fm, if ARG is positive. If ARG is negative or
 zero submission of the tracks will be stopped. This applies to
@@ -149,9 +149,19 @@ the current track, too."
             emms-lastfm-current-track nil)
       (message "EMMS Last.fm plugin deactivated.")))))
 
-(defun read-line ()
-  (buffer-substring-no-properties (line-beginning-position)
-                                  (line-end-position)))
+(defalias 'emms-lastfm-activate 'emms-lastfm
+  "Obsolete! Use `emms-lastfm-enable', `emms-lastfm-disable' or
+`emms-lastfm'.")
+
+(defun emms-lastfm-enable ()
+  "Enable the emms last.fm plugin."
+  (interactive)
+  (emms-lastfm 1))
+
+(defun emms-lastfm-disable ()
+  "Disable the emms last.fm plugin."
+  (interactive)
+  (emms-lastfm -1))
 
 (defun emms-lastfm-handshake-if-needed ()
   (when (not (and emms-lastfm-md5-challenge
@@ -237,6 +247,117 @@ well or if an error occured."
           (kill-buffer emms-lastfm-buffer))
       (message "EMMS: Song couldn't be submitted to last.fm."))))
 
+
+;;; Playback of lastfm:// streams
+
+(defvar emms-lastfm-playback-base-url "http://ws.audioscrobbler.com"
+  "The base URL for playing lastfm:// stream.")
+
+(defvar emms-lastfm-playback-session nil "-- only used internally --")
+(defvar emms-lastfm-playback-stream-url nil "-- only used internally --")
+
+(defun emms-lastfm-playback-get-handshake-url ()
+  (concat emms-lastfm-playback-base-url
+          "/radio/handshake.php?version=" (number-to-string 
+                                           emms-lastfm-client-version)
+          "&platform="                    emms-lastfm-client-id
+          "&username="                    emms-lastfm-username
+          "&passwordmd5="                 (md5 emms-lastfm-password)
+          "&debug="                       (number-to-string 9)))
+
+(defun emms-lastfm-playback-handshake ()
+  "Handshakes with the last.fm server."
+  (let ((url-request-method "GET"))
+    (setq emms-lastfm-buffer
+          (url-retrieve (emms-lastfm-playback-get-handshake-url)
+                        'emms-lastfm-playback-handshake-sentinel))))
+
+(defun emms-lastfm-playback-handshake-sentinel (&rest args)
+  (save-excursion
+    (set-buffer emms-lastfm-buffer)
+    (setq emms-lastfm-playback-session    (key-value "session"))
+    (setq emms-lastfm-playback-stream-url (key-value "stream_url"))
+    (if (and emms-lastfm-playback-session emms-lastfm-playback-stream-url)
+        (message "EMMS: Handshaking for Last.fm playback successful.")
+      (message "EMMS: Failed handshaking for Last.fm playback."))))
+
+;; FIXME: This function doesn't work with lastfm-urls containing blanks,
+;; e.g. the global tag radio for the tag "Death Metal" ar the similar artist
+;; radio for the "Backstreet Boys". If someone is familiar with the `url'
+;; library, please help me.
+(defun emms-lastfm-playback (lastfm-url)
+  "Plays the stream associated with the given Last.fm URL. (A
+Last.fm URL has the form lastfm://foo/bar/baz, e.g.
+
+  lastfm://artist/Manowar/similarartists
+
+or
+
+  lastfm://globaltags/metal."
+  (interactive "sLast.fm URL: ")
+  ;; Streamed songs must not be added to the lastfm profile
+  (emms-lastfm-disable)
+  (when (not (and emms-lastfm-playback-session 
+                  emms-lastfm-playback-stream-url))
+    (emms-lastfm-playback-handshake))
+  ;; FIXME: Is there some better code to ensure that execution resumes not
+  ;; before the handshake sentinel has finished???
+  (let ((waits 0))
+    (while (and (not (and emms-lastfm-playback-session 
+                          emms-lastfm-playback-stream-url))
+                (< waits 10))
+      (setq waits (1+ waits))
+      (sit-for 1)))
+  ;; END of FIXME
+  (if (and emms-lastfm-playback-session 
+           emms-lastfm-playback-stream-url)
+      (let ((url-request-method "GET"))
+        (setq emms-lastfm-buffer
+              (url-retrieve (concat emms-lastfm-playback-base-url
+                                    "/radio/adjust.php?"
+                                    "session=" emms-lastfm-playback-session
+                                    "&url="    lastfm-url
+                                    "&debug="  (number-to-string 0))
+                            'emms-lastfm-playback-sentinel)))
+    (message "EMMS: Cannot play Last.fm stream.")))
+
+(defun emms-lastfm-playback-sentinel (&rest args)
+  (save-excursion
+    (set-buffer emms-lastfm-buffer)
+    (if (string= (key-value "response") "OK")
+        (progn
+          (emms-play-url emms-lastfm-playback-stream-url)
+          (message "EMMS: Playing Last.fm stream."))
+      (message "EMMS: Bad response from Last.fm."))))
+
+(defun emms-lastfm-playback-similar-artists (artist)
+  "Plays the similar artist radio of ARTIST."
+  (interactive "sArtist: ")
+  (emms-lastfm-playback (concat "lastfm://artist/"
+                                artist
+                                "/similarartists")))
+
+(defun emms-lastfm-playback-global-tag (tag)
+  "Plays the global tag radio of TAG."
+  (interactive "sGlobal Tag: ")
+  (emms-lastfm-playback (concat "lastfm://globaltags/" tag)))
+
+
+;;; Utility functions
+
+(defun read-line ()
+  (buffer-substring-no-properties (line-beginning-position)
+                                  (line-end-position)))
+
+(defun key-value (key)
+  "Returns the value of KEY. The buffer has to contain a
+key-value list like:
+
+foo=bar
+x=17"
+  (goto-char (point-min))
+  (when (re-search-forward (concat "^" key "="))
+    (buffer-substring-no-properties (point) (line-end-position))))
 
 (provide 'emms-lastfm)
 ;;; emms-lastfm.el ends here
