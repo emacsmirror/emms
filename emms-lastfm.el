@@ -172,12 +172,13 @@ the current track, too."
   "Handshakes with the last.fm server."
   (let ((url-request-method "GET"))
     (setq emms-lastfm-buffer
-          (url-retrieve (concat emms-lastfm-server "?hs=true&p=1.1"
-                                "&c=" emms-lastfm-client-id
-                                "&v=" (number-to-string
-                                       emms-lastfm-client-version)
-                                "&u=" emms-lastfm-username)
-                        'emms-lastfm-handshake-sentinel))))
+          (url-retrieve 
+           (url-escape (concat emms-lastfm-server "?hs=true&p=1.1"
+                               "&c=" emms-lastfm-client-id
+                               "&v=" (number-to-string
+                                      emms-lastfm-client-version)
+                               "&u=" emms-lastfm-username))
+           'emms-lastfm-handshake-sentinel))))
 
 (defun emms-lastfm-handshake-sentinel (&rest args)
   "Parses the server reponse and inform the user if all worked
@@ -231,7 +232,7 @@ last.fm."
                                     "&i[0]=" date)
                             'utf-8)))
     (setq emms-lastfm-buffer
-          (url-retrieve emms-lastfm-submit-url
+          (url-retrieve (url-escape emms-lastfm-submit-url)
                         'emms-lastfm-submission-sentinel))))
 
 (defun emms-lastfm-submission-sentinel (&rest args)
@@ -269,7 +270,8 @@ well or if an error occured."
   "Handshakes with the last.fm server."
   (let ((url-request-method "GET"))
     (setq emms-lastfm-buffer
-          (url-retrieve (emms-lastfm-playback-get-handshake-url)
+          (url-retrieve (url-escape
+                         (emms-lastfm-playback-get-handshake-url))
                         'emms-lastfm-playback-handshake-sentinel))))
 
 (defun emms-lastfm-playback-handshake-sentinel (&rest args)
@@ -281,10 +283,6 @@ well or if an error occured."
         (message "EMMS: Handshaking for Last.fm playback successful.")
       (message "EMMS: Failed handshaking for Last.fm playback."))))
 
-;; FIXME: This function doesn't work with lastfm-urls containing blanks,
-;; e.g. the global tag radio for the tag "Death Metal" ar the similar artist
-;; radio for the "Backstreet Boys". If someone is familiar with the `url'
-;; library, please help me.
 (defun emms-lastfm-playback (lastfm-url)
   "Plays the stream associated with the given Last.fm URL. (A
 Last.fm URL has the form lastfm://foo/bar/baz, e.g.
@@ -313,12 +311,14 @@ or
            emms-lastfm-playback-stream-url)
       (let ((url-request-method "GET"))
         (setq emms-lastfm-buffer
-              (url-retrieve (concat emms-lastfm-playback-base-url
-                                    "/radio/adjust.php?"
-                                    "session=" emms-lastfm-playback-session
-                                    "&url="    lastfm-url
-                                    "&debug="  (number-to-string 0))
-                            'emms-lastfm-playback-sentinel)))
+              (url-retrieve
+               (url-escape
+                (concat emms-lastfm-playback-base-url
+                        "/radio/adjust.php?"
+                        "session=" emms-lastfm-playback-session
+                        "&url="    lastfm-url
+                        "&debug="  (number-to-string 0)))
+               'emms-lastfm-playback-sentinel)))
     (message "EMMS: Cannot play Last.fm stream.")))
 
 (defun emms-lastfm-playback-sentinel (&rest args)
@@ -359,6 +359,9 @@ x=17"
   (when (re-search-forward (concat "^" key "="))
     (buffer-substring-no-properties (point) (line-end-position))))
 
+(defun url-escape (url)
+  "Escapes SPACEs with %20."
+  (replace-regexp-in-string " " "%20" url))
+
 (provide 'emms-lastfm)
 ;;; emms-lastfm.el ends here
-
