@@ -35,10 +35,35 @@
 ;;; Usage:
 
 ;; To activate the last.fm emms plugin, run:
-;; `M-x emms-lastfm-enable'
+;;   `M-x emms-lastfm-enable'
+
+;; Now all music you listen to will be submitted to Last.fm to enhance your
+;; profile.
 
 ;; To deactivate the last.fm emms plugin, run:
-;; `M-x emms-lastfm-disable'
+;;   `M-x emms-lastfm-disable'
+
+;; Beside submitting the tracks you listen to, you can also listen to Last.fm
+;; radio. Simply copy the lastfm:// URL and run & paste:
+;;   `M-x emms-lastfm-radio RET lastfm://artist/Britney Spears/fans'
+;; (Of course you don't need to use _this_ URL. :-))
+
+;; There are some functions for conveniently playing the Similar Artists and
+;; the Global Tag Radio. Here you only need to enter the band's name or the tag
+;; respectively.
+;;   `M-x emms-lastfm-radio-similar-artists RET Britney Spears'
+;;   `M-x emms-lastfm-radio-global-tag RET pop'
+
+;; When you're listening to a Last.fm radio station you have the possibility to
+;; give feedback to them. If you like the current song, type
+;;   `M-x emms-lastfm-radio-love'.
+;; If it's not that good, or it just happens to not fit to your actual mood,
+;; type
+;;   `M-x emms-lastfm-radio-skip'
+;; and this song will be skipped.
+;; If you really hate that song and you never want to hear it again, ban it by
+;; typing
+;;   `M-x emms-lastfm-radio-ban'.
 
 ;; -----------------------------------------------------------------------
 
@@ -251,14 +276,14 @@ well or if an error occured."
 
 ;;; Playback of lastfm:// streams
 
-(defvar emms-lastfm-playback-base-url "http://ws.audioscrobbler.com"
+(defvar emms-lastfm-radio-base-url "http://ws.audioscrobbler.com"
   "The base URL for playing lastfm:// stream.")
 
-(defvar emms-lastfm-playback-session nil "-- only used internally --")
-(defvar emms-lastfm-playback-stream-url nil "-- only used internally --")
+(defvar emms-lastfm-radio-session nil "-- only used internally --")
+(defvar emms-lastfm-radio-stream-url nil "-- only used internally --")
 
-(defun emms-lastfm-playback-get-handshake-url ()
-  (concat emms-lastfm-playback-base-url
+(defun emms-lastfm-radio-get-handshake-url ()
+  (concat emms-lastfm-radio-base-url
           "/radio/handshake.php?version=" (number-to-string 
                                            emms-lastfm-client-version)
           "&platform="                    emms-lastfm-client-id
@@ -266,24 +291,24 @@ well or if an error occured."
           "&passwordmd5="                 (md5 emms-lastfm-password)
           "&debug="                       (number-to-string 9)))
 
-(defun emms-lastfm-playback-handshake ()
+(defun emms-lastfm-radio-handshake ()
   "Handshakes with the last.fm server."
   (let ((url-request-method "GET"))
     (setq emms-lastfm-buffer
           (url-retrieve (url-escape
-                         (emms-lastfm-playback-get-handshake-url))
-                        'emms-lastfm-playback-handshake-sentinel))))
+                         (emms-lastfm-radio-get-handshake-url))
+                        'emms-lastfm-radio-handshake-sentinel))))
 
-(defun emms-lastfm-playback-handshake-sentinel (&rest args)
+(defun emms-lastfm-radio-handshake-sentinel (&rest args)
   (save-excursion
     (set-buffer emms-lastfm-buffer)
-    (setq emms-lastfm-playback-session    (key-value "session"))
-    (setq emms-lastfm-playback-stream-url (key-value "stream_url"))
-    (if (and emms-lastfm-playback-session emms-lastfm-playback-stream-url)
+    (setq emms-lastfm-radio-session    (key-value "session"))
+    (setq emms-lastfm-radio-stream-url (key-value "stream_url"))
+    (if (and emms-lastfm-radio-session emms-lastfm-radio-stream-url)
         (message "EMMS: Handshaking for Last.fm playback successful.")
       (message "EMMS: Failed handshaking for Last.fm playback."))))
 
-(defun emms-lastfm-playback (lastfm-url)
+(defun emms-lastfm-radio (lastfm-url)
   "Plays the stream associated with the given Last.fm URL. (A
 Last.fm URL has the form lastfm://foo/bar/baz, e.g.
 
@@ -295,52 +320,88 @@ or
   (interactive "sLast.fm URL: ")
   ;; Streamed songs must not be added to the lastfm profile
   (emms-lastfm-disable)
-  (when (not (and emms-lastfm-playback-session 
-                  emms-lastfm-playback-stream-url))
-    (emms-lastfm-playback-handshake))
+  (when (not (and emms-lastfm-radio-session 
+                  emms-lastfm-radio-stream-url))
+    (emms-lastfm-radio-handshake))
   ;; FIXME: Is there some better code to ensure that execution resumes not
   ;; before the handshake sentinel has finished???
   (let ((waits 0))
-    (while (and (not (and emms-lastfm-playback-session 
-                          emms-lastfm-playback-stream-url))
+    (while (and (not (and emms-lastfm-radio-session 
+                          emms-lastfm-radio-stream-url))
                 (< waits 10))
       (setq waits (1+ waits))
       (sit-for 1)))
   ;; END of FIXME
-  (if (and emms-lastfm-playback-session 
-           emms-lastfm-playback-stream-url)
+  (if (and emms-lastfm-radio-session 
+           emms-lastfm-radio-stream-url)
       (let ((url-request-method "GET"))
         (setq emms-lastfm-buffer
               (url-retrieve
                (url-escape
-                (concat emms-lastfm-playback-base-url
+                (concat emms-lastfm-radio-base-url
                         "/radio/adjust.php?"
-                        "session=" emms-lastfm-playback-session
+                        "session=" emms-lastfm-radio-session
                         "&url="    lastfm-url
                         "&debug="  (number-to-string 0)))
-               'emms-lastfm-playback-sentinel)))
+               'emms-lastfm-radio-sentinel)))
     (message "EMMS: Cannot play Last.fm stream.")))
 
-(defun emms-lastfm-playback-sentinel (&rest args)
+(defun emms-lastfm-radio-sentinel (&rest args)
   (save-excursion
     (set-buffer emms-lastfm-buffer)
     (if (string= (key-value "response") "OK")
         (progn
-          (emms-play-url emms-lastfm-playback-stream-url)
+          (emms-play-url emms-lastfm-radio-stream-url)
           (message "EMMS: Playing Last.fm stream."))
       (message "EMMS: Bad response from Last.fm."))))
 
-(defun emms-lastfm-playback-similar-artists (artist)
+(defun emms-lastfm-radio-similar-artists (artist)
   "Plays the similar artist radio of ARTIST."
   (interactive "sArtist: ")
-  (emms-lastfm-playback (concat "lastfm://artist/"
-                                artist
-                                "/similarartists")))
+  (emms-lastfm-radio (concat "lastfm://artist/"
+                             artist
+                             "/similarartists")))
 
-(defun emms-lastfm-playback-global-tag (tag)
+(defun emms-lastfm-radio-global-tag (tag)
   "Plays the global tag radio of TAG."
   (interactive "sGlobal Tag: ")
-  (emms-lastfm-playback (concat "lastfm://globaltags/" tag)))
+  (emms-lastfm-radio (concat "lastfm://globaltags/" tag)))
+
+(defun emms-lastfm-radio-love ()
+  "Inform Last.fm that you love the currently playing song."
+  (interactive)
+  (emms-lastfm-radio-rating "love"))
+
+(defun emms-lastfm-radio-skip ()
+  "Inform Last.fm that you want to skip the currently playing
+song."
+  (interactive)
+  (emms-lastfm-radio-rating "skip"))
+
+(defun emms-lastfm-radio-ban ()
+  "Inform Last.fm that you want to ban the currently playing
+song."
+  (interactive)
+  (emms-lastfm-radio-rating "ban"))
+
+(defun emms-lastfm-radio-rating (command)
+  (let ((url-request-method "GET"))
+    (setq emms-lastfm-buffer
+          (url-retrieve
+           (url-escape
+            (concat emms-lastfm-radio-base-url
+                    "/radio/control.php?"
+                    "session=" emms-lastfm-radio-session
+                    "&command=" command
+                    "&debug="  (number-to-string 0)))
+           'emms-lastfm-radio-rating-sentinel))))
+
+(defun emms-lastfm-radio-rating-sentinel (&rest args)
+  (save-excursion
+    (set-buffer emms-lastfm-buffer)
+    (if (string= (key-value "response") "OK")
+        (message "EMMS: Rated current track.")
+      (message "EMMS: Rating failed."))))
 
 
 ;;; Utility functions
@@ -356,7 +417,7 @@ key-value list like:
 foo=bar
 x=17"
   (goto-char (point-min))
-  (when (re-search-forward (concat "^" key "="))
+  (when (re-search-forward (concat "^" key "=") nil t)
     (buffer-substring-no-properties (point) (line-end-position))))
 
 (defun url-escape (url)
