@@ -70,10 +70,20 @@
 (require 'url)
 (require 'emms)
 
-(defvar emms-lastfm-username ""
-  "Your last.fm username")
-(defvar emms-lastfm-password ""
-  "Your last.fm password")
+(defgroup emms-lastfm nil
+  "Interaction with the services offered by http://www.last.fm."
+  :prefix "emms-lastfm-"
+  :group 'emms)
+
+(defcustom emms-lastfm-username ""
+  "Your last.fm username"
+  :type 'string
+  :group 'emms-lastfm)
+
+(defcustom emms-lastfm-password ""
+  "Your last.fm password"
+  :type 'string
+  :group 'emms-lastfm)
 
 (defconst emms-lastfm-server "http://post.audioscrobbler.com/"
   "The last.fm server responsible for the handshaking
@@ -277,7 +287,8 @@ well or if an error occured."
 ;;; Playback of lastfm:// streams
 
 (defvar emms-lastfm-radio-base-url "http://ws.audioscrobbler.com"
-  "The base URL for playing lastfm:// stream.")
+  "The base URL for playing lastfm:// stream.
+-- only used internally --")
 
 (defvar emms-lastfm-radio-session nil "-- only used internally --")
 (defvar emms-lastfm-radio-stream-url nil "-- only used internally --")
@@ -352,6 +363,12 @@ or
     (if (string= (key-value "response") "OK")
         (progn
           (emms-play-url emms-lastfm-radio-stream-url)
+          (when emms-lastfm-radio-metadata-period
+            (setq emms-lastfm-timer
+                  (run-with-timer 0 emms-lastfm-radio-metadata-period
+                                  'emms-lastfm-radio-request-metadata))
+            (add-hook 'emms-player-stopped-hook
+                      'emms-lastfm-cancel-timer))
           (message "EMMS: Playing Last.fm stream."))
       (message "EMMS: Bad response from Last.fm."))))
 
@@ -402,6 +419,40 @@ song."
     (if (string= (key-value "response") "OK")
         (message "EMMS: Rated current track.")
       (message "EMMS: Rating failed."))))
+
+(defun emms-lastfm-radio-request-metadata ()
+  "Request the metadata of the current song and display it."
+  (interactive)
+  (let ((url-request-method "GET"))
+    (setq emms-lastfm-buffer
+          (url-retrieve
+           (url-escape
+            (concat emms-lastfm-radio-base-url
+                    "/radio/np.php?"
+                    "session=" emms-lastfm-radio-session
+                    "&debug="  (number-to-string 0)))
+           'emms-lastfm-radio-request-metadata-sentinel))))
+
+(defcustom emms-lastfm-radio-metadata-period 15
+  "When listening to Last.fm Radio every how many seconds should
+emms-lastfm poll for metadata? If set to nil, there won't be any
+polling at all.
+
+The default is 15: That means that the mode line will display the
+wrong (last) track's data for a maximum of 15 seconds. If your
+network connection has a big latency this value may be too
+high. (But then streaming a 128KHz mp3 won't be fun anyway.)"
+  :type 'integer
+  :group 'emms-lastfm)
+
+(defun emms-lastfm-radio-request-metadata-sentinel (&rest args)
+  (save-excursion
+    (set-buffer emms-lastfm-buffer)
+    (let ((artist (key-value "artist"))
+          (title  (key-value "track")))
+      (setq emms-mode-line-string (format emms-mode-line-format
+                                          (concat artist " - " title)))
+      (force-mode-line-update))))
 
 
 ;;; Utility functions
