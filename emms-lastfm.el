@@ -205,6 +205,7 @@ the current track, too."
 
 (defun emms-lastfm-handshake ()
   "Handshakes with the last.fm server."
+  (when emms-lastfm-buffer (kill-buffer emms-lastfm-buffer))
   (let ((url-request-method "GET"))
     (setq emms-lastfm-buffer
           (url-retrieve 
@@ -220,6 +221,7 @@ the current track, too."
 well or if an error occured."
   (save-excursion
     (set-buffer emms-lastfm-buffer)
+    (http-decode-buffer)
     (goto-char (point-min))
     (re-search-forward (rx (or "UPTODATE" "UPDATE" "FAILED" "BADUSER"))
                        nil t)
@@ -241,6 +243,7 @@ well or if an error occured."
 (defun emms-lastfm-submit-track ()
   "Submits the current track (`emms-lastfm-current-track') to
 last.fm."
+  (when emms-lastfm-buffer (kill-buffer emms-lastfm-buffer))
   (let* ((artist (emms-track-get emms-lastfm-current-track 'info-artist))
          (title  (emms-track-get emms-lastfm-current-track 'info-title))
          (album  (emms-track-get emms-lastfm-current-track 'info-album))
@@ -275,6 +278,7 @@ last.fm."
 well or if an error occured."
   (save-excursion
     (set-buffer emms-lastfm-buffer)
+    (http-decode-buffer)
     (goto-char (point-min))
     (if (re-search-forward "^OK$" nil t)
         (progn
@@ -286,7 +290,7 @@ well or if an error occured."
 
 ;;; Playback of lastfm:// streams
 
-(defvar emms-lastfm-radio-base-url "http://ws.audioscrobbler.com"
+(defvar emms-lastfm-radio-base-url "http://ws.audioscrobbler.com/radio/"
   "The base URL for playing lastfm:// stream.
 -- only used internally --")
 
@@ -295,15 +299,16 @@ well or if an error occured."
 
 (defun emms-lastfm-radio-get-handshake-url ()
   (concat emms-lastfm-radio-base-url
-          "/radio/handshake.php?version=" (number-to-string 
-                                           emms-lastfm-client-version)
-          "&platform="                    emms-lastfm-client-id
-          "&username="                    emms-lastfm-username
-          "&passwordmd5="                 (md5 emms-lastfm-password)
-          "&debug="                       (number-to-string 9)))
+          "handshake.php?version=" (number-to-string 
+                                    emms-lastfm-client-version)
+          "&platform="              emms-lastfm-client-id
+          "&username="              emms-lastfm-username
+          "&passwordmd5="           (md5 emms-lastfm-password)
+          "&debug="                 (number-to-string 9)))
 
 (defun emms-lastfm-radio-handshake ()
   "Handshakes with the last.fm server."
+  (when emms-lastfm-buffer (kill-buffer emms-lastfm-buffer))
   (let ((url-request-method "GET"))
     (setq emms-lastfm-buffer
           (url-retrieve (url-escape
@@ -313,6 +318,7 @@ well or if an error occured."
 (defun emms-lastfm-radio-handshake-sentinel (&rest args)
   (save-excursion
     (set-buffer emms-lastfm-buffer)
+    (http-decode-buffer)
     (setq emms-lastfm-radio-session    (key-value "session"))
     (setq emms-lastfm-radio-stream-url (key-value "stream_url"))
     (if (and emms-lastfm-radio-session emms-lastfm-radio-stream-url)
@@ -350,7 +356,7 @@ or
               (url-retrieve
                (url-escape
                 (concat emms-lastfm-radio-base-url
-                        "/radio/adjust.php?"
+                        "adjust.php?"
                         "session=" emms-lastfm-radio-session
                         "&url="    lastfm-url
                         "&debug="  (number-to-string 0)))
@@ -360,6 +366,7 @@ or
 (defun emms-lastfm-radio-sentinel (&rest args)
   (save-excursion
     (set-buffer emms-lastfm-buffer)
+    (http-decode-buffer)
     (if (string= (key-value "response") "OK")
         (progn
           (emms-play-url emms-lastfm-radio-stream-url)
@@ -402,36 +409,25 @@ song."
   (emms-lastfm-radio-rating "ban"))
 
 (defun emms-lastfm-radio-rating (command)
+  (when emms-lastfm-buffer (kill-buffer emms-lastfm-buffer))
   (let ((url-request-method "GET"))
     (setq emms-lastfm-buffer
           (url-retrieve
            (url-escape
             (concat emms-lastfm-radio-base-url
-                    "/radio/control.php?"
-                    "session=" emms-lastfm-radio-session
+                    "control.php?"
+                    "session="  emms-lastfm-radio-session
                     "&command=" command
-                    "&debug="  (number-to-string 0)))
+                    "&debug="   (number-to-string 0)))
            'emms-lastfm-radio-rating-sentinel))))
 
 (defun emms-lastfm-radio-rating-sentinel (&rest args)
   (save-excursion
     (set-buffer emms-lastfm-buffer)
+    (http-decode-buffer)
     (if (string= (key-value "response") "OK")
         (message "EMMS: Rated current track.")
       (message "EMMS: Rating failed."))))
-
-(defun emms-lastfm-radio-request-metadata ()
-  "Request the metadata of the current song and display it."
-  (interactive)
-  (let ((url-request-method "GET"))
-    (setq emms-lastfm-buffer
-          (url-retrieve
-           (url-escape
-            (concat emms-lastfm-radio-base-url
-                    "/radio/np.php?"
-                    "session=" emms-lastfm-radio-session
-                    "&debug="  (number-to-string 0)))
-           'emms-lastfm-radio-request-metadata-sentinel))))
 
 (defcustom emms-lastfm-radio-metadata-period 15
   "When listening to Last.fm Radio every how many seconds should
@@ -445,9 +441,25 @@ high. (But then streaming a 128KHz mp3 won't be fun anyway.)"
   :type 'integer
   :group 'emms-lastfm)
 
+(defun emms-lastfm-radio-request-metadata ()
+  "Request the metadata of the current song and display it."
+  (interactive)
+  ;; we don't want to have hundreds of open buffers, so kill the old one now.
+  (when emms-lastfm-buffer (kill-buffer emms-lastfm-buffer))
+  (let ((url-request-method "GET"))
+    (setq emms-lastfm-buffer
+          (url-retrieve
+           (url-escape
+            (concat emms-lastfm-radio-base-url
+                    "np.php?"
+                    "session=" emms-lastfm-radio-session
+                    "&debug="  (number-to-string 0)))
+           'emms-lastfm-radio-request-metadata-sentinel))))
+
 (defun emms-lastfm-radio-request-metadata-sentinel (&rest args)
   (save-excursion
     (set-buffer emms-lastfm-buffer)
+    (http-decode-buffer)
     (let ((artist (key-value "artist"))
           (title  (key-value "track")))
       (setq emms-mode-line-string (format emms-mode-line-format
@@ -474,6 +486,22 @@ x=17"
 (defun url-escape (url)
   "Escapes SPACEs with %20."
   (replace-regexp-in-string " " "%20" url))
+
+(defun http-content-coding ()
+  (and (boundp 'url-http-content-type)
+       (string-match ";\\s-*charset=\\([^;[:space:]]+\\)" url-http-content-type)
+       (intern-soft (downcase (match-string 1 url-http-content-type))) ))
+
+(defun http-decode-buffer ()
+  "Recode the buffer with `url-retrieve's contents. Else the
+buffer would contain multibyte chars like \\123\\456."
+  (let* ((default (or (car default-process-coding-system) 'utf-8) )
+         (coding  (or (http-content-coding) default)) ) 
+    ;; (pop-to-buffer (current-buffer))
+    ;; (message "content-type: %s" url-http-content-type)
+    ;; (message "coding: %S [default: %S]" coding default)
+    (set-buffer-multibyte t)
+    (decode-coding-region (point-min) (point-max) coding)))
 
 (provide 'emms-lastfm)
 ;;; emms-lastfm.el ends here
