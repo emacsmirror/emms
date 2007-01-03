@@ -290,7 +290,7 @@ well or if an error occured."
 
 ;;; Playback of lastfm:// streams
 
-(defvar emms-lastfm-radio-base-url "http://ws.audioscrobbler.com/radio/"
+(defconst emms-lastfm-radio-base-url "http://ws.audioscrobbler.com/radio/"
   "The base URL for playing lastfm:// stream.
 -- only used internally --")
 
@@ -390,6 +390,11 @@ or
   "Plays the global tag radio of TAG."
   (interactive "sGlobal Tag: ")
   (emms-lastfm-radio (concat "lastfm://globaltags/" tag)))
+
+(defun emms-lastfm-radio-artist-fan (artist)
+  "Plays the artist fan radio of ARTIST."
+  (interactive "sArtist: ")
+  (emms-lastfm-radio (concat "lastfm://artist/" artist "/fans")))
 
 (defun emms-lastfm-radio-love ()
   "Inform Last.fm that you love the currently playing song."
