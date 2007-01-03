@@ -71,6 +71,7 @@ Modules and Extensions
 * Music Player Daemon:: Interface to Music Player Daemon.
 * Streaming Audio::     Interface to streaming audio.
 * Lyrics::              Displaying lyrics synchronously.
+* Last.fm::             Interact with http://www.last.fm's services.
 * Extending Emms::      How to define new players and modules.
 
 Copying and license
@@ -1767,6 +1768,133 @@ Disable displaying Emms lyrics.
 @defun emms-lyrics-toggle
 Toggle displaying Emms lyrics.
 @end defun
+
+
+@node Last.fm
+@chapter Last.fm
+
+@cindex last.fm
+
+Currently the `emms-lastfm' package provided by the file
+@file{emms-lastfm.el} offers the two most important last.fm services.
+
+@enumerate
+@item
+It can submit informations of tracks (artist, title, album) you listen
+to to last.fm to enhance your music profile.
+
+@item
+You can listen to the Last.fm radio. Those are the streams beginning
+with lastfm://.
+@end enumerate
+
+For both services you need a last.fm account and you have to set up
+two variables.
+
+@defvar emms-lastfm-username
+Your last.fm username.
+@end defvar
+
+@defvar emms-lastfm-password
+Your last.fm password.
+@end defvar
+
+@lisp
+(setq emms-lastfm-username "my-user-name"
+      emms-lastfm-password "very-secret!")
+@end lisp
+
+You can edit them with the `customize' interface, too.
+
+@menu
+* Submitting track informations::
+* Last.fm radio::
+@end menu
+
+@node Submitting track informations
+@section Submitting track informations
+
+These functions enable/disable submission of track informations to
+last.fm.
+
+@defun emms-lastfm-enable
+Start submitting to last.fm. Note that submission will start with the
+next track, not the current one.
+@end defun
+
+@defun emms-lastfm-disable
+Stop submission of track informations.
+@end defun
+
+@node Last.fm radio
+@section Last.fm radio
+
+On http://www.last.fm you'll find lots of links referencing last.fm
+radio stations like lastfm://artist/Metallica/fans. You can listen to
+them using these functions.
+
+@defun emms-lastfm-radio lastfm-url
+Starts playing the stream referenced by @var{lastfm-url}. When run
+interactively you will be prompted for a last.fm URL.
+@end defun
+
+For your convenience there are some functions which let you choose a
+common radio station without having to remember or type its last.fm URL.
+
+@defun emms-lastfm-radio-similar-artists artist
+Starts playing the similar artist radio of @var{artist}. When run
+interactively you will be prompted for an artist name.
+@end defun
+
+@defun emms-lastfm-radio-global-tag tag
+Starts playing the global tag radio of @var{tag}. When run interactively
+you will be prompted for a tag name.
+@end defun
+
+@defun emms-lastfm-radio-artist-fan artist
+Starts playing the artist fan radio of @var{artist}. When run
+interactively you will be prompted for an artist name.
+@end defun
+
+While listening to a last.fm radio station `emms-lastfm' will try to
+fetch some meta-informations (artist and title) of the currently playing
+song. That's controlled by the following variable:
+
+@defvar emms-lastfm-radio-metadata-period
+When listening to Last.fm Radio every how many seconds should
+emms-lastfm poll for metadata? If set to nil, there won't be any
+polling at all.
+
+The default is 15: That means that the mode line will display the
+wrong (last) track's data for a maximum of 15 seconds. If your
+network connection has a big latency this value may be too
+high. (But then streaming a 128KHz mp3 won't be fun anyway.)
+@end defvar
+
+Even if you set this variable to nil (no polling) you can fetch the
+meta-informations with this function.
+
+@defun emms-lastfm-radio-request-metadata
+Request the metadata of the current song and display it in the
+mode-line if the `emms-mode-line' package is enabled.
+@end defun
+
+When you listen to last.fm radio you can rate or skip the current song.
+
+@defun emms-lastfm-radio-love
+Inform Last.fm that you love the currently playing song.
+@end defun
+
+@defun emms-lastfm-radio-skip
+Inform Last.fm that you want to skip the currently playing song.
+@end defun
+
+@defun emms-lastfm-radio-ban
+Inform Last.fm that you want to ban the currently playing song.
+@end defun
+
+Ok, that's all.
+
 
 @node Streaming Audio
 @chapter Streaming Audio
