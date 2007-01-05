@@ -33,6 +33,8 @@
 
 (require 'emms-score)
 
+(eval-when-compile (require 'cl))
+
 ;;; Customizations
 
 (defgroup emms-playlist-sort nil
