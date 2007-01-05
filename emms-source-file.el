@@ -280,9 +280,16 @@ files) can play."
 ;;;###autoload (autoload 'emms-play-streamlist "emms-source-file" nil t)
 ;;;###autoload (autoload 'emms-add-streamlist "emms-source-file" nil t)
 (define-emms-source streamlist (streamlist)
-  "An EMMS source for streaming playlists (usually URLs ending in .pls."
-  (interactive "sPlay URL: ")
+  "An EMMS source for streaming playlists (usually URLs ending in .pls)."
+  (interactive "sPlay streamlist URL: ")
   (emms-playlist-insert-track (emms-track 'streamlist streamlist)))
+
+;;;###autoload (autoload 'emms-play-lastfm "emms-lastfm" nil t)
+;;;###autoload (autoload 'emms-add-lastfm "emms-lastfm" nil t)
+(define-emms-source lastfm (lastfm-url)
+  "An EMMS source for Last.fm URLs, which begin with lastfm://."
+  (interactive "sPlay Last.fm URL: ")
+  (emms-playlist-insert-track (emms-track 'lastfm lastfm-url)))
 
 
 (provide 'emms-source-file)

@@ -48,6 +48,13 @@
 ;;   `M-x emms-lastfm-radio RET lastfm://artist/Britney Spears/fans'
 ;; (Of course you don't need to use _this_ URL. :-))
 
+;; You can also insert Last.fm streams into playlists (or use
+;; emms-streams.el to listen to them) by activating the player as
+;; follows.
+;;   (add-to-list 'emms-player-list 'emms-player-lastfm-radio)
+;; To insert a Last.fm stream into a playlist, do
+;;   (emms-insert-lastfm "lastfm://rest-of-url")
+
 ;; There are some functions for conveniently playing the Similar Artists and
 ;; the Global Tag Radio. Here you only need to enter the band's name or the tag
 ;; respectively.
@@ -294,6 +301,18 @@ well or if an error occured."
 
 ;;; Playback of lastfm:// streams
 
+(defgroup emms-player-lastfm-radio nil
+  "EMMS player for Last.fm streams."
+  :group 'emms-player
+  :prefix "emms-player-lastfm-")
+
+(defcustom emms-player-lastfm-radio (emms-player 'emms-lastfm-radio-start
+                                                 'ignore ; no need to stop
+                                                 'emms-lastfm-radio-playable-p)
+ "*Parameters for the Last.fm radio player."
+ :type '(cons symbol alist)
+ :group 'emms-player-lastfm-radio)
+
 (defconst emms-lastfm-radio-base-url "http://ws.audioscrobbler.com/radio/"
   "The base URL for playing lastfm:// stream.
 -- only used internally --")
@@ -365,6 +384,19 @@ or
                 emms-lastfm-radio-stream-url))
       (emms-lastfm-radio-handshake #'emms-lastfm-radio-1 lastfm-url)
     (emms-lastfm-radio-1 lastfm-url)))
+
+(defun emms-lastfm-radio-playable-p (track)
+  "Determine whether the Last.fm player can play this track."
+  (let ((name (emms-track-get track 'name))
+        (type (emms-track-get track 'type)))
+    (and (eq type 'lastfm)
+         (string-match "^lastfm://" name))))
+
+(defun emms-lastfm-radio-start (track)
+  "Start playing TRACK."
+  (when (emms-lastfm-radio-playable-p track)
+    (let ((name (emms-track-get track 'name)))
+      (emms-lastfm-radio name))))
 
 (defcustom emms-lastfm-radio-metadata-period 15
   "When listening to Last.fm Radio every how many seconds should
