@@ -126,7 +126,7 @@ paused track resumes) and sets the track submission timer."
 (defun emms-lastfm-cancel-timer ()
   "Cancels `emms-lastfm-timer' if it is running."
   (when emms-lastfm-timer
-    (cancel-timer emms-lastfm-timer)
+    (emms-cancel-timer emms-lastfm-timer)
     (setq emms-lastfm-timer nil)))
 
 (defun emms-lastfm-pause ()
@@ -181,7 +181,7 @@ the current track, too."
                    'emms-lastfm-cancel-timer)
       (remove-hook 'emms-player-paused-hook
                    'emms-lastfm-pause)
-      (when emms-lastfm-timer (cancel-timer emms-lastfm-timer))
+      (when emms-lastfm-timer (emms-cancel-timer emms-lastfm-timer))
       (setq emms-lastfm-md5-challenge nil
             emms-lastfm-submit-url    nil
             emms-lastfm-process       nil
@@ -310,50 +310,32 @@ well or if an error occured."
           "&passwordmd5="           (md5 emms-lastfm-password)
           "&debug="                 (number-to-string 9)))
 
-(defun emms-lastfm-radio-handshake ()
-  "Handshakes with the last.fm server."
+(defun emms-lastfm-radio-handshake (fn radio-url)
+  "Handshakes with the last.fm server.
+Calls FN when done with RADIO-URL as its only argument."
   (when emms-lastfm-buffer (kill-buffer emms-lastfm-buffer))
   (let ((url-request-method "GET"))
     (setq emms-lastfm-buffer
           (url-retrieve (emms-escape-url
                          (emms-lastfm-radio-get-handshake-url))
-                        'emms-lastfm-radio-handshake-sentinel))))
+                        'emms-lastfm-radio-handshake-sentinel
+                        (list fn radio-url)))))
 
-(defun emms-lastfm-radio-handshake-sentinel (&rest args)
+(defun emms-lastfm-radio-handshake-sentinel (status fn radio-url)
   (save-excursion
     (set-buffer emms-lastfm-buffer)
     (emms-http-decode-buffer)
     (setq emms-lastfm-radio-session    (emms-key-value "session"))
     (setq emms-lastfm-radio-stream-url (emms-key-value "stream_url"))
     (if (and emms-lastfm-radio-session emms-lastfm-radio-stream-url)
-        (message "EMMS: Handshaking for Last.fm playback successful.")
-      (message "EMMS: Failed handshaking for Last.fm playback."))))
+        (progn
+          (message "EMMS: Handshaking for Last.fm playback successful")
+          (funcall fn radio-url))
+      (message "EMMS: Failed handshaking for Last.fm playback"))))
 
-(defun emms-lastfm-radio (lastfm-url)
-  "Plays the stream associated with the given Last.fm URL. (A
-Last.fm URL has the form lastfm://foo/bar/baz, e.g.
-
-  lastfm://artist/Manowar/similarartists
-
-or
-
-  lastfm://globaltags/metal."
-  (interactive "sLast.fm URL: ")
-  ;; Streamed songs must not be added to the lastfm profile
-  (emms-lastfm-disable)
-  (when (not (and emms-lastfm-radio-session 
-                  emms-lastfm-radio-stream-url))
-    (emms-lastfm-radio-handshake))
-  ;; FIXME: Is there some better code to ensure that execution resumes not
-  ;; before the handshake sentinel has finished???
-  (let ((waits 0))
-    (while (and (not (and emms-lastfm-radio-session 
-                          emms-lastfm-radio-stream-url))
-                (< waits 10))
-      (setq waits (1+ waits))
-      (sit-for 1)))
-  ;; END of FIXME
-  (if (and emms-lastfm-radio-session 
+(defun emms-lastfm-radio-1 (lastfm-url)
+  "Internal function used by `emms-lastfm-radio'."
+  (if (and emms-lastfm-radio-session
            emms-lastfm-radio-stream-url)
       (let ((url-request-method "GET"))
         (setq emms-lastfm-buffer
@@ -367,6 +349,23 @@ or
                'emms-lastfm-radio-sentinel)))
     (message "EMMS: Cannot play Last.fm stream.")))
 
+(defun emms-lastfm-radio (lastfm-url)
+  "Plays the stream associated with the given Last.fm URL. (A
+Last.fm URL has the form lastfm://foo/bar/baz, e.g.
+
+  lastfm://artist/Manowar/similarartists
+
+or
+
+  lastfm://globaltags/metal."
+  (interactive "sLast.fm URL: ")
+  ;; Streamed songs must not be added to the lastfm profile
+  (emms-lastfm-disable)
+  (if (not (and emms-lastfm-radio-session
+                emms-lastfm-radio-stream-url))
+      (emms-lastfm-radio-handshake #'emms-lastfm-radio-1 lastfm-url)
+    (emms-lastfm-radio-1 lastfm-url)))
+
 (defcustom emms-lastfm-radio-metadata-period 15
   "When listening to Last.fm Radio every how many seconds should
 emms-lastfm poll for metadata? If set to nil, there won't be any
@@ -376,7 +375,8 @@ The default is 15: That means that the mode line will display the
 wrong (last) track's data for a maximum of 15 seconds. If your
 network connection has a big latency this value may be too
 high. (But then streaming a 128KHz mp3 won't be fun anyway.)"
-  :type 'integer
+  :type '(choice integer
+                 (const :tag "Disable" nil))
   :group 'emms-lastfm)
 
 (defun emms-lastfm-radio-sentinel (&rest args)
@@ -450,8 +450,14 @@ song."
         (message "EMMS: Rated current track.")
       (message "EMMS: Rating failed."))))
 
-(defun emms-lastfm-radio-request-metadata ()
-  "Request the metadata of the current song and display it."
+(defun emms-lastfm-radio-request-metadata (&optional fn data)
+  "Request the metadata of the current song and display it.
+
+If FN is given, call it instead of
+`emms-lastfm-radio-request-metadata-sentinel', with DATA as its
+first parameter.
+
+If DATA is given, it should be a list."
   (interactive)
   ;; we don't want to have hundreds of open buffers, so kill the old one now.
   (when emms-lastfm-buffer (kill-buffer emms-lastfm-buffer))
@@ -463,7 +469,8 @@ song."
                     "np.php?"
                     "session=" emms-lastfm-radio-session
                     "&debug="  (number-to-string 0)))
-           'emms-lastfm-radio-request-metadata-sentinel))))
+           (or fn 'emms-lastfm-radio-request-metadata-sentinel)
+           data))))
 
 (defun emms-lastfm-radio-request-metadata-sentinel (&rest args)
   (save-excursion
