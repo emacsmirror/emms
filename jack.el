@@ -41,7 +41,7 @@
 
 ;;; Code:
 
-(require 'cl)
+(require 'emms-compat)
 
 (defgroup jack ()
   "Jack Audio Connection Kit"
@@ -255,7 +255,7 @@ is given in jackd command-line."
       
 (defun jack-read-program (prompt &optional predicate)
   (let ((progs (if (functionp predicate)
-		   (remove-if-not predicate (jack-list))
+		   (emms-remove-if-not predicate (jack-list))
 		 (jack-list))))
     (unless progs (error "No matching JACK clients found"))
     (if (< (length progs) 2) (caar progs)
@@ -277,7 +277,7 @@ is given in jackd command-line."
 
 (defun jack-read-port (program prompt &optional predicate)
   (let ((ports (if (functionp predicate)
-		   (remove-if-not predicate (jack-ports program))
+		   (emms-remove-if-not predicate (jack-ports program))
 		 (jack-ports program))))
     (if (< (length ports) 2) (caar ports)
       (completing-read prompt ports nil t (jack-unique-port-name (mapcar 'car ports))))))
@@ -293,9 +293,10 @@ If called interactively, the direction does not matter."
 	  (to-prog (jack-read-program
 		 (format "Connect %s port %s to: " prog port)
 		 (lambda (prog)
-		   (find-if (lambda (port)
-			      (member to-type (assoc 'properties (cdr port))))
-			    (cdr prog)))))
+		   (emms-find-if (lambda (port)
+				   (member to-type (assoc 'properties
+							  (cdr port))))
+				 (cdr prog)))))
 	  (to-port (jack-read-port
 		    to-prog
 		    (format "Connect %s port %s to %s port: " prog port to-prog)
@@ -319,8 +320,8 @@ If called interactively, the direction is not relevant."
    (let* ((prog (jack-read-program
 		 "Disconnect: "
 		 (lambda (prog)
-		   (find-if (lambda (port) (assoc 'connections (cdr port)))
-			    (cdr prog)))))
+		   (emms-find-if (lambda (port) (assoc 'connections (cdr port)))
+				 (cdr prog)))))
 	  (port (jack-read-port prog
 		 (format "Disconnect %s port: " prog)
 		 (lambda (port)
@@ -342,7 +343,7 @@ If called interactively, the direction is not relevant."
 				  (completing-read
 				   (format "Disconnect %s port %s from: "
 					   prog port) to-progs nil t))))
-		  (setq connections (remove-if-not
+		  (setq connections (emms-remove-if-not
 				     (lambda (conn)
 				       (string= (car conn) to-prog))
 				     connections))
