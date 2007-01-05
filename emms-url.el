@@ -28,11 +28,7 @@
 (require 'url)
 
 (defvar emms-url-specials
-  '((?\" . "&quot;")
-    (?\< . "&lt;")
-    (?\> . "&gt;")
-    (?\& . "&amp;")
-    (?\  . "%20")
+  '((?\  . "%20")
     (?\n . "%0D%0A"))
   "*An alist of characters which must be represented specially in URLs.
 The transformation is the key of the pair.")
