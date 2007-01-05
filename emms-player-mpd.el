@@ -106,6 +106,13 @@
 (require 'emms-source-playlist)  ; for emms-source-file-parse-playlist
 (require 'tq)
 
+(eval-when-compile
+  (condition-case nil
+      (progn
+        (require 'url)           ; load if available
+        (require 'emms-url))
+    (error nil)))
+
 (defgroup emms-player-mpd nil
   "EMMS player for MusicPD."
   :group 'emms-player
@@ -741,9 +748,12 @@ This handles both m3u and pls type playlists."
 Execute CALLBACK with CLOSURE as its first argument when done."
   ;; This is useful with emms-streams.el
   (if (fboundp 'url-insert-file-contents)
-      (with-temp-buffer
-        (url-insert-file-contents url)
-        (emms-player-mpd-add-buffer-contents closure callback))
+      (progn
+        (require 'emms-url)
+        (with-temp-buffer
+          (url-insert-file-contents (emms-escape-url url))
+          (emms-http-decode-buffer)
+          (emms-player-mpd-add-buffer-contents closure callback)))
     (error (message (concat "You need to install url.el so that"
                             " Emms can retrieve this stream")))))
 
