@@ -71,6 +71,7 @@ Modules and Extensions
 * Music Player Daemon:: Interface to Music Player Daemon.
 * Streaming Audio::     Interface to streaming audio.
 * Lyrics::              Displaying lyrics synchronously.
+* Volume::              Changing the volume
 * Last.fm::             Interact with http://www.last.fm's services.
 * Extending Emms::      How to define new players and modules.
 
@@ -1672,29 +1673,9 @@ order to prime the cache.
 To activate this, add the following to your .emacs.
 
 @example
-(setq emms-volume-lower-function 'emms-volume-mpd-lower
-      emms-volume-raise-function 'emms-volume-mpd-raise)
+(require 'emms-volume)
+(setq emms-volume-change-function 'emms-volume-mpd-change)
 @end example
-
-@defopt emms-player-mpd-volume-change-amount
-The amount to use when raising or lowering the volume using the
-emms-volume interface.
-
-This should be a positive integer.
-@end defopt
-
-@defun emms-volume-mpd-change amount
-Change volume up or down by AMOUNT, depending on whether it is
-positive or negative.
-@end defun
-
-@defun emms-volume-mpd-raise
-Increase the volume.
-@end defun
-
-@defun emms-volume-mpd-lower
-Decrease the volume.
-@end defun
 
 @node Lyrics
 @chapter Lyrics
@@ -1767,6 +1748,31 @@ Disable displaying Emms lyrics.
 
 @defun emms-lyrics-toggle
 Toggle displaying Emms lyrics.
+@end defun
+
+
+
+@node Volume
+@chapter volume
+
+@cindex volume
+
+We can use the `emms-volume' package, as provided by the
+@file{emms-volume.el} file, to manipulate the volume.
+
+@defopt emms-volume-change-amount
+The amount to use when raising or lowering the volume using the
+emms-volume interface.
+
+This should be a positive integer.
+@end defopt
+
+@defun emms-volume-raise
+Increase the volume.
+@end defun
+
+@defun emms-volume-lower
+Decrease the volume.
 @end defun
 
 

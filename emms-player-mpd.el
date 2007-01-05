@@ -76,8 +76,7 @@
 
 ;; To change the volume using MusicPD, do the following.
 ;;
-;; (setq emms-volume-lower-function 'emms-volume-mpd-lower
-;;       emms-volume-raise-function 'emms-volume-mpd-raise)
+;; (setq emms-volume-change-function 'emms-volume-mpd-change)
 
 ;; Add 'emms-player-mpd to the top of `emms-player-list'.
 ;;
@@ -187,14 +186,6 @@ It should take same arguments as `open-network-stream' does."
   "The port of the MusicPD server that we should connect to."
   :type '(choice (const :tag "None" nil)
                  string)
-  :group 'emms-player-mpd)
-
-(defcustom emms-player-mpd-volume-change-amount 5
-  "The amount to use when raising or lowering the volume using the
-emms-volume interface.
-
-This should be a positive integer."
-  :type 'integer
   :group 'emms-player-mpd)
 
 (defcustom emms-player-mpd-check-interval 1
@@ -990,16 +981,6 @@ positive or negative."
        (emms-player-mpd-send
         (concat "setvol \"" (number-to-string new-volume) "\"")
         nil #'ignore)))))
-
-(defun emms-volume-mpd-raise ()
-  "Increase the volume."
-  (interactive)
-  (emms-volume-mpd-change emms-player-mpd-volume-change-amount))
-
-(defun emms-volume-mpd-lower ()
-  "Decrease the volume."
-  (interactive)
-  (emms-volume-mpd-change (- 0 emms-player-mpd-volume-change-amount)))
 
 ;;; Now playing
 
