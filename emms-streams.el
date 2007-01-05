@@ -200,7 +200,11 @@ needed info.")
 This is used when `emms-stream-default-action' is \"play\"."
   (save-excursion
     (setq emms-stream-playlist-buffer
-          (emms-playlist-set-playlist-buffer (emms-playlist-new)))))
+          (emms-playlist-set-playlist-buffer (emms-playlist-new)))
+    (with-current-buffer emms-stream-playlist-buffer
+      ;; make sure that we continue to play the station, even if
+      ;; briefly disconnected
+      (set (make-local-variable 'emms-repeat-playlist) t))))
 
 (defun emms-stream-kill-playlist ()
   "Delete the EMMS playlist associated with emms-streams, if one exists."
