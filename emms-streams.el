@@ -88,8 +88,10 @@ needed info.")
   "The EMMS playlist buffer associated with emms-streams.")
 
 ;; Format: (("descriptive name" url feed-number type))
-;; type could be either url or playlist. If url, then it represents a
-;; direct IP, otherwite it's a stream playlist
+;;
+;; type could be either url, playlist, or lastfm. If url, then it
+;; represents a direct IP, if streamlist it's a stream playlist, if
+;; lastfm it's a lastfm station
 (defvar emms-stream-default-list
  '(("SomaFM: Beatblender"
     "http://www.somafm.com/beatblender.pls" 1 streamlist)
@@ -384,8 +386,8 @@ Don't forget to run `emms-stream-save-bookmarks-file' after !"
     (read-string "URL: ")
     nil
     (completing-read
-     "Type (url or streamlist): "
-     (mapcar #'list '("url" "streamlist")))))
+     "Type (url, streamlist, or lastfm): "
+     (mapcar #'list '("url" "streamlist" "lastfm")))))
   (unless fd (setq fd (emms-stream-determine-fd name)))
   (let* ((line     (emms-line-number-at-pos (point)))
          (index    (+ (/ line 2) 1)))
@@ -415,7 +417,7 @@ Don't forget to save your modifications !"
                                          (emms-stream-url bookmark)))
          (fd       (read-from-minibuffer "Feed Descriptor: "
                                          (int-to-string (emms-stream-fd bookmark))))
-         (type     (read-from-minibuffer "Type (url or streamlist): "
+         (type     (read-from-minibuffer "Type (url, streamlist, or lastfm): "
                                          (format "%s" (emms-stream-type bookmark)))))
     (emms-stream-delete-bookmark)
     (emms-stream-add-bookmark name url (string-to-number fd) type)))

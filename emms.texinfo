@@ -1060,8 +1060,8 @@ just test if there are other files to play and close the process otherwise.
 @end lisp
 @noindent
 
-And to make that a playable example i also added
-@command{emms-mpg321-remote-playablep}, which i just really steal
+And to make that a playable example I also added
+@command{emms-mpg321-remote-playablep}, which I really just steal
 from @file{emms-player-simple.el}
 
 @lisp
@@ -1672,10 +1672,10 @@ order to prime the cache.
 
 To activate this, add the following to your .emacs.
 
-@example
+@lisp
 (require 'emms-volume)
 (setq emms-volume-change-function 'emms-volume-mpd-change)
-@end example
+@end lisp
 
 @node Lyrics
 @chapter Lyrics
@@ -1844,6 +1844,19 @@ Starts playing the stream referenced by @var{lastfm-url}. When run
 interactively you will be prompted for a last.fm URL.
 @end defun
 
+You can also insert Last.fm streams into playlists (or use
+emms-streams.el to listen to them) by activating the player as follows.
+
+@lisp
+(add-to-list 'emms-player-list 'emms-player-lastfm-radio)
+@end lisp
+
+To insert a Last.fm stream into a playlist, do the following.
+
+@lisp
+(emms-insert-lastfm "lastfm://rest-of-url")
+@end lisp
+
 For your convenience there are some functions which let you choose a
 common radio station without having to remember or type its last.fm URL.
 
@@ -1929,6 +1942,13 @@ default, you are free to remove any or all of them and add your
 own.@footnote{If you enjoy a particular streaming audio station on the
 Web and think that it belongs in the default list, please send us a
 link and we will gladly add it!}
+
+If you want to play Last.fm streams, invoke the following and use the
+``lastfm'' type when adding a bookmark to a Last.fm stream.
+
+@lisp
+(require 'emms-lastfm)
+@end lisp
 
 The following is a list of the key-bindings for the emms-streams
 interface:
