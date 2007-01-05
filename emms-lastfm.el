@@ -427,6 +427,26 @@ high. (But then streaming a 128KHz mp3 won't be fun anyway.)"
           (message "EMMS: Playing Last.fm stream."))
       (message "EMMS: Bad response from Last.fm."))))
 
+(defun emms-lastfm-np (&optional arg)
+  "Show the currently-playing lastfm radio tune."
+  (interactive "P")
+  (emms-lastfm-radio-request-metadata
+   (lambda (status arg buffer)
+     (let (artist title)
+       (save-excursion
+         (set-buffer emms-lastfm-buffer)
+         (emms-http-decode-buffer)
+         (setq artist (emms-key-value "artist")
+               title  (emms-key-value "track")))
+       (let ((msg (if title (format emms-show-format
+                                    (format "%s - %s" artist title))
+                    "Nothing playing right now")))
+         (if (and arg title)
+             (with-current-buffer buffer
+               (insert msg))
+           (message msg)))))
+   (list arg (current-buffer))))
+
 (defun emms-lastfm-radio-similar-artists (artist)
   "Plays the similar artist radio of ARTIST."
   (interactive "sArtist: ")

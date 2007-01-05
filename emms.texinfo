@@ -1891,11 +1891,20 @@ high. (But then streaming a 128KHz mp3 won't be fun anyway.)
 @end defvar
 
 Even if you set this variable to nil (no polling) you can fetch the
-meta-informations with this function.
+meta-informations with one of the following functions.
 
 @defun emms-lastfm-radio-request-metadata
 Request the metadata of the current song and display it in the
 mode-line if the `emms-mode-line' package is enabled.
+@end defun
+
+@defun emms-lastfm-np
+Show the currently-playing lastfm radio tune.
+
+If you prefixed the command with @kbd{C-u}, the current song information
+is inserted at point.
+
+Otherwise, display a message with the current song information.
 @end defun
 
 When you listen to last.fm radio you can rate or skip the current song.
