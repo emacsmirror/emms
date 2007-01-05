@@ -460,89 +460,7 @@ See  `emms-repeat-track'."
 
 ;;; Compatibility functions
 
-(defun emms-propertize (string &rest properties)
-  (if (fboundp 'propertize)
-      (apply #'propertize string properties)
-    (set-text-properties 0 (length string) properties string)
-    string))
-
-(defun emms-cancel-timer (timer)
-  "Cancel the given TIMER."
-  (when timer
-    (cond ((fboundp 'cancel-timer)
-           (cancel-timer timer))
-          ((fboundp 'delete-itimer)
-           (delete-itimer timer)))))
-
-(defun emms-time-less-p (t1 t2)
-  "Say whether time T1 is less than time T2."
-  (or (< (car t1) (car t2))
-      (and (= (car t1) (car t2))
-           (< (nth 1 t1) (nth 1 t2)))))
-
-(defun emms-replace-regexp-in-string (regexp replacement text &optional fixedcase literal)
-  "Replace REGEXP with REPLACEMENT in TEXT.
-If fourth arg FIXEDCASE is non-nil, do not alter case of replacement text.
-If fifth arg LITERAL is non-nil, insert REPLACEMENT literally."
-  (cond
-   ((fboundp 'replace-regexp-in-string)
-    (replace-regexp-in-string regexp replacement text fixedcase literal))
-   ((fboundp 'replace-in-string)
-    (replace-in-string text regexp replacement literal))
-   (t (let ((repl-len (length replacement))
-            start)
-        (save-match-data
-          (while (setq start (string-match regexp text start))
-            (setq start (+ start repl-len)
-                  text (replace-match replacement fixedcase literal text)))))
-      text)))
-
-(defun emms-line-number-at-pos (&optional pos)
-  "Return (narrowed) buffer line number at position POS.
-If POS is nil, use current buffer location."
-  (if (fboundp 'line-number-at-pos)
-      (line-number-at-pos pos)
-    (let ((opoint (or pos (point))) start)
-      (save-excursion
-        (goto-char (point-min))
-        (setq start (point))
-        (goto-char opoint)
-        (forward-line 0)
-        (1+ (count-lines start (point)))))))
-
-(defun emms-match-string-no-properties (num &optional string)
-  (if (fboundp 'match-string-no-properties)
-      (match-string-no-properties num string)
-    (match-string num string)))
-
-(defun emms-delete-if (predicate seq)
-  "Remove all items satisfying PREDICATE in SEQ.
-This is a destructive function: it reuses the storage of SEQ
-whenever possible."
-  ;; remove from car
-  (while (when (funcall predicate (car seq))
-           (setq seq (cdr seq))))
-  ;; remove from cdr
-  (let ((ptr seq)
-        (next (cdr seq)))
-    (while next
-      (when (funcall predicate (car next))
-        (setcdr ptr (if (consp next)
-                        (cdr next)
-                      nil)))
-      (setq ptr (cdr ptr))
-      (setq next (cdr ptr))))
-  seq)
-
-(defun emms-move-beginning-of-line (arg)
-  "Move point to beginning of current line as displayed.
-If there's an image in the line, this disregards newlines
-which are part of the text that the image rests on."
-  (if (fboundp 'move-beginning-of-line)
-      (move-beginning-of-line arg)
-    (if (numberp arg)
-        (forward-line (1- arg))
-      (forward-line 0))))
+(require 'emms-compat)
 
 
 ;;; Tracks
