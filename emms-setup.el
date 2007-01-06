@@ -50,7 +50,8 @@
   '(emms-player-mpg321
     emms-player-ogg123
     emms-player-mplayer-playlist
-    emms-player-mplayer)
+    emms-player-mplayer
+    emms-player-xine)
   "*Default list of players for emms-setup."
   :group 'emms-setup
   :type 'list)
@@ -101,6 +102,7 @@ stable features which come with the Emms distribution."
     (require 'emms-lyrics)
     (require 'emms-playing-time)
     (require 'emms-player-mpd)
+    (require 'emms-player-xine)
     (require 'emms-playlist-sort)
     (require 'emms-browser)
     (require 'emms-lastfm))
