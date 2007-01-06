@@ -156,7 +156,7 @@ the current track, too."
     (message "%s"
              (concat "EMMS: In order to activate the last.fm plugin you "
                      "first have to set both `emms-lastfm-username' and "
-                     "`emms-lastfm-password'.")))
+                     "`emms-lastfm-password'")))
    ((not emms-playing-time-p)
     (message "%s"
              (concat "EMMS: The last.fm plugin needs the functionality "
@@ -164,7 +164,7 @@ the current track, too."
                      "disabled it explicitly in your init file using code "
                      "like this: `(emms-playing-time -1)'. Delete that "
                      "line and have a look at `emms-playing-time's doc "
-                     "string.")))
+                     "string")))
    (t
     (if (and ARG (> ARG 0))
         (progn
@@ -179,7 +179,7 @@ the current track, too."
                     'emms-lastfm-cancel-timer)
           (add-hook 'emms-player-paused-hook
                     'emms-lastfm-pause)
-          (message "EMMS Last.fm plugin activated."))
+          (message "EMMS Last.fm plugin activated"))
       (remove-hook 'emms-player-started-hook
                    'emms-lastfm-handshake-if-needed)
       (remove-hook 'emms-player-started-hook
@@ -193,7 +193,7 @@ the current track, too."
             emms-lastfm-submit-url    nil
             emms-lastfm-process       nil
             emms-lastfm-current-track nil)
-      (message "EMMS Last.fm plugin deactivated.")))))
+      (message "EMMS Last.fm plugin deactivated")))))
 
 (defalias 'emms-lastfm-activate 'emms-lastfm
   "Obsolete! Use `emms-lastfm-enable', `emms-lastfm-disable' or
@@ -240,16 +240,16 @@ well or if an error occured."
       (if (not (string-match (rx (or "UPTODATE""UPDATE")) response))
           (progn
             (cond ((string-match "FAILED" response)
-                   (message "EMMS: Handshake failed: %s." response))
+                   (message "EMMS: Handshake failed: %s" response))
                   ((string-match "BADUSER" response)
-                   (message "EMMS: Wrong username."))))
+                   (message "EMMS: Wrong username"))))
         (when (string-match "UPDATE" response)
-          (message "EMMS: There's a new last.fm plugin version."))
+          (message "EMMS: There's a new last.fm plugin version"))
         (forward-line)
         (setq emms-lastfm-md5-challenge (emms-read-line))
         (forward-line)
         (setq emms-lastfm-submit-url (emms-read-line))
-        (message "EMMS: Handshaking with server done.")))))
+        (message "EMMS: Handshaking with server done")))))
 
 (defun emms-lastfm-submit-track ()
   "Submits the current track (`emms-lastfm-current-track') to
@@ -293,10 +293,10 @@ well or if an error occured."
     (goto-char (point-min))
     (if (re-search-forward "^OK$" nil t)
         (progn
-          (message "EMMS: \"%s\" submitted to last.fm."
+          (message "EMMS: \"%s\" submitted to last.fm"
                    (emms-track-description emms-lastfm-current-track))
           (kill-buffer emms-lastfm-buffer))
-      (message "EMMS: Song couldn't be submitted to last.fm."))))
+      (message "EMMS: Song couldn't be submitted to last.fm"))))
 
 
 ;;; Playback of lastfm:// streams
@@ -366,7 +366,7 @@ Calls FN when done with RADIO-URL as its only argument."
                         "&url="    lastfm-url
                         "&debug="  (number-to-string 0)))
                'emms-lastfm-radio-sentinel)))
-    (message "EMMS: Cannot play Last.fm stream.")))
+    (message "EMMS: Cannot play Last.fm stream")))
 
 (defun emms-lastfm-radio (lastfm-url)
   "Plays the stream associated with the given Last.fm URL. (A
@@ -424,8 +424,8 @@ high. (But then streaming a 128KHz mp3 won't be fun anyway.)"
                                   'emms-lastfm-radio-request-metadata))
             (add-hook 'emms-player-stopped-hook
                       'emms-lastfm-cancel-timer))
-          (message "EMMS: Playing Last.fm stream."))
-      (message "EMMS: Bad response from Last.fm."))))
+          (message "EMMS: Playing Last.fm stream"))
+      (message "EMMS: Bad response from Last.fm"))))
 
 (defun emms-lastfm-np (&optional arg)
   "Show the currently-playing lastfm radio tune."
@@ -499,8 +499,8 @@ song."
     (set-buffer emms-lastfm-buffer)
     (emms-http-decode-buffer)
     (if (string= (emms-key-value "response") "OK")
-        (message "EMMS: Rated current track.")
-      (message "EMMS: Rating failed."))))
+        (message "EMMS: Rated current track")
+      (message "EMMS: Rating failed"))))
 
 (defun emms-lastfm-radio-request-metadata (&optional fn data)
   "Request the metadata of the current song and display it.
