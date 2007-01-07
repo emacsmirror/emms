@@ -1775,6 +1775,38 @@ Increase the volume.
 Decrease the volume.
 @end defun
 
+If you feel like binding those two functions to global keys --- don't do
+it, or you'll loose the convenience of `emms-volume-minor-mode'. Instead
+bind those two commands to some keys you like:
+
+@defun emms-volume-mode-plus
+Raise volume and enable or extend the `emms-volume-minor-mode' timeout.
+@end defun
+
+@defun emms-volume-mode-minus
+Lower volume and enable or extend the `emms-volume-minor-mode' timeout.
+@end defun
+
+Example:
+
+@lisp
+(global-set-key (kbd "C-c +") 'emms-volume-mode-plus)
+(global-set-key (kbd "C-c -") 'emms-volume-mode-minus)
+@end lisp
+
+Whenever you use one of these keys or call these functions with `M-x'
+emms will be put into `emms-volume-minor-mode' for a short period
+defined by `emms-volume-mode-timeout'.
+
+@defopt emms-volume-mode-timeout
+The timeout in amount of seconds used by `emms-volume-minor-mode'.
+@end defopt
+
+In this interval you can raise/lower the volume simply by pressing + or
+-, which will also reset the timer to its initial value. So instead of
+pressing `C-c +' six times to increase volume by six steps of
+`emms-volume-change-amount' you would simply type `C-c + + + + + +'.
+
 
 @node Last.fm
 @chapter Last.fm
@@ -1797,13 +1829,13 @@ with lastfm://.
 For both services you need a last.fm account and you have to set up
 two variables.
 
-@defvar emms-lastfm-username
+@defopt emms-lastfm-username
 Your last.fm username.
-@end defvar
+@end defopt
 
-@defvar emms-lastfm-password
+@defopt emms-lastfm-password
 Your last.fm password.
-@end defvar
+@end defopt
 
 @lisp
 (setq emms-lastfm-username "my-user-name"
@@ -1879,7 +1911,7 @@ While listening to a last.fm radio station `emms-lastfm' will try to
 fetch some meta-informations (artist and title) of the currently playing
 song. That's controlled by the following variable:
 
-@defvar emms-lastfm-radio-metadata-period
+@defopt emms-lastfm-radio-metadata-period
 When listening to Last.fm Radio every how many seconds should
 emms-lastfm poll for metadata? If set to nil, there won't be any
 polling at all.
@@ -1888,7 +1920,7 @@ The default is 15: That means that the mode line will display the
 wrong (last) track's data for a maximum of 15 seconds. If your
 network connection has a big latency this value may be too
 high. (But then streaming a 128KHz mp3 won't be fun anyway.)
-@end defvar
+@end defopt
 
 Even if you set this variable to nil (no polling) you can fetch the
 meta-informations with one of the following functions.
