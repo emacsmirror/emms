@@ -292,6 +292,10 @@ POPUP-HEIGHT is the height of the new frame, defaulting to
           (if (not firstp)
               (insert "\n ")
             (setq firstp nil))
+          ;; make sure type identifier is a symbol, not a string
+          (when (stringp (nth 3 stream))
+            (setq stream (copy-alist stream))
+            (setcar (nthcdr 3 stream) (intern (nth 3 stream))))
           (prin1 stream buffer)))
       (insert ")\n")
       (save-buffer)
@@ -389,6 +393,7 @@ Don't forget to run `emms-stream-save-bookmarks-file' after !"
      "Type (url, streamlist, or lastfm): "
      (mapcar #'list '("url" "streamlist" "lastfm")))))
   (unless fd (setq fd (emms-stream-determine-fd name)))
+  (when (stringp type) (setq type (intern type)))
   (let* ((line     (emms-line-number-at-pos (point)))
          (index    (+ (/ line 2) 1)))
     (setq emms-stream-list (emms-stream-insert-at index (list name url fd type)
