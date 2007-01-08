@@ -27,9 +27,10 @@
 
 ;;; Code:
 
-;; TODO: The video window cannot be disabled and I dunno how seeking works with
-;; xine's stdin control. I asked on gmane.comp.video.xine.user
-;; (<87y7ohqcbq.fsf@baldur.tsdh.de>)...
+;; TODO: The video window cannot be disabled. I asked on
+;; gmane.comp.video.xine.user (<87y7ohqcbq.fsf@baldur.tsdh.de>)...
+
+;; TODO: Implement seek-to with "SetPositionX%\n" where X is in {0,10,..,90}
 
 (require 'emms-player-simple)
 
@@ -48,32 +49,42 @@
                  'resume
                  nil)
 
-;; TODO: Find out how seeking works.
-;; (emms-player-set emms-player-xine
-;;                  'seek
-;;                  'emms-player-xine-seek)
-
-;; (emms-player-set emms-player-xine
-;;                  'seek-to
-;;                  'emms-player-xine-seek-to)
+(emms-player-set emms-player-xine
+                 'seek
+                 'emms-player-xine-seek)
 
 (defun emms-player-xine-pause ()
   "Depends on xine's --stdctl mode."
   (process-send-string
    emms-player-simple-process-name "pause\n"))
 
-;; TODO: Find out how seeking works.
-;; (defun emms-player-xine-seek (sec)
-;;   "Depends on xine's --stdctl mode."
-;;   (process-send-string
-;;    emms-player-simple-process-name
-;;    (format "seek %d\n" sec)))
+(defun emms-player-xine-seek (secs)
+  "Depends on xine's --stdctl mode."
+  ;; xine-ui's stdctl supports only seeking forward/backward in 7/15/30 and 60
+  ;; second steps, so we take the value that is nearest to SECS.
+  (let ((s (emms-nearest-value secs '(-60 -30 -15 -7 7 15 30 60))))
+    (when (/= s secs)
+      (message (concat "EMMS: Xine only supports seeking for [+/-] 7/15/30/60 "
+                       "seconds, so we seeked %d seconds") s))
+    (process-send-string
+     emms-player-simple-process-name
+     (if (< s 0)
+         (format "SeekRelative%d\n" s)
+       (format "SeekRelative+%d\n" s)))))
 
-;; (defun emms-player-xine-seek-to (sec)
-;;   "Depends on xine's --stdctl mode."
-;;   (process-send-string
-;;    emms-player-simple-process-name
-;;    (format "seek %d 2\n" sec)))
+(defun emms-nearest-value (val list)
+  "Returns the value of LIST which is nearest to VAL.
+
+LIST should be a list of integers."
+  (let* ((nearest (car list))
+         (dist (abs (- val nearest))))
+    (dolist (lval (cdr list))
+      (let ((ndist (abs (- val lval))))
+        (when (< ndist dist)
+          (setq nearest lval
+                dist    ndist))))
+    nearest))
+
 
 (provide 'emms-player-xine)
 ;;; emms-player-xine.el ends here
