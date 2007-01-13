@@ -58,7 +58,7 @@ Emms basics
 * The Core File::       The inner core of Emms.
 * Sources::             Sources for playlists-creation.
 * Simple Players::      Some simple players.
-* Playlists::           How Emms organizes media
+* Playlists::           How Emms organizes media.
 
 Advanced Features
 * Track Information::        More narrative track descriptions.
@@ -71,7 +71,7 @@ Modules and Extensions
 * Music Player Daemon:: Interface to Music Player Daemon.
 * Streaming Audio::     Interface to streaming audio.
 * Lyrics::              Displaying lyrics synchronously.
-* Volume::              Changing the volume
+* Volume::              Changing the volume.
 * Last.fm::             Interact with http://www.last.fm's services.
 * Extending Emms::      How to define new players and modules.
 
@@ -94,7 +94,7 @@ Here are some other nodes which are really inferiors of the ones
 already listed, mentioned here so you can get to them in one step:
 
 Installation
-* Compiling Emms::      Compiling Emms into Byte-Code
+* Compiling Emms::      Compiling Emms into Byte-Code.
 
 The Core File
 * User Variables::     Variables for the user to tweak.
@@ -102,12 +102,16 @@ The Core File
 * Core Functions::     Providing the basic functionality of Emms.
 
 Track Information
-* Defining Info Methods::    Defining new info methods
+* Defining Info Methods::    Defining new info methods.
+
+Volume
+* Submitting track informations:: How to submit track information to last.fm.
+* Last.fm radio::                 How to listen to last.fm radio.
 
 Extending Emms
-* New Player::  How to define a new player
-* Simple Player for `play':: Example player using @command{play}
-* More Complex Player:: Example of a complex player using @command{mpg321}
+* New Player::               How to define a new player.
+* Simple Player for `play':: Example player using @command{play}.
+* More Complex Player::      Example of a complex player using @command{mpg321}.
 @end detailmenu
 @end menu
 
@@ -164,7 +168,7 @@ then in your ~/.emacs, you should do:
 @noindent
 
 @menu
-* Compiling Emms::      Compiling Emms into Byte-Code
+* Compiling Emms::      Compiling Emms into Byte-Code.
 @end menu
 
 @node Compiling Emms
@@ -304,7 +308,7 @@ Another way to change Emms variables is to use the M-x
 @command{customize} mechanism provided by Emacs.
 
 @menu
-* Finding files and speed::     Finding files quickly or portably
+* Finding files and speed::     Finding files quickly or portably.
 @end menu
 
 @node Finding files and speed
@@ -771,7 +775,7 @@ track as argument.
 @end defopt
 
 @menu
-* Defining Info Methods::    Defining new info methods
+* Defining Info Methods::    Defining new info methods.
 @end menu
 
 @node Defining Info Methods
@@ -921,9 +925,9 @@ Emms introduces a high abstraction layer for playing music so you can
 customise it to your needs.
 
 @menu
-* New Player::  How to define a new player
-* Simple Player for `play':: An example player using @command{play}
-* More Complex Player:: Example of a complex player using @command{mpg321}
+* New Player::               How to define a new player.
+* Simple Player for `play':: An example player using @command{play}.
+* More Complex Player::      Example of a complex player using @command{mpg321}.
 @end menu
 
 @node New Player
@@ -1753,7 +1757,7 @@ Toggle displaying Emms lyrics.
 
 
 @node Volume
-@chapter volume
+@chapter Volume
 
 @cindex volume
 
@@ -1776,8 +1780,8 @@ Decrease the volume.
 @end defun
 
 If you feel like binding those two functions to global keys --- don't do
-it, or you'll loose the convenience of `emms-volume-minor-mode'. Instead
-bind those two commands to some keys you like:
+it or you'll miss the convenience of `emms-volume-minor-mode'. Instead,
+bind the following two commands to some keys that you like.
 
 @defun emms-volume-mode-plus
 Raise volume and enable or extend the `emms-volume-minor-mode' timeout.
@@ -1794,18 +1798,19 @@ Example:
 (global-set-key (kbd "C-c -") 'emms-volume-mode-minus)
 @end lisp
 
-Whenever you use one of these keys or call these functions with `M-x'
-emms will be put into `emms-volume-minor-mode' for a short period
-defined by `emms-volume-mode-timeout'.
+Whenever you use one of these keys or call these functions with
+@kbd{M-x}, Emms will be put into `emms-volume-minor-mode' for a short
+period defined by `emms-volume-mode-timeout'.
 
 @defopt emms-volume-mode-timeout
 The timeout in amount of seconds used by `emms-volume-minor-mode'.
 @end defopt
 
-In this interval you can raise/lower the volume simply by pressing + or
--, which will also reset the timer to its initial value. So instead of
-pressing `C-c +' six times to increase volume by six steps of
-`emms-volume-change-amount' you would simply type `C-c + + + + + +'.
+In this interval you can raise/lower the volume simply by pressing
+@kbd{+} or @kbd{-}, which will also reset the timer to its initial
+value. So instead of pressing @kbd{C-c +} six times to increase volume
+by six steps of @code{emms-volume-change-amount}, you would simply type
+@kbd{C-c + + + + + +}.
 
 
 @node Last.fm
@@ -1845,8 +1850,8 @@ Your last.fm password.
 You can edit them with the `customize' interface, too.
 
 @menu
-* Submitting track informations::
-* Last.fm radio::
+* Submitting track informations:: How to submit track information to last.fm.
+* Last.fm radio::                 How to listen to last.fm radio.
 @end menu
 
 @node Submitting track informations
