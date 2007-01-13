@@ -29,7 +29,9 @@
 
 (defvar emms-url-specials
   '((?\  . "%20")
-    (?\n . "%0D%0A"))
+    (?\n . "%0D%0A")
+    (?&  . "%26")
+    (??  . "%3F"))
   "*An alist of characters which must be represented specially in URLs.
 The transformation is the key of the pair.")
 

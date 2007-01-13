@@ -220,11 +220,11 @@ the current track, too."
   (let ((url-request-method "GET"))
     (setq emms-lastfm-buffer
           (url-retrieve
-           (emms-escape-url (concat emms-lastfm-server "?hs=true&p=1.1"
-                                    "&c=" emms-lastfm-client-id
-                                    "&v=" (number-to-string
-                                           emms-lastfm-client-version)
-                                    "&u=" emms-lastfm-username))
+           (concat emms-lastfm-server
+                   "?hs=true&p=1.1"
+                   "&c=" emms-lastfm-client-id
+                   "&v=" (number-to-string emms-lastfm-client-version)
+                   "&u=" (emms-escape-url emms-lastfm-username))
            'emms-lastfm-handshake-sentinel))))
 
 (defun emms-lastfm-handshake-sentinel (&rest args)
@@ -268,20 +268,20 @@ last.fm."
          (url-request-extra-headers
           '(("Content-type" .
              "application/x-www-form-urlencoded; charset=utf-8")))
-         (url-request-data (encode-coding-string
-                            (concat "u=" emms-lastfm-username
-                                    "&s=" (md5 (concat
-                                                (md5 emms-lastfm-password)
-                                                emms-lastfm-md5-challenge))
-                                    "&a[0]=" artist
-                                    "&t[0]=" title
-                                    "&b[0]=" album
-                                    "&m[0]=" musicbrainz-id
-                                    "&l[0]=" track-length
-                                    "&i[0]=" date)
-                            'utf-8)))
+         (url-request-data
+          (encode-coding-string
+           (concat "u=" (emms-escape-url emms-lastfm-username)
+                   "&s=" (md5 (concat (md5 emms-lastfm-password)
+                                      emms-lastfm-md5-challenge))
+                   "&a[0]=" (emms-escape-url artist)
+                   "&t[0]=" (emms-escape-url title)
+                   "&b[0]=" (emms-escape-url album)
+                   "&m[0]=" musicbrainz-id
+                   "&l[0]=" track-length
+                   "&i[0]=" date)
+           'utf-8)))
     (setq emms-lastfm-buffer
-          (url-retrieve (emms-escape-url emms-lastfm-submit-url)
+          (url-retrieve emms-lastfm-submit-url
                         'emms-lastfm-submission-sentinel))))
 
 (defun emms-lastfm-submission-sentinel (&rest args)
@@ -325,7 +325,7 @@ well or if an error occured."
           "handshake.php?version=" (number-to-string 
                                     emms-lastfm-client-version)
           "&platform="              emms-lastfm-client-id
-          "&username="              emms-lastfm-username
+          "&username="              (emms-escape-url emms-lastfm-username)
           "&passwordmd5="           (md5 emms-lastfm-password)
           "&debug="                 (number-to-string 9)))
 
@@ -335,8 +335,7 @@ Calls FN when done with RADIO-URL as its only argument."
   (when emms-lastfm-buffer (kill-buffer emms-lastfm-buffer))
   (let ((url-request-method "GET"))
     (setq emms-lastfm-buffer
-          (url-retrieve (emms-escape-url
-                         (emms-lastfm-radio-get-handshake-url))
+          (url-retrieve (emms-lastfm-radio-get-handshake-url)
                         'emms-lastfm-radio-handshake-sentinel
                         (list fn radio-url)))))
 
@@ -359,12 +358,11 @@ Calls FN when done with RADIO-URL as its only argument."
       (let ((url-request-method "GET"))
         (setq emms-lastfm-buffer
               (url-retrieve
-               (emms-escape-url
-                (concat emms-lastfm-radio-base-url
-                        "adjust.php?"
-                        "session=" emms-lastfm-radio-session
-                        "&url="    lastfm-url
-                        "&debug="  (number-to-string 0)))
+               (concat emms-lastfm-radio-base-url
+                       "adjust.php?"
+                       "session=" emms-lastfm-radio-session
+                       "&url="    (emms-escape-url lastfm-url)
+                       "&debug="  (number-to-string 0))
                'emms-lastfm-radio-sentinel)))
     (message "EMMS: Cannot play Last.fm stream")))
 
@@ -486,12 +484,11 @@ song."
   (let ((url-request-method "GET"))
     (setq emms-lastfm-buffer
           (url-retrieve
-           (emms-escape-url
-            (concat emms-lastfm-radio-base-url
-                    "control.php?"
-                    "session="  emms-lastfm-radio-session
-                    "&command=" command
-                    "&debug="   (number-to-string 0)))
+           (concat emms-lastfm-radio-base-url
+                   "control.php?"
+                   "session="  emms-lastfm-radio-session
+                   "&command=" command
+                   "&debug="   (number-to-string 0))
            'emms-lastfm-radio-rating-sentinel))))
 
 (defun emms-lastfm-radio-rating-sentinel (&rest args)
@@ -516,11 +513,10 @@ If DATA is given, it should be a list."
   (let ((url-request-method "GET"))
     (setq emms-lastfm-buffer
           (url-retrieve
-           (emms-escape-url
-            (concat emms-lastfm-radio-base-url
-                    "np.php?"
-                    "session=" emms-lastfm-radio-session
-                    "&debug="  (number-to-string 0)))
+           (concat emms-lastfm-radio-base-url
+                   "np.php?"
+                   "session=" emms-lastfm-radio-session
+                   "&debug="  (number-to-string 0))
            (or fn 'emms-lastfm-radio-request-metadata-sentinel)
            data))))
 
