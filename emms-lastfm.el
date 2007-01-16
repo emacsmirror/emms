@@ -209,6 +209,12 @@ the current track, too."
   (interactive)
   (emms-lastfm -1))
 
+(defun emms-lastfm-restart ()
+  "Disable and reenable the last.fm plugin. This will cause a new
+handshake."
+  (emms-lastfm-disable)
+  (emms-lastfm-enable))
+
 (defun emms-lastfm-handshake-if-needed ()
   (when (not (and emms-lastfm-md5-challenge
                   emms-lastfm-submit-url))
@@ -296,7 +302,12 @@ well or if an error occured."
           (message "EMMS: \"%s\" submitted to last.fm"
                    (emms-track-description emms-lastfm-current-track))
           (kill-buffer emms-lastfm-buffer))
-      (message "EMMS: Song couldn't be submitted to last.fm"))))
+      (message "EMMS: Song couldn't be submitted to last.fm")
+      (goto-char (point-min))
+      (when (re-search-forward "^BADAUTH$" nil t)
+        ;; Somehow our md5-challenge expired...
+        (message "EMMS: Restarting last.fm plugin")
+        (emms-lastfm-restart)))))
 
 
 ;;; Playback of lastfm:// streams
@@ -309,9 +320,9 @@ well or if an error occured."
 (defcustom emms-player-lastfm-radio (emms-player 'emms-lastfm-radio-start
                                                  'ignore ; no need to stop
                                                  'emms-lastfm-radio-playable-p)
- "*Parameters for the Last.fm radio player."
- :type '(cons symbol alist)
- :group 'emms-player-lastfm-radio)
+  "*Parameters for the Last.fm radio player."
+  :type '(cons symbol alist)
+  :group 'emms-player-lastfm-radio)
 
 (defconst emms-lastfm-radio-base-url "http://ws.audioscrobbler.com/radio/"
   "The base URL for playing lastfm:// stream.
