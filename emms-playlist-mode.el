@@ -283,7 +283,7 @@ set it as current."
       (with-current-emms-playlist
         (goto-char (point-max))
         (when playlist-p
-          (insert (emms-track-description track) "\n"))
+          (insert (emms-track-force-description track) "\n"))
         (let ((beg (point)))
           (if playlist-p
               (emms-add-playlist name)
@@ -399,7 +399,7 @@ set it as current."
 (defun emms-playlist-mode-open-buffer (filename)
   "Opens a previously saved playlist buffer.
 
-It creates a buffer called \"filename\", and restore the contents
+It creates a buffer called \"filename\", and restores the contents
 of the saved playlist inside."
   (interactive "fFile: ")
   (let* ((s)
@@ -411,15 +411,9 @@ of the saved playlist inside."
     (with-current-buffer (emms-playlist-new name)
       (emms-with-inhibit-read-only-t
        (insert s)
-       (condition-case nil
-	   (progn
-	     (emms-playlist-first)
-	     (emms-playlist-update-track)
-	     (while t
-	       (emms-playlist-next)
-	       (emms-playlist-update-track)))
-	 (error
-	  nil)))
+       (goto-char (point-min))
+       (emms-walk-tracks
+         (emms-playlist-update-track)))
       (emms-playlist-first)
       (emms-playlist-select (point))
       (switch-to-buffer (current-buffer)))))

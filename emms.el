@@ -536,8 +536,12 @@ If there is no value, return DEFAULT (or nil, if not given)."
 
 (defun emms-track-description (track)
   "Return a description of TRACK.
-This function uses `emms-track-description-function'."
-  (funcall emms-track-description-function track))
+This function uses the global value for `emms-track-description-function',
+rather than anything the current mode might have set.
+
+Use `emms-track-force-description' instead if you need to insert
+a description into a playlist buffer."
+  (funcall (default-value 'emms-track-description-function) track))
 
 (defun emms-track-updated (track)
   "Information in TRACK got updated."
@@ -560,7 +564,7 @@ This is used when inserting a description into a buffer.
 The reason for this is that if no text was returned (i.e. the
 user defined a track function that returned nil or the empty
 string), a confusing error message would result."
-  (let ((desc (emms-track-description track)))
+  (let ((desc (funcall emms-track-description-function track)))
     (if (and (stringp desc) (not (string= desc "")))
         desc
       (emms-track-simple-description track))))
