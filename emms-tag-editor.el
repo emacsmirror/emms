@@ -122,22 +122,23 @@ See also `emms-tag-editor-tag-file' and `emms-tag-editor-tag-ogg'.
 ")
 
 (defun emms-tag-editor-tag-ogg (track)
-  (call-process "vorbiscomment" nil nil nil
-                "-w" "-t"
-                (mapconcat
-                 (lambda (tag)
-                   (concat tag "="
-                           (emms-track-get track (intern (concat "info-" tag)))))
-                 '("artist" "title" "album" "tracknumber" "date" "genre" "note")
-                 "\n\t")
-                (emms-track-name track)))
+  (let (args val)
+    (mapc (lambda (tag)
+            (let ((info-tag (intern (concat "info-" tag))))
+              (when (> (length (setq val (emms-track-get track info-tag))) 0)
+                (setq args (append (list "-t" (concat tag "=" val)) args)))))
+          '("artist" "title" "album" "tracknumber" "date" "genre" "note"))
+    (when args
+      (apply #'call-process "vorbiscomment" nil nil nil
+             "-w"
+             (append args (list (emms-track-name track)))))))
 
 (defun emms-tag-editor-tag-file (track program tags)
   "Change tag in FILE use PROGRAM. The TAGS is given in `emms-tag-editor-tagfile-functions'."
   (let (args val)
     (mapc (lambda (tag)
             (when (> (length (setq val (emms-track-get track (car tag)))) 0)
-              (setq args (append args (list (concat "-" (cdr tag)) val)))))
+              (setq args (append (list (concat "-" (cdr tag)) val) args))))
           tags)
     (apply 'call-process program
            nil nil nil
