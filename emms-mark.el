@@ -27,6 +27,12 @@
 ;; Put this file into your load-path and the following into your ~/.emacs:
 ;;   (require 'emms-mark)
 
+;; To activate it for the current buffer only, do:
+;;   (emms-mark-mode)
+
+;; To make this the default EMMS mode, do:
+;;   (setq emms-playlist-default-major-mode 'emms-mark-mode)
+
 ;;; Code:
 
 (provide 'emms-mark)
@@ -35,47 +41,22 @@
 (eval-when-compile
   (require 'cl))
 
-(defvar emms-mark-track-desc-functions
-  '(emms-track-simple-description
-    emms-info-track-description)
-  "A list of track description function. If you want emms support
-mark, you should add your favorite track description function to this
-list and use `emms-mark-select-desc-function' to set the new track
-description function.")
-
-(defvar emms-mark-selected-desc-function
-  emms-track-description-function)
-
 ;;{{{  set new description-function
 (defun emms-mark-track-description (track)
   "Return a description of the current track."
-  (assert (not (eq emms-mark-selected-desc-function
+  (assert (not (eq (default-value 'emms-track-description-function)
                    'emms-mark-track-description))
-          nil "Should never set emms-mark-selected-desc-function to emms-mark-track-description.")
-  (concat "  " (funcall emms-mark-selected-desc-function track)))
+          nil "Should never set emms-track-selection-function to be emms-mark-track-description.")
+  (concat "  " (funcall (default-value 'emms-track-description-function)
+                        track)))
 
-(setq emms-track-description-function 'emms-mark-track-description)
-
-(defun emms-mark-select-desc-function (func)
-  (interactive
-   (list (intern
-          (completing-read "Set description function to: "
-                           (mapcar 'list
-                                   emms-mark-track-desc-functions) nil
-                           t "emms-"))))
-  (setq emms-mark-selected-desc-function func
-        emms-track-description-function 'emms-mark-track-description)
+(defun emms-mark-update-descriptions ()
+  "Update the track descriptions in the current buffer."
   (emms-with-inhibit-read-only-t
    (save-excursion
-     (dolist (buf (emms-playlist-buffer-list))
-       (set-buffer buf)
-       (let ((tracks (nreverse
-                      (emms-playlist-tracks-in-region (point-min)
-                                                      (point-max)))))
-         (erase-buffer)
-         (emms-with-inhibit-read-only-t
-          (mapc 'emms-playlist-insert-track
-                tracks)))))))
+     (goto-char (point-min))
+     (emms-walk-tracks
+       (emms-playlist-update-track)))))
 ;;}}}
 
 ;;{{{ functions to mark tracks
@@ -224,12 +205,54 @@ collect the result of FUNC."
     (kill-new tracks)))
 ;;}}}
 
-(let ((map emms-playlist-mode-map))
-  (define-key map "m" 'emms-mark-forward)
-  (define-key map "u" 'emms-mark-unmark-forward)
-  (define-key map "U" 'emms-mark-unmark-all)
-  (define-key map "t" 'emms-mark-toggle)
-  (define-key map "%m" 'emms-mark-regexp)
-  (define-key map "%u" 'emms-mark-unmark-regexp))
+;;{{{ mode stuff
+(defconst emms-mark-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map "m" 'emms-mark-forward)
+    (define-key map "u" 'emms-mark-unmark-forward)
+    (define-key map "U" 'emms-mark-unmark-all)
+    (define-key map "t" 'emms-mark-toggle)
+    (define-key map "%m" 'emms-mark-regexp)
+    (define-key map "%u" 'emms-mark-unmark-regexp)))
+
+(defun emms-mark-mode ()
+  "An EMMS major mode that allows tracks to be marked like dired.
+\\{emms-mark-mode-map}"
+  (interactive)
+  (if (eq major-mode 'emms-mark-mode)
+      ;; do nothing if we're already in emms-mark-mode
+      nil
+
+    ;; start emms-playlist-mode exactly once
+    (unless (eq major-mode 'emms-playlist-mode)
+      (emms-playlist-mode))
+
+    ;; use inherited keymap
+    (set-keymap-parent emms-mark-mode-map (current-local-map))
+    (use-local-map emms-mark-mode-map)
+    (setq major-mode 'emms-mark-mode
+          mode-name "Emms-Mark")
+
+    ;; show a blank space at beginning of each line
+    (set (make-local-variable 'emms-track-description-function)
+         'emms-mark-track-description)
+    (emms-mark-update-descriptions)))
+
+(defun emms-mark-mode-disable ()
+  "Disable `emms-mark-mode' and return to `emms-playlist-mode'."
+  (interactive)
+  (if (not (eq major-mode 'emms-mark-mode))
+      ;; do nothing if we're not in emms-mark-mode
+      nil
+
+    ;; call emms-playlist-mode, saving important variables
+    (let ((selected emms-playlist-selected-marker))
+      (emms-playlist-mode)
+      (setq emms-playlist-selected-marker selected)
+      (emms-playlist-mode-overlay-selected))
+
+    ;; update display
+    (emms-mark-update-descriptions)))
+;;}}}
 
 ;;; emms-mark.el ends here
