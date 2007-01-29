@@ -455,11 +455,17 @@ When NO-NEWLINE is non-nil, do not insert a newline after the track."
    (let ((track-region (emms-property-region (point)
 					     'emms-track))
 	 (track (get-text-property (point)
-				   'emms-track)))
+				   'emms-track))
+	 (selectedp (emms-playlist-selected-track-at-p)))
      (save-excursion
        (delete-region (car track-region)
 		      (cdr track-region))
-       (emms-playlist-mode-insert-track track t)))))
+       (when selectedp
+	 (delete-overlay emms-playlist-mode-selected-overlay)
+	 (setq emms-playlist-mode-selected-overlay nil))
+       (emms-playlist-mode-insert-track track t))
+     (when selectedp
+       (emms-playlist-select (point))))))
 
 ;;; --------------------------------------------------------
 ;;; Entry
