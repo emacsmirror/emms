@@ -296,6 +296,30 @@ This also disables any read-onliness of the current buffer."
      ,@body))
 (put 'emms-with-widened-buffer 'edebug-form-spec '(body))
 
+(defmacro emms-walk-tracks (&rest body)
+  "Execute BODY for each track in the current buffer, starting at point.
+The point will be placed at the beginning of the track before
+executing BODY.
+
+The point will not be restored afterward."
+  (let ((donep (make-symbol "donep")))
+    `(let ((,donep nil))
+       ;; skip to first track if not on one
+       (unless (emms-playlist-track-at (point))
+         (condition-case nil
+             (emms-playlist-next)
+           (error
+            (setq ,donep t))))
+       ;; walk tracks
+       (while (not ,donep)
+         ,@body
+         (condition-case nil
+             (emms-playlist-next)
+           (error
+            (setq ,donep t)))))))
+(put 'emms-walk-tracks 'lisp-indent-function 0)
+(put 'emms-walk-tracks 'edebug-form-spec '(body))
+
 
 ;;; User Interface
 
@@ -833,23 +857,11 @@ If no playlist exists, a new one is generated."
   (emms-playlist-ensure-playlist-buffer)
   ;; FIXME: This is rather inefficient.
   (save-excursion
-    (let ((track-indices nil)
-          (donep nil))
-      (condition-case nil
-          (progn
-            (emms-playlist-first)
-            (setq track-indices (cons (point)
-                                      track-indices)))
-        (error
-         (setq donep t)))
-      (while (not donep)
-        (condition-case nil
-            (progn
-              (emms-playlist-next)
-              (setq track-indices (cons (point)
-                                        track-indices)))
-          (error
-           (setq donep t))))
+    (let ((track-indices nil))
+      (goto-char (point-min))
+      (emms-walk-tracks
+        (setq track-indices (cons (point)
+                                  track-indices)))
       (setq track-indices (vconcat track-indices))
       (emms-playlist-select (aref track-indices
                                   (random (length track-indices)))))))
@@ -914,21 +926,13 @@ This is supplying ARGS as arguments to the source."
 (defun emms-playlist-tracks-in-region (beg end)
   "Return all tracks between BEG and END."
   (emms-playlist-ensure-playlist-buffer)
-  (let ((tracks nil)
-        (donep nil))
+  (let ((tracks nil))
     (save-restriction
       (narrow-to-region beg end)
-      (condition-case nil
-          (emms-playlist-first)
-        (error
-         (setq donep t)))
-      (while (not donep)
+      (goto-char (point-min))
+      (emms-walk-tracks
         (setq tracks (cons (emms-playlist-track-at (point))
-                           tracks))
-        (condition-case nil
-            (emms-playlist-next)
-          (error
-           (setq donep t)))))
+                           tracks))))
     tracks))
 
 (defun emms-playlist-track-updated (track)
