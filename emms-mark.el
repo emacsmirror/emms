@@ -213,7 +213,8 @@ collect the result of FUNC."
     (define-key map "U" 'emms-mark-unmark-all)
     (define-key map "t" 'emms-mark-toggle)
     (define-key map "%m" 'emms-mark-regexp)
-    (define-key map "%u" 'emms-mark-unmark-regexp)))
+    (define-key map "%u" 'emms-mark-unmark-regexp)
+    map))
 
 (defun emms-mark-mode ()
   "An EMMS major mode that allows tracks to be marked like dired.
