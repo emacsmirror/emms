@@ -120,8 +120,9 @@ at time-i, display lyric-i.")
 (defvar emms-lyrics-mode-line-string ""
   "Current lyric.")
 
-(defun emms-lyrics-read-file (file)
+(defun emms-lyrics-read-file (file &optional catchup)
   "Read a lyric file(LRC format).
+Optional CATCHUP is for recognizing `emms-lyrics-catchup'.
 FILE should end up with \".lrc\", its content looks like one of the
 following:
 
@@ -131,7 +132,8 @@ following:
 
 FILE should be under the same directory as the music file, or under
 `emms-lyrics-dir'."
-  (setq file (funcall emms-lyrics-find-lyric-function file))
+  (or catchup
+      (setq file (funcall emms-lyrics-find-lyric-function file)))
   (when (and file (file-exists-p file))
     (with-temp-buffer
       (let ((coding-system-for-read emms-lyrics-coding-system))
@@ -171,8 +173,24 @@ FILE should be under the same directory as the music file, or under
 		'name)))
 	  (emms-lyrics-read-file
 	   (emms-replace-regexp-in-string
-	    (concat "\\." (file-name-extension file) "\\'") ".lrc" file)))
+	    (concat "\\." (file-name-extension file) "\\'")
+            ".lrc"
+            (file-name-nondirectory file))))
     (emms-lyrics-set-timer)))
+
+(defun emms-lyrics-catchup (lrc)
+  "Catchup with later downloaded LRC file(full path).
+If you write some lyrics crawler, which is running asynchronically,
+then this function would be useful to call when the crawler finishes its
+job."
+  (let ((old-start emms-lyrics-start-time))
+    (setq emms-lyrics-start-time (current-time)
+          emms-lyrics-pause-time nil
+          emms-lyrics-elapsed-time 0)
+    (emms-lyrics-read-file lrc t)
+    (emms-lyrics-set-timer)
+    (emms-lyrics-seek
+     (time-to-seconds (time-since old-start)))))
 
 (defun emms-lyrics-stop ()
   "Stop displaying lyrics."
@@ -205,9 +223,7 @@ FILE should be under the same directory as the music file, or under
   "Seek forward or backward SEC seconds lyrics."
   (setq emms-lyrics-elapsed-time
 	(+ emms-lyrics-elapsed-time
-	   (time-to-seconds
-	    (time-subtract (current-time)
-			   emms-lyrics-start-time))
+	   (time-to-seconds (time-since emms-lyrics-start-time))
 	   sec))
   (when (< emms-lyrics-elapsed-time 0)	; back to start point
     (setq emms-lyrics-elapsed-time 0))
@@ -338,28 +354,28 @@ display."
         (message lyric)))))
 
 (defun emms-lyrics-find-lyric (file)
-  "Use `emms-source-file-gnu-find' to find lrc FILE in
-`emms-lyrics-dir'."
-  (when (and (eq 'file (emms-track-get
-                        (emms-playlist-current-selected-track)
-                        'type))
-             (not (string= emms-lyrics-dir "")))
-    ;; If find two or more lyric files, only return the first one. Good
-    ;; luck! :-)
-    (if (file-exists-p file)             ; same directory
-        file
-      (let* ((ret (car (split-string
-                        (shell-command-to-string
-                         (concat emms-source-file-gnu-find " "
-                                 emms-lyrics-dir " -name "
-                                 "'"    ; wrap up whitespaces
-                                 (emms-replace-regexp-in-string
-                                  "'" "*" ; FIX ME, '->\'
-                                  (file-name-nondirectory file))
-                                 "'"))
-                        "\n"))))
-        (unless (equal ret "")
-          ret)))))
+  "Return full path of found lrc FILE, or nil if not found.
+Use `emms-source-file-gnu-find' to find lrc FILE under current directory
+and `emms-lyrics-dir'.
+e.g., (emms-lyrics-find-lyric \"abc.lrc\")"
+  (let* ((track (emms-playlist-current-selected-track))
+         (dir (file-name-directory (emms-track-get track 'name))))
+    (when (eq 'file (emms-track-get track 'type))
+      ;; If find two or more lyric files, only return the first one. Good
+      ;; luck! :-)
+      (if (file-exists-p (concat dir file)) ; same directory?
+          (concat dir file)
+        (when (not (string= emms-lyrics-dir ""))
+          (let* ((ret (car (split-string
+                            (shell-command-to-string
+                             (concat emms-source-file-gnu-find " "
+                                     emms-lyrics-dir " -name "
+                                     "'" ; wrap up whitespaces, FIXME, '->\'
+                                     (emms-replace-regexp-in-string "'" "*" file)
+                                     "'"))
+                            "\n"))))
+            (unless (equal ret "")
+              ret)))))))
 
 (defun emms-lyrics-find-current-lyric ()
   "Visit current selected track's lyric file."
@@ -368,11 +384,11 @@ display."
                               'name)))
     (condition-case nil
         (find-file-existing
-         (emms-lyrics-find-lyric
-          (emms-replace-regexp-in-string
-           (concat "\\." (file-name-extension name) "\\'")
-           ".lrc"
-           name)))
+         (funcall emms-lyrics-find-lyric-function
+                  (emms-replace-regexp-in-string
+                   (concat "\\." (file-name-extension name) "\\'")
+                   ".lrc"
+                   (file-name-nondirectory name))))
       (error "lyric file does not exist"))))
 
 
