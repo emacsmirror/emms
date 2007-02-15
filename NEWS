@@ -23,7 +23,8 @@ News since version 2.1:
     Last.fm and playing Last.fm radio streams.  Support for playing
     these streams has been added to emms-streams.el.
   - New file emms-i18n.el adds support for handling coding systems
-    properly in process input/output..
+    properly in process input/output.  This is currently only used by
+    emms-info-mp3info.el.
   - New file emms-history.el causes playlists to be saved
     automatically when exiting Emacs.
   - emms-player-mpd:
