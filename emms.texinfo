@@ -63,10 +63,12 @@ Emms basics
 Advanced Features
 * Track Information::        More narrative track descriptions.
 * Interactive Playlists::    Interactive Playlists.
+* Markable Playlists::       Allow tracks to be marked.
 
 Modules and Extensions
 * The Browser::         Advanced metadata browsing.
 * Sorting Playlists::   Sorting the order of the tracks.
+* Editing Tracks::      Editing track information from within Emms.
 * Emms Mode Line::      Emms information on the mode line.
 * Music Player Daemon:: Interface to Music Player Daemon.
 * Streaming Audio::     Interface to streaming audio.
@@ -914,6 +916,13 @@ with the playlist tracks. Text which is not a track is ignored by the
 program and can therefore be used to include titles and annotations
 within the playlist.
 
+@node Markable Playlists
+@chapter Markable Playlists
+
+@cindex Markable Playlists
+
+Write me.
+
 @node Extending Emms
 @chapter Extending Emms
 
@@ -1518,6 +1527,13 @@ Sort playlist by notes in ascending order.
 @defun emms-playlist-sort-by-score
 Sort emms playlist by score in descending order.
 @end defun
+
+@node Editing Tracks
+@chapter Editing Tracks
+
+@cindex track editor
+
+Write me.
 
 @node Emms Mode Line
 @chapter Emms Mode Line
