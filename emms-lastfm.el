@@ -195,9 +195,8 @@ the current track, too."
             emms-lastfm-current-track nil)
       (message "EMMS Last.fm plugin deactivated")))))
 
-(defalias 'emms-lastfm-activate 'emms-lastfm
-  "Obsolete! Use `emms-lastfm-enable', `emms-lastfm-disable' or
-`emms-lastfm'.")
+(defalias 'emms-lastfm-activate 'emms-lastfm)
+(emms-make-obsolete 'emms-lastfm-activate 'emms-lastfm "EMMS 2.2")
 
 (defun emms-lastfm-enable ()
   "Enable the emms last.fm plugin."
