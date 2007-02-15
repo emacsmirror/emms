@@ -37,6 +37,18 @@
     (set-text-properties 0 (length string) properties string)
     string))
 
+;; Emacs accepts three arguments to `make-obsolete', but the XEmacs
+;; version only takes two arguments
+(defun emms-make-obsolete (old-name new-name when)
+  "Make the byte-compiler warn that OLD-NAME is obsolete.
+The warning will say that NEW-NAME should be used instead.
+WHEN should be a string indicating when the function was
+first made obsolete, either the file's revision number or an
+EMMS release version number."
+  (condition-case nil
+      (make-obsolete old-name new-name when)
+    (wrong-number-of-arguments (make-obsolete old-name new-name))))
+
 
 ;;; Time and timers
 

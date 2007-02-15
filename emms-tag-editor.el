@@ -58,8 +58,9 @@
   (format "%%m\n%-16s = %%f\n%s\n\n" "name"
           (mapconcat
            (lambda (tag)
-             (concat (propertize (format "%-16s = " (symbol-name tag))
-                                 'read-only t 'rear-nonsticky t 'face 'bold)
+             (concat (emms-propertize (format "%-16s = " (symbol-name tag))
+                                      'read-only t 'rear-nonsticky t
+                                      'face 'bold)
                      "%" (cdr (assoc tag emms-tag-editor-tags))))
            tags "\n")))
 
