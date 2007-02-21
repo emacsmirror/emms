@@ -1344,11 +1344,11 @@ or negative to seek backwards."
 ;; This is a simple helper data structure, used by both players
 ;; and tracks.
 
-(defun emms-dictionary (name)
+(defsubst emms-dictionary (name)
   "Create a new dictionary of type NAME."
   (list name))
 
-(defun emms-dictionary-type (dict)
+(defsubst emms-dictionary-type (dict)
   "Return the type of the dictionary DICT."
   (car dict))
 
