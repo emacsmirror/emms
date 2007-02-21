@@ -135,13 +135,15 @@ value of `emms-source-file-default-directory'."
                                           emms-source-file-default-directory
                                           emms-source-file-default-directory
                                           t)))
-  (mapc (lambda (file)
-          (unless (let ((case-fold-search nil))
-                    (string-match emms-source-file-exclude-regexp file))
-            (emms-playlist-insert-track
-             (emms-track 'file file))))
-        (emms-source-file-directory-tree (expand-file-name dir)
-                                         (emms-source-file-regex))))
+  (let ((files (emms-source-file-directory-tree (expand-file-name dir)
+						(emms-source-file-regex)))
+	(case-fold-search nil))
+    (emms-playlist-ensure-playlist-buffer)
+    (mapc (lambda (file)
+	    (unless (string-match emms-source-file-exclude-regexp file)
+	      (funcall emms-playlist-insert-track-function 
+		       (emms-track 'file file))))
+	  files)))
 
 ;;;###autoload (autoload 'emms-play-find "emms-source-file" nil t)
 ;;;###autoload (autoload 'emms-add-find "emms-source-file" nil t)

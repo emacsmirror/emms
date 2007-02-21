@@ -52,7 +52,7 @@ time after this call, and definitely not while lisp is still
 executing.
 Code added using `later-do' is guaranteed to be executed in the
 sequence it was added."
-  (setq later-do-list (append later-do-list
+  (setq later-do-list (nconc later-do-list
                               (list (cons function args))))
   (unless later-do-timer
     (setq later-do-timer
