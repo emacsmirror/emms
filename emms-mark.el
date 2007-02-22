@@ -73,15 +73,26 @@
     (save-excursion
       (beginning-of-line)
       (while (and (not (eobp))
-                  (> arg 0))
+                  (/= arg 0))
         (setq track (get-text-property (point) 'emms-track))
         (delete-char 1)
         (insert (emms-propertize (string emms-mark-char)
                                  'emms-track track))
         (backward-char 1)
-        (put-text-property (point) (progn (forward-line 1) (point))
-                           'face face)
-        (setq arg (1- arg))))))
+        (if (> arg 0)
+            ;; Propertizing forward...
+            (put-text-property (point)
+                               (progn (forward-line 1) (point))
+                               'face face)
+          ;; ... and backward
+          (let ((start (save-excursion (end-of-line) (point))))
+            (put-text-property (progn (beginning-of-line) (point))
+                               start
+                               'face face))
+          (forward-line -1))
+        (setq arg (if (> arg 0)
+                      (1- arg)
+                    (1+ arg)))))))
 
 (defun emms-mark-unmark-track (&optional arg)
   (interactive "p")
@@ -208,6 +219,9 @@ collect the result of FUNC."
 ;;{{{ mode stuff
 (defconst emms-mark-mode-map
   (let ((map (make-sparse-keymap)))
+    (define-key map "W" 'emms-mark-copy-marked-tracks)
+    (define-key map "K" 'emms-mark-kill-marked-tracks)
+    (define-key map "D" 'emms-mark-delete-marked-tracks)
     (define-key map "m" 'emms-mark-forward)
     (define-key map "u" 'emms-mark-unmark-forward)
     (define-key map "U" 'emms-mark-unmark-all)
