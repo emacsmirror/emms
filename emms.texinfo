@@ -921,7 +921,61 @@ within the playlist.
 
 @cindex Markable Playlists
 
-Write me.
+The Markable Playlists provided by the file @file{emms-mark.el} are an
+alternative to the default interactive playlists, @xref{Interactive
+Playlists}. They allow marking tracks with keybindings familiar to users
+of dired.
+
+To enable the Markable Playlists you have to add
+
+@lisp
+(require 'emms-mark)
+@end lisp
+
+to your @file{.emacs}. Then you can activate @command{emms-mark-mode} by
+executing @command{M-x emms-mark-mode} in a playlist buffer. You can
+return to the default interactive playlist mode with @command{M-x
+emms-mark-mode-disable}.
+
+@table @kbd
+@item m
+@findex emms-mark-forward
+Marks the current track and sets point one line forward. If a prefix
+argument ARG is given, it will mark the next ARG tracks and set point
+accordingly. A negative argument marks backward.
+@item U
+@findex emms-mark-unmark-all
+Unmarks all tracks in the playlist.
+@item t
+@findex emms-mark-toggle
+Toggles mark on the current track.
+@item u
+@findex emms-mark-unmark-forward
+Unmarks same way as @command{emms-mark-forward} marks.
+@item % m
+@findex emms-mark-regexp
+Marks all tracks in the playlist matching the given regular expression.
+@item % u
+@findex emms-mark-unmark-regexp
+Unmarks same way as @command{emms-mark-regexp} marks.
+@end table
+
+When tracks are marked you can operate on them:
+
+@table @kbd
+@item D
+@findex emms-mark-delete-marked-tracks
+Deletes the marked tracks from the playlist.
+@item K
+@findex  emms-mark-kill-marked-tracks
+Deletes the marked tracks from the playlist and places them in the
+kill-ring, so that you can @command{yank} in into another playlist.
+@item W 
+@findex emms-mark-copy-marked-tracks
+Adds the marked tracks to the kill-ring, so that you can @command{yank}
+them into another playlist.
+@end table
+
 
 @node Extending Emms
 @chapter Extending Emms
