@@ -821,6 +821,13 @@ information about Emms setup levels see @xref{Simple Setup}.
 Switch to the current emms-playlist buffer and use emms-playlist-mode.
 @end defun
 
+If you wish to make this the default EMMS playlist mode, add the
+following to your @file{.emacs}.
+
+@lisp
+(setq emms-playlist-default-major-mode 'emms-playlist-mode)
+@end lisp
+
 The interactive playlist buffer shows the tracks in the current Emms
 playlist in the order in which they will be played. The current track
 will be highlighted.
@@ -937,6 +944,13 @@ executing @command{M-x emms-mark-mode} in a playlist buffer. You can
 return to the default interactive playlist mode with @command{M-x
 emms-mark-mode-disable}.
 
+If you wish to make this the default EMMS playlist mode, add the
+following to your @file{.emacs}.
+
+@lisp
+(setq emms-playlist-default-major-mode 'emms-mark-mode)
+@end lisp
+
 @table @kbd
 @item m
 @findex emms-mark-forward
@@ -970,7 +984,7 @@ Deletes the marked tracks from the playlist.
 @findex  emms-mark-kill-marked-tracks
 Deletes the marked tracks from the playlist and places them in the
 kill-ring, so that you can @command{yank} in into another playlist.
-@item W 
+@item W
 @findex emms-mark-copy-marked-tracks
 Adds the marked tracks to the kill-ring, so that you can @command{yank}
 them into another playlist.
