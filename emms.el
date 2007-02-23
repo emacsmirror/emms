@@ -487,6 +487,36 @@ See  `emms-repeat-track'."
 (require 'emms-compat)
 
 
+;;; Dictionaries
+
+;; This is a simple helper data structure, used by both players
+;; and tracks.
+
+(defsubst emms-dictionary (name)
+  "Create a new dictionary of type NAME."
+  (list name))
+
+(defsubst emms-dictionary-type (dict)
+  "Return the type of the dictionary DICT."
+  (car dict))
+
+(defun emms-dictionary-get (dict name &optional default)
+  "Return the value of NAME in DICT."
+  (let ((item (assq name (cdr dict))))
+    (if item
+        (cdr item)
+      default)))
+
+(defun emms-dictionary-set (dict name value)
+  "Set the value of NAME in DICT to VALUE."
+  (let ((item (assq name (cdr dict))))
+    (if item
+        (setcdr item value)
+      (setcdr dict (append (cdr dict)
+                           (list (cons name value))))))
+  dict)
+
+
 ;;; Tracks
 
 ;; This is a simple datatype to store track information.
@@ -1337,36 +1367,6 @@ or negative to seek backwards."
           (error "Player does not know how to seek-to")
         (funcall seek seconds)
         (run-hook-with-args 'emms-player-time-set-functions seconds)))))
-
-
-;;; Dictionaries
-
-;; This is a simple helper data structure, used by both players
-;; and tracks.
-
-(defsubst emms-dictionary (name)
-  "Create a new dictionary of type NAME."
-  (list name))
-
-(defsubst emms-dictionary-type (dict)
-  "Return the type of the dictionary DICT."
-  (car dict))
-
-(defun emms-dictionary-get (dict name &optional default)
-  "Return the value of NAME in DICT."
-  (let ((item (assq name (cdr dict))))
-    (if item
-        (cdr item)
-      default)))
-
-(defun emms-dictionary-set (dict name value)
-  "Set the value of NAME in DICT to VALUE."
-  (let ((item (assq name (cdr dict))))
-    (if item
-        (setcdr item value)
-      (setcdr dict (append (cdr dict)
-                           (list (cons name value))))))
-  dict)
 
 (provide 'emms)
 ;;; emms.el ends here
