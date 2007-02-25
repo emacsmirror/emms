@@ -33,6 +33,7 @@ News since version 2.1:
     - Display the correct error message if an error occurs while
       trying to play a stream.
     - Handle any encoding errors that occur during playback.
+  - emms-playing-time supports different display styles now.
 
 News since version 2.0:
 
