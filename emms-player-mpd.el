@@ -1,6 +1,6 @@
 ;;; emms-player-mpd.el --- MusicPD support for EMMS
 
-;; Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+;; Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 
 ;; Author: Michael Olson <mwolson@gnu.org>
 
@@ -190,7 +190,7 @@ It should take same arguments as `open-network-stream' does."
   :group 'emms-player-mpd)
 
 (defcustom emms-player-mpd-server-password nil
-  "The port of the MusicPD server that we should connect to."
+  "The password for the MusicPD server that we should connect to."
   :type '(choice (const :tag "None" nil)
                  string)
   :group 'emms-player-mpd)
@@ -210,7 +210,7 @@ and errors."
   :group 'emms-player-mpd)
 
 (defcustom emms-player-mpd-sync-playlist t
-  "Whether to syncronize the EMMS playlist with the MusicPD playlist.
+  "Whether to synchronize the EMMS playlist with the MusicPD playlist.
 
 If your EMMS playlist contains music files rather than playlists,
 leave this set to non-nil.
@@ -382,9 +382,7 @@ The format of the cell is (name . value)."
         nil))))
 
 (defun emms-player-mpd-get-alist (info)
-  "Turn the given parsed INFO from MusicPD into an alist.
-
-The format of the alist is (name . value)."
+  "Turn the given parsed INFO from MusicPD into an alist."
   (when (and info
              (null (car info))          ; no error has occurred
              (cdr info))                ; data exists
@@ -399,8 +397,6 @@ The format of the alist is (name . value)."
 
 (defun emms-player-mpd-get-alists (info)
   "Turn the given parsed INFO from MusicPD into an list of alists.
-
-The format of the alist is (name . value).
 
 The list will be in reverse order."
   (when (and info
@@ -893,7 +889,7 @@ This is called if `emms-player-mpd-sync-playlist' is non-nil."
 Afterward, the status of MusicPD will be tracked.
 
 This also has the effect of changing the current EMMS playlist to
-be the same as the curreent MusicPD playlist.  Thus, this
+be the same as the current MusicPD playlist.  Thus, this
 function is useful to call if the contents of the EMMS playlist
 buffer get out-of-sync for some reason."
   (interactive)
