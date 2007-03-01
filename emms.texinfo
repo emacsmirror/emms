@@ -1773,7 +1773,9 @@ To activate this, add the following to your .emacs.
 We can display the lyrics of a song in time with the music using the
 `emms-lyrics' package provided by the file @file{emms-lyrics.el}.
 
-The lyrics files should have the extention ``.lrc''.
+The lyrics files should have the extention ``.lrc'', and can be placed
+under either the same directory as the music files or
+@var{emms-lyrics-dir}.
 
 To add this feature we invoke:
 
@@ -1795,8 +1797,9 @@ If non-nil, display lyrics on modeline.
 @end defvr
 
 @defvr {User Option} emms-lyrics-dir
-Local lyrics repository. @command{emms-lyrics-find-lyric} will look
-for lyrics in current directory and this directory.
+Local lyrics repository.
+@command{emms-lyrics-find-lyric} will look for lyrics in current
+directory(i.e., same as the music file) and this directory.
 @end defvr
 
 @defvr {User Option} emms-lyrics-display-format
