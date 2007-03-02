@@ -329,9 +329,10 @@ job."
       (let ((time (- (caar lyrics-alist) emms-lyrics-elapsed-time))
             (lyric (cdar lyrics-alist))
             (next-time (and (cdr lyrics-alist)
-                            (- (caadr lyrics-alist) emms-lyrics-elapsed-time)))
+                            (- (car (cadr lyrics-alist))
+                               emms-lyrics-elapsed-time)))
             (next-lyric (and (cdr lyrics-alist)
-                             (cdadr lyrics-alist))))
+                             (cdr (cadr lyrics-alist)))))
         (setq emms-lyrics-timers
               (append emms-lyrics-timers
                       (list
@@ -443,7 +444,7 @@ NEXT-LYRIC."
                                     'emms-lyrics-display
                                     (if (>= (length lyric) pos)
                                         (substring scrolled-lyric pos)
-                                      (throw 'return))))))
+                                      (throw 'return t))))))
         (setq time (+ time emms-lyrics-scroll-timer-interval))
         (setq pos (1+ pos))))))
 
