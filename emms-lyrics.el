@@ -109,6 +109,12 @@ same as the music file) and this directory."
 
 ;;; User Interfaces
 
+(defvar emms-lyrics-display-p t
+  "If non-nil, will diplay lyrics.")
+
+(defvar emms-lyrics-mode-line-string ""
+  "Current lyric.")
+
 ;;;###autoload
 (defun emms-lyrics-enable ()
   "Enable displaying emms lyrics."
@@ -201,14 +207,11 @@ If we can't find it from local disk, then search it from internet."
         (setq url (concat "http://search.lyrics.astraweb.com/?word="
                           ;;"http://www.lyrics007.com/cgi-bin/s.cgi?q="
                           (replace-regexp-in-string " " "+" title)))
-        (w3m-browse-url url)
+        (browse-url url)
         (message "lyric file does not exist, search it from internet...done")))))
 
 
 ;;; EMMS Lyrics
-
-(defvar emms-lyrics-display-p t
-  "If non-nil, will diplay lyrics.")
 
 (defvar emms-lyrics-alist nil
   "a list of the form: '((time0 . lyric0) (time1 . lyric1)...)). In
@@ -225,9 +228,6 @@ short, at time-i, display lyric-i.")
 
 (defvar emms-lyrics-elapsed-time 0
   "How long time has emms lyric played.")
-
-(defvar emms-lyrics-mode-line-string ""
-  "Current lyric.")
 
 (defvar emms-lyrics-scroll-timers nil
   "Lyrics scroller timers.")
