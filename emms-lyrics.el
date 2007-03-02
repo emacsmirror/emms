@@ -44,7 +44,7 @@
 
 ;; 1. Maybe the lyric setup should run before `emms-start'.
 ;; 2. Give a user a chance to choose when finding out multiple lyrics.
-;; 3. Search lyrics from internet ?
+;; 3. Search .lrc format lyrics from internet ?
 
 ;;; Code:
 
@@ -199,14 +199,15 @@ If we can't find it from local disk, then search it from internet."
         (unless title
           (setq title (file-name-sans-extension
                        (file-name-nondirectory name))))
-        ;; (if (string-match "\\cc" title)
-        ;; baidu couldn't handle chinese correctly?
-        ;; "http://mp3.baidu.com/m?f=ms&rn=10&tn=baidump3lyric&ct=150994944&word=hello
-        ;; &submit=%B0%D9%B6%C8%CB%D1%CB%F7&lm=-1"
-        ;; "http://mp3.baidu.com/"
-        (setq url (concat "http://search.lyrics.astraweb.com/?word="
-                          ;;"http://www.lyrics007.com/cgi-bin/s.cgi?q="
-                          (replace-regexp-in-string " " "+" title)))
+        (cond ((string-match "\\cc" title) ; chinese lyrics
+               (setq url (format
+                          "http://mp3.baidu.com/m?f=ms&rn=10&tn=baidump3lyric&ct=150994944&word=%s&lm=-1"
+                          (emms-lyrics-url-quote-plus
+                           (encode-coding-string title 'gb2312)))))
+              (else                     ; english lyrics
+               (setq url (format "http://search.lyrics.astraweb.com/?word=%s"
+                                 ;;"http://www.lyrics007.com/cgi-bin/s.cgi?q="
+                                 (replace-regexp-in-string " " "+" title)))))
         (browse-url url)
         (message "lyric file does not exist, search it from internet...done")))))
 
@@ -466,6 +467,35 @@ NEXT-LYRIC."
                                       (throw 'return t))))))
         (setq time (+ time emms-lyrics-scroll-timer-interval))
         (setq pos (1+ pos))))))
+
+
+;;; Utilities
+
+(defun emms-lyrics-url-quote (s &optional safe)
+  "Replace special characters in S using the `%xx' escape.
+Characters in [a-zA-Z_.-/] and SAFE(default is \"\")) will never be
+quoted.
+e.g.,
+    (url-quote \"abc def\") => \"abc%20def\"."
+  (or safe (setq safe ""))
+  (mapconcat (lambda (c)
+               (if (if (string-match "]" safe)
+                       ;; ] should be place at the beginning inside []
+                       (string-match
+                        (format "[]a-zA-Z_.-/%s]"
+                                (replace-regexp-in-string "]" "" safe))
+                        (char-to-string c))
+                     (string-match (format "[a-zA-Z_.-/%s]" safe)
+                                   (char-to-string c)))
+                   (char-to-string c)
+                 (format "%%%02x" c)))
+             (string-to-list (encode-coding-string s 'utf-8))
+             ""))
+
+(defun emms-lyrics-url-quote-plus (s &optional safe)
+  "Run (emms-url-quote s \" \"), then replace ` ' with `+'."
+  (replace-regexp-in-string
+   " " "+" (emms-url-quote s (concat safe " "))))
 
 
 ;;; emms-lyrics-mode
