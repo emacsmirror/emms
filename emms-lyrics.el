@@ -107,7 +107,105 @@ same as the music file) and this directory."
   :group 'emms-lyrics)
 
 
-;;; Emms Lyrics
+;;; User Interfaces
+
+;;;###autoload
+(defun emms-lyrics-enable ()
+  "Enable displaying emms lyrics."
+  (interactive)
+  (emms-lyrics 1)
+  (message "emms lyrics enabled."))
+
+;;;###autoload
+(defun emms-lyrics-disable ()
+  "Disable displaying emms lyrics."
+  (interactive)
+  (emms-lyrics -1)
+  (message "emms lyrics disabled."))
+
+;;;###autoload
+(defun emms-lyrics-toggle ()
+  "Toggle displaying emms lyrics."
+  (interactive)
+  (if emms-lyrics-display-p
+      (emms-lyrics-disable)
+    (emms-lyrics-enable)))
+
+(defun emms-lyrics-toggle-display-on-minibuffer ()
+  "Toggle display lyrics on minibbufer."
+  (interactive)
+  (if emms-lyrics-display-on-minibuffer
+      (progn
+	(setq emms-lyrics-display-on-minibuffer nil)
+	(message "Disable lyrics on minibufer."))
+    (setq emms-lyrics-display-on-minibuffer t)
+    (message "Enable lyrics on minibufer.")))
+
+(defun emms-lyrics-toggle-display-on-modeline ()
+  "Toggle display lyrics on mode line."
+  (interactive)
+  (if emms-lyrics-display-on-modeline
+      (progn
+	(setq emms-lyrics-display-on-modeline nil
+	      emms-lyrics-mode-line-string "")
+	(message "Disable lyrics on mode line."))
+    (setq emms-lyrics-display-on-modeline t)
+    (message "Enable lyrics on mode line.")))
+
+(defun emms-lyrics (arg)
+  "Turn on emms lyrics display if ARG is positive, off otherwise."
+  (interactive "p")
+  (if (and arg (> arg 0))
+      (progn
+        (setq emms-lyrics-display-p t)
+        (add-hook 'emms-player-started-hook     'emms-lyrics-start)
+        (add-hook 'emms-player-stopped-hook     'emms-lyrics-stop)
+        (add-hook 'emms-player-finished-hook    'emms-lyrics-stop)
+        (add-hook 'emms-player-paused-hook      'emms-lyrics-pause)
+        (add-hook 'emms-player-seeked-functions 'emms-lyrics-seek)
+        (add-hook 'emms-player-time-set-functions 'emms-lyrics-sync))
+    (emms-lyrics-stop)
+    (setq emms-lyrics-display-p nil)
+    (emms-lyrics-restore-mode-line)
+    (remove-hook 'emms-player-started-hook     'emms-lyrics-start)
+    (remove-hook 'emms-player-stopped-hook     'emms-lyrics-stop)
+    (remove-hook 'emms-player-finished-hook    'emms-lyrics-stop)
+    (remove-hook 'emms-player-paused-hook      'emms-lyrics-pause)
+    (remove-hook 'emms-player-seeked-functions 'emms-lyrics-seek)
+    (remove-hook 'emms-player-time-set-functions 'emms-lyrics-sync)))
+
+(defun emms-lyrics-visit-lyric ()
+  "Visit playing track's lyric file.
+If we can't find it from local disk, then search it from internet."
+  (interactive)
+  (let* ((track (emms-playlist-current-selected-track))
+         (name (emms-track-get track 'name))
+         (lrc (funcall emms-lyrics-find-lyric-function
+                       (emms-replace-regexp-in-string
+                        (concat "\\." (file-name-extension name) "\\'")
+                        ".lrc"
+                        (file-name-nondirectory name)))))
+    (if (and lrc (file-exists-p lrc) (not (string= lrc "")))
+        (find-file lrc)
+      (message "lyric file does not exist, search it from internet...")
+      (let ((title (emms-track-get track 'title))
+            (url ""))
+        (unless title
+          (setq title (file-name-sans-extension
+                       (file-name-nondirectory name))))
+        ;; (if (string-match "\\cc" title)
+        ;; baidu couldn't handle chinese correctly?
+        ;; "http://mp3.baidu.com/m?f=ms&rn=10&tn=baidump3lyric&ct=150994944&word=hello
+        ;; &submit=%B0%D9%B6%C8%CB%D1%CB%F7&lm=-1"
+        ;; "http://mp3.baidu.com/"
+        (setq url (concat "http://search.lyrics.astraweb.com/?word="
+                          ;;"http://www.lyrics007.com/cgi-bin/s.cgi?q="
+                          (replace-regexp-in-string " " "+" title)))
+        (w3m-browse-url url)
+        (message "lyric file does not exist, search it from internet...done")))))
+
+
+;;; EMMS Lyrics
 
 (defvar emms-lyrics-display-p t
   "If non-nil, will diplay lyrics.")
@@ -256,71 +354,6 @@ job."
         emms-lyrics-elapsed-time 0)
   (emms-lyrics-seek sec))
 
-(defun emms-lyrics-toggle-display-on-minibuffer ()
-  "Toggle display lyrics on minibbufer."
-  (interactive)
-  (if emms-lyrics-display-on-minibuffer
-      (progn
-	(setq emms-lyrics-display-on-minibuffer nil)
-	(message "Disable lyrics on minibufer."))
-    (setq emms-lyrics-display-on-minibuffer t)
-    (message "Enable lyrics on minibufer.")))
-
-(defun emms-lyrics-toggle-display-on-modeline ()
-  "Toggle display lyrics on mode line."
-  (interactive)
-  (if emms-lyrics-display-on-modeline
-      (progn
-	(setq emms-lyrics-display-on-modeline nil
-	      emms-lyrics-mode-line-string "")
-	(message "Disable lyrics on mode line."))
-    (setq emms-lyrics-display-on-modeline t)
-    (message "Enable lyrics on mode line.")))
-
-(defun emms-lyrics (arg)
-  "Turn on emms lyrics display if ARG is positive, off otherwise."
-  (interactive "p")
-  (if (and arg (> arg 0))
-      (progn
-        (setq emms-lyrics-display-p t)
-        (add-hook 'emms-player-started-hook     'emms-lyrics-start)
-        (add-hook 'emms-player-stopped-hook     'emms-lyrics-stop)
-        (add-hook 'emms-player-finished-hook    'emms-lyrics-stop)
-        (add-hook 'emms-player-paused-hook      'emms-lyrics-pause)
-        (add-hook 'emms-player-seeked-functions 'emms-lyrics-seek)
-        (add-hook 'emms-player-time-set-functions 'emms-lyrics-sync))
-    (emms-lyrics-stop)
-    (setq emms-lyrics-display-p nil)
-    (emms-lyrics-restore-mode-line)
-    (remove-hook 'emms-player-started-hook     'emms-lyrics-start)
-    (remove-hook 'emms-player-stopped-hook     'emms-lyrics-stop)
-    (remove-hook 'emms-player-finished-hook    'emms-lyrics-stop)
-    (remove-hook 'emms-player-paused-hook      'emms-lyrics-pause)
-    (remove-hook 'emms-player-seeked-functions 'emms-lyrics-seek)
-    (remove-hook 'emms-player-time-set-functions 'emms-lyrics-sync)))
-
-;;;###autoload
-(defun emms-lyrics-enable ()
-  "Enable displaying emms lyrics."
-  (interactive)
-  (emms-lyrics 1)
-  (message "emms lyrics enabled."))
-
-;;;###autoload
-(defun emms-lyrics-disable ()
-  "Disable displaying emms lyrics."
-  (interactive)
-  (emms-lyrics -1)
-  (message "emms lyrics disabled."))
-
-;;;###autoload
-(defun emms-lyrics-toggle ()
-  "Toggle displaying emms lyrics."
-  (interactive)
-  (if emms-lyrics-display-p
-      (emms-lyrics-disable)
-    (emms-lyrics-enable)))
-
 (defun emms-lyrics-set-timer ()
   "Set timers for displaying lyrics."
   (setq emms-lyrics-timers '())
@@ -408,20 +441,6 @@ e.g., (emms-lyrics-find-lyric \"abc.lrc\")"
                             "\n"))))
             (unless (equal ret "")
               ret)))))))
-
-(defun emms-lyrics-find-current-lyric ()
-  "Visit current selected track's lyric file."
-  (interactive)
-  (let ((name (emms-track-get (emms-playlist-current-selected-track)
-                              'name)))
-    (condition-case nil
-        (find-file-existing
-         (funcall emms-lyrics-find-lyric-function
-                  (emms-replace-regexp-in-string
-                   (concat "\\." (file-name-extension name) "\\'")
-                   ".lrc"
-                   (file-name-nondirectory name))))
-      (error "lyric file does not exist"))))
 
 ;; (setq emms-lyrics-scroll-width 20)
 
