@@ -62,25 +62,25 @@
 ;; `emms-player-mpd-server-port' to match the location and port of
 ;; your MusicPD server.
 ;;
-;; (setq emms-player-mpd-server-name "localhost")
-;; (setq emms-player-mpd-server-port "6600")
+;;   (setq emms-player-mpd-server-name "localhost")
+;;   (setq emms-player-mpd-server-port "6600")
 
 ;; If your MusicPD setup requires a password, you will need to do the
 ;; following.
 ;;
-;; (setq emms-player-mpd-server-password "mypassword")
+;;   (setq emms-player-mpd-server-password "mypassword")
 
 ;; To get track info from MusicPD, do the following.
 ;;
-;; (add-to-list 'emms-info-functions 'emms-info-mpd)
+;;   (add-to-list 'emms-info-functions 'emms-info-mpd)
 
 ;; To change the volume using MusicPD, do the following.
 ;;
-;; (setq emms-volume-change-function 'emms-volume-mpd-change)
+;;   (setq emms-volume-change-function 'emms-volume-mpd-change)
 
 ;; Add 'emms-player-mpd to the top of `emms-player-list'.
 ;;
-;; (add-to-list 'emms-player-list 'emms-player-mpd)
+;;   (add-to-list 'emms-player-list 'emms-player-mpd)
 
 ;; If you use absolute file names in your m3u playlists (which is most
 ;; likely), make sure you set `emms-player-mpd-music-directory' to the
