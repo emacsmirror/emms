@@ -204,10 +204,10 @@ If we can't find it from local disk, then search it from internet."
                           "http://mp3.baidu.com/m?f=ms&rn=10&tn=baidump3lyric&ct=150994944&word=%s&lm=-1"
                           (emms-lyrics-url-quote-plus
                            (encode-coding-string title 'gb2312)))))
-              (else                     ; english lyrics
+              (t                        ; english lyrics
                (setq url (format "http://search.lyrics.astraweb.com/?word=%s"
                                  ;;"http://www.lyrics007.com/cgi-bin/s.cgi?q="
-                                 (replace-regexp-in-string " " "+" title)))))
+                                 (emms-lyrics-url-quote-plus title)))))
         (browse-url url)
         (message "lyric file does not exist, search it from internet...done")))))
 
@@ -495,7 +495,7 @@ e.g.,
 (defun emms-lyrics-url-quote-plus (s &optional safe)
   "Run (emms-url-quote s \" \"), then replace ` ' with `+'."
   (replace-regexp-in-string
-   " " "+" (emms-url-quote s (concat safe " "))))
+   " " "+" (emms-lyrics-url-quote s (concat safe " "))))
 
 
 ;;; emms-lyrics-mode
