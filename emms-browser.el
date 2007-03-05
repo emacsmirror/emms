@@ -585,6 +585,8 @@ example function is `emms-browse-by-artist'."
     (emms-browser-render-hash hash type)
     (setq emms-browser-top-level-hash hash)
     (setq emms-browser-top-level-type type)
+    (unless (> (hash-table-count hash) 0)
+      (emms-browser-show-empty-cache-message))
     (goto-char (point-min))))
 
 (emms-browser-add-category "artist" 'info-artist)
@@ -657,6 +659,30 @@ compilations, etc."
   (emms-browser-ensure-browser-buffer)
   (let ((bdata (emms-browser-make-bdata-tree type 1 tracks name)))
     (emms-browser-insert-format bdata)))
+
+(defun emms-browser-show-empty-cache-message ()
+  "Display some help if the cache is empty."
+  (emms-with-inhibit-read-only-t
+   (insert "
+Welcome to EMMS.
+
+There are currently no files in the EMMS database.
+To browse music, you need to tell EMMS where your
+files are.
+
+Try the following commands:
+
+ M-x emms-add-directory-tree:
+  Add all music in a directory and its subdirectories.
+
+ M-x emms-add-directory:
+  Add all music in a directory
+
+ M-x emms-add-file: Add a single music file.
+
+After you have added some files, wait for EMMS to say
+'all track information loaded,' then return to the
+browser, and hit 'b 1' to refresh.")))
 
 ;; --------------------------------------------------
 ;; Building a subitem tree
