@@ -130,6 +130,7 @@ on the edge."
   (require 'emms-history)
   (require 'emms-mark)
   (require 'emms-i18n)
+  (require 'emms-tag-editor)
   ;; setup
   (add-hook 'emms-player-started-hook 'emms-last-played-update-current))
 
