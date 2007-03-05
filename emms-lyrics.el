@@ -195,15 +195,18 @@ If we can't find it from local disk, then search it from internet."
         (find-file lrc)
       (message "lyric file does not exist, search it from internet...")
       (let ((title (emms-track-get track 'title))
+            (filename (file-name-sans-extension
+                       (file-name-nondirectory name)))
             (url ""))
         (unless title
-          (setq title (file-name-sans-extension
-                       (file-name-nondirectory name))))
+          (setq title filename))
         (cond ((string-match "\\cc" title) ; chinese lyrics
+               ;; Since tag info might be encoded using various coding
+               ;; systems, we'd better fall back on filename.
                (setq url (format
                           "http://mp3.baidu.com/m?f=ms&rn=10&tn=baidump3lyric&ct=150994944&word=%s&lm=-1"
                           (emms-lyrics-url-quote-plus
-                           (encode-coding-string title 'gb2312)))))
+                           (encode-coding-string filename 'gb2312)))))
               (t                        ; english lyrics
                (setq url (format "http://search.lyrics.astraweb.com/?word=%s"
                                  ;;"http://www.lyrics007.com/cgi-bin/s.cgi?q="
