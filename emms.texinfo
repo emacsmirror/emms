@@ -340,7 +340,7 @@ The method Emms will use is defined in the customisable variable
 @chapter Quickstart Guide
 
 This chapter demonstrates how to setup EMMS so that you can start
-listening to your music without having to read the whole docs first.
+listening to your music without having to read the whole docs first. 
 
 The first thing you have to do is telling Emacs where the sources of
 EMMS are located. Let's say you have them in @file{~/elisp/emms/}. So
@@ -1880,6 +1880,14 @@ string.
 Coding system used in the output of lyrics.
 @end defvr
 
+@defvr {User Option} emms-lyrics-scroll-p
+Non-nil value will enable lyrics scrolling.
+@end defvr
+
+@defvr {User Option} emms-lyrics-scroll-timer-interval
+Interval between scroller timers. The shorter, the faster.
+@end defvr
+
 We can control `emms-lyrics' with the help of the following functions:
 
 @defun emms-lyrics-start
@@ -1910,7 +1918,26 @@ Disable displaying Emms lyrics.
 Toggle displaying Emms lyrics.
 @end defun
 
+@heading Known Problems
 
+Sometimes EMMS might be blocked by some other processes, like Gnus
+checking new messages, while emms-lyrics still goes on, thus make music
+and lyrics asynchronical.
+
+One possible solution is to pause EMMS when these processes are
+running. e.g., for Gnus, try the following:
+
+@lisp
+(defadvice gnus-group-get-new-news (around pause-emms)
+  "Pause emms while Gnus is fetching mails or news."
+  (if emms-player-playing-p
+      (progn (emms-pause)
+             ad-do-it
+             (emms-pause))
+    ad-do-it))
+
+(ad-activate 'gnus-group-get-new-news)
+@end lisp
 
 @node Volume
 @chapter Volume
