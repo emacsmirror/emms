@@ -340,9 +340,9 @@ The method Emms will use is defined in the customisable variable
 @chapter Quickstart Guide
 
 This chapter demonstrates how to setup EMMS so that you can start
-listening to your music without having to read the whole docs first. 
+listening to your music without having to read the whole docs first.
 
-The first thing you have to do is telling emacs where the sources of
+The first thing you have to do is telling Emacs where the sources of
 EMMS are located. Let's say you have them in @file{~/elisp/emms/}. So
 add this line to your @file{.emacs}.
 
@@ -355,7 +355,7 @@ installation chapter, @xref{Installation}.
 
 Let's say you want to enable all features which are considered stable by
 the EMMS developers. To achieve this you invoke the @code{emms-all}
-setup function by adding those three lines to your @file{.emacs}.
+setup function by adding the following three lines to your @file{.emacs}.
 
 @lisp
 (require 'emms-setup)
@@ -374,8 +374,8 @@ simple setup chapter, @xref{Simple Setup}.
 
 Of course EMMS tries to display the tags of the music files you listen
 to. For this to work you have to make sure that the appropriate programs
-are installed. For mp3 files you need `mp3info', for ogg files you need
-`ogginfo'.
+are installed. For mp3 files you need `mp3info', and for ogg files you
+need `ogginfo'.
 
 The last thing to do is to tell EMMS the root directory of our music
 collection. Let's say all your music is in @file{~/Music} or in
@@ -385,7 +385,7 @@ subdirectories thereof.
 (setq emms-source-file-default-directory "~/Music/")
 @end lisp
 
-Ok, now we've set up EMMS. Reload your @file{.emacs} or restart Emacs to
+OK, now we've set up EMMS. Reload your @file{.emacs} or restart Emacs to
 let the changes have an effect.
 
 Now we will add all our music to a playlist by invoking @kbd{M-x
@@ -393,7 +393,7 @@ emms-add-directory-tree RET ~/Music/ RET}. We do this because then EMMS
 will read the tags of all your music files and cache them. This is
 required for the browser, @xref{The Browser}.
 
-To switch to the playlist buffer invoke @kbd{M-x
+To switch to the playlist buffer, invoke @kbd{M-x
 emms-playlist-mode-go}. You can see that most tracks are displayed with
 their file name, but track by track the filename gets replaced with the
 artist and track name of the file's tag.
