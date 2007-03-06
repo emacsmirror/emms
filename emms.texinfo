@@ -340,7 +340,8 @@ The method Emms will use is defined in the customisable variable
 @chapter Quickstart Guide
 
 This chapter demonstrates how to setup EMMS so that you can start
-listening to your music without having to read the whole docs first. 
+listening to your music without having to read all of the documentation
+first.
 
 The first thing you have to do is telling Emacs where the sources of
 EMMS are located. Let's say you have them in @file{~/elisp/emms/}. So
