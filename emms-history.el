@@ -44,6 +44,8 @@
   (interactive)
   (when (stringp emms-history-file)
     (let ((oldbuf emms-playlist-buffer)
+          ;; print with no limit
+          print-length print-level
           emms-playlist-buffer playlists)
       (save-excursion
         (dolist (buf (emms-playlist-buffer-list))
