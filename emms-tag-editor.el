@@ -134,7 +134,9 @@ See also `emms-tag-editor-tag-file' and `emms-tag-editor-tag-ogg'.
                 (setq args (append (list "-t" (concat tag "=" val)) args)))))
           '("artist" "title" "album" "tracknumber" "date" "genre" "note"))
     (when args
-      (apply #'call-process "vorbiscomment" nil nil nil
+      (apply #'call-process "vorbiscomment" nil
+             (get-buffer-create emms-tag-editor-log-buffer)
+             nil
              "-w"
              (append args (list (emms-track-name track)))))))
 
@@ -146,7 +148,7 @@ See also `emms-tag-editor-tag-file' and `emms-tag-editor-tag-ogg'.
               (setq args (append (list (concat "-" (cdr tag)) val) args))))
           tags)
     (apply 'call-process program
-           nil nil nil
+           nil (get-buffer-create emms-tag-editor-log-buffer) nil
            filename args)))
 
 (defun emms-tag-editor-get-format (track)
