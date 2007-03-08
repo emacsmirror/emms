@@ -1,6 +1,6 @@
 ;;; emms-playlist-sort.el --- sort emms playlist
 
-;; Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+;; Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 
 ;; Author: William Xu <william.xwl@gmail.com>
 
@@ -69,8 +69,8 @@ info-tracknumber."
      (interactive)
      (emms-playlist-sort
       (lambda (a b)
-	(string< (emms-track-get a (quote ,attribute))
-		 (emms-track-get b (quote ,attribute)))))))
+	(emms-string< (emms-track-get a (quote ,attribute))
+                      (emms-track-get b (quote ,attribute)))))))
 
 (define-emms-playlist-sort name)
 (define-emms-playlist-sort info-artist)
@@ -145,7 +145,7 @@ If START and END are not provided, the whole buffer will be sorted."
               (emms-playlist-first))))))))
 
 (defun emms-string> (a b)
-  (not (or (string< a b)
+  (not (or (emms-string< a b)
 	   (string= a b))))
 
 (defun emms-sort-natural-order-less-p (a b)
@@ -166,7 +166,7 @@ ie. by album name and then by track number."
     (dolist (info emms-playlist-sort-list)
       (case info
         ((name info-artist info-title info-album info-genre)
-         (when (string< (emms-track-get a info)
+         (when (emms-string< (emms-track-get a info)
                         (emms-track-get b info))
            (throw 'return t)))
         ((info-playing-time)
@@ -177,6 +177,10 @@ ie. by album name and then by track number."
          (when (< (string-to-number (or (emms-track-get a info) "0"))
                   (string-to-number (or (emms-track-get b info) "0")))
            (throw 'return t)))))))
+
+(defun emms-string< (s1 s2)
+  "Same as `string<' except this is case insensitive."
+  (string< (downcase s1) (downcase s2)))
 
 (provide 'emms-playlist-sort)
 
