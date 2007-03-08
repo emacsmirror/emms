@@ -119,18 +119,21 @@
   (interactive)
   (emms-mark-do-with-marked-track 'emms-mark-unmark-track))
 
-(defun emms-mark-regexp (regexp)
-  (interactive "sMark track match: ")
-  (save-excursion
-    (goto-char (point-min))
-    (while (re-search-forward regexp nil t)
-      (emms-mark-track 1)
-      (forward-line 1))))
-
-(defun emms-mark-unmark-regexp (regexp)
-  (interactive "sUnmark track match: ")
-  (let ((emms-mark-char ?\040))
-    (emms-mark-regexp regexp)))
+(defun emms-mark-regexp (regexp arg)
+  "Mark all tracks matching a regexp. A prefix argument means to
+unmark them instead."
+  (interactive
+   (list
+    (read-from-minibuffer (if current-prefix-arg
+                              "Mark track match: "
+                            "Unmark track match: "))
+    current-prefix-arg))
+  (let ((emms-mark-char (if arg ?\040 ?*)))
+    (save-excursion
+      (goto-char (point-min))
+      (while (re-search-forward regexp nil t)
+        (emms-mark-track 1)
+        (forward-line 1)))))
 
 (defun emms-mark-toggle ()
   (interactive)
@@ -227,7 +230,6 @@ collect the result of FUNC."
     (define-key map "U" 'emms-mark-unmark-all)
     (define-key map "t" 'emms-mark-toggle)
     (define-key map "%m" 'emms-mark-regexp)
-    (define-key map "%u" 'emms-mark-unmark-regexp)
     map))
 
 (defun emms-mark-mode ()
