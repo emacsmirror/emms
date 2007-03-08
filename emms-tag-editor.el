@@ -55,14 +55,18 @@
   "Buffer name of tag edit log")
 
 (defun emms-tag-editor-make-format (tags)
-  (format "%%m\n%-16s = %%f\n%s\n\n" "name"
+  (concat "%m\n" (emms-propertize (format "%-16s = " "name")
+                             'read-only t 'rear-nonsticky t
+                             'face 'bold)
+          "%f\n"
           (mapconcat
            (lambda (tag)
              (concat (emms-propertize (format "%-16s = " (symbol-name tag))
-                                      'read-only t 'rear-nonsticky t
-                                      'face 'bold)
+                                 'read-only t 'rear-nonsticky t
+                                 'face 'bold)
                      "%" (cdr (assoc tag emms-tag-editor-tags))))
-           tags "\n")))
+           tags "\n")
+          "\n\n"))
 
 (defvar emms-tag-editor-formats
   (let* ((tags (mapcar 'car emms-tag-editor-tags))
