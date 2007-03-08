@@ -238,7 +238,10 @@ See also `emms-tag-editor-tag-file' and `emms-tag-editor-tag-ogg'.
     (define-key map "\C-c\C-p" 'emms-tag-editor-prev-track)
     (define-key map "\C-c\C-c" 'emms-tag-editor-submit-and-exit)
     (define-key map "\C-c\C-s" 'emms-tag-editor-submit)
-    (define-key map "\C-c\C-r" 'emms-tag-editor-replace-all)
+    (define-key map "\C-x\C-s" 'emms-tag-editor-submit)
+    (define-key map "\C-c\C-r" 'emms-tag-editor-set-all)
+    (define-key map "\C-c\C-a" 'emms-tag-editor-replace-in-tag)
+    (define-key map "\C-c\C-t" 'emms-tag-editor-transpose-tag)
     map))
 (define-key emms-playlist-mode-map "E" 'emms-tag-editor-edit)
 
@@ -246,22 +249,80 @@ See also `emms-tag-editor-tag-file' and `emms-tag-editor-tag-ogg'.
   "Major mode to edit track tags.
 \\{emms-tag-editor-mode-map}")
 
-(defun emms-tag-editor-replace-all (name value)
-  "Replace all track's NAME to VALUE. If turn transient-mark-mode on,
+(defun emms-tag-editor-set-all (tag value)
+  "Replace all track's TAG to VALUE. If turn transient-mark-mode on,
 you can apply the command to a selected region."
   (interactive
-   (list (completing-read "Replace tag: "
+   (list (completing-read "Set tag: "
                           emms-tag-editor-tags nil t)
-         (read-from-minibuffer "Set tag to: ")))
+         (read-from-minibuffer "To: ")))
   (save-excursion
     (save-restriction
       (if (and mark-active transient-mark-mode)
           (narrow-to-region (region-beginning) (region-end)))
       (goto-char (point-min))
-      (while (re-search-forward (concat "^" (regexp-quote name)) nil t)
+      (while (re-search-forward (concat "^" (regexp-quote tag)) nil t)
         (skip-chars-forward " \t=")
         (delete-region (point) (line-end-position))
         (insert value)))))
+
+(defun emms-tag-editor-replace-in-tag (tag from to)
+  (interactive 
+   (cons (completing-read "Replace in tag: "
+                          emms-tag-editor-tags nil t)
+         (let ((common (query-replace-read-args
+                        (if (and transient-mark-mode mark-active)
+                            "Query replace regexp in region"
+                          "Query replace regexp")
+                        t)))
+           (butlast common))))
+  (save-excursion
+    (save-restriction
+      (if (and mark-active transient-mark-mode)
+          (narrow-to-region (region-beginning) (region-end)))
+      (setq tag (concat (regexp-quote tag) "[ \t]+=[ \t]+"))
+      (goto-char (point-min))
+      (map-y-or-n-p
+       (lambda (match)
+         (format "Replace %s to %s" match to))
+       (lambda (match)
+         (delete-region (- (point) (length match)) (point))
+         (insert to))
+       (lambda ()
+         (if (and (save-excursion
+                    (re-search-backward tag (line-beginning-position) t))
+                  (re-search-forward from (line-end-position) t))
+             (match-string 0)
+           (let (found)
+             (while (and (not found)
+                         (re-search-forward tag nil t))
+               (if (re-search-forward from (line-end-position) t)
+                   (setq found t)))
+             (and found (match-string 0)))))))))
+
+(defun emms-tag-editor-transpose-tag (tag1 tag2)
+  (interactive
+   (let* ((tag1 (intern (completing-read "Tag1: "
+                                         emms-tag-editor-tags nil t)))
+          (tag2 (intern (completing-read "Tag2: "
+                                         (assq-delete-all tag1 (copy-sequence emms-tag-editor-tags))
+                                         nil t))))
+     (list tag1 tag2)))
+  (save-excursion
+    (save-restriction
+      (if (and mark-active transient-mark-mode)
+          (narrow-to-region (region-beginning) (region-end)))
+      (let* ((emms-playlist-buffer-p t)
+             (tracks (emms-playlist-tracks-in-region (point-min)
+                                                     (point-max)))
+             (inhibit-read-only t)
+             temp)
+        (erase-buffer)
+        (dolist (track tracks)
+          (setq temp (emms-track-get track tag1))
+          (emms-track-set track tag1 (emms-track-get track tag2))
+          (emms-track-set track tag2 temp)
+          (emms-tag-editor-insert-track track))))))
 
 (defun emms-tag-editor-next-field (arg)
   (interactive "p")
