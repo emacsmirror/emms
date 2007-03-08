@@ -161,7 +161,7 @@ no argument, so if need the track in marked line, should use
 `emms-playlist-track-at' to get it. The FUNC can also modify the
 playlist buffer, such as delete the line. It is import for who want to
 use this function, this function didn't move forward. So if FUNC don't
-move forward, set the third parameter MOVE to non-nil. Otherwise, the
+move forward, set the second parameter MOVE to non-nil. Otherwise, the
 function will never exit the loop."
   (let ((regexp (format "^[%c]" emms-mark-char))
         (newfunc func))
