@@ -1038,10 +1038,8 @@ Toggles mark on the current track.
 Unmarks same way as @command{emms-mark-forward} marks.
 @item % m
 @findex emms-mark-regexp
-Marks all tracks in the playlist matching the given regular expression.
-@item % u
-@findex emms-mark-unmark-regexp
-Unmarks same way as @command{emms-mark-regexp} marks.
+Marks all tracks in the playlist matching the given regular
+expression. A prefix argument means to unmark them instead. 
 @end table
 
 When tracks are marked you can operate on them:
@@ -1060,6 +1058,24 @@ Adds the marked tracks to the kill-ring, so that you can @command{yank}
 them into another playlist.
 @end table
 
+emms-mark is also intent to provide a way for user to select tracks
+for other command to operate on them. Currently,
+@file{emms-tag-editor.el} used the emms-mark to edit tags of selected
+tracks. Two function is useful for elisp programer to handle marked
+tracks.
+
+@defun emms-mark-do-with-marked-track
+This function take a function to perform on all marked tracks. A
+optional argument `move-flag' to tell the function to move forward
+line after calling given function. If the given function didn't change
+position, the second argument should set to non-nil.
+@end defun
+
+@defun emms-mark-mapcar-marked-track
+This function is very similar to `emms-mark-do-with-marked-track'
+except it collects result of given function (that's why named with
+`mapcar').
+@end defun
 
 @node Extending Emms
 @chapter Extending Emms
