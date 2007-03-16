@@ -149,7 +149,7 @@ See also `emms-tag-editor-tag-file' and `emms-tag-editor-tag-ogg'.
           tags)
     (apply 'call-process program
            nil (get-buffer-create emms-tag-editor-log-buffer) nil
-           filename args)))
+           (nconc args (list filename)))))
 
 (defun emms-tag-editor-get-format (track)
   (let ((format
