@@ -422,8 +422,8 @@ edit buffer."
                (y-or-n-p "You have change some track names, sync the cache? "))
           (and (fboundp 'emms-cache-sync) ; silence byte-compiler
                (emms-cache-sync)))
-      (emms-tag-editor-display-log-buffer-maybe)
-      (message "Set all mp3 tag done!")))
+      (unless (emms-tag-editor-display-log-buffer-maybe)
+        (message "Set all mp3 tag done!"))))
   (if arg (bury-buffer)))
 
 (defun emms-tag-editor-submit-and-exit ()
