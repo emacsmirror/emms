@@ -180,7 +180,8 @@ ie. by album name and then by track number."
 
 (defun emms-string< (s1 s2)
   "Same as `string<' except this is case insensitive."
-  (string< (downcase s1) (downcase s2)))
+  (string< (and s1 (downcase s1)) (and s2 (downcase s2))))
+
 
 (provide 'emms-playlist-sort)
 
