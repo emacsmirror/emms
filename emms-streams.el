@@ -1,10 +1,11 @@
 ;; emms-streams.el -- interface to add and play streams
 
-;; Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
+;; Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
 ;; Authors: Lucas Bonnet <lucas@rincevent.net>
 ;;          Jose A Ortega Ruiz <jao@gnu.org>
 ;;          Yoni Rabkin <yonirabkin@member.fsf.org>
+;;          Michael Olson <mwolson@gnu.org>
 
 ;; This file is part of EMMS.
 
@@ -103,6 +104,10 @@ needed info.")
     "http://www.somafm.com/dronezone.pls" 1 streamlist)
    ("SomaFM: Tag's Trance"
     "http://www.somafm.com/tagstrance.pls" 1 streamlist)
+   ("SomaFM: Indie Pop Rocks"
+    "http://www.somafm.com/indiepop.pls" 1 streamlist)
+   ("SomaFM: Doomed"
+    "http://www.somafm.com/doomed.pls" 1 streamlist)
    ("Digitally Imported, Trance"
     "http://www.digitallyimported.com/mp3/trance.pls" 1 streamlist)
    ("Digitally Imported, Deephouse"
@@ -136,7 +141,26 @@ needed info.")
    ("Voices From Within - Words From Beyond"
     "http://207.200.96.225:8024/listen.pls" 1 streamlist)
    ("WCPE, Classical Music"
-    "http://www.ibiblio.org/wcpe/wcpe.pls" 1 streamlist)))
+    "http://www.ibiblio.org/wcpe/wcpe.pls" 1 streamlist)
+   ("PLUG: Voices of the Free Software movement"
+    "http://purduelug.org:8000/voices-free_software.ogg" 1 url)
+   ("VGamp Radio, Video Game music"
+    "http://vgamp.com/listen128.pls" 1 streamlist)
+   ("Kohina - Old school game and demo music"
+    "http://stream.nute.net/kohina/stream.ogg.m3u" 1 streamlist)
+   ("Nectarine, Demoscene Radio"
+    "http://nectarine128.de.alldas.org:8002/listen.pls" 1 streamlist)
+   ("GotWoot Radio - Anime soundtracks and J-Pop music"
+    "http://radio.gotwoot.net:8080/stream.ogg.m3u" 1 streamlist)
+   ("idobi Radio"
+    "http://www.idobi.com/radio/iradio.pls" 1 streamlist)
+   ("radio.wazee - Modern Alternative Rock"
+    "http://www.wazee.org/128.pls" 1 streamlist)
+   ("ChroniX Aggression - Loud & Clear"
+    "http://www.chronixradio.com/chronixaggression/listen/listen.pls"
+    1 streamlist)
+   ("WFMU, Freeform radio"
+    "http://www.wfmu.org/wfmu.pls" 1 streamlist)))
 
 (defvar emms-stream-mode-map
   (let ((map (make-keymap)))
