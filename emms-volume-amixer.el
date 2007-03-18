@@ -41,7 +41,9 @@
 ;;; Code:
 
 (defcustom emms-volume-amixer-control "Master"
-  "The control to change the volume with."
+  "The control to change the volume with.
+Controls includes \"Master\", \"PCM\", etc. For a full list of available
+controls, run `amixer controls' in a shell."
   :type '(choice (const :tag "Master" "Master")
                  (const :tag "PCM" "PCM")
                  (string :tag "Something else: "))
