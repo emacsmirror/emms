@@ -131,6 +131,7 @@ on the edge."
   (require 'emms-mark)
   (require 'emms-i18n)
   (require 'emms-tag-editor)
+  (require 'emms-volume)
   ;; setup
   (add-hook 'emms-player-started-hook 'emms-last-played-update-current))
 
