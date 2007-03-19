@@ -1,6 +1,6 @@
 ;;; jack.el --- Jack Audio Connection Kit support
 
-;; Copyright (C) 2005,2006  Free Software Foundation, Inc.
+;; Copyright (C) 2005, 2006, 2007  Free Software Foundation, Inc.
 
 ;; Author: Mario Lang <mlang@delysid.org>
 ;; Keywords: multimedia, processes
@@ -37,7 +37,7 @@
 ;; It also povides convenience functions for prompting the user for
 ;; jack client and port names in the minibuffer, as well as the
 ;; functions `jack-connect' and `jack-disconnect' which can be used to
-;; rearrange jack port wiring with a minimum of keystokes. 
+;; rearrange jack port wiring with a minimum of keystrokes.
 
 ;;; Code:
 

@@ -1,6 +1,6 @@
 ;;; emms-info-ogginfo.el --- Emms information from Ogg Vorbis files.
 
-;; Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+;; Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 
 ;; Author: Jorgen Schaefer <forcer@forcix.cx>
 ;;         Yoni Rabkin <yonirabkin@member.fsf.org>

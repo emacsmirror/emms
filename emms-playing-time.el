@@ -1,6 +1,6 @@
 ;;; emms-playing-time.el --- Display emms playing time on mode line
 
-;; Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+;; Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 
 ;; Author: William Xu <william.xwl@gmail.com>
 

@@ -1,6 +1,6 @@
 ;; emms-mode-line-icon.el --- show an icon in the Emacs mode-line
 
-;; Copyright (C) 2006 Free Software Foundation, Inc.
+;; Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
 ;; Version: 1.1
 ;; Keywords: emms

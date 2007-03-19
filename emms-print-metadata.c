@@ -1,5 +1,5 @@
 /* emms-print-metadata.c --- Info function for libtag
-   Copyright (C) 2005, 2006  Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, 2007  Free Software Foundation, Inc.
 
 Author: Trent Buck <trentbuck@gmail.com>
 
