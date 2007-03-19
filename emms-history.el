@@ -1,8 +1,8 @@
 ;;; emms-history.el -- save playlist when exit emacs
 
-;; Copyright 2006 Ye Wenbin
+;; Copyright (C) 2006, 2007 Ye Wenbin
 ;;
-;; Author: wenbinye@163.com
+;; Author: Ye Wenbin <wenbinye@163.com>
 ;; Keywords: 
 ;; X-URL: not distributed yet
 

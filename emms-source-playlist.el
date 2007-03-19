@@ -1,6 +1,6 @@
 ;;; emms-source-playlist.el --- EMMS sources from playlist files
 
-;; Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+;; Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
 ;; Author: Jorgen Schäfer <forcer@forcix.cx>
 ;; Keywords: emms, mp3, mpeg, multimedia
