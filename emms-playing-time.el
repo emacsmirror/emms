@@ -73,7 +73,7 @@ Valid styles are `time' (e.g., 01:30/4:20) and `bar' (e.g., [===>  ])."
   "Whether to display playing time on mode line or not")
 
 (defvar emms-playing-time 0
-  "How long has EMMS run up to now.")
+  "Time elapsed in current track.")
 
 (defvar emms-playing-time-string "")
 
@@ -178,7 +178,7 @@ could call `emms-playing-time-enable-display' and
            (total-min-only (/ total-playing-time 60))
            (total-sec-only (% total-playing-time 60)))
       (case emms-playing-time-style
-        ((bar)
+        ((bar)                          ; `bar' style
          (if (zerop total-playing-time)
              (setq emms-playing-time-string "[==>........]")
            (let ((progress "[")
@@ -191,7 +191,7 @@ could call `emms-playing-time-enable-display' and
                (setq progress (concat progress " ")))
              (setq progress (concat progress "]"))
              (setq emms-playing-time-string progress))))
-        (t
+        (t                              ; `time' style
          (setq emms-playing-time-string
                (emms-replace-regexp-in-string
                 " " "0"
