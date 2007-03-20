@@ -149,7 +149,7 @@ needed info.")
    ("Kohina - Old school game and demo music"
     "http://stream.nute.net/kohina/stream.ogg.m3u" 1 streamlist)
    ("Nectarine, Demoscene Radio"
-    "http://nectarine128.de.alldas.org:8002/listen.pls" 1 streamlist)
+    "http://www.scenemusic.eu:8002/high.ogg.m3u" 1 streamlist)
    ("GotWoot Radio - Anime soundtracks and J-Pop music"
     "http://radio.gotwoot.net:8080/stream.ogg.m3u" 1 streamlist)
    ("idobi Radio"
