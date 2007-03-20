@@ -34,6 +34,7 @@ News since version 2.1:
       trying to play a stream.
     - Handle any encoding errors that occur during playback.
   - emms-playing-time supports different display styles now.
+  - emms-lyrics: Now support lyrics auto-scrolling.
 
 News since version 2.0:
 
