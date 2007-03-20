@@ -68,10 +68,10 @@
   "Turn on `emms-mode-line' if ARG is positive, off otherwise."
   (interactive "p")
   (or global-mode-string (setq global-mode-string '("")))
-  (setq emms-mode-line-active-p arg)
   (if (and arg (> arg 0))
       (progn
-	(add-hook 'emms-track-updated-functions 'emms-mode-line-alter)
+        (setq emms-mode-line-active-p t)
+  	(add-hook 'emms-track-updated-functions 'emms-mode-line-alter)
 	(add-hook 'emms-player-finished-hook 'emms-mode-line-blank)
 	(add-hook 'emms-player-stopped-hook 'emms-mode-line-blank)
 	(add-hook 'emms-player-started-hook 'emms-mode-line-alter)
@@ -81,6 +81,7 @@
 		(append global-mode-string
 			'(emms-mode-line-string))))
 	(when emms-player-playing-p (emms-mode-line-alter)))
+    (setq emms-mode-line-active-p nil)
     (remove-hook 'emms-track-updated-functions 'emms-mode-line-alter)
     (remove-hook 'emms-player-finished-hook 'emms-mode-line-blank)
     (remove-hook 'emms-player-stopped-hook 'emms-mode-line-blank)
