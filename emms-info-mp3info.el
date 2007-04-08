@@ -84,8 +84,8 @@ This is a useful element for `emms-info-functions'."
                       'call-process)
                     emms-info-mp3info-program-name
                     nil t nil
-                    (emms-track-name track)
-                    emms-info-mp3find-arguments))
+                    (append emms-info-mp3find-arguments
+                            (list (emms-track-name track)))))
         (goto-char (point-min))
         (while (looking-at "^\\([^=\n]+\\)=\\(.*\\)$")
           (let ((name (intern (match-string 1)))
