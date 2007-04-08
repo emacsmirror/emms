@@ -33,6 +33,8 @@ News since version 2.1:
     - Display the correct error message if an error occurs while
       trying to play a stream.
     - Handle any encoding errors that occur during playback.
+    - Integrate with emms-lastfm.el in `emms-player-mpd-show', if
+      emms-lastfm is loaded and active.
   - emms-playing-time supports different display styles now.
   - emms-lyrics: Now support lyrics auto-scrolling.
 

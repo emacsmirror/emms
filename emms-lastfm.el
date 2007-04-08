@@ -435,11 +435,18 @@ high. (But then streaming a 128KHz mp3 won't be fun anyway.)"
           (message "EMMS: Playing Last.fm stream"))
       (message "EMMS: Bad response from Last.fm"))))
 
-(defun emms-lastfm-np (&optional arg)
-  "Show the currently-playing lastfm radio tune."
+(defun emms-lastfm-np (&optional insertp callback)
+  "Show the currently-playing lastfm radio tune.
+
+If INSERTP is non-nil, insert the description into the current
+buffer instead.
+
+If CALLBACK is a function, call it with the current buffer and
+description as arguments instead of displaying the description or
+inserting it."
   (interactive "P")
   (emms-lastfm-radio-request-metadata
-   (lambda (status arg buffer)
+   (lambda (status insertp buffer callback)
      (let (artist title)
        (save-excursion
          (set-buffer emms-lastfm-buffer)
@@ -449,11 +456,13 @@ high. (But then streaming a 128KHz mp3 won't be fun anyway.)"
        (let ((msg (if title (format emms-show-format
                                     (format "%s - %s" artist title))
                     "Nothing playing right now")))
-         (if (and arg title)
-             (with-current-buffer buffer
-               (insert msg))
-           (message msg)))))
-   (list arg (current-buffer))))
+        (cond ((functionp callback)
+               (funcall callback buffer msg))
+              ((and insertp title)
+               (with-current-buffer buffer
+                 (insert msg)))
+              (t (message msg))))))
+   (list insertp (current-buffer) callback)))
 
 (defun emms-lastfm-radio-similar-artists (artist)
   "Plays the similar artist radio of ARTIST."
