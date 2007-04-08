@@ -449,8 +449,10 @@ edit buffer."
                       (setq key (intern-soft (substring pair 0 (match-beginning 0)))
                             val (substring pair (match-end 0)))
                       (when (and key
-                                 (> (length val) 0)
-                                 (not (string= val (emms-track-get track key))))
+                                 (let ((old (emms-track-get track key)))
+                                   (if old
+                                       (not (string= val old))
+                                     (string< "" val))))
                         (if (eq key 'name)
                             (emms-track-set track 'newname val)
                           (emms-track-set track key val))
