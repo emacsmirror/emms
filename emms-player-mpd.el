@@ -1002,30 +1002,38 @@ positive or negative."
     (when info
       (when name
         (setq desc name))
-      (when file
-        (let ((track (emms-dictionary '*track*))
-              track-desc)
-          (if (string-match "\\`http://" file)
-              (emms-track-set track 'type 'url)
-            (emms-track-set track 'type 'file))
-          (emms-track-set track 'name file)
-          (emms-info-mpd track info)
-          (setq track-desc (emms-track-description track))
-          (when (and (stringp track-desc) (not (string= track-desc "")))
-            (setq desc (if desc
-                           (concat desc ": " track-desc)
-                         track-desc))))))
-    (if (not desc)
-        (message "Nothing playing right now")
-      (setq desc (format emms-show-format desc))
-      (cond ((functionp callback)
-             (funcall callback buffer desc))
-            (insertp
-             (when (buffer-live-p buffer)
-               (with-current-buffer buffer
-                 (insert desc))))
-            (t
-             (message "%s" desc))))))
+      ;; if we are playing lastfm radio, use its show function instead
+      (if (and (boundp 'emms-lastfm-radio-stream-url)
+               (stringp emms-lastfm-radio-stream-url)
+               (string= emms-lastfm-radio-stream-url file))
+          (with-current-buffer buffer
+            (and (fboundp 'emms-lastfm-np)
+                 (emms-lastfm-np insertp callback)))
+        ;; otherwise build and show the description
+        (when file
+          (let ((track (emms-dictionary '*track*))
+                track-desc)
+            (if (string-match "\\`http://" file)
+                (emms-track-set track 'type 'url)
+              (emms-track-set track 'type 'file))
+            (emms-track-set track 'name file)
+            (emms-info-mpd track info)
+            (setq track-desc (emms-track-description track))
+            (when (and (stringp track-desc) (not (string= track-desc "")))
+              (setq desc (if desc
+                             (concat desc ": " track-desc)
+                           track-desc))))))
+      (if (not desc)
+          (message "Nothing playing right now")
+        (setq desc (format emms-show-format desc))
+        (cond ((functionp callback)
+               (funcall callback buffer desc))
+              (insertp
+               (when (buffer-live-p buffer)
+                 (with-current-buffer buffer
+                   (insert desc))))
+              (t
+               (message "%s" desc)))))))
 
 ;;;###autoload
 (defun emms-player-mpd-show (&optional insertp callback)
@@ -1035,7 +1043,8 @@ If INSERTP is non-nil, insert the description into the current
 buffer instead.
 
 If CALLBACK is a function, call it with the current buffer and
-description.
+description as arguments instead of displaying the description or
+inserting it.
 
 This function uses `emms-show-format' to format the current track.
 It differs from `emms-show' in that it asks MusicPD for the current track,
