@@ -392,8 +392,9 @@ edit buffer."
               (emms-track-set track 'name filename)
               (setq need-sync t)
               ;; register to emms-cache-db
-              (funcall emms-cache-modified-function)
-              (funcall emms-cache-set-function filename 'file old))
+              (when (boundp 'emms-cache-modified-function)
+                (funcall emms-cache-modified-function)
+                (funcall emms-cache-set-function 'file filename old)))
             ;; set tags to original track
             (dolist (tag emms-tag-editor-tags)
               (when (setq val (emms-track-get track (car tag)))
