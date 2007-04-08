@@ -642,7 +642,7 @@ MusicPD playlist."
         (err-msg (cdr (assoc "error" info))))
     (if (stringp err-msg)
         (progn
-          (message (concat "MusicPD error: " err-msg))
+          (message "MusicPD error: %s" err-msg)
           (emms-player-mpd-send
            "clearerror"
            nil #'ignore))
@@ -1024,7 +1024,8 @@ positive or negative."
                              (concat desc ": " track-desc)
                            track-desc))))))
       (if (not desc)
-          (message "Nothing playing right now")
+          (unless (functionp callback)
+            (message "Nothing playing right now"))
         (setq desc (format emms-show-format desc))
         (cond ((functionp callback)
                (funcall callback buffer desc))
