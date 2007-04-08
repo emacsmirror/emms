@@ -100,8 +100,8 @@ FAILURE-MESSAGE should be a string."
     (if m
 	(progn
 	  (emms-player-seek-to (cdr m))
-	  (message (car m)))
-      (message failure-message))))
+	  (message "%s" (car m)))
+      (message "%s" failure-message))))
 
 
 ;; entry points

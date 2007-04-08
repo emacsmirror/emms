@@ -334,7 +334,7 @@ not output a message and only return a string."
     (when (emms-stream-info-get-key "name")
       (if string-out
 	  str
-	(message str)))))
+	(message "%s" str)))))
 
 (defun emms-stream-info-pretty-print-insert ()
   "Insert the formatted output of 'emms-stream-info-get' at point."
