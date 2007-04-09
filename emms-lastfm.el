@@ -105,7 +105,6 @@ procedure. Only for internal use.")
   "The version registered at last.fm. Don't change it!")
 
 ;; used internally
-(defvar emms-lastfm-buffer nil "-- only used internally --")
 (defvar emms-lastfm-process nil "-- only used internally --")
 (defvar emms-lastfm-md5-challenge nil "-- only used internally --")
 (defvar emms-lastfm-submit-url nil "-- only used internally --")
@@ -221,23 +220,20 @@ handshake."
 
 (defun emms-lastfm-handshake ()
   "Handshakes with the last.fm server."
-  (when emms-lastfm-buffer (kill-buffer emms-lastfm-buffer))
   (let ((url-request-method "GET"))
-    (setq emms-lastfm-buffer
-          (url-retrieve
-           (concat emms-lastfm-server
-                   "?hs=true&p=1.1"
-                   "&c=" emms-lastfm-client-id
-                   "&v=" (number-to-string emms-lastfm-client-version)
-                   "&u=" (emms-escape-url emms-lastfm-username))
-           'emms-lastfm-handshake-sentinel))))
+    (url-retrieve
+     (concat emms-lastfm-server
+             "?hs=true&p=1.1"
+             "&c=" emms-lastfm-client-id
+             "&v=" (number-to-string emms-lastfm-client-version)
+             "&u=" (emms-escape-url emms-lastfm-username))
+     'emms-lastfm-handshake-sentinel)))
 
 (defun emms-lastfm-handshake-sentinel (&rest args)
   "Parses the server reponse and inform the user if all worked
 well or if an error occured."
-  (save-excursion
-    (set-buffer emms-lastfm-buffer)
-    (emms-http-decode-buffer)
+  (let ((buffer (current-buffer)))
+    (emms-http-decode-buffer buffer)
     (goto-char (point-min))
     (re-search-forward (rx (or "UPTODATE" "UPDATE" "FAILED" "BADUSER"))
                        nil t)
@@ -254,12 +250,12 @@ well or if an error occured."
         (setq emms-lastfm-md5-challenge (emms-read-line))
         (forward-line)
         (setq emms-lastfm-submit-url (emms-read-line))
-        (message "EMMS: Handshaking with server done")))))
+        (message "EMMS: Handshaking with server done")))
+    (kill-buffer buffer)))
 
 (defun emms-lastfm-submit-track ()
   "Submits the current track (`emms-lastfm-current-track') to
 last.fm."
-  (when emms-lastfm-buffer (kill-buffer emms-lastfm-buffer))
   (let* ((artist (emms-track-get emms-lastfm-current-track 'info-artist))
          (title  (emms-track-get emms-lastfm-current-track 'info-title))
          (album  (emms-track-get emms-lastfm-current-track 'info-album))
@@ -285,28 +281,29 @@ last.fm."
                    "&l[0]=" track-length
                    "&i[0]=" date)
            'utf-8)))
-    (setq emms-lastfm-buffer
-          (url-retrieve emms-lastfm-submit-url
-                        'emms-lastfm-submission-sentinel))))
+    (url-retrieve emms-lastfm-submit-url
+                  'emms-lastfm-submission-sentinel)))
 
 (defun emms-lastfm-submission-sentinel (&rest args)
   "Parses the server reponse and inform the user if all worked
 well or if an error occured."
-  (save-excursion
-    (set-buffer emms-lastfm-buffer)
-    (emms-http-decode-buffer)
+  (let ((buffer (current-buffer)))
+    (emms-http-decode-buffer buffer)
     (goto-char (point-min))
     (if (re-search-forward "^OK$" nil t)
         (progn
           (message "EMMS: \"%s\" submitted to last.fm"
                    (emms-track-description emms-lastfm-current-track))
-          (kill-buffer emms-lastfm-buffer))
+          (kill-buffer buffer))
       (message "EMMS: Song couldn't be submitted to last.fm")
       (goto-char (point-min))
-      (when (re-search-forward "^BADAUTH$" nil t)
-        ;; Somehow our md5-challenge expired...
-        (message "EMMS: Restarting last.fm plugin")
-        (emms-lastfm-restart)))))
+      (if (re-search-forward "^BADAUTH$" nil t)
+          ;; Somehow our md5-challenge expired...
+          (progn
+            (kill-buffer buffer)
+            (message "EMMS: Restarting last.fm plugin")
+            (emms-lastfm-restart))
+        (kill-buffer buffer)))))
 
 
 ;;; Playback of lastfm:// streams
@@ -342,19 +339,17 @@ well or if an error occured."
 (defun emms-lastfm-radio-handshake (fn radio-url)
   "Handshakes with the last.fm server.
 Calls FN when done with RADIO-URL as its only argument."
-  (when emms-lastfm-buffer (kill-buffer emms-lastfm-buffer))
   (let ((url-request-method "GET"))
-    (setq emms-lastfm-buffer
-          (url-retrieve (emms-lastfm-radio-get-handshake-url)
-                        'emms-lastfm-radio-handshake-sentinel
-                        (list fn radio-url)))))
+    (url-retrieve (emms-lastfm-radio-get-handshake-url)
+                  'emms-lastfm-radio-handshake-sentinel
+                  (list fn radio-url))))
 
 (defun emms-lastfm-radio-handshake-sentinel (status fn radio-url)
-  (save-excursion
-    (set-buffer emms-lastfm-buffer)
-    (emms-http-decode-buffer)
+  (let ((buffer (current-buffer)))
+    (emms-http-decode-buffer buffer)
     (setq emms-lastfm-radio-session    (emms-key-value "session"))
     (setq emms-lastfm-radio-stream-url (emms-key-value "stream_url"))
+    (kill-buffer buffer)
     (if (and emms-lastfm-radio-session emms-lastfm-radio-stream-url)
         (progn
           (message "EMMS: Handshaking for Last.fm playback successful")
@@ -366,14 +361,13 @@ Calls FN when done with RADIO-URL as its only argument."
   (if (and emms-lastfm-radio-session
            emms-lastfm-radio-stream-url)
       (let ((url-request-method "GET"))
-        (setq emms-lastfm-buffer
-              (url-retrieve
-               (concat emms-lastfm-radio-base-url
-                       "adjust.php?"
-                       "session=" emms-lastfm-radio-session
-                       "&url="    (emms-escape-url lastfm-url)
-                       "&debug="  (number-to-string 0))
-               'emms-lastfm-radio-sentinel)))
+        (url-retrieve
+         (concat emms-lastfm-radio-base-url
+                 "adjust.php?"
+                 "session=" emms-lastfm-radio-session
+                 "&url="    (emms-escape-url lastfm-url)
+                 "&debug="  (number-to-string 0))
+         'emms-lastfm-radio-sentinel))
     (message "EMMS: Cannot play Last.fm stream")))
 
 (defun emms-lastfm-radio (lastfm-url)
@@ -420,11 +414,11 @@ high. (But then streaming a 128KHz mp3 won't be fun anyway.)"
   :group 'emms-lastfm)
 
 (defun emms-lastfm-radio-sentinel (&rest args)
-  (save-excursion
-    (set-buffer emms-lastfm-buffer)
-    (emms-http-decode-buffer)
+  (let ((buffer (current-buffer)))
+    (emms-http-decode-buffer buffer)
     (if (string= (emms-key-value "response") "OK")
         (progn
+          (kill-buffer buffer)
           (emms-play-url emms-lastfm-radio-stream-url)
           (when emms-lastfm-radio-metadata-period
             (setq emms-lastfm-timer
@@ -433,6 +427,7 @@ high. (But then streaming a 128KHz mp3 won't be fun anyway.)"
             (add-hook 'emms-player-stopped-hook
                       'emms-lastfm-cancel-timer))
           (message "EMMS: Playing Last.fm stream"))
+      (kill-buffer buffer)
       (message "EMMS: Bad response from Last.fm"))))
 
 (defun emms-lastfm-np (&optional insertp callback)
@@ -447,21 +442,23 @@ inserting it."
   (interactive "P")
   (emms-lastfm-radio-request-metadata
    (lambda (status insertp buffer callback)
-     (let (artist title)
-       (save-excursion
-         (set-buffer emms-lastfm-buffer)
-         (emms-http-decode-buffer)
-         (setq artist (emms-key-value "artist")
-               title  (emms-key-value "track")))
-       (let ((msg (if title (format emms-show-format
-                                    (format "%s - %s" artist title))
+     (let ((response-buf (current-buffer))
+           artist title)
+       (emms-http-decode-buffer response-buf)
+       (setq artist (emms-key-value "artist")
+             title  (emms-key-value "track"))
+       (kill-buffer response-buf)
+       (let ((msg (if (and title artist)
+                      (format emms-show-format
+                              (format "%s - %s" artist title))
                     "Nothing playing right now")))
-        (cond ((functionp callback)
-               (funcall callback buffer msg))
-              ((and insertp title)
-               (with-current-buffer buffer
-                 (insert msg)))
-              (t (message msg))))))
+         (cond ((functionp callback)
+                (when (and title artist)
+                  (funcall callback buffer msg)))
+               ((and insertp title artist)
+                (with-current-buffer buffer
+                  (insert msg)))
+               (t (message msg))))))
    (list insertp (current-buffer) callback)))
 
 (defun emms-lastfm-radio-similar-artists (artist)
@@ -499,24 +496,22 @@ song."
   (emms-lastfm-radio-rating "ban"))
 
 (defun emms-lastfm-radio-rating (command)
-  (when emms-lastfm-buffer (kill-buffer emms-lastfm-buffer))
   (let ((url-request-method "GET"))
-    (setq emms-lastfm-buffer
-          (url-retrieve
-           (concat emms-lastfm-radio-base-url
-                   "control.php?"
-                   "session="  emms-lastfm-radio-session
-                   "&command=" command
-                   "&debug="   (number-to-string 0))
-           'emms-lastfm-radio-rating-sentinel))))
+    (url-retrieve
+     (concat emms-lastfm-radio-base-url
+             "control.php?"
+             "session="  emms-lastfm-radio-session
+             "&command=" command
+             "&debug="   (number-to-string 0))
+     'emms-lastfm-radio-rating-sentinel)))
 
 (defun emms-lastfm-radio-rating-sentinel (&rest args)
-  (save-excursion
-    (set-buffer emms-lastfm-buffer)
-    (emms-http-decode-buffer)
+  (let ((buffer (current-buffer)))
+    (emms-http-decode-buffer buffer)
     (if (string= (emms-key-value "response") "OK")
         (message "EMMS: Rated current track")
-      (message "EMMS: Rating failed"))))
+      (message "EMMS: Rating failed"))
+    (kill-buffer buffer)))
 
 (defun emms-lastfm-radio-request-metadata (&optional fn data)
   "Request the metadata of the current song and display it.
@@ -527,25 +522,22 @@ first parameter.
 
 If DATA is given, it should be a list."
   (interactive)
-  ;; we don't want to have hundreds of open buffers, so kill the old one now.
-  (when emms-lastfm-buffer (kill-buffer emms-lastfm-buffer))
   (let ((url-request-method "GET")
         (url-show-status nil))
-    (setq emms-lastfm-buffer
-          (url-retrieve
-           (concat emms-lastfm-radio-base-url
-                   "np.php?"
-                   "session=" emms-lastfm-radio-session
-                   "&debug="  (number-to-string 0))
-           (or fn 'emms-lastfm-radio-request-metadata-sentinel)
-           data))))
+    (url-retrieve
+     (concat emms-lastfm-radio-base-url
+             "np.php?"
+             "session=" emms-lastfm-radio-session
+             "&debug="  (number-to-string 0))
+     (or fn 'emms-lastfm-radio-request-metadata-sentinel)
+     data)))
 
 (defun emms-lastfm-radio-request-metadata-sentinel (&rest args)
-  (save-excursion
-    (set-buffer emms-lastfm-buffer)
-    (emms-http-decode-buffer)
+  (let ((buffer (current-buffer)))
+    (emms-http-decode-buffer buffer)
     (let ((artist (emms-key-value "artist"))
           (title  (emms-key-value "track")))
+      (kill-buffer buffer)
       (setq emms-mode-line-string (format emms-mode-line-format
                                           (concat artist " - " title)))
       (force-mode-line-update))))
