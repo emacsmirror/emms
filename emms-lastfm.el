@@ -529,7 +529,8 @@ If DATA is given, it should be a list."
   (interactive)
   ;; we don't want to have hundreds of open buffers, so kill the old one now.
   (when emms-lastfm-buffer (kill-buffer emms-lastfm-buffer))
-  (let ((url-request-method "GET"))
+  (let ((url-request-method "GET")
+        (url-show-status nil))
     (setq emms-lastfm-buffer
           (url-retrieve
            (concat emms-lastfm-radio-base-url
