@@ -717,17 +717,18 @@ If an error occurs, display a relevant message."
          (when (functionp callback)
            (funcall callback close)))))))
 
-(defun emms-player-mpd-add-buffer-contents (closure callback)
-  "Load contents of the current buffer into MusicPD by adding each line.
+(defun emms-player-mpd-add-buffer-contents (buffer closure callback)
+  "Load contents of BUFFER into MusicPD by adding each line.
 Execute CALLBACK with CLOSURE as its first argument when done.
 
 This handles both m3u and pls type playlists."
-  (goto-char (point-min))
-  (let ((format (emms-source-playlist-determine-format)))
-    (when format
-      (emms-player-mpd-add-several-files
-       (emms-source-playlist-files format)
-       closure callback))))
+  (with-current-buffer buffer
+    (goto-char (point-min))
+    (let ((format (emms-source-playlist-determine-format)))
+      (when format
+        (emms-player-mpd-add-several-files
+         (emms-source-playlist-files format)
+         closure callback)))))
 
 (defun emms-player-mpd-add-playlist (playlist closure callback)
   "Load contents of PLAYLIST into MusicPD by adding each line.
@@ -737,7 +738,7 @@ This handles both m3u and pls type playlists."
   ;; This is useful for playlists of playlists
   (with-temp-buffer
     (insert-file-contents playlist)
-    (emms-player-mpd-add-buffer-contents closure callback)))
+    (emms-player-mpd-add-buffer-contents (current-buffer) closure callback)))
 
 (defun emms-player-mpd-add-streamlist (url closure callback)
   "Download contents of URL and then add its feeds into MusicPD.
@@ -748,8 +749,9 @@ Execute CALLBACK with CLOSURE as its first argument when done."
         (require 'emms-url)
         (with-temp-buffer
           (url-insert-file-contents (emms-escape-url url))
-          (emms-http-decode-buffer)
-          (emms-player-mpd-add-buffer-contents closure callback)))
+          (emms-http-decode-buffer (current-buffer))
+          (emms-player-mpd-add-buffer-contents (current-buffer)
+                                               closure callback)))
     (error (message (concat "You need to install url.el so that"
                             " Emms can retrieve this stream")))))
 
@@ -999,17 +1001,17 @@ positive or negative."
          (name (cdr (assoc "name" info))) ; radio feeds sometimes set this
          (file (cdr (assoc "file" info)))
          (desc nil))
-    (when info
-      (when name
-        (setq desc name))
-      ;; if we are playing lastfm radio, use its show function instead
-      (if (and (boundp 'emms-lastfm-radio-stream-url)
-               (stringp emms-lastfm-radio-stream-url)
-               (string= emms-lastfm-radio-stream-url file))
-          (with-current-buffer buffer
-            (and (fboundp 'emms-lastfm-np)
-                 (emms-lastfm-np insertp callback)))
-        ;; otherwise build and show the description
+    ;; if we are playing lastfm radio, use its show function instead
+    (if (and (boundp 'emms-lastfm-radio-stream-url)
+             (stringp emms-lastfm-radio-stream-url)
+             (string= emms-lastfm-radio-stream-url file))
+        (with-current-buffer buffer
+          (and (fboundp 'emms-lastfm-np)
+               (emms-lastfm-np insertp callback)))
+      ;; otherwise build and show the description
+      (when info
+        (when name
+          (setq desc name))
         (when file
           (let ((track (emms-dictionary '*track*))
                 track-desc)

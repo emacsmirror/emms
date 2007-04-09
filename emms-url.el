@@ -55,16 +55,17 @@ variable."
                      url-http-content-type)
        (intern-soft (downcase (match-string 1 url-http-content-type)))))
 
-(defun emms-http-decode-buffer ()
+(defun emms-http-decode-buffer (&optional buffer)
   "Recode the buffer with `url-retrieve's contents. Else the
 buffer would contain multibyte chars like \\123\\456."
-  (let* ((default (or (car default-process-coding-system) 'utf-8))
-         (coding  (or (emms-http-content-coding) default)))
-    ;; (pop-to-buffer (current-buffer))
-    ;; (message "content-type: %s" url-http-content-type)
-    ;; (message "coding: %S [default: %S]" coding default)
-    (set-buffer-multibyte t)
-    (decode-coding-region (point-min) (point-max) coding)))
+  (with-current-buffer (or buffer (current-buffer))
+    (let* ((default (or (car default-process-coding-system) 'utf-8))
+           (coding  (or (emms-http-content-coding) default)))
+      ;; (pop-to-buffer (current-buffer))
+      ;; (message "content-type: %s" url-http-content-type)
+      ;; (message "coding: %S [default: %S]" coding default)
+      (set-buffer-multibyte t)
+      (decode-coding-region (point-min) (point-max) coding))))
 
 (provide 'emms-url)
 ;;; emms-url.el ends here
