@@ -109,15 +109,15 @@ needed info.")
    ("SomaFM: Doomed"
     "http://www.somafm.com/doomed.pls" 1 streamlist)
    ("Digitally Imported, Trance"
-    "http://www.digitallyimported.com/mp3/trance.pls" 1 streamlist)
+    "http://www.di.fm/mp3/trance.pls" 1 streamlist)
    ("Digitally Imported, Deephouse"
-    "http://www.digitallyimported.com/mp3/deephouse.pls" 1 streamlist)
+    "http://www.di.fm/mp3/deephouse.pls" 1 streamlist)
    ("Digitally Imported, Mostly Classical"
-    "http://www.digitallyimported.com/mp3/classical.pls" 1 streamlist)
+    "http://www.di.fm/mp3/classical.pls" 1 streamlist)
    ("Digitally Imported, Chillout"
-    "http://www.digitallyimported.com/mp3/chillout.pls" 1 streamlist)
+    "http://www.di.fm/mp3/chillout.pls" 1 streamlist)
    ("Digitally Imported, Drum and Bass"
-    "http://www.digitallyimported.com/mp3/drumandbass.pls" 1 streamlist)
+    "http://www.di.fm/mp3/drumandbass.pls" 1 streamlist)
    ("Philosomatika, Goa-Trance"
     "http://www.philosomatika.com/Philosomatika.pls" 1 streamlist)
    ("Drum and Bass Radio, BassDrive"
