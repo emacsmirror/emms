@@ -267,7 +267,7 @@ you can apply the command to a selected region."
         (insert value)))))
 
 (defun emms-tag-editor-replace-in-tag (tag from to)
-  (interactive 
+  (interactive
    (cons (completing-read "Replace in tag: "
                           emms-tag-editor-tags nil t)
          (let ((common (query-replace-read-args
@@ -457,11 +457,17 @@ edit buffer."
                             (emms-track-set track 'newname val)
                           (emms-track-set track key val))
                         (emms-track-set track 'tag-modified t))))
-                  (split-string (buffer-substring (point)
-                                                  (or
-                                                   (setq next (next-single-property-change (point) 'emms-track))
-                                                   (point-max)))
-                                "\n"))
+                  (let ((end-point (next-single-property-change
+                                    (point) 'emms-track)))
+                    (if (and end-point (save-excursion
+                                         (goto-char end-point)
+                                         (bolp)))
+                        (setq next end-point)
+                      (progn
+                        (setq next nil
+                              end-point (point-max))))
+                    (split-string (buffer-substring (point) end-point)
+                                  "\n")))
             (if (emms-track-get track 'tag-modified)
                 (push track tracks))
             next))
