@@ -433,7 +433,7 @@ display."
       (force-mode-line-update))
     (when emms-lyrics-display-on-minibuffer
       (unless (minibuffer-window-active-p (selected-window))
-        (message emms-lyrics-mode-line-string)))))
+        (message lyric)))))
 
 (defun emms-lyrics-find-lyric (file)
   "Return full path of found lrc FILE, or nil if not found.
@@ -448,14 +448,15 @@ e.g., (emms-lyrics-find-lyric \"abc.lrc\")"
       (if (file-exists-p (concat dir file)) ; same directory?
           (concat dir file)
         (when (not (string= emms-lyrics-dir ""))
-          (let* ((ret (car (split-string
-                            (shell-command-to-string
-                             (concat emms-source-file-gnu-find " "
-                                     emms-lyrics-dir " -name "
-                                     "'" ; wrap up whitespaces, FIXME, '->\'
-                                     (emms-replace-regexp-in-string "'" "*" file)
-                                     "'"))
-                            "\n"))))
+          (let* ((ret (car
+                       (split-string
+                        (shell-command-to-string
+                         (concat emms-source-file-gnu-find " "
+                                 emms-lyrics-dir " -name "
+                                 (shell-quote-argument
+                                  (emms-replace-regexp-in-string
+                                   "'" "*" file))))
+                        "\n"))))
             (unless (equal ret "")
               ret)))))))
 
