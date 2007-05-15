@@ -74,5 +74,43 @@
    emms-player-simple-process-name
    (format "seek %d 2\n" sec)))
 
+(defun emms-player-mplayer-subscript-checker ()
+  (let* ((track (emms-playlist-current-selected-track))
+         (name (emms-track-name track))
+         (ext (file-name-extension name))
+         (sub (replace-regexp-in-string (concat ext "$") "sub" name))
+         ;; TODO, script for chinese, gb, big, etc.
+         (srt (replace-regexp-in-string (concat ext "$") "srt" name))
+         (choices (remove-if-not 'file-exists-p (list sub srt)))
+         (subscript nil))
+    (cond ((> (length choices) 1)
+           (setq subscript
+                 (ido-completing-read "Select subscripts: "
+                                      choices)))
+          ((= (length choices) 1)
+           (setq subscript (car choices))))
+    (when subscript
+      (setq emms-player-mplayer-parameters
+            (append emms-player-mplayer-parameters
+                    (list "-sub" subscript))))))
+
+(defun emms-player-mplayer-start-with-subscript-checker (track)
+  "Start the player process by checking possible subscripts
+additionally."
+  (let ((emms-player-mplayer-parameters emms-player-mplayer-parameters))
+    (emms-player-mplayer-subscript-checker)
+    (emms-player-simple-start (emms-track-name track)
+                              emms-player-mplayer
+                              emms-player-mplayer-command-name
+                              emms-player-mplayer-parameters)))
+
+;; Uncomment me if you want to use
+;; `emms-player-mplayer-start-with-subscript-checker'. We need to
+;; redefine `emms-player-mplayer-start', since i can't figure out an
+;; easy way to achieve this by modifying the emms source. (xwl)
+;;
+;; (defalias 'emms-player-mplayer-start
+;;   'emms-player-mplayer-start-with-subscript-checker)
+
 (provide 'emms-player-mplayer)
 ;;; emms-player-mplayer.el ends here
