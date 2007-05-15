@@ -28,6 +28,7 @@
 
 ;;; Code:
 
+(require 'emms-compat)
 (require 'emms-player-simple)
 
 (define-emms-simple-player mplayer '(file url)
@@ -81,7 +82,7 @@
          (sub (replace-regexp-in-string (concat ext "$") "sub" name))
          ;; TODO, script for chinese, gb, big, etc.
          (srt (replace-regexp-in-string (concat ext "$") "srt" name))
-         (choices (remove-if-not 'file-exists-p (list sub srt)))
+         (choices (emms-remove-if-not 'file-exists-p (list sub srt)))
          (subtitle nil))
     (cond ((> (length choices) 1)
            (setq subtitle
