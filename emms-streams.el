@@ -112,12 +112,14 @@ needed info.")
     "http://www.di.fm/mp3/trance.pls" 1 streamlist)
    ("Digitally Imported, Deephouse"
     "http://www.di.fm/mp3/deephouse.pls" 1 streamlist)
-   ("Digitally Imported, Mostly Classical"
-    "http://www.di.fm/mp3/classical.pls" 1 streamlist)
    ("Digitally Imported, Chillout"
     "http://www.di.fm/mp3/chillout.pls" 1 streamlist)
    ("Digitally Imported, Drum and Bass"
     "http://www.di.fm/mp3/drumandbass.pls" 1 streamlist)
+   ("SKY.fm, Mostly Classical"
+    "http://www.sky.fm/mp3/classical.pls" 1 streamlist)
+   ("SKY.fm, Jazz"
+    "http://www.sky.fm/mp3/jazz.pls" 1 streamlist)
    ("Philosomatika, Goa-Trance"
     "http://www.philosomatika.com/Philosomatika.pls" 1 streamlist)
    ("Drum and Bass Radio, BassDrive"
@@ -133,11 +135,14 @@ needed info.")
    ("DNA Lounge, Live"
     "http://www.dnalounge.com/audio/128.m3u" 1 streamlist)
    ("Virgin Radio, The Groove"
-    "http://www.smgradio.com/core/audio/ogg/live.pls?service=grbb" 1 streamlist)
+    "http://www.smgradio.com/core/audio/ogg/live.pls?service=grbb"
+    1 streamlist)
    ("Virgin Radio, Virgin Classic"
-    "http://www.smgradio.com/core/audio/ogg/live.pls?service=vcbb" 1 streamlist)
+    "http://www.smgradio.com/core/audio/ogg/live.pls?service=vcbb"
+    1 streamlist)
    ("Virgin Radio, Virgin 1215AM"
-    "http://www.smgradio.com/core/audio/ogg/live.pls?service=vrbb" 1 streamlist)
+    "http://www.smgradio.com/core/audio/ogg/live.pls?service=vrbb"
+    1 streamlist)
    ("Voices From Within - Words From Beyond"
     "http://207.200.96.225:8024/listen.pls" 1 streamlist)
    ("WCPE, Classical Music"
@@ -150,8 +155,6 @@ needed info.")
     "http://stream.nute.net/kohina/stream.ogg.m3u" 1 streamlist)
    ("Nectarine, Demoscene Radio"
     "http://www.scenemusic.eu:8002/high.ogg.m3u" 1 streamlist)
-   ("GotWoot Radio - Anime soundtracks and J-Pop music"
-    "http://radio.gotwoot.net:8080/stream.ogg.m3u" 1 streamlist)
    ("idobi Radio"
     "http://www.idobi.com/radio/iradio.pls" 1 streamlist)
    ("radio.wazee - Modern Alternative Rock"
@@ -160,7 +163,13 @@ needed info.")
     "http://www.chronixradio.com/chronixaggression/listen/listen.pls"
     1 streamlist)
    ("WFMU, Freeform radio"
-    "http://www.wfmu.org/wfmu.pls" 1 streamlist)))
+    "http://www.wfmu.org/wfmu.pls" 1 streamlist)
+   ("KEXP - Seattle Community Radio"
+    "http://kexp-mp3-128k.cac.washington.edu:8000/listen.pls" 1 streamlist)
+   ("KRUU-LP - Fairfield, Iowa Community Radio"
+    "http://kruufm.com/live.pls" 1 streamlist)
+   ("WBCR-LP - Berkshire Community Radio"
+    "http://nyc01.egihosting.com:6232/listen.pls" 1 streamlist)))
 
 (defvar emms-stream-mode-map
   (let ((map (make-keymap)))
