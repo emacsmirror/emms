@@ -288,8 +288,9 @@ will only take on the tracks in the region."
     (unwind-protect
         (save-excursion
           (save-restriction
-            (if (and mark-active transient-mark-mode)
-                (narrow-to-region (region-beginning) (region-end)))
+            (when (and mark-active transient-mark-mode)
+              (narrow-to-region (region-beginning) (region-end))
+              (deactivate-mark))
             (setq tag (concat (regexp-quote tag) "[ \t]+=[ \t]+"))
             (goto-char (point-min))
             (map-y-or-n-p
