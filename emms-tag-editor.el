@@ -268,6 +268,8 @@ you can apply the command to a selected region."
         (insert value)))))
 
 (defun emms-tag-editor-replace-in-tag (tag from to)
+  "Query and replace text in selected TAG. For example, select tag
+info-title, then replace will only occur in title."
   (interactive
    (cons (completing-read "Replace in tag: "
                           emms-tag-editor-tags nil t)
@@ -277,29 +279,34 @@ you can apply the command to a selected region."
                           "Query replace regexp")
                         t)))
            (butlast common))))
-  (save-excursion
-    (save-restriction
-      (if (and mark-active transient-mark-mode)
-          (narrow-to-region (region-beginning) (region-end)))
-      (setq tag (concat (regexp-quote tag) "[ \t]+=[ \t]+"))
-      (goto-char (point-min))
-      (map-y-or-n-p
-       (lambda (match)
-         (format "Replace %s to %s" match to))
-       (lambda (match)
-         (delete-region (- (point) (length match)) (point))
-         (insert to))
-       (lambda ()
-         (if (and (save-excursion
-                    (re-search-backward tag (line-beginning-position) t))
-                  (re-search-forward from (line-end-position) t))
-             (match-string 0)
-           (let (found)
-             (while (and (not found)
-                         (re-search-forward tag nil t))
-               (if (re-search-forward from (line-end-position) t)
-                   (setq found t)))
-             (and found (match-string 0)))))))))
+  (let ((overlay (make-overlay (point-min) (1+ (point-min)))))
+    (overlay-put overlay 'face 'match)
+    (unwind-protect
+        (save-excursion
+          (save-restriction
+            (if (and mark-active transient-mark-mode)
+                (narrow-to-region (region-beginning) (region-end)))
+            (setq tag (concat (regexp-quote tag) "[ \t]+=[ \t]+"))
+            (goto-char (point-min))
+            (map-y-or-n-p
+             (lambda (match)
+               (move-overlay overlay (match-beginning 0) (match-end 0))
+               (format "Replace %s to %s" match to))
+             (lambda (match)
+               (delete-region (- (point) (length match)) (point))
+               (insert to))
+             (lambda ()
+               (if (and (save-excursion
+                          (re-search-backward tag (line-beginning-position) t))
+                        (re-search-forward from (line-end-position) t))
+                   (match-string 0)
+                 (let (found)
+                   (while (and (not found)
+                               (re-search-forward tag nil t))
+                     (if (re-search-forward from (line-end-position) t)
+                         (setq found t)))
+                   (and found (match-string 0))))))))
+      (delete-overlay overlay))))
 
 (defun emms-tag-editor-transpose-tag (tag1 tag2)
   (interactive
