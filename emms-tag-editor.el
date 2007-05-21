@@ -252,7 +252,9 @@ See also `emms-tag-editor-tag-file' and `emms-tag-editor-tag-ogg'.
 
 (defun emms-tag-editor-set-all (tag value)
   "Replace all track's TAG to VALUE. If turn transient-mark-mode on,
-you can apply the command to a selected region."
+you can apply the command to a selected region. If
+`transient-mark-mode' is on andthe mark is activate, the changes
+will only take on the tracks in the region."
   (interactive
    (list (completing-read "Set tag: "
                           emms-tag-editor-tags nil t)
@@ -268,8 +270,10 @@ you can apply the command to a selected region."
         (insert value)))))
 
 (defun emms-tag-editor-replace-in-tag (tag from to)
-  "Query and replace text in selected TAG. For example, select tag
-info-title, then replace will only occur in title."
+  "Query and replace text in selected TAG. For example, select
+tag info-title, then replace will only occur in title. If
+`transient-mark-mode' is on andthe mark is activate, the changes
+will only take on the tracks in the region."
   (interactive
    (cons (completing-read "Replace in tag: "
                           emms-tag-editor-tags nil t)
@@ -309,6 +313,9 @@ info-title, then replace will only occur in title."
       (delete-overlay overlay))))
 
 (defun emms-tag-editor-transpose-tag (tag1 tag2)
+  "Transpose value of TAG1 and TAG2. If `transient-mark-mode' is
+on andthe mark is activate, the changes will only take on the
+tracks in the region."
   (interactive
    (let* ((tag1 (intern (completing-read "Tag1: "
                                          emms-tag-editor-tags nil t)))
