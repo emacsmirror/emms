@@ -144,8 +144,9 @@ See also `emms-tag-editor-tag-file' and `emms-tag-editor-tag-ogg'.
   "Change tag in FILE use PROGRAM. The TAGS is given in `emms-tag-editor-tagfile-functions'."
   (let (args val)
     (mapc (lambda (tag)
-            (when (> (length (setq val (emms-track-get track (car tag)))) 0)
-              (setq args (append (list (concat "-" (cdr tag)) val) args))))
+            (setq val (emms-track-get track (car tag)))
+            (if (and val (stringp val))
+                (setq args (append (list (concat "-" (cdr tag)) val) args))))
           tags)
     (apply 'call-process program
            nil (get-buffer-create emms-tag-editor-log-buffer) nil
