@@ -72,11 +72,13 @@ This should be a positive integer."
   :type 'integer
   :group 'emms-volume)
 
+;;;###autoload
 (defun emms-volume-raise ()
   "Raise the speaker volume."
   (interactive)
   (funcall emms-volume-change-function emms-volume-change-amount))
 
+;;;###autoload
 (defun emms-volume-lower ()
   "Lower the speaker volume."
   (interactive)
@@ -100,12 +102,14 @@ This should be a positive integer."
 (defvar emms-volume-mode-timer nil
   "The timer `emms-volume-minor-mode' uses.")
 
+;;;###autoload
 (defun emms-volume-mode-plus ()
   "Raise volume and enable or extend the `emms-volume-minor-mode' timeout."
   (interactive)
   (emms-volume-raise)
   (emms-volume-mode-start-or-extend))
 
+;;;###autoload
 (defun emms-volume-mode-minus ()
   "Lower volume and enable or extend the `emms-volume-minor-mode' timeout."
   (interactive)

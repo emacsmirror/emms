@@ -49,6 +49,7 @@ controls, run `amixer controls' in a shell."
                  (string :tag "Something else: "))
   :group 'emms-volume)
 
+;;;###autoload
 (defun emms-volume-amixer-change (amount)
   "Change amixer master volume by AMOUNT."
   (message "Playback channels: %s"
