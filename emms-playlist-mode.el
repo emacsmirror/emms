@@ -484,6 +484,17 @@ When NO-NEWLINE is non-nil, do not insert a newline after the track."
     (when emms-playlist-mode-center-when-go
       (emms-playlist-mode-center-current))))
 
+(defun emms ()
+  "Switch to the current emms-playlist buffer, use
+emms-playlist-mode and query for a directory tree to add to the
+playlist."
+  (interactive)
+  (emms-playlist-mode-go)
+  (when (not (condition-case nil (emms-playlist-first) (error nil)))
+    (let ((dir (read-directory-name "Select a directory to add recursively: "
+                                    emms-source-file-default-directory nil t)))
+      (emms-add-directory-tree dir))))
+
 (defun emms-playlist-mode-go-popup (&optional window-width)
   "Popup emms-playlist buffer as a side window. 
 
