@@ -133,7 +133,9 @@ needed info.")
    ("Stangs Garage, Eclectic"
     "http://www.stangsgarage.com/listen.pls" 1 streamlist)
    ("DNA Lounge, Live"
-    "http://www.dnalounge.com/audio/128.m3u" 1 streamlist)
+    "http://www.dnalounge.com/webcast/128.m3u" 1 streamlist)
+   ("DNA Lounge Radio"
+    "http://www.dnalounge.com/webcast/dnaradio.m3u" 1 streamlist)
    ("Virgin Radio, The Groove"
     "http://www.smgradio.com/core/audio/ogg/live.pls?service=grbb"
     1 streamlist)
