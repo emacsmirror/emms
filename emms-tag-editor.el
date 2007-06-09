@@ -448,7 +448,7 @@ Available tags are:
             ((= c ?%)
              (setq c (aref pattern i)
                    i (1+ i))
-             ;; How to repressent a\{N,M\} in the pattern?
+             ;; How to repressent } in the pattern?
              (if (= c ?{)
                  (if (/= (aref pattern (1+ i)) ?:)
                      (error "Compile error")
