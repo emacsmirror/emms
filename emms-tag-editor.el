@@ -359,6 +359,120 @@ changes will only take effect on the tracks in the region."
           (emms-track-set track 'tag-modified t)
           (emms-tag-editor-insert-track track))))))
 
+;;;###autoload
+(defun emms-tag-editor-guess-tag-filename (pattern fullname)
+  "A pattern is a string like \"%a-%t-%y\" which stand for
+the file name is constructed by artist, title, year with seperator '-'.
+see `emms-tag-editor-compile-pattern' for detail about pattern syntax.
+Available tags are list in `emms-tag-editor-tags'.
+
+if with prefix argument, the information will extract from full
+name, otherwise just match in file name.
+
+An example to guess tag from file name, which the file directory is
+the aritist and file name is the title. It can be done like:
+C-u M-x emms-tag-editor-guess-tag-filename RET
+%{a:[^/]+}/%{t:[^/]+}\.mp3 RET
+"
+  (interactive
+   (list
+    (read-from-minibuffer (format "Match in %sfile name(C-h for help): "
+                                  (if current-prefix-arg "FULL " ""))
+                          nil
+     (let ((map (make-sparse-keymap)))
+       (set-keymap-parent map minibuffer-local-map)
+       (define-key map "\C-h"
+         (lambda ()
+           (interactive)
+           (with-output-to-temp-buffer "*Help*"
+             (princ
+              "A pattern is a string like \"%a-%t-%y\" which stand for
+the file name is constructed by artist, title, year with seperator '-'.
+see `emms-tag-editor-compile-pattern' for detail about pattern syntax.
+
+Available tags are:
+")
+             (mapc (lambda (tag)
+                     (princ (format "\t%s - %S\n" (cdr tag) (car tag))))
+                   emms-tag-editor-tags)
+             (save-excursion
+               (set-buffer standard-output)
+               (help-mode)))))
+       map))
+    current-prefix-arg))
+  (setq pattern (emms-tag-editor-compile-pattern pattern))
+  (save-excursion
+    (save-restriction
+      (if (and mark-active transient-mark-mode)
+          (narrow-to-region (region-beginning) (region-end)))
+      (let* ((emms-playlist-buffer-p t)
+             (tracks (emms-playlist-tracks-in-region (point-min)
+                                                     (point-max)))
+             (inhibit-read-only t)
+             filename)
+        (erase-buffer)
+        (dolist (track (nreverse tracks))
+          (emms-track-set track 'tag-modified t)
+          (setq filename (emms-track-name track))
+          (or fullname (setq filename (file-name-nondirectory filename)))
+          (when (string-match (car pattern) filename)
+            (mapcar (lambda (pair)
+                      (emms-track-set track (car (rassoc (char-to-string (car pair)) emms-tag-editor-tags))
+                                      (match-string (cdr pair) filename)))
+                    (cdr pattern)))
+          (emms-tag-editor-insert-track track))))))
+
+;;;###autoload
+(defun emms-tag-editor-compile-pattern (pattern)
+  "A pattern to regexp convertor. \"%a-%{b:[a-z]+}\" will compile to
+\"\\([^-]+\\)-\\([a-z]+\\)\"."
+  (let ((index 0)
+        (paren 0)
+        (i 0)
+        (len (length pattern))
+        (compiled "")
+        registers register match
+        escape)
+    (while (< i len)
+      (setq c (aref pattern i)
+            i (1+ i))
+      (cond ((= c ?\\)
+             (setq c (aref pattern i)
+                   i (1+ i))
+             (cond ((= c ?\()
+                    (setq paren (1+ paren)
+                          index (1+ index)))
+                   ((= c ?\))
+                    (setq paren (1- paren))))
+             (setq compiled (concat compiled "\\" (char-to-string c))))
+            ((= c ?%)
+             (setq c (aref pattern i)
+                   i (1+ i))
+             ;; How to repressent a\{N,M\} in the pattern?
+             (if (= c ?{)
+                 (if (/= (aref pattern (1+ i)) ?:)
+                     (error "Compile error")
+                   (setq register (aref pattern i)
+                         match ""
+                         i (+ i 2))
+                   (while (and (< i len)
+                               (or escape (/= (aref pattern i) ?})))
+                     (if escape
+                         (setq escape nil)
+                       (if (= (aref pattern i) ?\\)
+                           (setq escape t)))
+                     (setq match (concat match (char-to-string (aref pattern i)))
+                           i (1+ i)))
+                   (setq i (1+ i)))
+               (setq register c
+                     match "[^-]+"))
+             (setq compiled (concat compiled "\\(" match "\\)")
+                   index (1+ index))
+             (add-to-list 'registers (cons register index)))
+            (t (setq compiled (concat compiled (char-to-string c))))))
+    (if (/= paren 0) (error "Paren not match!"))
+    (cons compiled registers)))
+
 (defun emms-tag-editor-next-field (arg)
   "Move to the next tag field."
   (interactive "p")
