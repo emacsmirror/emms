@@ -352,10 +352,11 @@ changes will only take effect on the tracks in the region."
              (inhibit-read-only t)
              temp)
         (erase-buffer)
-        (dolist (track tracks)
+        (dolist (track (nreverse tracks))
           (setq temp (emms-track-get track tag1))
           (emms-track-set track tag1 (emms-track-get track tag2))
           (emms-track-set track tag2 temp)
+          (emms-track-set track 'tag-modified t)
           (emms-tag-editor-insert-track track))))))
 
 (defun emms-tag-editor-next-field (arg)
