@@ -432,7 +432,7 @@ Available tags are:
         (len (length pattern))
         (compiled "")
         registers register match
-        escape)
+        escape c)
     (while (< i len)
       (setq c (aref pattern i)
             i (1+ i))
