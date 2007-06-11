@@ -50,8 +50,7 @@
   '(emms-player-mpg321
     emms-player-ogg123
     emms-player-mplayer-playlist
-    emms-player-mplayer
-    emms-player-xine)
+    emms-player-mplayer)
   "*Default list of players for emms-setup."
   :group 'emms-setup
   :type 'list)
