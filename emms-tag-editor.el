@@ -536,18 +536,21 @@ With prefix argument, bury the tag edit buffer."
             ;; rename local file
             (when (and (emms-track-get track 'newname)
                        (eq (emms-track-get track 'type) 'file)
-                       (file-writable-p (emms-track-name track)))
+                       (file-writable-p (emms-track-name track))
+                       (y-or-n-p (format "Rename %s to %s"
+                                         (emms-track-name track)
+                                         (emms-track-get track 'newname))))
               (setq filename (emms-track-get track 'newname))
               (rename-file (emms-track-name track) filename)
               (emms-track-set old 'name filename)
               ;; for re-enter this function
-              (emms-track-set track 'newname nil)
               (emms-track-set track 'name filename)
               (setq need-sync t)
               ;; register to emms-cache-db
               (when (boundp 'emms-cache-modified-function)
                 (funcall emms-cache-modified-function)
                 (funcall emms-cache-set-function 'file filename old)))
+            (emms-track-set track 'newname nil)
             ;; set tags to original track
             (dolist (tag emms-tag-editor-tags)
               (when (setq val (emms-track-get track (car tag)))
