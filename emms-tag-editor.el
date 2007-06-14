@@ -133,7 +133,7 @@ See also `emms-tag-editor-tag-file' and `emms-tag-editor-tag-ogg'.")
     (mapc (lambda (tag)
             (let ((info-tag (intern (concat "info-" tag))))
               (when (> (length (setq val (emms-track-get track info-tag))) 0)
-                (setq args (append (list "-t" (concat tag "=" val)) args)))))
+                (setq args (append (list "-t" (concat (upcase tag) "=" val)) args)))))
           '("artist" "title" "album" "tracknumber" "date" "genre" "note"))
     (when args
       (apply #'call-process "vorbiscomment" nil
