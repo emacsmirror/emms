@@ -88,7 +88,7 @@
          (choices
           (emms-remove-if-not 'file-exists-p
                               (mapcar (lambda (el)
-                                        (replace-regexp-in-string
+                                        (emms-replace-regexp-in-string
                                          (concat ext "$") el name))
                                       emms-player-mplayer-subtitle-extensions)))
          (subtitle nil))
