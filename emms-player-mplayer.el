@@ -31,6 +31,12 @@
 (require 'emms-compat)
 (require 'emms-player-simple)
 
+(defcustom emms-player-mplayer-subtitle-extensions
+  '("sub" "srt" "gb.srt" "big5.srt")
+  "Possible movie subtitle file extensions."
+  :type 'symbol
+  :group 'emms)
+
 (define-emms-simple-player mplayer '(file url)
   (regexp-opt '(".ogg" ".mp3" ".wav" ".mpg" ".mpeg" ".wmv" ".wma"
                 ".mov" ".avi" ".divx" ".ogm" ".asf" ".mkv" "http://" "mms://"
@@ -79,10 +85,12 @@
   (let* ((track (emms-playlist-current-selected-track))
          (name (emms-track-name track))
          (ext (file-name-extension name))
-         (sub (replace-regexp-in-string (concat ext "$") "sub" name))
-         ;; TODO, script for chinese, gb, big, etc.
-         (srt (replace-regexp-in-string (concat ext "$") "srt" name))
-         (choices (emms-remove-if-not 'file-exists-p (list sub srt)))
+         (choices
+          (emms-remove-if-not 'file-exists-p
+                              (mapcar (lambda (el)
+                                        (replace-regexp-in-string
+                                         (concat ext "$") el name))
+                                      emms-player-mplayer-subtitle-extensions)))
          (subtitle nil))
     (cond ((> (length choices) 1)
            (setq subtitle
