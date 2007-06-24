@@ -91,14 +91,8 @@
                                         (emms-replace-regexp-in-string
                                          (concat ext "$") el name))
                                       emms-player-mplayer-subtitle-extensions)))
-         (subtitle nil))
-    (cond ((> (length choices) 1)
-           (setq subtitle
-                 (ido-completing-read "Select subtitles: "
-                                      choices)))
-          ((= (length choices) 1)
-           (setq subtitle (car choices))))
-    (when subtitle
+         (subtitle (mapconcat (lambda (el) el) choices ",")))
+    (unless (string= subtitle "")
       (setq emms-player-mplayer-parameters
             (append emms-player-mplayer-parameters
                     (list "-sub" subtitle))))))
