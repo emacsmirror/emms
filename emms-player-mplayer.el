@@ -107,13 +107,10 @@ additionally."
                               emms-player-mplayer-command-name
                               emms-player-mplayer-parameters)))
 
-;; Uncomment me if you want to use
-;; `emms-player-mplayer-start-with-subtitle-checker'. We need to
-;; redefine `emms-player-mplayer-start', since i can't figure out an
-;; easy way to achieve this by modifying the emms source. (xwl)
-;;
-;; (defalias 'emms-player-mplayer-start
-;;   'emms-player-mplayer-start-with-subtitle-checker)
+;; I have to redefine `emms-player-mplayer-start', since i can't figure
+;; out an easy way to achieve this based on current design. (xwl)
+(defalias 'emms-player-mplayer-start
+  'emms-player-mplayer-start-with-subtitle-checker)
 
 (provide 'emms-player-mplayer)
 ;;; emms-player-mplayer.el ends here
