@@ -1,6 +1,6 @@
 ;;; emms-last-played.el --- Support for last-played-time of a track
 
-;; Copyright (C) 2006, 2007  Lucas Bonnet <lucas@rincevent.net>
+;; Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
 ;; Author: Lucas Bonnet <lucas@rincevent.net>
 ;; Keywords: emms, mp3, mpeg, multimedia
