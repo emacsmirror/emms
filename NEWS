@@ -37,6 +37,8 @@ News since version 2.1:
       emms-lastfm is loaded and active.
   - emms-playing-time supports different display styles now.
   - emms-lyrics: Now support lyrics auto-scrolling.
+  - emms-player-mplayer: capable of loading movie subtitles
+    automatically now.
 
 News since version 2.0:
 
