@@ -131,9 +131,8 @@ paused track resumes) and sets the track submission timer."
 
 (defun emms-lastfm-cancel-timer ()
   "Cancels `emms-lastfm-timer' if it is running."
-  (when emms-lastfm-timer
-    (emms-cancel-timer emms-lastfm-timer)
-    (setq emms-lastfm-timer nil)))
+  (emms-cancel-timer emms-lastfm-timer)
+  (setq emms-lastfm-timer nil))
 
 (defun emms-lastfm-pause ()
   "Handles things to be done when the player is paused or
