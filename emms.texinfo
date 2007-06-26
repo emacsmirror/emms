@@ -394,10 +394,10 @@ emms-add-directory-tree RET ~/Music/ RET}. We do this because then EMMS
 will read the tags of all your music files and cache them. This is
 required for the browser, @xref{The Browser}.
 
-To switch to the playlist buffer, invoke @kbd{M-x
-emms-playlist-mode-go}. You can see that most tracks are displayed with
-their file name, but track by track the filename gets replaced with the
-artist and track name of the file's tag.
+To switch to the playlist buffer, invoke @kbd{M-x emms-playlist-mode-go}
+or simply @kbd{M-x emms}. You can see that most tracks are displayed
+with their file name, but track by track the filename gets replaced with
+the artist and track name of the file's tag.
 
 Hit @kbd{RET} on a track to start playback.
 
@@ -1691,12 +1691,12 @@ Using @file{emms-tag-editor.el}, emms can set tag info of tracks. With
 the help of external programs, such as `mp3info', `vorbiscomment',
 emms can write the tag info to track file as well.
 
-Using key `E' to edit tags of current track or marked tracks(See
-@xref{Markable Playlists}. for how to mark tracks). The track's info
-is listed in text format. The field name is marked in bold face and not
+Using key `E' to edit tags of current track or marked tracks
+(@pxref{Markable Playlists} for how to mark tracks). The track's info is
+listed in text format. The field name is marked in bold face and not
 editable. And tag info is after an equal sign and is changable. A
-special field `name' is the track file name. If any change made in
-this field, the track file will rename to the new name.
+special field `name' is the track file name. If any change made in this
+field, the track file will rename to the new name.
 
 A few commands to perform changes on all tracks.
 
@@ -2086,6 +2086,8 @@ Your last.fm username.
 Your last.fm password.
 @end defopt
 
+To set them in your @file{.emacs} add something like this.
+
 @lisp
 (setq emms-lastfm-username "my-user-name"
       emms-lastfm-password "very-secret!")
@@ -2113,6 +2115,13 @@ next track, not the current one.
 Stop submission of track informations.
 @end defun
 
+If you want to enable submission of tracks by default, put this into
+your @file{.emacs}.
+
+@lisp
+(emms-lastfm-activate)
+@end lisp
+
 @node Last.fm radio
 @section Last.fm radio
 
@@ -2132,11 +2141,14 @@ emms-streams.el to listen to them) by activating the player as follows.
 (add-to-list 'emms-player-list 'emms-player-lastfm-radio)
 @end lisp
 
-To insert a Last.fm stream into a playlist, do the following.
+To add a Last.fm stream into the current playlist, do the following:
+@kbd{M-x emms-add-lastfm RET lastfm://rest-of-url RET}. To directly
+start playing use @command{emms-play-lastfm}.
 
-@lisp
-(emms-insert-lastfm "lastfm://rest-of-url")
-@end lisp
+To read more about the concept of the ``current'' playlist
+@xref{Playlists}. To add a last.fm stream to the playlist buffer that's
+currently browsed (which might not be the ``current'' playlist), use
+@command{emms-insert-lastfm} instead.
 
 For your convenience there are some functions which let you choose a
 common radio station without having to remember or type its last.fm URL.
