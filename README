@@ -113,7 +113,6 @@ actions on the current playlist. Here are some basic commands:
 As always, for more commands see the mode documentation and the
 "Interactive Playlists" section of the Emms manual.
 
-
 * Bare Bones Setup
 ==================
 
@@ -178,6 +177,16 @@ EMMS highlights the acronym character of the name. Emms is akin to
 Emacs and Gnus, ignoring that Emms is pronounce ee-em-em-es, and not a
 single name. emms is highlighting that emms is a case-sensitive file
 name and Emacs Lisp command.
+
+* Getting help
+==============
+
+Emms has a mailing list at emms-help@gnu.org.  To subscribe to it,
+visit http://lists.gnu.org/mailman/listinfo/emms-help.  If you are
+familiar with the Gmane service, there is a Gmane newsgroup which
+mirrors this mailing address at gmane.emacs.emms.user.
+
+Emms also has a website at <http://www.gnu.org/software/emms/>.
 
 * License
 =========

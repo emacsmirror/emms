@@ -53,6 +53,7 @@ Starting out
 * Simple Setup::        Quick, basic default Emms setup.
 * Configuration::       More detailed setup and configuration.
 * Quickstart Guide::    First steps with EMMS for new users.
+* Getting Help::        Where to get help with Emms and make suggestions.
 
 Emms basics
 * Basic Commands::      How to control Emms with ease.
@@ -404,6 +405,22 @@ Hit @kbd{RET} on a track to start playback.
 Now you can start exploring EMMS. It's probably best to begin with the
 basic commands (@pxref{Basic Commands}), the interactive playlists
 (@pxref{Interactive Playlists}), and the browser (@pxref{The Browser}).
+
+@node Getting Help
+@chapter Getting Help
+
+@cindex mailing list
+@cindex website
+
+If you have a bug to report, need help, or wish to suggest a feature,
+please feel free to use the Emms mailing list.  The address of the list
+is emms-help@@gnu.org.  To subscribe to it, visit
+@url{http://lists.gnu.org/mailman/listinfo/emms-help}.
+
+If you are familiar with the Gmane service, there is a Gmane newsgroup
+which mirrors this mailing address at gmane.emacs.emms.user.
+
+Emms also has a website at @url{http://www.gnu.org/software/emms/}.
 
 @node Basic Commands
 @chapter Basic Commands
