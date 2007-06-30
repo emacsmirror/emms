@@ -32,7 +32,7 @@
 (require 'emms-player-simple)
 
 (defcustom emms-player-mplayer-subtitle-extensions
-  '("sub" "srt" "gb.srt" "big5.srt")
+  '("sub" "srt" "gb.srt" "big5.srt" "eng.srt" "chs.srt" "cht.srt")
   "Possible movie subtitle file extensions."
   :type 'symbol
   :group 'emms)
