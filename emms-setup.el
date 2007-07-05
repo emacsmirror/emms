@@ -131,8 +131,10 @@ on the edge."
   (require 'emms-i18n)
   (require 'emms-tag-editor)
   (require 'emms-volume)
+  (require 'emms-playlist-limit)
   ;; setup
-  (add-hook 'emms-player-started-hook 'emms-last-played-update-current))
+  (add-hook 'emms-player-started-hook 'emms-last-played-update-current)
+  (emms-playlist-limit 1))
 
 
 ;;;###autoload
