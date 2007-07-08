@@ -20,22 +20,13 @@
 ;; along with EMMS; if not, write to the Free Software Foundation,
 ;; Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
 
-;;; Commentary:
-
-;; Provide various playlist sort functions for emms, such as
-;; `emms-playlist-sort-by-info-title'.
-
-;; Put this file into your load-path and the following into your
-;; ~/.emacs:
-;;            (require 'emms-playlist-sort)
-
 ;;; Code:
 
 (require 'emms-score)
 
 (eval-when-compile (require 'cl))
 
-;;; Customizations
+;;; User Customizations
 
 (defgroup emms-playlist-sort nil
   "Sorting Emacs Multimedia System playlists."
@@ -59,9 +50,8 @@ info-tracknumber."
   :group 'emms-playlist-sort)
 
 
-;;; Interfaces
+;;; User Interfaces
 
-;; sort macro
 (defmacro define-emms-playlist-sort (attribute)
   "Macro for defining emms playlist sort functions."
   `(defun ,(intern (format "emms-playlist-sort-by-%s" attribute)) ()
@@ -119,7 +109,7 @@ increasingly."
           emms-playlist-sort-map)))
 
 
-;;; Low Level
+;;; Low Level Functions
 
 (defun emms-playlist-sort (predicate &optional start end)
   "Sort the playlist buffer by PREDICATE.
