@@ -36,6 +36,36 @@
     (remove-hook 'emms-playlist-source-inserted-hook
                  'emms-playlist-limit-update-tracks)))
 
+(defmacro define-emms-playlist-limit (attribute)
+  "Macro for defining emms playlist limit functions."
+  `(defun ,(intern (format "emms-playlist-limit-to-%s" attribute)) (regexp)
+     ,(format "Limit to playlists that have %s that matches REGEXP." attribute)
+     (interactive
+      (list
+       (let* ((curr
+               (or (emms-track-get
+                    (emms-playlist-track-at) (quote ,attribute))
+                   (emms-track-get
+                    (emms-playlist-selected-track) (quote ,attribute))))
+              (fmt (if curr
+                       (format "Limit to artist (regexp = %s): " curr)
+                     (format "Limit to artist (regexp): "))))
+         (read-string fmt))))
+     (when (string= regexp "")
+       (setq regexp (emms-track-get (emms-playlist-track-at) (quote ,attribute))))
+     (emms-playlist-limit-do (quote ,attribute) regexp)))
+
+(define-emms-playlist-limit info-artist)
+(define-emms-playlist-limit info-album)
+(define-emms-playlist-limit info-year)
+(define-emms-playlist-limit info-genre)
+(define-emms-playlist-limit name)
+
+(defun emms-playlist-limit-to-all ()
+  "Show all tracks again."
+  (interactive)
+  (emms-playlist-limit-do nil nil))
+
 (define-key emms-playlist-mode-map (kbd "/ n") 'emms-playlist-limit-to-name)
 (define-key emms-playlist-mode-map (kbd "/ a") 'emms-playlist-limit-to-info-artist)
 (define-key emms-playlist-mode-map (kbd "/ t") 'emms-playlist-limit-to-info-title)
@@ -43,77 +73,6 @@
 (define-key emms-playlist-mode-map (kbd "/ y") 'emms-playlist-limit-to-info-year)
 (define-key emms-playlist-mode-map (kbd "/ g") 'emms-playlist-limit-to-info-genre)
 (define-key emms-playlist-mode-map (kbd "/ /") 'emms-playlist-limit-to-all)
-
-(defun emms-playlist-limit-to-info-artist (regexp)
-  "Limit to playlists that have artist that matches REGEXP."
-  (interactive
-   (list
-    (read-string
-     (format "Limit to artist (regexp = %s): "
-             (emms-track-get (emms-playlist-track-at) 'info-artist)))))
-  (when (string= regexp "")
-    (setq regexp (emms-track-get (emms-playlist-track-at) 'info-artist)))
-  (emms-playlist-limit-do 'info-artist regexp))
-
-(defun emms-playlist-limit-to-info-album (regexp)
-  "Limit to playlists that have album that matches REGEXP."
-  (interactive
-   (list
-    (read-string
-     (format "Limit to album (regexp = %s): "
-             (emms-track-get (emms-playlist-track-at) 'info-album)))))
-  (when (string= regexp "")
-    (setq regexp (emms-track-get (emms-playlist-track-at) 'info-album)))
-  (emms-playlist-limit-do 'info-album regexp))
-
-(defun emms-playlist-limit-to-info-title (regexp)
-  "Limit to playlists that have title that matches REGEXP."
-  (interactive
-   (list
-    (read-string
-     (format "Limit to title (regexp = %s): "
-             (emms-track-get (emms-playlist-track-at) 'info-title)))))
-  (when (string= regexp "")
-    (setq regexp (emms-track-get (emms-playlist-track-at) 'info-title)))
-  (emms-playlist-limit-do 'info-title regexp))
-
-(defun emms-playlist-limit-to-info-year (regexp)
-  "Limit to playlists that have year that matches REGEXP."
-  (interactive
-   (list
-    (read-string
-     (format "Limit to year (regexp = %s): "
-             (emms-track-get (emms-playlist-track-at) 'info-year)))))
-  (when (string= regexp "")
-    (setq regexp (emms-track-get (emms-playlist-track-at) 'info-year)))
-  (emms-playlist-limit-do 'info-year regexp))
-
-(defun emms-playlist-limit-to-info-genre (regexp)
-  "Limit to playlists that have genre that matches REGEXP."
-  (interactive
-   (list
-    (read-string
-     (format "Limit to genre (regexp = %s): "
-             (emms-track-get (emms-playlist-track-at) 'info-genre)))))
-  (when (string= regexp "")
-    (setq regexp (emms-track-get (emms-playlist-track-at) 'info-genre)))
-  (emms-playlist-limit-do 'info-genre regexp))
-
-(defun emms-playlist-limit-to-name (regexp)
-  "Limit to playlists that have name that matches REGEXP."
-  (interactive
-   (list
-    (read-string
-     (format "Limit to genre (regexp = %s): "
-             (emms-track-get (emms-playlist-track-at) 'name)))))
-  (when (string= regexp "")
-    (setq regexp (emms-track-get (emms-playlist-track-at) 'name)))
-  (emms-playlist-limit-do 'name regexp))
-
-(defun emms-playlist-limit-to-all ()
-  "Show all tracks again."
-  (interactive)
-  (emms-playlist-limit-do nil nil))
 
 
 ;;; Low Level Functions
