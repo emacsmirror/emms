@@ -32,9 +32,9 @@
   (interactive "p")
   (if (and arg (> arg 0))
       (add-hook 'emms-playlist-source-inserted-hook
-                'emms-playlist-limit-update-tracks)
+                'emms-playlist-limit-insert)
     (remove-hook 'emms-playlist-source-inserted-hook
-                 'emms-playlist-limit-update-tracks)))
+                 'emms-playlist-limit-insert)))
 
 (defmacro define-emms-playlist-limit (attribute)
   "Macro for defining emms playlist limit functions."
@@ -80,12 +80,21 @@
 (defvar emms-playlist-limit-tracks nil
   "All tracks in playlist buffer.")
 
-(defun emms-playlist-limit-update-tracks ()
-  "Update `emms-playlist-limit-tracks'."
+(defun emms-playlist-limit-insert ()
+  "Run in `emms-playlist-source-inserted-hook'."
   (setq emms-playlist-limit-tracks
         (append emms-playlist-limit-tracks
                 (emms-playlist-tracks-in-region
                  (point-min) (point-max)))))
+
+;; FIXME: When user deletes some tracks, `emms-playlist-limit-tracks'
+;; should be updated.
+;; (defun emms-playlist-limit-clear ()
+;;   "Run in `emms-playlist-cleared-hook'."
+;;   (setq emms-playlist-limit-tracks
+;;         (append emms-playlist-limit-tracks
+;;                 (emms-playlist-tracks-in-region
+;;                  (point-min) (point-max)))))
 
 (defun emms-playlist-limit-do (name value)
   "Limit by NAME with VALUE.
