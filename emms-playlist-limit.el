@@ -56,6 +56,7 @@
      (emms-playlist-limit-do (quote ,attribute) regexp)))
 
 (define-emms-playlist-limit info-artist)
+(define-emms-playlist-limit info-title)
 (define-emms-playlist-limit info-album)
 (define-emms-playlist-limit info-year)
 (define-emms-playlist-limit info-genre)
@@ -103,7 +104,7 @@ e.g.,
 
 When NAME is nil, show all tracks again.
 
-See `emms-info-mp3find-arguments' for possible options."
+See `emms-info-mp3find-arguments' for possible options for NAME."
   (with-current-emms-playlist
     (save-excursion
       (emms-playlist-ensure-playlist-buffer)
