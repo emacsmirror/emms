@@ -103,7 +103,7 @@ If fifth arg LITERAL is non-nil, insert REPLACEMENT literally."
   (cond
    ((fboundp 'replace-regexp-in-string)
     (replace-regexp-in-string regexp replacement text fixedcase literal))
-   ((fboundp 'replace-in-string)
+   ((and (featurep 'xemacs) (fboundp 'replace-in-string))
     (replace-in-string text regexp replacement literal))
    (t (let ((repl-len (length replacement))
             start)
