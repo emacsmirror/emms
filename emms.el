@@ -217,6 +217,12 @@ Use `emms-player-paused-p' to find the current state."
   :group 'emms
   :type 'hook)
 
+(defcustom emms-seek-seconds 10
+  "The number of seconds to seek forward or backward when seeking.
+This is a number in seconds."
+  :group 'emms
+  :type 'number)
+
 (defcustom emms-player-seeked-functions nil
   "*Functions called when a player is seeking.
 The functions are called with a single argument, the amount of
@@ -407,13 +413,13 @@ It can also be negative to seek backwards."
   "Seek ten seconds forward."
   (interactive)
   (when emms-player-playing-p
-    (emms-player-seek 10)))
+    (emms-player-seek emms-seek-seconds)))
 
 (defun emms-seek-backward ()
   "Seek ten seconds backward."
   (interactive)
   (when emms-player-playing-p
-    (emms-player-seek -10)))
+    (emms-player-seek (- emms-seek-seconds))))
 
 (defun emms-show (&optional insertp)
   "Describe the current EMMS track in the minibuffer.
