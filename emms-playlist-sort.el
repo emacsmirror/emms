@@ -33,14 +33,6 @@
   :prefix "emms-playlist-sort-"
   :group 'emms)
 
-;; FIXME, Should better avoid relying on setting before loading
-(defcustom emms-playlist-sort-prefix "S"
-  "Prefix key sequence for `emms-playlist-sort-map'.
-If you want to customize it, you must set this variable before
-loading `emms-playlist-sort'."
-  :type 'string
-  :group 'emms-playlist-sort)
-
 (defcustom emms-playlist-sort-list '(info-artist info-album)
   "Sorting list used by `emms-playlist-sort-by-list'.
 Currently it understands the following fields: name info-artist
@@ -90,23 +82,19 @@ increasingly."
   (interactive)
   (emms-playlist-sort 'emms-playlist-sort-by-list-p))
 
-(defvar emms-playlist-sort-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "n") 'emms-playlist-sort-by-name)
-    (define-key map (kbd "a") 'emms-playlist-sort-by-info-artist)
-    (define-key map (kbd "t") 'emms-playlist-sort-by-info-title)
-    (define-key map (kbd "b") 'emms-playlist-sort-by-info-album)
-    (define-key map (kbd "y") 'emms-playlist-sort-by-info-year)
-    (define-key map (kbd "o") 'emms-playlist-sort-by-info-note)
-    (define-key map (kbd "N") 'emms-playlist-sort-by-natural-order)
-    (define-key map (kbd "l") 'emms-playlist-sort-by-list)
-    map))
+(eval-after-load 'emms-playlist-mode
+  '(progn
+     ;; Steal this key from emms-playlist-mode..
+     (define-key emms-playlist-mode-map (kbd "s") nil)
 
-(eval-after-load "emms-playlist-mode"
-  '(and (boundp 'emms-playlist-mode-map)
-        (define-key emms-playlist-mode-map
-          emms-playlist-sort-prefix
-          emms-playlist-sort-map)))
+     (define-key emms-playlist-mode-map (kbd "s n") 'emms-playlist-sort-by-name)
+     (define-key emms-playlist-mode-map (kbd "s a") 'emms-playlist-sort-by-info-artist)
+     (define-key emms-playlist-mode-map (kbd "s t") 'emms-playlist-sort-by-info-title)
+     (define-key emms-playlist-mode-map (kbd "s b") 'emms-playlist-sort-by-info-album)
+     (define-key emms-playlist-mode-map (kbd "s y") 'emms-playlist-sort-by-info-year)
+     (define-key emms-playlist-mode-map (kbd "s o") 'emms-playlist-sort-by-info-note)
+     (define-key emms-playlist-mode-map (kbd "s N") 'emms-playlist-sort-by-natural-order)
+     (define-key emms-playlist-mode-map (kbd "s l") 'emms-playlist-sort-by-list)))
 
 
 ;;; Low Level Functions
