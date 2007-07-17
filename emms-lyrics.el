@@ -82,7 +82,7 @@
   :type 'boolean
   :group 'emms-lyrics)
 
-(defcustom emms-lyrics-dir ""
+(defcustom emms-lyrics-dir "~/music/lyrics"
   "Local lyrics repository.
 `emms-lyrics-find-lyric' will look for lyrics in current directory(i.e.,
 same as the music file) and this directory."
@@ -140,7 +140,7 @@ same as the music file) and this directory."
   "Disable displaying emms lyrics."
   (interactive)
   (emms-lyrics -1)
-  (message "emms lyrics disabled."))
+  (message "EMMS lyrics disabled"))
 
 ;;;###autoload
 (defun emms-lyrics-toggle ()
@@ -156,9 +156,9 @@ same as the music file) and this directory."
   (if emms-lyrics-display-on-minibuffer
       (progn
 	(setq emms-lyrics-display-on-minibuffer nil)
-	(message "Disable lyrics on minibufer."))
+	(message "Disable lyrics on minibufer"))
     (setq emms-lyrics-display-on-minibuffer t)
-    (message "Enable lyrics on minibufer.")))
+    (message "Enable lyrics on minibufer")))
 
 (defun emms-lyrics-toggle-display-on-modeline ()
   "Toggle display lyrics on mode line."
@@ -167,9 +167,9 @@ same as the music file) and this directory."
       (progn
 	(setq emms-lyrics-display-on-modeline nil
 	      emms-lyrics-mode-line-string "")
-	(message "Disable lyrics on mode line."))
+	(message "Disable lyrics on mode line"))
     (setq emms-lyrics-display-on-modeline t)
-    (message "Enable lyrics on mode line.")))
+    (message "Enable lyrics on mode line")))
 
 (defun emms-lyrics (arg)
   "Turn on emms lyrics display if ARG is positive, off otherwise."
@@ -447,7 +447,8 @@ e.g., (emms-lyrics-find-lyric \"abc.lrc\")"
       ;; luck! :-)
       (if (file-exists-p (concat dir file)) ; same directory?
           (concat dir file)
-        (when (not (string= emms-lyrics-dir ""))
+        (when (and (file-exists-p emms-lyrics-dir)
+                   (not (string= emms-lyrics-dir "")))
           (let* ((ret (car
                        (split-string
                         (shell-command-to-string
