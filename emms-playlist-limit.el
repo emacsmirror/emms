@@ -47,9 +47,11 @@
                     (emms-playlist-track-at) (quote ,attribute))
                    (emms-track-get
                     (emms-playlist-selected-track) (quote ,attribute))))
+              (attr-name ,(emms-replace-regexp-in-string
+                           "info-" "" (symbol-name attribute)))
               (fmt (if curr
-                       (format "Limit to artist (regexp = %s): " curr)
-                     (format "Limit to artist (regexp): "))))
+                       (format "Limit to %s (regexp = %s): " attr-name curr)
+                     (format "Limit to %s (regexp): " attr-name))))
          (read-string fmt))))
      (when (string= regexp "")
        (setq regexp (emms-track-get (emms-playlist-track-at) (quote ,attribute))))
