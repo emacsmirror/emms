@@ -134,8 +134,8 @@ on the edge."
   (require 'emms-playlist-limit)
   ;; setup
   (add-hook 'emms-player-started-hook 'emms-last-played-update-current)
+  (emms-score 1)
   (emms-playlist-limit 1))
-
 
 ;;;###autoload
 (defun emms-default-players ()
