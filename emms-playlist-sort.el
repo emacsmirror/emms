@@ -86,7 +86,6 @@ increasingly."
   '(progn
      ;; Steal this key from emms-playlist-mode..
      (define-key emms-playlist-mode-map (kbd "s") nil)
-
      (define-key emms-playlist-mode-map (kbd "s n") 'emms-playlist-sort-by-name)
      (define-key emms-playlist-mode-map (kbd "s a") 'emms-playlist-sort-by-info-artist)
      (define-key emms-playlist-mode-map (kbd "s t") 'emms-playlist-sort-by-info-title)
@@ -94,7 +93,8 @@ increasingly."
      (define-key emms-playlist-mode-map (kbd "s y") 'emms-playlist-sort-by-info-year)
      (define-key emms-playlist-mode-map (kbd "s o") 'emms-playlist-sort-by-info-note)
      (define-key emms-playlist-mode-map (kbd "s N") 'emms-playlist-sort-by-natural-order)
-     (define-key emms-playlist-mode-map (kbd "s l") 'emms-playlist-sort-by-list)))
+     (define-key emms-playlist-mode-map (kbd "s l") 'emms-playlist-sort-by-list)
+     (define-key emms-playlist-mode-map (kbd "s s") 'emms-playlist-sort-by-score)))
 
 
 ;;; Low Level Functions
