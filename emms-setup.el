@@ -73,11 +73,12 @@ audio files, and a metadata cache."
   ;; include
   (emms-minimalistic)
   ;; define
-  (require 'emms-playlist-mode)
-  (require 'emms-info)
-  (require 'emms-info-mp3info)
-  (require 'emms-info-ogginfo)
-  (require 'emms-cache)
+  (eval-and-compile
+    (require 'emms-playlist-mode)
+    (require 'emms-info)
+    (require 'emms-info-mp3info)
+    (require 'emms-info-ogginfo)
+    (require 'emms-cache))
   ;; setup
   (setq emms-playlist-default-major-mode 'emms-playlist-mode)
   (add-to-list 'emms-track-initialize-functions 'emms-info-initialize-track)
@@ -121,17 +122,18 @@ on the edge."
   ;; include
   (emms-all)
   ;; define
-  (require 'emms-metaplaylist-mode)
-  (require 'emms-stream-info)
-  (require 'emms-score)
-  (require 'emms-last-played)
-  (require 'emms-bookmarks)
-  (require 'emms-history)
-  (require 'emms-mark)
-  (require 'emms-i18n)
-  (require 'emms-tag-editor)
-  (require 'emms-volume)
-  (require 'emms-playlist-limit)
+  (eval-and-compile
+    (require 'emms-metaplaylist-mode)
+    (require 'emms-stream-info)
+    (require 'emms-score)
+    (require 'emms-last-played)
+    (require 'emms-bookmarks)
+    (require 'emms-history)
+    (require 'emms-mark)
+    (require 'emms-i18n)
+    (require 'emms-tag-editor)
+    (require 'emms-volume)
+    (require 'emms-playlist-limit))
   ;; setup
   (add-hook 'emms-player-started-hook 'emms-last-played-update-current)
   (emms-score 1)
