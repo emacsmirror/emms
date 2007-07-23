@@ -578,9 +578,10 @@ buffer and move to NEW-SONG."
    (lambda (closure id)
      (let ((buffer (car closure))
            (fn (cdr closure)))
-       (funcall fn buffer id)))))
+       (when (functionp fn)
+         (funcall fn buffer id))))))
 
-(defun emms-player-mpd-sync-from-emms (callback)
+(defun emms-player-mpd-sync-from-emms (&optional callback)
   "Synchronize the MusicPD playlist with the contents of the
 current EMMS playlist.
 
