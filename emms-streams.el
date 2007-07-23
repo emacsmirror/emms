@@ -88,6 +88,17 @@ needed info.")
 (defvar emms-stream-playlist-buffer nil
   "The EMMS playlist buffer associated with emms-streams.")
 
+(defcustom emms-stream-repeat-p nil
+  "*If non-nil, try to repeat a streamlist if it gets disconnected."
+  :set (function
+        (lambda (sym val)
+          (when (buffer-live-p emms-stream-playlist-buffer)
+            (with-current-buffer emms-stream-playlist-buffer
+              (setq emms-repeat-playlist val)))
+          (set sym val)))
+  :type 'boolean
+  :group 'emms-stream)
+
 ;; Format: (("descriptive name" url feed-number type))
 ;;
 ;; type could be either url, playlist, or lastfm. If url, then it
@@ -239,9 +250,10 @@ This is used when `emms-stream-default-action' is \"play\"."
     (setq emms-stream-playlist-buffer
           (emms-playlist-set-playlist-buffer (emms-playlist-new)))
     (with-current-buffer emms-stream-playlist-buffer
-      ;; make sure that we continue to play the station, even if
-      ;; briefly disconnected
-      (set (make-local-variable 'emms-repeat-playlist) t))))
+      ;; if emms-stream-repeat-p is non-nil, make sure that we
+      ;; continue to play the station, even if briefly disconnected
+      (set (make-local-variable 'emms-repeat-playlist)
+           emms-stream-repeat-p))))
 
 (defun emms-stream-kill-playlist ()
   "Delete the EMMS playlist associated with emms-streams, if one exists."
