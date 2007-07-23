@@ -26,15 +26,42 @@
 
 ;;; User Interfacs
 
-;;;###autoload
+(defvar emms-playlist-limit-enabled-p nil
+  "If non-nil, emms playlist limit is enabled.")
+
 (defun emms-playlist-limit (arg)
-  "Turn on emms limit if ARG is positive, off otherwise."
+  "Turn on emms playlist limit if ARG is positive, off otherwise."
   (interactive "p")
   (if (and arg (> arg 0))
-      (add-hook 'emms-playlist-source-inserted-hook
-                'emms-playlist-limit-insert)
+      (progn
+        (setq emms-playlist-limit-enabled-p t)
+        (add-hook 'emms-playlist-source-inserted-hook
+                  'emms-playlist-limit-insert))
+    (setq emms-playlist-limit-enabled-p nil)
     (remove-hook 'emms-playlist-source-inserted-hook
                  'emms-playlist-limit-insert)))
+
+;;;###autoload
+(defun emms-playlist-limit-enable ()
+  "Turn on emms playlist limit."
+  (interactive)
+  (emms-playlist-limit 1)
+  (message "emms playlist limit enabled"))
+
+;;;###autoload
+(defun emms-playlist-limit-disable ()
+  "Turn off emms playlist limit."
+  (interactive)
+  (emms-playlist-limit -1)
+  (message "emms playlist limit disabled"))
+
+;;;###autoload
+(defun emms-playlist-limit-toggle ()
+  "Toggle emms playlist limit."
+  (interactive)
+  (if emms-playlist-limit-enabled-p
+      (emms-playlist-limit-disable)
+    (emms-playlist-limit-enable)))
 
 (defmacro define-emms-playlist-limit (attribute)
   "Macro for defining emms playlist limit functions."
