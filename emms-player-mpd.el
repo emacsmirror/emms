@@ -906,8 +906,7 @@ buffer get out-of-sync for some reason."
   "Starts a process playing TRACK."
   (interactive)
   (if (and emms-player-mpd-sync-playlist
-           (not (memq (emms-track-get track 'type) '(streamlist playlist)))
-           (not (string-match "\\`http://" (emms-track-get track 'name))))
+           (not (memq (emms-track-get track 'type) '(streamlist playlist))))
       (emms-player-mpd-start-and-sync)
     (emms-player-mpd-clear)
     ;; if we have loaded the item successfully, play it
