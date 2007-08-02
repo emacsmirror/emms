@@ -70,7 +70,7 @@
 (defvar emms-score-enabled-p nil
   "If non-nil, emms score is active.")
 
-(defcustom emms-score-file "~/.emms/scores"
+(defcustom emms-score-file "~/.emacs.d/emms-scores"
   "*Directory to store the score file."
   :type 'directory
   :group 'emms)
