@@ -68,16 +68,17 @@ Advanced Features
 * Markable Playlists::       Allow tracks to be marked.
 
 Modules and Extensions
-* The Browser::         Advanced metadata browsing.
-* Sorting Playlists::   Sorting the order of the tracks.
-* Editing Tracks::      Editing track information from within Emms.
-* Emms Mode Line::      Emms information on the mode line.
-* Music Player Daemon:: Interface to Music Player Daemon.
-* Streaming Audio::     Interface to streaming audio.
-* Lyrics::              Displaying lyrics synchronously.
-* Volume::              Changing the volume.
-* Last.fm::             Interact with http://www.last.fm's services.
-* Extending Emms::      How to define new players and modules.
+* The Browser::          Advanced metadata browsing.
+* Sorting Playlists::    Sorting the order of the tracks.
+* Persistent Playlists:: Restoring playlists on emacs startup.
+* Editing Tracks::       Editing track information from within Emms.
+* Emms Mode Line::       Emms information on the mode line.
+* Music Player Daemon::  Interface to Music Player Daemon.
+* Streaming Audio::      Interface to streaming audio.
+* Lyrics::               Displaying lyrics synchronously.
+* Volume::               Changing the volume.
+* Last.fm::              Interact with http://www.last.fm's services.
+* Extending Emms::       How to define new players and modules.
 
 Copying and license
 * Copying::             The GNU General Public License gives you permission to
@@ -1698,6 +1699,48 @@ Sort playlist by notes in ascending order.
 @defun emms-playlist-sort-by-score
 Sort emms playlist by score in descending order.
 @end defun
+
+@node Persistent Playlists
+@chapter Persistent Playlists
+
+The Emms module @file{emms-history.el} makes playlists persistent over
+emacs sessions.  To make use of this feature put this into your
+~/.emacs.
+
+@lisp
+(require 'emms-history)
+@end lisp
+
+When you kill emacs all playlists will be saved in the file given by the
+variable:
+
+@defopt emms-history-file
+The file to save playlists in.  It defaults to
+"~/.emacs.d/emms-history".
+@end defopt
+
+After you started up emacs again, you can restore all saved playlists
+with this function.
+
+@defun emms-history-load
+Restore all playlists in `emms-history-file'.
+@end defun
+
+If that should be done automatically on each startup, put these lines
+into your ~/.emacs.
+
+@lisp
+(require 'emms-history)
+(emms-history-load)
+@end lisp
+
+Normally @code{emms-history} only restores playlists.  If you want it to
+start playback afterwards, you can tweak this variable.
+
+@defopt emms-history-start-playing
+If non-nil emms starts playing the current track after
+`emms-history-load' was invoked.  The default value is nil.
+@end defopt
 
 @node Editing Tracks
 @chapter Editing Tracks

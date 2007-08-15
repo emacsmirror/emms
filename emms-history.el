@@ -1,4 +1,4 @@
-;;; emms-history.el -- save playlist when exit emacs
+;;; emms-history.el -- save all playlists when exiting emacs
 
 ;; Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 ;;
@@ -22,25 +22,42 @@
 
 ;;; Commentary:
 
-;; Save playlists when exit emacs.
-;; Next time use M-x emms-history-load to load saved playlist
+;; Saves all playlists when you close emacs.  When you start it up again use
+;; M-x emms-history-load to restore all saved playlists.
 
-;; Put this file into your load-path and the following into your ~/.emacs:
+;; To use it put the following into your ~/.emacs:
+;;
 ;;   (require 'emms-history)
+;;
+;; If all playlists should be restored on startup add this, too:
+;;
+;;   (emms-history-load)
 
 ;;; Code:
 
-(provide 'emms-history)
 (require 'emms)
 (eval-when-compile
   (require 'cl))
 
-(defvar emms-history-file "~/.emacs.d/.emms-history"
-  "File to save playlists")
+(defgroup emms-history nil
+  "Saving and restoring all playlists when closing/restarting
+Emacs."
+  :prefix "emms-history-"
+  :group 'emms)
+
+(defcustom emms-history-file "~/.emacs.d/emms-history"
+  "The file to save playlists in."
+  :type   'string
+  :group  'emms-history)
+
+(defcustom emms-history-start-playing nil
+  "If non-nil emms starts playing the current track after
+`emms-history-load' was invoked."
+  :type   'boolean
+  :group  'emms-history)
 
 (defun emms-history-save ()
-  "Save all playlists that open in this emacs session when exit. Use
-`emms-history-load' to load saved playlists."
+  "Save all playlists that are open in this Emacs session."
   (interactive)
   (when (stringp emms-history-file)
     (let ((oldbuf emms-playlist-buffer)
@@ -80,6 +97,7 @@
 (add-hook 'kill-emacs-hook 'emms-history-save)
 
 (defun emms-history-load ()
+  "Restore all playlists in `emms-history-file'."
   (interactive)
   (when (and (stringp emms-history-file)
              (file-exists-p emms-history-file))
@@ -100,6 +118,8 @@
         (dolist (method (nth 2 history))
           (set (car method) (cdr method)))
         (ignore-errors
-          (emms-start))))))
+          (when emms-history-start-playing
+            (emms-start)))))))
 
+(provide 'emms-history)
 ;;; emms-history.el ends here
