@@ -27,7 +27,6 @@
 
 ;;; Code:
 
-(provide 'emms-tag-editor)
 (eval-when-compile
   (require 'cl))
 (require 'emms)
@@ -639,4 +638,59 @@ With prefix argument, bury the tag edit buffer."
     (goto-char (point-max))
     (insert (apply 'format args) "\n")))
 
-;;; emms-tag-editor.el ends here
+;;
+;; Renaming files according their tags
+;;
+
+(defvar emms-tag-editor-rename-format "%a - %l - %n - %t"
+  "When `emms-tag-editor-rename' is invoked the track's file will
+be renamed according this format specification.  The file
+extension will be added automatically.
+
+It uses the format specs defined in `emms-tag-editor-tags'.")
+
+(defun emms-tag-editor-rename ()
+  "Rename the file corresponding to track at point or all marked
+tracks according to the value of
+`emms-tag-editor-rename-format'."
+  (interactive)
+  (if (emms-mark-has-markedp)
+      (emms-tag-editor-rename-marked-tracks)
+    (emms-tag-editor-rename-track (emms-tag-editor-track-at))))
+
+(defun emms-tag-editor-rename-track (track)
+  "Rename TRACK's file according `emms-tag-editor-rename-format's
+value."
+  (let* ((file     (or (emms-track-get track 'info-file)
+                       (emms-track-get track 'name)))
+         (path     (file-name-directory file))
+         (suffix   (file-name-extension file))
+         (new-file (concat
+                    path
+                    (format-spec
+                     emms-tag-editor-rename-format
+                     (apply 'format-spec-make
+                            (apply 'append
+                                   (mapcar (lambda (tag)
+                                             (list (string-to-char (cdr tag))
+                                                   (or (emms-track-get track (car tag)) "")))
+                                           emms-tag-editor-tags))))
+                    "." suffix)))
+    (rename-file file new-file)
+    (message "Renamed \"%s\" to \"%s\"." file new-file)))
+
+(defun emms-tag-editor-rename-marked-tracks ()
+  "Rename the files corresponding to all marked tracks according
+`emms-tag-editor-rename-format's value."
+  (let ((tracks (emms-mark-mapcar-marked-track
+                 'emms-tag-editor-track-at t)))
+    (if (null tracks)
+        (message "No track marked!")
+      (progn
+        (dolist (track tracks)
+          (emms-tag-editor-rename-track track))))))
+
+(define-key emms-playlist-mode-map "R" 'emms-tag-editor-rename)
+
+(provide 'emms-tag-editor)
+;;; Emms-tag-editor.el ends here
