@@ -661,23 +661,35 @@ tracks according to the value of
 (defun emms-tag-editor-rename-track (track)
   "Rename TRACK's file according `emms-tag-editor-rename-format's
 value."
-  (let* ((file     (or (emms-track-get track 'info-file)
-                       (emms-track-get track 'name)))
-         (path     (file-name-directory file))
-         (suffix   (file-name-extension file))
-         (new-file (concat
-                    path
-                    (format-spec
-                     emms-tag-editor-rename-format
-                     (apply 'format-spec-make
-                            (apply 'append
-                                   (mapcar (lambda (tag)
-                                             (list (string-to-char (cdr tag))
-                                                   (or (emms-track-get track (car tag)) "")))
-                                           emms-tag-editor-tags))))
-                    "." suffix)))
-    (rename-file file new-file)
-    (message "Renamed \"%s\" to \"%s\"." file new-file)))
+  (if (eq (emms-track-get track 'type) 'file)
+      (let* ((old-file (or (emms-track-get track 'info-file)
+                           (emms-track-get track 'name)))
+             (path     (file-name-directory old-file))
+             (suffix   (file-name-extension old-file))
+             (new-file (concat
+                        path
+                        (format-spec
+                         emms-tag-editor-rename-format
+                         (apply 'format-spec-make
+                                (apply 'append
+                                       (mapcar
+                                        (lambda (tag)
+                                          (list (string-to-char (cdr tag))
+                                                (or (emms-track-get track (car tag))
+                                                    "")))
+                                        emms-tag-editor-tags))))
+                      "." suffix)))
+        ;; Rename the file...
+        (rename-file old-file new-file)
+        ;; ... and update the track and the cache (if used) if the renaming
+        ;; worked.
+        (dolist (info '(name info-file))
+          (emms-track-set track info new-file))
+        (when (featurep 'emms-cache)
+          (emms-cache-del old-file)              ;; delete the old one and...
+          (emms-cache-set 'file new-file track)) ;; ... insert the new one
+        (message "Renamed \"%s\" to \"%s\"." old-file new-file))
+    (message "Only files can be renamed.")))
 
 (defun emms-tag-editor-rename-marked-tracks ()
   "Rename the files corresponding to all marked tracks according
