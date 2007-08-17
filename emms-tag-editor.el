@@ -522,68 +522,73 @@ Available tags are:
   "Make modified tags take affect.
 With prefix argument, bury the tag edit buffer."
   (interactive "P")
-  (let ((tracks (funcall emms-tag-editor-parse-function))
-        filename func exit old pos val need-sync)
+  (let ((tracks (funcall emms-tag-editor-parse-function)))
     (if (not (and tracks (y-or-n-p "Submit changes? ")))
         (message "No tags were modified")
       (emms-tag-editor-erase-buffer emms-tag-editor-log-buffer)
-      (message "Setting tags...")
-      (save-excursion
-        (dolist (track tracks)
-          (when (emms-track-get track 'tag-modified)
-            (setq filename (emms-track-name track)
-                  old (emms-track-get track 'orig-track))
-            ;; rename local file
-            (when (and (emms-track-get track 'newname)
-                       (eq (emms-track-get track 'type) 'file)
-                       (file-writable-p (emms-track-name track))
-                       (y-or-n-p (format "Rename %s to %s"
-                                         (emms-track-name track)
-                                         (emms-track-get track 'newname))))
-              (setq filename (emms-track-get track 'newname))
-              (rename-file (emms-track-name track) filename)
-              (emms-track-set old 'name filename)
-              ;; for re-enter this function
-              (emms-track-set track 'name filename)
-              (setq need-sync t)
-              ;; register to emms-cache-db
-              (when (boundp 'emms-cache-modified-function)
-                (funcall emms-cache-modified-function)
-                (funcall emms-cache-set-function 'file filename old)))
-            (emms-track-set track 'newname nil)
-            ;; set tags to original track
-            (dolist (tag emms-tag-editor-tags)
-              (when (setq val (emms-track-get track (car tag)))
-                (emms-track-set old (car tag) val)))
-            ;; use mp3info to change tag in mp3 file
-            (when (and (eq (emms-track-get track 'type) 'file)
-                       (file-writable-p (emms-track-name track))
-                       (setq func (assoc (file-name-extension filename) emms-tag-editor-tagfile-functions)))
-              (setq exit
-                    (if (functionp (cdr func))
-                        (funcall (cdr func) track)
-                      (emms-tag-editor-tag-file track (cadr func) (nth 2 func))))
-              (if (zerop exit)
-                  (emms-track-get track 'info-mtime (butlast (current-time)))
-                (emms-tag-editor-log
-                 "Changing tags of %s failed with exit value %d"
-                 filename exit)))
-            ;; update track in playlist
-            (when (and (setq pos (emms-track-get track 'position))
-                       (marker-position pos))
-              (set-buffer (marker-buffer pos))
-              (goto-char pos)
-              (funcall emms-playlist-update-track-function))
-            ;; clear modified tag
-            (emms-track-set track 'tag-modified nil))))
-      (if (and (featurep 'emms-cache)
-               need-sync
-               (y-or-n-p "You have changed some track names; sync the cache? "))
-          (and (fboundp 'emms-cache-sync) ; silence byte-compiler
-               (emms-cache-sync)))
-      (unless (emms-tag-editor-display-log-buffer-maybe)
-        (message "Setting tags...done"))))
+      (emms-tag-editor-apply tracks)))
   (if arg (bury-buffer)))
+
+(defun emms-tag-editor-apply (tracks)
+  "Apply all changes made to TRACKS."
+  (message "Setting tags...")
+  (let (filename func exit old pos val need-sync)
+    (save-excursion
+      (dolist (track tracks)
+        (when (emms-track-get track 'tag-modified)
+          (setq filename (emms-track-name track)
+                old (emms-track-get track 'orig-track))
+          ;; rename local file
+          (when (and (emms-track-get track 'newname)
+                     (eq (emms-track-get track 'type) 'file)
+                     (file-writable-p (emms-track-name track))
+                     (y-or-n-p (format "Rename %s to %s? "
+                                       (emms-track-name track)
+                                       (emms-track-get track 'newname))))
+            (setq filename (emms-track-get track 'newname))
+            (rename-file (emms-track-name track) filename)
+            (emms-track-set old 'name filename)
+            ;; for re-enter this function
+            (emms-track-set track 'name filename)
+            (setq need-sync t)
+            ;; register to emms-cache-db
+            (when (boundp 'emms-cache-modified-function)
+              (funcall emms-cache-modified-function)
+              (funcall emms-cache-set-function 'file filename old)))
+          (emms-track-set track 'newname nil)
+          ;; set tags to original track
+          (dolist (tag emms-tag-editor-tags)
+            (when (setq val (emms-track-get track (car tag)))
+            (emms-track-set old (car tag) val)))
+          ;; use mp3info to change tag in mp3 file
+          (when (and (eq (emms-track-get track 'type) 'file)
+                     (file-writable-p (emms-track-name track))
+                     (setq func (assoc (file-name-extension filename)
+                                       emms-tag-editor-tagfile-functions)))
+            (setq exit
+                  (if (functionp (cdr func))
+                      (funcall (cdr func) track)
+                    (emms-tag-editor-tag-file track (cadr func) (nth 2 func))))
+            (if (zerop exit)
+                (emms-track-get track 'info-mtime (butlast (current-time)))
+              (emms-tag-editor-log
+               "Changing tags of %s failed with exit value %d"
+               filename exit)))
+          ;; update track in playlist
+          (when (and (setq pos (emms-track-get track 'position))
+                     (marker-position pos))
+            (set-buffer (marker-buffer pos))
+            (goto-char pos)
+            (funcall emms-playlist-update-track-function))
+          ;; clear modified tag
+          (emms-track-set track 'tag-modified nil))))
+    (if (and (featurep 'emms-cache)
+             need-sync
+             (y-or-n-p "You have changed some track names; sync the cache? "))
+        (and (fboundp 'emms-cache-sync) ; silence byte-compiler
+             (emms-cache-sync)))
+    (unless (emms-tag-editor-display-log-buffer-maybe)
+      (message "Setting tags...done"))))
 
 (defun emms-tag-editor-submit-and-exit ()
   "Submit changes to track information and exit the tag editor."
@@ -658,12 +663,15 @@ tracks according to the value of
       (emms-tag-editor-rename-marked-tracks)
     (emms-tag-editor-rename-track (emms-tag-editor-track-at))))
 
-(defun emms-tag-editor-rename-track (track)
+(defun emms-tag-editor-rename-track (track &optional dont-apply)
   "Rename TRACK's file according `emms-tag-editor-rename-format's
-value."
+value.
+
+If DONT-APPLY is non-nil the changes won't be applied directly.
+Then it's the callers job to apply them afterwards with
+`emms-tag-editor-apply'."
   (if (eq (emms-track-get track 'type) 'file)
-      (let* ((old-file (or (emms-track-get track 'info-file)
-                           (emms-track-get track 'name)))
+      (let* ((old-file (emms-track-name track))
              (path     (file-name-directory old-file))
              (suffix   (file-name-extension old-file))
              (new-file (concat
@@ -679,16 +687,10 @@ value."
                                                     "")))
                                         emms-tag-editor-tags))))
                       "." suffix)))
-        ;; Rename the file...
-        (rename-file old-file new-file)
-        ;; ... and update the track and the cache (if used) if the renaming
-        ;; worked.
-        (dolist (info '(name info-file))
-          (emms-track-set track info new-file))
-        (when (featurep 'emms-cache)
-          (emms-cache-del old-file)              ;; delete the old one and...
-          (emms-cache-set 'file new-file track)) ;; ... insert the new one
-        (message "Renamed \"%s\" to \"%s\"." old-file new-file))
+        (emms-track-set track 'newname new-file)
+        (emms-track-set track 'tag-modified t)
+        (unless dont-apply
+          (emms-tag-editor-apply (list track))))
     (message "Only files can be renamed.")))
 
 (defun emms-tag-editor-rename-marked-tracks ()
@@ -698,9 +700,9 @@ value."
                  'emms-tag-editor-track-at t)))
     (if (null tracks)
         (message "No track marked!")
-      (progn
-        (dolist (track tracks)
-          (emms-tag-editor-rename-track track))))))
+      (dolist (track tracks)
+        (emms-tag-editor-rename-track track t))
+      (emms-tag-editor-apply tracks))))
 
 (define-key emms-playlist-mode-map "R" 'emms-tag-editor-rename)
 
