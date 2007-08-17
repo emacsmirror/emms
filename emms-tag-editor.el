@@ -546,7 +546,11 @@ With prefix argument, bury the tag edit buffer."
                                        (emms-track-name track)
                                        (emms-track-get track 'newname))))
             (setq filename (emms-track-get track 'newname))
-            (rename-file (emms-track-name track) filename)
+            (ignore-errors
+              ;; Ignore errors so that renaming multiple files doesn't stop
+              ;; because of one that fails.  In that case it's probably
+              ;; old-file = newfile which causes the problem.
+              (rename-file (emms-track-name track) filename 1))
             (emms-track-set old 'name filename)
             ;; for re-enter this function
             (emms-track-set track 'name filename)

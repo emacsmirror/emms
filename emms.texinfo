@@ -1747,51 +1747,102 @@ If non-nil emms starts playing the current track after
 
 @cindex track editor
 
-Using @file{emms-tag-editor.el}, emms can set tag info of tracks. With
-the help of external programs, such as `mp3info', `vorbiscomment',
-emms can write the tag info to track file as well.
+Using @file{emms-tag-editor.el}, emms can set tag informations of tracks
+and write them back to the file with the help of external programs, such
+as `mp3info', `vorbiscomment'.
 
-Using key `E' to edit tags of current track or marked tracks
-(@pxref{Markable Playlists} for how to mark tracks). The track's info is
-listed in text format. The field name is marked in bold face and not
-editable. And tag info is after an equal sign and is changable. A
-special field `name' is the track file name. If any change made in this
-field, the track file will rename to the new name.
+Use the keybinding @kbd{E} to edit the tags of track under point in the
+playlist or all marked tracks (@pxref{Markable Playlists} for how to
+mark tracks).  The track's tag informations are listed in a special
+buffer `*EMMS-TAGS*' in text format.  Field names are marked in bold
+face and are not editable.  Any tag information is placed behind an
+equal sign and is changable.  A special field `name' is the track's file
+name.  If any change is made in this field, the track's file will be
+renamed to the new name.  When you finished editing the tag infos use
+@kbd{C-c C-c} (which calls @code{emms-tag-editor-submit-and-exit}) to
+submit the changes and close the `*EMMS-TAGS*' buffer.
 
-A few commands to perform changes on all tracks.
+There are a few commands to perform changes on all tracks.
 
-@defun emms-tag-editor-set-all
-Set specified tag of all tracks to the string reading from minibuffer.
+@defun emms-tag-editor-set-all tag value
+Set TAG to VALUE in all tracks.
+
+If transient-mark-mode is turned on, you can apply the command to a
+selected region.
+
+If `transient-mark-mode' is on and the mark is active, the changes will
+only take effect on the tracks in the region.
 @end defun
 
-@defun emms-tag-editor-replace-in-tag
-Replace things that matching regexp in specified tag of all tracks.
+@defun emms-tag-editor-replace-in-tag tag from to
+Query and replace text in selected TAG.
+
+For example, if the info-title tag is selected, then only perform
+replacement in title tags.
+
+If `transient-mark-mode' is on and the mark is active, the changes will
+only take effect on the tracks in the region.
 @end defun
 
-@defun emms-tag-editor-transpose-tag
-Transpose two tag info of all tracks.
+@defun emms-tag-editor-transpose-tag tag1 tag2
+Transpose value of TAG1 and TAG2.
+
+If `transient-mark-mode' is on and the mark is active, the changes will
+only take effect on the tracks in the region.
 @end defun
 
-@defun emms-tag-editor-submit
-Make changes take effect. `emms-tag-editor-submit-and-exit' does the
-same thing except it bury current buffer.
+@defun emms-tag-editor-submit arg
+Make modified tags take affect.
+
+With prefix argument, bury the tag edit buffer.
 @end defun
 
-@defvr {User Option} emms-tag-editor-formats
+If you want to extend the tag editor to work with file formats other
+than `mp3' and `ogg', have a look at these variables.
+
+@defvr {Variable} emms-tag-editor-formats
 This variable determine how to insert track fields to
-`emms-tag-editor-edit-buffer'. Emms tag info editable fields is usually
-determined by the extension of track name. The variable
-`emms-tag-editor-tags' contains all tags that emms track may have. A
-single charactar is asign to the tag to make the
+`emms-tag-editor-edit-buffer'.  Emms tag info editable fields is usually
+determined by the extension of track name.  The variable
+`emms-tag-editor-tags' contains all tags that emms track may have.  A
+single charactar is assigned to the tag to make the
 `emms-tag-editor-formats' easier to generate.
 @end defvr
 
-@defvr {User Option} emms-tag-editor-tagfile-functions
-To write tags to track file, an extern program should specific in this
-variable. Typically, a function should write for other type of track.
-If the extern program has an interface like `mp3info', you don't have
-to write a function. Take `mp3' and `ogg' as example.
+@defvr {Variable} emms-tag-editor-tagfile-functions
+To write tags to track file, an extern program should specified in this
+variable.
+
+If the external program has an interface like `mp3info', you don't have
+to write a function.  Take `mp3' and `ogg' as example.
 @end defvr
+
+@heading Renaming Files
+
+The tag editor is also capable to rename the file of the track at point
+or all files of the marked tracks according to the value this variable.
+
+@defopt emms-tag-editor-rename-format
+When `emms-tag-editor-rename' is invoked the track's file will be
+renamed according this format specification.  The file extension will be
+added automatically.
+
+It uses the format specs defined in @code{emms-tag-editor-tags}.
+
+The default value is "%a - %l - %n - %t", so that files are named
+
+  <Artist> - <Album> - <Tracknumber> - <Title>.<extension>
+
+after renaming.
+@end defopt
+
+To perform the renaming put point on the track you want to rename or
+mark some tracks.  Then hit @kbd{R} which calls this function:
+
+@defun emms-tag-editor-rename
+Rename the file corresponding to track at point or all marked tracks
+according to the value of @code{emms-tag-editor-rename-format}.
+@end defun
 
 @node Emms Mode Line
 @chapter Emms Mode Line
