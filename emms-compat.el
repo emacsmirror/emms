@@ -28,6 +28,9 @@
 
 ;;; Code:
 
+(if (string-match "XEmacs" (emacs-version))
+    (require 'overlay))
+
 
 ;;; Miscellaneous
 
