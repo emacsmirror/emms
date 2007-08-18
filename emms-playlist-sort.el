@@ -36,8 +36,8 @@
 (defcustom emms-playlist-sort-list '(info-artist info-album)
   "Sorting list used by `emms-playlist-sort-by-list'.
 Currently it understands the following fields: name info-artist
-info-title info-album info-genre info-playing-time
-info-tracknumber."
+imfo-composer info-performer info-title info-album info-genre
+info-playing-time info-tracknumber."
   :type 'symbol
   :group 'emms-playlist-sort)
 
@@ -56,6 +56,8 @@ info-tracknumber."
 
 (define-emms-playlist-sort name)
 (define-emms-playlist-sort info-artist)
+(define-emms-playlist-sort info-composer)
+(define-emms-playlist-sort info-performer)
 (define-emms-playlist-sort info-title)
 (define-emms-playlist-sort info-album)
 (define-emms-playlist-sort info-year)
@@ -86,6 +88,8 @@ increasingly."
   '(progn
      (define-key emms-playlist-mode-map (kbd "S n") 'emms-playlist-sort-by-name)
      (define-key emms-playlist-mode-map (kbd "S a") 'emms-playlist-sort-by-info-artist)
+     (define-key emms-playlist-mode-map (kbd "S c") 'emms-playlist-sort-by-info-composer)
+     (define-key emms-playlist-mode-map (kbd "S p") 'emms-playlist-sort-by-info-performer)
      (define-key emms-playlist-mode-map (kbd "S t") 'emms-playlist-sort-by-info-title)
      (define-key emms-playlist-mode-map (kbd "S b") 'emms-playlist-sort-by-info-album)
      (define-key emms-playlist-mode-map (kbd "S y") 'emms-playlist-sort-by-info-year)
@@ -140,7 +144,7 @@ ie. by album name and then by track number."
   (catch 'return
     (dolist (info emms-playlist-sort-list)
       (case info
-        ((name info-artist info-title info-album info-genre)
+        ((name info-artist info-composer info-performer info-title info-album info-genre)
          (when (emms-string< (emms-track-get a info)
                         (emms-track-get b info))
            (throw 'return t)))

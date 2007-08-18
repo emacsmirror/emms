@@ -77,6 +77,8 @@ ogg-comments.el"
 
       (emms-track-set track 'info-title (emms-info-ogg-get-comment "title" info))
       (emms-track-set track 'info-artist (emms-info-ogg-get-comment "artist" info))
+      (emms-track-set track 'info-composer (emms-info-ogg-get-comment "composer" info))
+      (emms-track-set track 'info-performer (emms-info-ogg-get-comment "performer" info))
       (emms-track-set track 'info-album (emms-info-ogg-get-comment "album" info))
       (emms-track-set track 'info-note (emms-info-ogg-get-comment "comment" info))
       (emms-track-set track 'info-year (emms-info-ogg-get-comment "date" info))

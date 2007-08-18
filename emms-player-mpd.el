@@ -1064,6 +1064,8 @@ rather than EMMS."
     (let ((name (car data))
           (value (cdr data)))
       (setq name (cond ((string= name "artist") 'info-artist)
+                       ((string= name "composer") 'info-composer)
+                       ((string= name "performer") 'info-performer)
                        ((string= name "title") 'info-title)
                        ((string= name "album") 'info-album)
                        ((string= name "track") 'info-tracknumber)

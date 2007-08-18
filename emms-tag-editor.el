@@ -37,13 +37,15 @@
 
 (defvar emms-tag-editor-tags
   '((info-artist      . "a")
+    (info-composer    . "c")
+    (info-performer   . "p")
     (info-title       . "t")
     (info-album       . "l")
     (info-tracknumber . "n")
     (info-year        . "y")
     (info-genre       . "g")
     (info-date        . "d")
-    (info-note        . "c"))
+    (info-note        . ";"))
   "An alist to determine the format of various info tags.")
 
 (defvar emms-tag-editor-edit-buffer "*EMMS-TAGS*"
@@ -79,12 +81,14 @@ is the format template.  The format specification is like:
  m     --     Track description
  f     --     Track name
  a     --     Track info-artist
+ c     --     Track info-composer
+ p     --     Track info-performer
  t     --     Track info-title
  l     --     Track info-album
  n     --     Track info-tracknumber
  y     --     Track info-year
  g     --     Track info-genre
- c     --     Track info-note
+ ;     --     Track info-note
 
 You can add new specifications in `emms-tag-editor-tags', and use
 `emms-tag-editor-make-format' to create a new format string.
@@ -134,7 +138,7 @@ See also `emms-tag-editor-tag-file' and `emms-tag-editor-tag-ogg'.")
             (let ((info-tag (intern (concat "info-" tag))))
               (when (> (length (setq val (emms-track-get track info-tag))) 0)
                 (setq args (append (list "-t" (concat (upcase tag) "=" val)) args)))))
-          '("artist" "title" "album" "tracknumber" "date" "genre" "note"))
+          '("artist" "composer" "performer" "title" "album" "tracknumber" "date" "genre" "note"))
     (when args
       (apply #'call-process "vorbiscomment" nil
              (get-buffer-create emms-tag-editor-log-buffer)

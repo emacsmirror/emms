@@ -46,8 +46,8 @@
 ;; c) the extra window closed, and both buffers buried
 
 ;; If you just want access to the browser, try M-x
-;; emms-browse-by-TYPE, where TYPE is one of artist, album, genre or
-;; year. These commands can also be used while smart browsing to
+;; emms-browse-by-TYPE, where TYPE is one of artist, album, composer,
+;; genre or year. These commands can also be used while smart browsing to
 ;; change the browsing category.
 
 ;; If you don't want to activate the code with (emms-devel), you can
@@ -82,19 +82,29 @@
 
 ;; s A             emms-browser-search-by-album
 ;; s a             emms-browser-search-by-artist
+;; s c             emms-browser-search-by-composer
 ;; s s             emms-browser-search-by-names
 ;; s t             emms-browser-search-by-title
+;; s p             emms-browser-search-by-performer
 
 ;; b 1             emms-browse-by-artist
 ;; b 2             emms-browse-by-album
 ;; b 3             emms-browse-by-genre
 ;; b 4             emms-browse-by-year
+;; b 5             emms-browse-by-composer
+;; b 6             emms-browse-by-performer
 
 ;; W a p           emms-browser-lookup-album-on-pitchfork
 ;; W a w           emms-browser-lookup-album-on-wikipedia
 
 ;; W A p           emms-browser-lookup-artist-on-pitchfork
 ;; W A w           emms-browser-lookup-artist-on-wikipedia
+
+;; W C p           emms-browser-lookup-composer-on-pitchfork
+;; W C w           emms-browser-lookup-composer-on-wikipedia
+
+;; W P p           emms-browser-lookup-performer-on-pitchfork
+;; W P w           emms-browser-lookup-performer-on-wikipedia
 
 ;; Displaying covers
 ;; -------------------------------------------------------------------
@@ -221,6 +231,8 @@
 ;; %y    the album year
 ;; %A    the album name
 ;; %a    the artist name of the track
+;; %C    the composer name of the track
+;; %p    the performer name of the track
 ;; %t    the title of the track
 ;; %T    the track number
 ;; %cS   a small album cover
@@ -235,9 +247,10 @@
 
 ;; The faces used to display the various fields are also customizable.
 ;; They are in the format emms-browser-<type>-face, where type is one
-;; of "year/genre", "artist", "album" or "track". Note that faces lack
-;; the initial "info-" part. For example, to change the artist face,
-;; type M-x customize-face emms-browser-artist-face.
+;; of "year/genre", "artist", "composer", "performer", "album" or
+;; "track". Note that faces lack the initial "info-" part. For example,
+;; to change the artist face, type
+;; M-x customize-face emms-browser-artist-face.
 
 ;; Deleting files
 ;; -------------------------------------------------------------------
@@ -437,12 +450,20 @@ Called once for each directory."
     (define-key map (kbd "b 2") 'emms-browse-by-album)
     (define-key map (kbd "b 3") 'emms-browse-by-genre)
     (define-key map (kbd "b 4") 'emms-browse-by-year)
+    (define-key map (kbd "b 5") 'emms-browse-by-composer)
+    (define-key map (kbd "b 6") 'emms-browse-by-performer)
     (define-key map (kbd "s a") 'emms-browser-search-by-artist)
+    (define-key map (kbd "s c") 'emms-browser-search-by-composer)
+    (define-key map (kbd "s p") 'emms-browser-search-by-performer)
     (define-key map (kbd "s A") 'emms-browser-search-by-album)
     (define-key map (kbd "s t") 'emms-browser-search-by-title)
     (define-key map (kbd "s s") 'emms-browser-search-by-names)
     (define-key map (kbd "W A w") 'emms-browser-lookup-artist-on-wikipedia)
     (define-key map (kbd "W A p") 'emms-browser-lookup-artist-on-pitchfork)
+    (define-key map (kbd "W C w") 'emms-browser-lookup-composer-on-wikipedia)
+    (define-key map (kbd "W C p") 'emms-browser-lookup-composer-on-pitchfork)
+    (define-key map (kbd "W P w") 'emms-browser-lookup-performer-on-wikipedia)
+    (define-key map (kbd "W P p") 'emms-browser-lookup-performer-on-pitchfork)
     (define-key map (kbd "W a w") 'emms-browser-lookup-album-on-wikipedia)
     (define-key map (kbd "W a p") 'emms-browser-lookup-album-on-pitchfork)
     (define-key map (kbd ">") 'emms-browser-next-filter)
@@ -590,6 +611,8 @@ example function is `emms-browse-by-artist'."
     (goto-char (point-min))))
 
 (emms-browser-add-category "artist" 'info-artist)
+(emms-browser-add-category "composer" 'info-composer)
+(emms-browser-add-category "performer" 'info-performer)
 (emms-browser-add-category "album" 'info-album)
 (emms-browser-add-category "genre" 'info-genre)
 (emms-browser-add-category "year" 'info-year)
@@ -693,6 +716,8 @@ browser, and hit 'b 1' to refresh.")))
 Eg. if CURRENT-MAPPING is currently 'info-artist, return 'info-album."
   (cond
    ((eq current-mapping 'info-artist) 'info-album)
+   ((eq current-mapping 'info-composer) 'info-album)
+   ((eq current-mapping 'info-performer) 'info-album)
    ((eq current-mapping 'info-album) 'info-title)
    ((eq current-mapping 'info-genre) 'info-artist)
    ((eq current-mapping 'info-year) 'info-artist)))
@@ -882,6 +907,8 @@ Uses `emms-browser-alpha-sort-function'."
          (cond
           ((or
             (eq type 'info-artist)
+            (eq type 'info-composer)
+            (eq type 'info-performer)
             (eq type 'info-year)
             (eq type 'info-genre))
            'emms-browser-sort-by-name)
@@ -1312,6 +1339,14 @@ Disabled by default."
   (interactive)
   (emms-browser-lookup-wikipedia 'info-artist))
 
+(defun emms-browser-lookup-composer-on-wikipedia ()
+  (interactive)
+  (emms-browser-lookup-wikipedia 'info-composer))
+
+(defun emms-browser-lookup-performer-on-wikipedia ()
+  (interactive)
+  (emms-browser-lookup-wikipedia 'info-performer))
+
 (defun emms-browser-lookup-album-on-wikipedia ()
   (interactive)
   (emms-browser-lookup-wikipedia 'info-album))
@@ -1319,6 +1354,14 @@ Disabled by default."
 (defun emms-browser-lookup-artist-on-pitchfork ()
   (interactive)
   (emms-browser-lookup-pitchfork 'info-artist))
+
+(defun emms-browser-lookup-composer-on-pitchfork ()
+  (interactive)
+  (emms-browser-lookup-pitchfork 'info-composer))
+
+(defun emms-browser-lookup-composer-on-pitchfork ()
+  (interactive)
+  (emms-browser-lookup-pitchfork 'info-composer))
 
 (defun emms-browser-lookup-album-on-pitchfork ()
   (interactive)
@@ -1506,6 +1549,14 @@ included."
   (interactive)
   (emms-browser-search '(info-artist)))
 
+(defun emms-browser-search-by-composer ()
+  (interactive)
+  (emms-browser-search '(info-composer)))
+
+(defun emms-browser-search-by-performer ()
+  (interactive)
+  (emms-browser-search '(info-performer)))
+
 (defun emms-browser-search-by-title ()
   (interactive)
   (emms-browser-search '(info-title)))
@@ -1516,7 +1567,7 @@ included."
 
 (defun emms-browser-search-by-names ()
   (interactive)
-  (emms-browser-search '(info-artist info-title info-album)))
+  (emms-browser-search '(info-artist info-composer info-performer info-title info-album)))
 
 ;; --------------------------------------------------
 ;; Album covers
@@ -1618,6 +1669,8 @@ If > album level, most of the track data will not make sense."
             ("y" . ,(emms-track-get track 'info-year))
             ("A" . ,(emms-track-get track 'info-album))
             ("a" . ,(emms-track-get track 'info-artist))
+            ("C" . ,(emms-track-get track 'info-composer))
+            ("p" . ,(emms-track-get track 'info-performer))
             ("t" . ,(emms-track-get track 'info-title))
             ("T" . ,(emms-browser-track-number track))
             ("cS" . ,(emms-browser-get-cover-str path 'small))
@@ -1668,6 +1721,8 @@ If > album level, most of the track data will not make sense."
                 ((or (eq type 'info-year)
                      (eq type 'info-genre)) "year/genre")
                  ((eq type 'info-artist) "artist")
+                 ((eq type 'info-composer) "composer")
+                 ((eq type 'info-performer) "performer")
                  ((eq type 'info-album) "album")
                  ((eq type 'info-title) "track"))))
     (intern
@@ -1797,6 +1852,8 @@ the text that it generates."
 
 (emms-browser-make-face "year/genre" "#aaaaff" "#444477" 1.5)
 (emms-browser-make-face "artist"     "#aaaaff" "#444477" 1.3)
+(emms-browser-make-face "composer"   "#aaaaff" "#444477" 1.3)
+(emms-browser-make-face "performer"  "#aaaaff" "#444477" 1.3)
 (emms-browser-make-face "album"      "#aaaaff" "#444477" 1.1)
 (emms-browser-make-face "track"      "#aaaaff" "#444477" 1.0)
 

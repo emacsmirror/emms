@@ -30,6 +30,8 @@
 ;; are defined:
 
 ;; info-artist - string naming the artist
+;; info-composer - string naming the composer
+;; info-performer - string naming the performer
 ;; info-title - string naming the title of the song
 ;; info-album - string naming the album
 ;; info-tracknumber - string(?) naming the track number
