@@ -29,10 +29,9 @@
 
 (eval-when-compile
   (require 'cl))
-(eval-when-compile
-  (condition-case nil
-      (require 'overlay)
-    (error nil)))
+(condition-case nil
+    (require 'overlay)
+  (error nil))
 (require 'emms)
 (require 'emms-info-mp3info)
 (require 'emms-playlist-mode)

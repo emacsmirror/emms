@@ -35,10 +35,9 @@
 ;;; --------------------------------------------------------
 
 (require 'emms)
-(eval-when-compile
-  (condition-case nil
-      (require 'overlay)
-    (error nil)))
+(condition-case nil
+    (require 'overlay)
+  (error nil))
 (require 'emms-source-playlist)
 
 (defvar emms-playlist-mode-hook nil
