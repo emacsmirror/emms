@@ -101,6 +101,23 @@
   :type 'boolean
   :group 'emms-lastfm)
 
+(defcustom emms-lastfm-submit-track-types '(file)
+  "Specify what types of tracks to submit to Last.fm.
+The default is to only submit files.
+
+To submit every track to Last.fm, set this to t.
+
+Note that it is not very meaningful to submit playlists,
+streamlists, or Last.fm streams to Last.fm."
+  :type '(choice (const :tag "All" t)
+                 (set :tag "Types"
+                      (const :tag "Files" file)
+                      (const :tag "URLs" url)
+                      (const :tag "Playlists" playlist)
+                      (const :tag "Streamlists" streamlist)
+                      (const :tag "Last.fm streams" lastfm)))
+  :group 'emms-lastfm)
+
 (defconst emms-lastfm-server "http://post.audioscrobbler.com/"
   "The last.fm server responsible for the handshaking
 procedure. Only for internal use.")
@@ -125,14 +142,18 @@ paused track resumes) and sets the track submission timer."
   ;; length, whichever comes first.
   (let ((secs (/ (emms-track-get emms-lastfm-current-track
                                  'info-playing-time)
-                    2)))
-    (when (> secs 240)
-      (setq secs 240))
-    (unless (< secs 15) ;; Skip titles shorter than 30 seconds
-      (setq secs (- secs emms-playing-time))
-      (unless (< secs 0)
-        (setq emms-lastfm-timer
-              (run-with-timer secs nil 'emms-lastfm-submit-track))))))
+                    2))
+        (type (emms-track-type emms-lastfm-current-track)))
+    (when (or (eq emms-lastfm-submit-track-types t)
+              (and (listp emms-lastfm-submit-track-types)
+                   (memq type emms-lastfm-submit-track-types)))
+      (when (> secs 240)
+        (setq secs 240))
+      (unless (< secs 15) ;; Skip titles shorter than 30 seconds
+        (setq secs (- secs emms-playing-time))
+        (unless (< secs 0)
+          (setq emms-lastfm-timer
+                (run-with-timer secs nil 'emms-lastfm-submit-track)))))))
 
 (defun emms-lastfm-cancel-timer ()
   "Cancels `emms-lastfm-timer' if it is running."
