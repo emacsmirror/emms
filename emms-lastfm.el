@@ -96,6 +96,11 @@
   :type 'string
   :group 'emms-lastfm)
 
+(defcustom emms-lastfm-submission-verbose-p nil
+  "If non-nil, display a message every time we submit a track to Last.fm."
+  :type 'boolean
+  :group 'emms-lastfm)
+
 (defconst emms-lastfm-server "http://post.audioscrobbler.com/"
   "The last.fm server responsible for the handshaking
 procedure. Only for internal use.")
@@ -264,6 +269,7 @@ last.fm."
                                         'info-playing-time)))
          (date (format-time-string "%Y-%m-%d %H:%M:%S" (current-time) t))
          (url-http-attempt-keepalives nil)
+         (url-show-status emms-lastfm-submission-verbose-p)
          (url-request-method "POST")
          (url-request-extra-headers
           '(("Content-type" .
@@ -291,8 +297,9 @@ well or if an error occured."
     (goto-char (point-min))
     (if (re-search-forward "^OK$" nil t)
         (progn
-          (message "EMMS: \"%s\" submitted to last.fm"
-                   (emms-track-description emms-lastfm-current-track))
+          (when emms-lastfm-submission-verbose-p
+            (message "EMMS: \"%s\" submitted to last.fm"
+                     (emms-track-description emms-lastfm-current-track)))
           (kill-buffer buffer))
       (message "EMMS: Song couldn't be submitted to last.fm")
       (goto-char (point-min))
