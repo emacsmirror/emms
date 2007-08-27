@@ -98,7 +98,8 @@ to call the player and ARGS are the command line arguements."
        "Return non-nil when we can play this track."
        (and (executable-find ,command-name)
             (memq (emms-track-type track) ,types)
-            (string-match ,regex (emms-track-name track)))))))
+            (string-match (emms-player-get ,player-name 'regex)
+                          (emms-track-name track)))))))
 
 ;; Global variables
 (defvar emms-player-simple-process-name "emms-player-simple-process"
