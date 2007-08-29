@@ -333,8 +333,9 @@ view with lots of 1-track elements."
   '("cover_small.jpg" "cover_med.jpg" "cover_large.jpg")
   "*Control how cover images are found.
 Can be either a list of small, medium and large images (large
-currently not used), a function which takes a directory, and should
-return a path to the cover, or nil to turn off cover loading."
+currently not used), a function which takes a directory and one
+of the symbols `small', `medium' or `large', and should return a
+path to the cover, or nil to turn off cover loading."
   :group 'emms-browser
   :type '(choice list function boolean))
 
@@ -1591,7 +1592,7 @@ included."
          (cover
           (cond
            ((functionp emms-browser-covers)
-            (funcall emms-browser-covers path size))
+            (funcall emms-browser-covers (file-name-directory path) size))
            ((and (listp emms-browser-covers)
                  (nth size-idx emms-browser-covers))
             (concat (file-name-directory path)
@@ -1607,12 +1608,23 @@ included."
   (insert (emms-browser-make-cover path)))
 
 (defun emms-browser-make-cover (path)
-  (emms-propertize " "
-                   'display `(image
-                              :type jpeg
-                              :margin 5
-                              :file ,path)
-                   'rear-nonsticky '(display)))
+  (let* ((ext (file-name-extension path))
+         (type (cond
+                ((string= ext "png")   'png)
+                ((string= ext "xbm")   'xbm)
+                ((string= ext "xpm")   'xpm)
+                ((string= ext "pbm")   'pbm)
+                ((string-match "e?ps"
+                               ext)    'postscript)
+                ((string= ext "gif")   'gif)
+                ((string= ext "tiff")  'tiff)
+                (t                     'jpeg))))
+    (emms-propertize " "
+                     'display `(image
+                                :type ,type
+                                :margin 5
+                                :file ,path)
+                     'rear-nonsticky '(display))))
 
 (defun emms-browser-get-cover-str (path size)
   (let ((cover (emms-browser-get-cover-from-path path size)))
