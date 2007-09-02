@@ -40,7 +40,7 @@
 
 (defvar emms-tag-editor-tags
   '((info-artist      . "a")
-    (info-composer    . "c")
+    (info-composer    . "C")
     (info-performer   . "p")
     (info-title       . "t")
     (info-album       . "l")
@@ -48,7 +48,7 @@
     (info-year        . "y")
     (info-genre       . "g")
     (info-date        . "d")
-    (info-note        . ";"))
+    (info-note        . "c"))
   "An alist to determine the format of various info tags.")
 
 (defvar emms-tag-editor-edit-buffer "*EMMS-TAGS*"
@@ -366,7 +366,6 @@ changes will only take effect on the tracks in the region."
           (emms-track-set track 'tag-modified t)
           (emms-tag-editor-insert-track track))))))
 
-;;;###autoload
 (defun emms-tag-editor-guess-tag-filename (pattern fullname)
   "A pattern is a string like \"%a-%t-%y\" which stand for
 the file name is constructed by artist, title, year with seperator '-'.
@@ -429,7 +428,6 @@ Available tags are:
                     (cdr pattern)))
           (emms-tag-editor-insert-track track))))))
 
-;;;###autoload
 (defun emms-tag-editor-compile-pattern (pattern)
   "A pattern to regexp convertor. \"%a-%{b:[a-z]+}\" will compile to
 \"\\([^-]+\\)-\\([a-z]+\\)\"."
