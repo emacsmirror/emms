@@ -76,7 +76,7 @@ Emacs."
                           (and emms-playlist-selected-marker
                                (marker-position emms-playlist-selected-marker))
                           (point-min))
-                         (save-excursion
+                         (save-restriction
                            (widen)
                            (nreverse
                             (emms-playlist-tracks-in-region (point-min)
