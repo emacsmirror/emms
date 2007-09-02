@@ -37,7 +37,7 @@
 ;; `process-coding-system-alist' to encode data.
 
 ;; Put this file into your load-path and the following into your ~/.emacs:
-;;   (require 'emms-i18n-i18n)
+;;   (require 'emms-i18n)
 
 ;;; Code:
 
