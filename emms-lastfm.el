@@ -443,7 +443,7 @@ high. (But then streaming a 128KHz mp3 won't be fun anyway.)"
 (defun emms-lastfm-radio-sentinel (&rest args)
   (let ((buffer (current-buffer)))
     (emms-http-decode-buffer buffer)
-    (if (string= (emms-key-value "response") "OK")
+    (if (string= (emms-key-value "response" buffer) "OK")
         (progn
           (kill-buffer buffer)
           (emms-play-url emms-lastfm-radio-stream-url)
@@ -472,8 +472,8 @@ inserting it."
      (let ((response-buf (current-buffer))
            artist title)
        (emms-http-decode-buffer response-buf)
-       (setq artist (emms-key-value "artist")
-             title  (emms-key-value "track"))
+       (setq artist (emms-key-value "artist" response-buf)
+             title  (emms-key-value "track" response-buf))
        (kill-buffer response-buf)
        (let ((msg (if (and title artist)
                       (format emms-show-format
@@ -535,7 +535,7 @@ song."
 (defun emms-lastfm-radio-rating-sentinel (&rest args)
   (let ((buffer (current-buffer)))
     (emms-http-decode-buffer buffer)
-    (if (string= (emms-key-value "response") "OK")
+    (if (string= (emms-key-value "response" buffer) "OK")
         (message "EMMS: Rated current track")
       (message "EMMS: Rating failed"))
     (kill-buffer buffer)))
@@ -562,8 +562,8 @@ If DATA is given, it should be a list."
 (defun emms-lastfm-radio-request-metadata-sentinel (&rest args)
   (let ((buffer (current-buffer)))
     (emms-http-decode-buffer buffer)
-    (let ((artist (emms-key-value "artist"))
-          (title  (emms-key-value "track")))
+    (let ((artist (emms-key-value "artist" buffer))
+          (title  (emms-key-value "track" buffer)))
       (kill-buffer buffer)
       (setq emms-mode-line-string (format emms-mode-line-format
                                           (concat artist " - " title)))
@@ -576,15 +576,19 @@ If DATA is given, it should be a list."
   (buffer-substring-no-properties (line-beginning-position)
                                   (line-end-position)))
 
-(defun emms-key-value (key)
-  "Returns the value of KEY. The buffer has to contain a
-key-value list like:
+(defun emms-key-value (key &optional buffer)
+  "Returns the value of KEY from BUFFER.
+If BUFFER is nil, use the current buffer.
+
+BUFFER has to contain a key-value list like:
 
 foo=bar
 x=17"
-  (goto-char (point-min))
-  (when (re-search-forward (concat "^" key "=") nil t)
-    (buffer-substring-no-properties (point) (line-end-position))))
+  (unless (and buffer (not (buffer-live-p buffer)))
+    (with-current-buffer (or buffer (current-buffer))
+      (goto-char (point-min))
+      (when (re-search-forward (concat "^" key "=") nil t)
+        (buffer-substring-no-properties (point) (line-end-position))))))
 
 (provide 'emms-lastfm)
 ;;; emms-lastfm.el ends here
