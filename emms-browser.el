@@ -958,7 +958,7 @@ This will be a list of DB items."
   (interactive)
   (let* ((data (emms-browser-data-at-point)))
     (save-excursion
-      (next-line 1)
+      (forward-line 1)
       (beginning-of-line)
       (dolist (data-item data)
         (emms-browser-insert-data-item data-item)))))
