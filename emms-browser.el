@@ -1360,9 +1360,9 @@ Disabled by default."
   (interactive)
   (emms-browser-lookup-pitchfork 'info-composer))
 
-(defun emms-browser-lookup-composer-on-pitchfork ()
+(defun emms-browser-lookup-performer-on-pitchfork ()
   (interactive)
-  (emms-browser-lookup-pitchfork 'info-composer))
+  (emms-browser-lookup-pitchfork 'info-performer))
 
 (defun emms-browser-lookup-album-on-pitchfork ()
   (interactive)
