@@ -75,6 +75,8 @@
 ;; d               emms-browser-delete-files
 ;; q               emms-browser-bury-buffer
 ;; r               emms-browser-goto-random
+;; n               next-line
+;; p               previous-line
 ;; C-/             emms-playlist-mode-undo
 ;; <C-return>      emms-browser-add-tracks-and-play
 ;; <backtab>       emms-browser-prev-non-track
@@ -431,6 +433,8 @@ Called once for each directory."
     (define-key map (kbd "q") 'emms-browser-bury-buffer)
     (define-key map (kbd "/") 'emms-isearch-buffer)
     (define-key map (kbd "r") 'emms-browser-goto-random)
+    (define-key map (kbd "n") 'next-line)
+    (define-key map (kbd "p") 'previous-line)
     (define-key map (kbd "C") 'emms-browser-clear-playlist)
     (define-key map (kbd "?") 'describe-mode)
     (define-key map (kbd "C-/") 'emms-playlist-mode-undo)
