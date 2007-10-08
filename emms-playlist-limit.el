@@ -1,4 +1,4 @@
-;;; emms-playlist-limit.el --- limit playlist by various info
+;;; emms-playlist-limit.el --- Limit playlist by various info
 
 ;; Copyright (C) 2007 William Xu
 
@@ -24,7 +24,7 @@
 
 (require 'emms-playlist-mode)
 
-;;; User Interfacs
+;;; User Interfaces
 
 (defvar emms-playlist-limit-enabled-p nil
   "If non-nil, emms playlist limit is enabled.")
@@ -112,14 +112,15 @@
 ;;; Low Level Functions
 
 (defvar emms-playlist-limit-tracks nil
-  "All tracks in playlist buffer.")
+  "All tracks in playlist buffer(unlimited).")
 
 (defun emms-playlist-limit-insert ()
   "Run in `emms-playlist-source-inserted-hook'."
-  (setq emms-playlist-limit-tracks
-        (append emms-playlist-limit-tracks
-                (emms-playlist-tracks-in-region
-                 (point-min) (point-max)))))
+  (with-current-emms-playlist
+    (emms-playlist-ensure-playlist-buffer)
+    (setq emms-playlist-limit-tracks
+          (emms-with-widened-buffer
+           (emms-playlist-tracks-in-region (point-min) (point-max))))))
 
 ;; FIXME: When user deletes some tracks, `emms-playlist-limit-tracks'
 ;; should be updated.
@@ -139,27 +140,26 @@ When NAME is nil, show all tracks again.
 
 See `emms-info-mp3find-arguments' for possible options for NAME."
   (with-current-emms-playlist
-    (save-excursion
-      (emms-playlist-ensure-playlist-buffer)
-      (let ((curr (emms-playlist-current-selected-track))
-            (tracks
-             (emms-playlist-tracks-in-region (point-min) (point-max))))
-        (erase-buffer)
-        (run-hooks 'emms-playlist-cleared-hook)
-        (if name
-            (mapc (lambda (track)
-                    (let ((track-value (emms-track-get track name)))
-                      (when (and track-value (string-match value track-value))
-                        (emms-playlist-insert-track track))))
-                  tracks)
+    (emms-playlist-ensure-playlist-buffer)
+    (let ((curr (emms-playlist-current-selected-track))
+          (tracks (emms-playlist-tracks-in-region (point-min) (point-max))))
+      (erase-buffer)
+      (run-hooks 'emms-playlist-cleared-hook)
+      (if name
           (mapc (lambda (track)
-                  (emms-playlist-insert-track track))
-                emms-playlist-limit-tracks))
-        (let ((pos (text-property-any (point-min) (point-max)
-                                      'emms-track curr)))
-          (if pos
-              (emms-playlist-select pos)
-            (emms-playlist-first)))))))
+                  (let ((track-value (emms-track-get track name)))
+                    (when (and track-value (string-match value track-value))
+                      (emms-playlist-insert-track track))))
+                tracks)
+        (mapc (lambda (track)
+                (emms-playlist-insert-track track))
+              emms-playlist-limit-tracks))
+      (let ((pos (text-property-any (point-min) (point-max)
+                                    'emms-track curr)))
+        (if pos
+            (emms-playlist-select pos)
+          (emms-playlist-first)))
+      (emms-playlist-mode-center-current))))
 
 
 (provide 'emms-playlist-limit)
