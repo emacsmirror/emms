@@ -39,7 +39,7 @@
   "*Add and play streams with EMMS."
   :group 'emms)
 
-(defcustom emms-stream-bookmarks-file "~/.emacs.d/emms-streams"
+(defcustom emms-stream-bookmarks-file (nnheader-concat emms-directory "streams")
   "*The file where you store your favorite emms streams."
   :type 'file
   :group 'emms-stream)

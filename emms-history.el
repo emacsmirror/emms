@@ -45,7 +45,7 @@ Emacs."
   :prefix "emms-history-"
   :group 'emms)
 
-(defcustom emms-history-file "~/.emacs.d/emms-history"
+(defcustom emms-history-file (nnheader-concat emms-directory "emms-history")
   "The file to save playlists in."
   :type   'string
   :group  'emms-history)

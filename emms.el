@@ -256,6 +256,11 @@ The modified track is passed as the argument to this function."
   :group 'emms
   :type 'function)
 
+(defcustom emms-directory "~/.emacs.d/emms"
+  "*Directory variable from which all other emms file variables are derived."
+  :group 'emms
+  :type 'string)
+
 (defvar emms-player-playing-p nil
   "The currently playing EMMS player, or nil.")
 

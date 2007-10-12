@@ -56,7 +56,7 @@ This is used to cache over emacs sessions.")
 (defvar emms-cache-dirty nil
   "True if the cache has been updated since init.")
 
-(defcustom emms-cache-file "~/.emms-cache"
+(defcustom emms-cache-file (nnheader-concat emms-directory "cache")
   "A file used to store cached file information over sessions."
   :group 'emms
   :type 'file)
