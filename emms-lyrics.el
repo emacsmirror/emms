@@ -437,29 +437,17 @@ display."
 
 (defun emms-lyrics-find-lyric (file)
   "Return full path of found lrc FILE, or nil if not found.
-Use `emms-source-file-gnu-find' to find lrc FILE under current directory
-and `emms-lyrics-dir'.
+Use `emms-source-file-directory-tree-function' to find lrc FILE under
+current directory and `emms-lyrics-dir'.
 e.g., (emms-lyrics-find-lyric \"abc.lrc\")"
   (let* ((track (emms-playlist-current-selected-track))
-         (dir (file-name-directory (emms-track-get track 'name))))
-    (when (eq 'file (emms-track-get track 'type))
-      ;; If find two or more lyric files, only return the first one. Good
-      ;; luck! :-)
-      (if (file-exists-p (concat dir file)) ; same directory?
-          (concat dir file)
-        (when (and (file-exists-p emms-lyrics-dir)
-                   (not (string= emms-lyrics-dir "")))
-          (let* ((ret (car
-                       (split-string
-                        (shell-command-to-string
-                         (concat emms-source-file-gnu-find " "
-                                 emms-lyrics-dir " -name "
-                                 (shell-quote-argument
-                                  (emms-replace-regexp-in-string
-                                   "'" "*" file))))
-                        "\n"))))
-            (unless (equal ret "")
-              ret)))))))
+         (lyric-under-curr-dir
+          (concat (file-name-directory (emms-track-get track 'name))
+                  file)))
+    (or (and (file-exists-p lyric-under-curr-dir) lyric-under-curr-dir)
+        (car (funcall emms-source-file-directory-tree-function
+                      emms-lyrics-dir
+                      file)))))
 
 ;; (setq emms-lyrics-scroll-width 20)
 
