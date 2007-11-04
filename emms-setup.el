@@ -82,8 +82,10 @@ audio files, and a metadata cache."
   ;; setup
   (setq emms-playlist-default-major-mode 'emms-playlist-mode)
   (add-to-list 'emms-track-initialize-functions 'emms-info-initialize-track)
-  (add-to-list 'emms-info-functions 'emms-info-mp3info)
-  (add-to-list 'emms-info-functions 'emms-info-ogginfo)
+  (when (executable-find emms-info-mp3info-program-name)
+    (add-to-list 'emms-info-functions 'emms-info-mp3info))
+  (when (executable-find emms-info-ogginfo-program-name)
+    (add-to-list 'emms-info-functions 'emms-info-ogginfo))
   (setq emms-track-description-function 'emms-info-track-description)
   (when (fboundp 'emms-cache)           ; work around compiler warning
     (emms-cache 1)))
