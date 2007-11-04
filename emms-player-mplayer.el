@@ -83,12 +83,12 @@
 
 (defun emms-player-mplayer-subtitle-checker ()
   (let* ((track (emms-playlist-current-selected-track))
-         (name (emms-replace-regexp-in-string
-                "/" "_"
-                (emms-track-name track)))
+         (name (emms-track-name track))
          (ext (file-name-extension name))
          (choices
-          (emms-remove-if-not 'file-exists-p
+          (emms-remove-if-not (lambda (i)
+                                (and (eq (emms-track-type track) 'file)
+                                     (file-exists-p i)))
                               (mapcar (lambda (el)
                                         (emms-replace-regexp-in-string
                                          (concat ext "$") el name))

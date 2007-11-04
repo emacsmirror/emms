@@ -444,7 +444,9 @@ e.g., (emms-lyrics-find-lyric \"abc.lrc\")"
          (lyric-under-curr-dir
           (concat (file-name-directory (emms-track-get track 'name))
                   file)))
-    (or (and (file-exists-p lyric-under-curr-dir) lyric-under-curr-dir)
+    (or (and (eq (emms-track-type track) 'file)
+             (file-exists-p lyric-under-curr-dir)
+             lyric-under-curr-dir)
         (car (funcall emms-source-file-directory-tree-function
                       emms-lyrics-dir
                       file)))))
