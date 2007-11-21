@@ -26,6 +26,15 @@
 
 ;;; User Interfaces
 
+(defgroup emms-playlist-limit nil
+  "Playlist limit module for EMMS."
+  :group 'emms)
+
+(defcustom emms-playlist-limit-hook nil
+  "Hooks to run after each limit operations."
+  :type 'symbol
+  :group 'emms-playing-limit)
+
 (defvar emms-playlist-limit-enabled-p nil
   "If non-nil, emms playlist limit is enabled.")
 
@@ -159,6 +168,7 @@ See `emms-info-mp3find-arguments' for possible options for NAME."
         (if pos
             (emms-playlist-select pos)
           (emms-playlist-first)))
+      (run-hooks 'emms-playlist-limit-hook)
       (emms-playlist-mode-center-current))))
 
 
