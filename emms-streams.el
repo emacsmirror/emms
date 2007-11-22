@@ -586,6 +586,8 @@ Don't forget to save your modifications !"
   (run-hooks 'emms-stream-quit-hook))
 
 (defun emms-stream-toggle-default-action ()
+"Toggle between adding to the current active playlist or play
+right now (and thus erase the current active playlist)."
   (interactive)
   (if (string= emms-stream-default-action "play")
       (progn
