@@ -132,7 +132,7 @@ needed info.")
    ("SKY.fm, Jazz"
     "http://www.sky.fm/mp3/jazz.pls" 1 streamlist)
    ("Philosomatika, Goa-Trance"
-    "http://www.philosomatika.com/Philosomatika.pls" 1 streamlist)
+    "http://www.shoutcast.com/sbin/shoutcast-playlist.pls?rn=1712&file=filename.pls" 1 streamlist)
    ("Drum and Bass Radio, BassDrive"
     "http://www.bassdrive.com/BassDrive.m3u" 1 streamlist)
    ("Flaresound, Jazzmusique"
