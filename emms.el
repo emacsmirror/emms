@@ -591,15 +591,6 @@ a description into a playlist buffer."
 
 (defun emms-track-simple-description (track)
   "Simple function to give a user-readable description of a track.
-If it's a file track, just return the file name.
-Otherwise, return the type and the name with a colon in between."
-  (if (eq 'file (emms-track-type track))
-      (emms-track-name track)
-    (concat (symbol-name (emms-track-type track))
-            ": " (emms-track-name track))))
-
-(defun emms-track-simple-description (track)
-  "Simple function to give a user-readable description of a track.
 If it's a file track, just return the file name.  Otherwise,
 return the type and the name with a colon in between. Hex-encoded
 characters in URLs are replaced by the decoded character."
