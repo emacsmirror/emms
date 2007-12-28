@@ -598,6 +598,23 @@ Otherwise, return the type and the name with a colon in between."
     (concat (symbol-name (emms-track-type track))
             ": " (emms-track-name track))))
 
+(defun emms-track-simple-description (track)
+  "Simple function to give a user-readable description of a track.
+If it's a file track, just return the file name.  Otherwise,
+return the type and the name with a colon in between. Hex-encoded
+characters in URLs are replaced by the decoded character."
+  (let ((type (emms-track-type track)))
+    (cond ((eq 'file type)
+           (emms-track-name track))
+          ((eq 'url type)
+           (emms-format-url-track-name (emms-track-name track)))
+          (t (concat (symbol-name type)
+                     ": " (emms-track-name track))))))
+
+(defun emms-format-url-track-name (name)
+  "Format URL track name for better readability."
+  (url-unhex-string name))
+
 (defun emms-track-force-description (track)
   "Always return text that describes TRACK.
 This is used when inserting a description into a buffer.
