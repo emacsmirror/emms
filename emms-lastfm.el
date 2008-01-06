@@ -140,17 +140,16 @@ paused track resumes) and sets the track submission timer."
         (emms-playlist-current-selected-track))
   ;; Tracks should be submitted, if they played 240 secs or half of their
   ;; length, whichever comes first.
-  (let ((secs (/ (emms-track-get emms-lastfm-current-track
-                                 'info-playing-time)
-                    2))
+  (let ((secs (emms-track-get emms-lastfm-current-track 'info-playing-time))
         (type (emms-track-type emms-lastfm-current-track)))
-    (when (or (eq emms-lastfm-submit-track-types t)
-              (and (listp emms-lastfm-submit-track-types)
-                   (memq type emms-lastfm-submit-track-types)))
+    (when (and secs
+               (or (eq emms-lastfm-submit-track-types t)
+                   (and (listp emms-lastfm-submit-track-types)
+                        (memq type emms-lastfm-submit-track-types))))
       (when (> secs 240)
         (setq secs 240))
-      (unless (< secs 15) ;; Skip titles shorter than 30 seconds
-        (setq secs (- secs emms-playing-time))
+      (unless (< secs 30) ;; Skip titles shorter than 30 seconds
+        (setq secs (- (/ secs 2) emms-playing-time))
         (unless (< secs 0)
           (setq emms-lastfm-timer
                 (run-with-timer secs nil 'emms-lastfm-submit-track)))))))
