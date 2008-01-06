@@ -87,8 +87,9 @@
          (ext (file-name-extension name))
          (choices
           (emms-remove-if-not (lambda (i)
-                                (and (eq (emms-track-type track) 'file)
-                                     (file-exists-p i)))
+                                (or (and (eq (emms-track-type track) 'file)
+					 (file-exists-p i))
+                                    (eq (emms-track-type track) 'url)))
                               (mapcar (lambda (el)
                                         (emms-replace-regexp-in-string
                                          (concat ext "$") el name))
