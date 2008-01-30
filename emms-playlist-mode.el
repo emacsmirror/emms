@@ -1,6 +1,6 @@
 ;;; emms-playlist-mode.el --- Playlist mode for Emms.
 
-;; Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
+;; Copyright (C) 2005, 2006, 2007, 2008  Free Software Foundation, Inc.
 
 ;; Author: Yoni Rabkin <yonirabkin@member.fsf.org>
 
@@ -139,10 +139,10 @@ This is true for every invocation of `emms-playlist-mode-go'."
     (define-key map (kbd "f") 'emms-show)
     (define-key map (kbd "c") 'emms-playlist-mode-center-current)
     (define-key map (kbd "q") 'emms-playlist-mode-bury-buffer)
-    (define-key map (kbd "k") 'emms-playlist-current-kill)
+    (define-key map (kbd "k") 'emms-playlist-mode-current-kill)
     (define-key map (kbd "?") 'describe-mode)
     (define-key map (kbd "r") 'emms-random)
-    (define-key map (kbd "C") 'emms-playlist-clear)
+    (define-key map (kbd "C") 'emms-playlist-mode-clear)
     (define-key map (kbd "<mouse-2>") 'emms-playlist-mode-play-current-track)
     (define-key map (kbd "RET") 'emms-playlist-mode-play-smart)
     map)
@@ -177,6 +177,26 @@ FUN should be a function."
 	(setq emms-playlist-mode-popup-enabled nil))
     (bury-buffer)))
 
+(defun emms-playlist-mode-current-kill ()
+  "If the current buffer is an EMMS playlist buffer, kill it.
+Otherwise, kill the current EMMS playlist buffer."
+  (interactive)
+  (if (and emms-playlist-buffer-p
+           (not (eq (current-buffer) emms-playlist-buffer)))
+      (kill-buffer (current-buffer))
+    (emms-playlist-current-kill)))
+
+(defun emms-playlist-mode-clear ()
+  "If the current buffer is an EMMS playlist buffer, clear it.
+Otherwise, clear the current EMMS playlist buffer."
+  (interactive)
+  (if (and emms-playlist-buffer-p
+           (not (eq (current-buffer) emms-playlist-buffer)))
+      (let ((inhibit-read-only t))
+        (widen)
+        (delete-region (point-min) (point-max)))
+    (emms-playlist-clear)))
+
 (defun emms-playlist-mode-last ()
   "Move to directly after the last track in the current buffer."
   (interactive)
@@ -194,15 +214,14 @@ FUN should be a function."
 (defun emms-playlist-mode-center-current ()
   "Move point to the currently selected track."
   (interactive)
-  (with-current-emms-playlist
-    (goto-char (if emms-playlist-mode-selected-overlay
-		   (overlay-start emms-playlist-mode-selected-overlay)
-		 (point-min)))))
+  (goto-char (if emms-playlist-mode-selected-overlay
+                 (overlay-start emms-playlist-mode-selected-overlay)
+               (point-min))))
 
 (defun emms-playlist-mode-play-current-track ()
   "Start playing track at point."
   (interactive)
-  (emms-playlist-set-playlist-buffer)
+  (emms-playlist-set-playlist-buffer (current-buffer))
   (unless (emms-playlist-track-at (point))
     (emms-playlist-next))
   (emms-playlist-select (point))
@@ -224,6 +243,8 @@ Otherwise play the track immediately."
     (emms-move-beginning-of-line nil)
     (if (not emms-playlist-mode-open-playlists)
         (emms-playlist-mode-play-current-track)
+      (unless (emms-playlist-track-at)
+        (emms-playlist-next))
       (let* ((track (emms-playlist-track-at))
              (name (emms-track-get track 'name))
              (type (emms-track-get track 'type)))
@@ -266,6 +287,8 @@ set it as current."
   (interactive)
   (save-excursion
     (emms-move-beginning-of-line nil)
+    (unless (emms-playlist-track-at)
+      (emms-playlist-next))
     (let* ((track (emms-playlist-track-at))
            (name (emms-track-get track 'name))
            (type (emms-track-get track 'type))
