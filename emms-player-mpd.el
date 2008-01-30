@@ -630,7 +630,14 @@ errors."
 
 (defun emms-player-mpd-sync-from-mpd (&optional closure callback)
   "Synchronize the EMMS playlist with the contents of the current
-MusicPD playlist."
+MusicPD playlist.  Namely, clear the EMMS playlist buffer and add
+tracks to it that are present in the MusicPD playlist.
+
+If the current buffer is an EMMS playlist buffer, make it the
+main EMMS playlist buffer."
+  (when (and emms-playlist-buffer-p
+             (not (eq (current-buffer) emms-playlist-buffer)))
+    (emms-playlist-set-playlist-buffer (current-buffer)))
   (with-current-emms-playlist
     (emms-player-mpd-get-tracks
      (cons emms-playlist-buffer (cons callback closure))
@@ -690,8 +697,10 @@ info from MusicPD."
            (emms-replace-regexp-in-string "\\\\" "\\\\\\\\" file))
           "\""))
 
+;;;###autoload
 (defun emms-player-mpd-clear ()
-  "Clear the playlist."
+  "Clear the MusicPD playlist."
+  (interactive)
   (when emms-player-mpd-status-timer
     (emms-cancel-timer emms-player-mpd-status-timer)
     (setq emms-player-mpd-status-timer nil))
