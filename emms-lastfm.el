@@ -72,11 +72,6 @@
 ;; typing
 ;;   `M-x emms-lastfm-radio-ban'.
 
-;;; TODO:
-;;
-;; - Support now-playing infos on the last.fm user website.  The url to use is
-;;   already stored in `emms-lastfm-now-playing-url'.
-
 ;; -----------------------------------------------------------------------
 
 (require 'url)
@@ -85,6 +80,8 @@
 (require 'emms-playing-time)
 (require 'emms-source-file)
 (require 'emms-url)
+
+;;; Variables
 
 (defgroup emms-lastfm nil
   "Interaction with the services offered by http://www.last.fm."
@@ -140,12 +137,15 @@ procedure. Only for internal use.")
 (defvar emms-lastfm-timer nil "-- only used internally --")
 (defvar emms-lastfm-current-track-starting-time-string nil "-- only used internally --")
 
+;;; Scrobbling
+
 (defun emms-lastfm-new-track-function ()
   "This function should run whenever a new track starts (or a
 paused track resumes) and sets the track submission timer."
   (setq emms-lastfm-current-track
         (emms-playlist-current-selected-track))
-  (setq emms-lastfm-current-track-starting-time-string (emms-lastfm-current-unix-time-string))
+  (setq emms-lastfm-current-track-starting-time-string
+        (emms-lastfm-current-unix-time-string))
   ;; Tracks should be submitted, if they played 240 secs or half of their
   ;; length, whichever comes first.
   (let ((secs (emms-track-get emms-lastfm-current-track 'info-playing-time))
@@ -160,7 +160,59 @@ paused track resumes) and sets the track submission timer."
         (setq secs (- (/ secs 2) emms-playing-time))
         (unless (< secs 0)
           (setq emms-lastfm-timer
-                (run-with-timer secs nil 'emms-lastfm-submit-track)))))))
+                (run-with-timer secs nil 'emms-lastfm-submit-track))))))
+  ;; Update the now playing info displayed on the user's last.fm page.  This
+  ;; doesn't affect the user's profile, so it con be done even for tracks that
+  ;; should not be submitted.
+  (emms-lastfm-submit-now-playing))
+
+(defun emms-lastfm-submit-now-playing ()
+  "Submit now-playing infos to last.fm.
+These will be displayed on the user's last.fm page."
+  (let* ((artist (emms-track-get emms-lastfm-current-track 'info-artist))
+         (title  (emms-track-get emms-lastfm-current-track 'info-title))
+         (album  (emms-track-get emms-lastfm-current-track 'info-album))
+         (track-number (emms-track-get emms-lastfm-current-track 'info-tracknumber))
+         (musicbrainz-id "")
+         (track-length (number-to-string
+                        (emms-track-get emms-lastfm-current-track
+                                        'info-playing-time)))
+         (url-http-attempt-keepalives nil)
+         (url-show-status emms-lastfm-submission-verbose-p)
+         (url-request-method "POST")
+         (url-request-extra-headers
+          '(("Content-type" .
+             "application/x-www-form-urlencoded; charset=utf-8")))
+         (url-request-data
+          (encode-coding-string
+           (concat "&s="    emms-lastfm-session-id
+                   "&a[0]=" (emms-escape-url artist)
+                   "&t[0]=" (emms-escape-url title)
+                   "&b[0]=" (emms-escape-url album)
+                   "&l[0]=" track-length
+                   "&n[0]=" track-number
+                   "&m[0]=" musicbrainz-id)
+           'utf-8)))
+    (url-retrieve emms-lastfm-now-playing-url
+                  'emms-lastfm-submit-now-playing-sentinel)))
+
+(defun emms-lastfm-submit-now-playing-sentinel (&rest args)
+  "Parses the server reponse and inform the user if all worked
+well or if an error occured."
+  (let ((buffer (current-buffer)))
+    (emms-http-decode-buffer buffer)
+    (goto-char (point-min))
+    ;; skip to the first empty line and go one line further.  There the last.fm
+    ;; response starts.
+    (re-search-forward "^$" nil t)
+    (forward-line)
+    (if (re-search-forward "^OK$" nil t)
+        (progn
+          (when emms-lastfm-submission-verbose-p
+            (message "EMMS: Now playing infos submitted to last.fm"))
+          (kill-buffer buffer))
+      (message "EMMS: Now playing infos couldn't be submitted to last.fm: %s"
+               (emms-read-line)))))
 
 (defun emms-lastfm-cancel-timer ()
   "Cancels `emms-lastfm-timer' if it is running."
@@ -247,7 +299,8 @@ handshake."
 
 (defun emms-lastfm-handshake-if-needed ()
   (when (not (and emms-lastfm-session-id
-                  emms-lastfm-submit-url))
+                  emms-lastfm-submit-url
+                  emms-lastfm-now-playing-url))
     (emms-lastfm-handshake)))
 
 (defun emms-lastfm-current-unix-time-string ()
@@ -292,7 +345,6 @@ well or if an error occured."
 (defun emms-lastfm-submit-track ()
   "Submits the current track (`emms-lastfm-current-track') to
 last.fm."
-  (message "DEBUG emms-lastfm-submit-track called!")
   (let* ((artist (emms-track-get emms-lastfm-current-track 'info-artist))
          (title  (emms-track-get emms-lastfm-current-track 'info-title))
          (album  (emms-track-get emms-lastfm-current-track 'info-album))
@@ -329,6 +381,10 @@ well or if an error occured."
   (let ((buffer (current-buffer)))
     (emms-http-decode-buffer buffer)
     (goto-char (point-min))
+    ;; skip to the first empty line and go one line further.  There the last.fm
+    ;; response starts.
+    (re-search-forward "^$" nil t)
+    (forward-line)
     (if (re-search-forward "^OK$" nil t)
         (progn
           (when emms-lastfm-submission-verbose-p
@@ -337,7 +393,6 @@ well or if an error occured."
           (kill-buffer buffer))
       (message "EMMS: Song couldn't be submitted to last.fm: %s"
                (emms-read-line)))))
-
 
 ;;; Playback of lastfm:// streams
 
