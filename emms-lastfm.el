@@ -123,21 +123,24 @@ streamlists, or Last.fm streams to Last.fm."
 procedure. Only for internal use.")
 (defconst emms-lastfm-client-id "ems"
   "The client ID of EMMS. Don't change it!")
-(defconst emms-lastfm-client-version 0.1
+(defconst emms-lastfm-client-version 0.2
   "The version registered at last.fm. Don't change it!")
 
 ;; used internally
 (defvar emms-lastfm-process nil "-- only used internally --")
-(defvar emms-lastfm-md5-challenge nil "-- only used internally --")
+(defvar emms-lastfm-session-id nil "-- only used internally --")
+(defvar emms-lastfm-now-playing-url nil "-- only used internally --")
 (defvar emms-lastfm-submit-url nil "-- only used internally --")
 (defvar emms-lastfm-current-track nil "-- only used internally --")
 (defvar emms-lastfm-timer nil "-- only used internally --")
+(defvar emms-lastfm-current-track-starting-time nil "-- only used internally --")
 
 (defun emms-lastfm-new-track-function ()
   "This function should run whenever a new track starts (or a
 paused track resumes) and sets the track submission timer."
   (setq emms-lastfm-current-track
         (emms-playlist-current-selected-track))
+  (setq emms-lastfm-current-track-starting-time (emms-lastfm-current-unix-time))
   ;; Tracks should be submitted, if they played 240 secs or half of their
   ;; length, whichever comes first.
   (let ((secs (emms-track-get emms-lastfm-current-track 'info-playing-time))
@@ -212,7 +215,7 @@ the current track, too."
       (remove-hook 'emms-player-paused-hook
                    'emms-lastfm-pause)
       (when emms-lastfm-timer (emms-cancel-timer emms-lastfm-timer))
-      (setq emms-lastfm-md5-challenge nil
+      (setq emms-lastfm-session-id nil
             emms-lastfm-submit-url    nil
             emms-lastfm-process       nil
             emms-lastfm-current-track nil)
@@ -238,19 +241,28 @@ handshake."
   (emms-lastfm-enable))
 
 (defun emms-lastfm-handshake-if-needed ()
-  (when (not (and emms-lastfm-md5-challenge
+  (when (not (and emms-lastfm-session-id
                   emms-lastfm-submit-url))
     (emms-lastfm-handshake)))
 
+(defun emms-lastfm-current-unix-time ()
+  (let* ((time (current-time))
+         (high (car time))
+         (low  (cadr time)))
+    (+ (* high 1000) low)))
+
 (defun emms-lastfm-handshake ()
   "Handshakes with the last.fm server."
-  (let ((url-request-method "GET"))
+  (let ((url-request-method "GET")
+        (timestamp (number-to-string (emms-lastfm-current-unix-time))))
     (url-retrieve
      (concat emms-lastfm-server
-             "?hs=true&p=1.1"
+             "?hs=true&p=1.2"
              "&c=" emms-lastfm-client-id
              "&v=" (number-to-string emms-lastfm-client-version)
-             "&u=" (emms-escape-url emms-lastfm-username))
+             "&u=" (emms-escape-url emms-lastfm-username)
+             "&t=" timestamp
+             "&a=" (md5 (concat (md5 emms-lastfm-password) timestamp)))
      'emms-lastfm-handshake-sentinel)))
 
 (defun emms-lastfm-handshake-sentinel (&rest args)
@@ -259,23 +271,17 @@ well or if an error occured."
   (let ((buffer (current-buffer)))
     (emms-http-decode-buffer buffer)
     (goto-char (point-min))
-    (re-search-forward (rx (or "UPTODATE" "UPDATE" "FAILED" "BADUSER"))
-                       nil t)
     (let ((response (emms-read-line)))
-      (if (not (string-match (rx (or "UPTODATE""UPDATE")) response))
-          (progn
-            (cond ((string-match "FAILED" response)
-                   (message "EMMS: Handshake failed: %s" response))
-                  ((string-match "BADUSER" response)
-                   (message "EMMS: Wrong username"))))
-        (when (string-match "UPDATE" response)
-          (message "EMMS: There's a new last.fm plugin version"))
+      (if (not (string-match (rx (or "OK")) response))
+          (message "EMMS: Handshake failed: %s" response)
         (forward-line)
-        (setq emms-lastfm-md5-challenge (emms-read-line))
+        (setq emms-lastfm-session-id (emms-read-line))
+        (forward-line)
+        (setq emms-lastfm-now-playing-url (emms-read-line))
         (forward-line)
         (setq emms-lastfm-submit-url (emms-read-line))
-        (message "EMMS: Handshaking with server done")))
-    (kill-buffer buffer)))
+        (message "EMMS: Handshaking with server done")
+        (kill-buffer buffer)))))
 
 (defun emms-lastfm-submit-track ()
   "Submits the current track (`emms-lastfm-current-track') to
@@ -283,11 +289,11 @@ last.fm."
   (let* ((artist (emms-track-get emms-lastfm-current-track 'info-artist))
          (title  (emms-track-get emms-lastfm-current-track 'info-title))
          (album  (emms-track-get emms-lastfm-current-track 'info-album))
+         (track-number (emms-track-get emms-lastfm-current-track 'info-tracknumber))
          (musicbrainz-id "")
          (track-length (number-to-string
                         (emms-track-get emms-lastfm-current-track
                                         'info-playing-time)))
-         (date (format-time-string "%Y-%m-%d %H:%M:%S" (current-time) t))
          (url-http-attempt-keepalives nil)
          (url-show-status emms-lastfm-submission-verbose-p)
          (url-request-method "POST")
@@ -296,15 +302,16 @@ last.fm."
              "application/x-www-form-urlencoded; charset=utf-8")))
          (url-request-data
           (encode-coding-string
-           (concat "u=" (emms-escape-url emms-lastfm-username)
-                   "&s=" (md5 (concat (md5 emms-lastfm-password)
-                                      emms-lastfm-md5-challenge))
+           (concat "&s="    emms-lastfm-session-id
                    "&a[0]=" (emms-escape-url artist)
                    "&t[0]=" (emms-escape-url title)
-                   "&b[0]=" (emms-escape-url album)
-                   "&m[0]=" musicbrainz-id
+                   "&i[0]=" (number-to-string emms-lastfm-current-track-starting-time)
+                   "&o[0]=P" ;; TODO: Maybe support others.  See the API.
+                   "&r[0]="  ;; The rating.  Empty if not applicable (for P it's not)
                    "&l[0]=" track-length
-                   "&i[0]=" date)
+                   "&b[0]=" (emms-escape-url album)
+                   "&n[0]=" track-number
+                   "&m[0]=" musicbrainz-id)
            'utf-8)))
     (url-retrieve emms-lastfm-submit-url
                   'emms-lastfm-submission-sentinel)))
@@ -321,15 +328,8 @@ well or if an error occured."
             (message "EMMS: \"%s\" submitted to last.fm"
                      (emms-track-description emms-lastfm-current-track)))
           (kill-buffer buffer))
-      (message "EMMS: Song couldn't be submitted to last.fm")
-      (goto-char (point-min))
-      (if (re-search-forward "^BADAUTH$" nil t)
-          ;; Somehow our md5-challenge expired...
-          (progn
-            (kill-buffer buffer)
-            (message "EMMS: Restarting last.fm plugin")
-            (emms-lastfm-restart))
-        (kill-buffer buffer)))))
+      (message "EMMS: Song couldn't be submitted to last.fm: %s"
+               (emms-read-line)))))
 
 
 ;;; Playback of lastfm:// streams
@@ -355,7 +355,7 @@ well or if an error occured."
 
 (defun emms-lastfm-radio-get-handshake-url ()
   (concat emms-lastfm-radio-base-url
-          "handshake.php?version=" (number-to-string 
+          "handshake.php?version=" (number-to-string
                                     emms-lastfm-client-version)
           "&platform="              emms-lastfm-client-id
           "&username="              (emms-escape-url emms-lastfm-username)
