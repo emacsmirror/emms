@@ -72,6 +72,11 @@
 ;; typing
 ;;   `M-x emms-lastfm-radio-ban'.
 
+;;; TODO:
+;;
+;; - Support now-playing infos on the last.fm user website.  The url to use is
+;;   already stored in `emms-lastfm-now-playing-url'.
+
 ;; -----------------------------------------------------------------------
 
 (require 'url)
@@ -133,14 +138,14 @@ procedure. Only for internal use.")
 (defvar emms-lastfm-submit-url nil "-- only used internally --")
 (defvar emms-lastfm-current-track nil "-- only used internally --")
 (defvar emms-lastfm-timer nil "-- only used internally --")
-(defvar emms-lastfm-current-track-starting-time nil "-- only used internally --")
+(defvar emms-lastfm-current-track-starting-time-string nil "-- only used internally --")
 
 (defun emms-lastfm-new-track-function ()
   "This function should run whenever a new track starts (or a
 paused track resumes) and sets the track submission timer."
   (setq emms-lastfm-current-track
         (emms-playlist-current-selected-track))
-  (setq emms-lastfm-current-track-starting-time (emms-lastfm-current-unix-time))
+  (setq emms-lastfm-current-track-starting-time-string (emms-lastfm-current-unix-time-string))
   ;; Tracks should be submitted, if they played 240 secs or half of their
   ;; length, whichever comes first.
   (let ((secs (emms-track-get emms-lastfm-current-track 'info-playing-time))
@@ -245,16 +250,13 @@ handshake."
                   emms-lastfm-submit-url))
     (emms-lastfm-handshake)))
 
-(defun emms-lastfm-current-unix-time ()
-  (let* ((time (current-time))
-         (high (car time))
-         (low  (cadr time)))
-    (+ (* high 1000) low)))
+(defun emms-lastfm-current-unix-time-string ()
+  (replace-regexp-in-string "\\..*" "" (number-to-string (float-time))))
 
 (defun emms-lastfm-handshake ()
   "Handshakes with the last.fm server."
   (let ((url-request-method "GET")
-        (timestamp (number-to-string (emms-lastfm-current-unix-time))))
+        (timestamp (emms-lastfm-current-unix-time-string)))
     (url-retrieve
      (concat emms-lastfm-server
              "?hs=true&p=1.2"
@@ -271,6 +273,10 @@ well or if an error occured."
   (let ((buffer (current-buffer)))
     (emms-http-decode-buffer buffer)
     (goto-char (point-min))
+    ;; skip to the first empty line and go one line further.  There the last.fm
+    ;; response starts.
+    (re-search-forward "^$" nil t)
+    (forward-line)
     (let ((response (emms-read-line)))
       (if (not (string-match (rx (or "OK")) response))
           (message "EMMS: Handshake failed: %s" response)
@@ -286,6 +292,7 @@ well or if an error occured."
 (defun emms-lastfm-submit-track ()
   "Submits the current track (`emms-lastfm-current-track') to
 last.fm."
+  (message "DEBUG emms-lastfm-submit-track called!")
   (let* ((artist (emms-track-get emms-lastfm-current-track 'info-artist))
          (title  (emms-track-get emms-lastfm-current-track 'info-title))
          (album  (emms-track-get emms-lastfm-current-track 'info-album))
@@ -305,7 +312,7 @@ last.fm."
            (concat "&s="    emms-lastfm-session-id
                    "&a[0]=" (emms-escape-url artist)
                    "&t[0]=" (emms-escape-url title)
-                   "&i[0]=" (number-to-string emms-lastfm-current-track-starting-time)
+                   "&i[0]=" emms-lastfm-current-track-starting-time-string
                    "&o[0]=P" ;; TODO: Maybe support others.  See the API.
                    "&r[0]="  ;; The rating.  Empty if not applicable (for P it's not)
                    "&l[0]=" track-length
