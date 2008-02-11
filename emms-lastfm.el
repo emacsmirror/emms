@@ -72,6 +72,13 @@
 ;; typing
 ;;   `M-x emms-lastfm-radio-ban'.
 
+;;; TODO
+;;
+;; - Get the last.fm radio stuff right again.  Currently the rating stuff seems
+;;   to be broken.  There seems to be no official API, so one needs to look
+;;   into the sources of the official client which can be found at
+;;   http://www.audioscrobbler.net/development/client/.
+
 ;; -----------------------------------------------------------------------
 
 (require 'url)
