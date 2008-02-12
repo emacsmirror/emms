@@ -54,7 +54,7 @@
   :group 'emms)
 
 (defun emms-mode-line-playlist-current ()
-  "Format the currently playing song"
+  "Format the currently playing song."
   (format emms-mode-line-format (emms-track-description
 				 (emms-playlist-current-selected-track))))
 

@@ -637,11 +637,12 @@ If DATA is given, it should be a list."
   (let ((buffer (current-buffer)))
     (emms-http-decode-buffer buffer)
     (let ((artist (emms-key-value "artist" buffer))
-          (title  (emms-key-value "track" buffer)))
+          (title  (emms-key-value "track" buffer))
+          (track (emms-playlist-current-selected-track)))
       (kill-buffer buffer)
-      (setq emms-mode-line-string (format emms-mode-line-format
-                                          (concat artist " - " title)))
-      (force-mode-line-update))))
+      (emms-track-set track 'info-artist artist)
+      (emms-track-set track 'info-title title)
+      (emms-track-updated track))))
 
 
 ;;; Utility functions
