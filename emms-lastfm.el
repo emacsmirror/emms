@@ -173,35 +173,54 @@ paused track resumes) and sets the track submission timer."
   ;; should not be submitted.
   (emms-lastfm-submit-now-playing))
 
+(defun emms-lastfm-http-POST (url string sentinel &optional sentinel-args)
+  "Perform a HTTP POST request to URL using STRING as data.
+STRING will be encoded to utf8 before the request.  Call SENTINEL
+with the result buffer."
+  (let ((url-http-attempt-keepalives nil)
+        (url-show-status emms-lastfm-submission-verbose-p)
+        (url-request-method "POST")
+        (url-request-extra-headers
+         '(("Content-type"
+            . "application/x-www-form-urlencoded; charset=utf-8")))
+        (url-request-data (encode-coding-string string 'utf-8)))
+  (url-retrieve url sentinel sentinel-args)))
+
+(defun emms-lastfm-http-GET (url sentinel &optional sentinel-args)
+  "Perform a HTTP GET request to URL.
+Call SENTINEL with SENTINEL-ARGS and the result buffer."
+  (let ((url-show-status emms-lastfm-submission-verbose-p)
+        (url-request-method "GET"))
+    (url-retrieve url sentinel sentinel-args)))
+
 (defun emms-lastfm-submit-now-playing ()
   "Submit now-playing infos to last.fm.
 These will be displayed on the user's last.fm page."
   (let* ((artist (emms-track-get emms-lastfm-current-track 'info-artist))
          (title  (emms-track-get emms-lastfm-current-track 'info-title))
          (album  (emms-track-get emms-lastfm-current-track 'info-album))
-         (track-number (emms-track-get emms-lastfm-current-track 'info-tracknumber))
+         (track-number (emms-track-get emms-lastfm-current-track
+                                       'info-tracknumber))
          (musicbrainz-id "")
          (track-length (number-to-string
                         (emms-track-get emms-lastfm-current-track
-                                        'info-playing-time)))
-         (url-http-attempt-keepalives nil)
-         (url-show-status emms-lastfm-submission-verbose-p)
-         (url-request-method "POST")
-         (url-request-extra-headers
-          '(("Content-type" .
-             "application/x-www-form-urlencoded; charset=utf-8")))
-         (url-request-data
-          (encode-coding-string
-           (concat "&s="    emms-lastfm-session-id
-                   "&a[0]=" (emms-escape-url artist)
-                   "&t[0]=" (emms-escape-url title)
-                   "&b[0]=" (emms-escape-url album)
-                   "&l[0]=" track-length
-                   "&n[0]=" track-number
-                   "&m[0]=" musicbrainz-id)
-           'utf-8)))
-    (url-retrieve emms-lastfm-now-playing-url
-                  'emms-lastfm-submit-now-playing-sentinel)))
+                                        'info-playing-time))))
+    ;; wait up to 5 seconds to submit np infos in order to finish handshaking.
+    (dotimes (i 5)
+      (when (not (and emms-lastfm-session-id
+                      emms-lastfm-now-playing-url))
+        (sit-for 1)))
+    (when (and emms-lastfm-session-id
+               emms-lastfm-now-playing-url)
+      (emms-lastfm-http-POST emms-lastfm-now-playing-url
+                             (concat "&s="    emms-lastfm-session-id
+                                     "&a[0]=" (emms-escape-url artist)
+                                     "&t[0]=" (emms-escape-url title)
+                                     "&b[0]=" (emms-escape-url album)
+                                     "&l[0]=" track-length
+                                     "&n[0]=" track-number
+                                     "&m[0]=" musicbrainz-id)
+                             'emms-lastfm-submit-now-playing-sentinel))))
 
 (defun emms-lastfm-submit-now-playing-sentinel (&rest args)
   "Parses the server reponse and inform the user if all worked
@@ -315,9 +334,8 @@ handshake."
 
 (defun emms-lastfm-handshake ()
   "Handshakes with the last.fm server."
-  (let ((url-request-method "GET")
-        (timestamp (emms-lastfm-current-unix-time-string)))
-    (url-retrieve
+  (let ((timestamp (emms-lastfm-current-unix-time-string)))
+    (emms-lastfm-http-GET
      (concat emms-lastfm-server
              "?hs=true&p=1.2"
              "&c=" emms-lastfm-client-id
@@ -359,28 +377,20 @@ last.fm."
          (musicbrainz-id "")
          (track-length (number-to-string
                         (emms-track-get emms-lastfm-current-track
-                                        'info-playing-time)))
-         (url-http-attempt-keepalives nil)
-         (url-show-status emms-lastfm-submission-verbose-p)
-         (url-request-method "POST")
-         (url-request-extra-headers
-          '(("Content-type" .
-             "application/x-www-form-urlencoded; charset=utf-8")))
-         (url-request-data
-          (encode-coding-string
-           (concat "&s="    emms-lastfm-session-id
-                   "&a[0]=" (emms-escape-url artist)
-                   "&t[0]=" (emms-escape-url title)
-                   "&i[0]=" emms-lastfm-current-track-starting-time-string
-                   "&o[0]=P" ;; TODO: Maybe support others.  See the API.
-                   "&r[0]="  ;; The rating.  Empty if not applicable (for P it's not)
-                   "&l[0]=" track-length
-                   "&b[0]=" (emms-escape-url album)
-                   "&n[0]=" track-number
-                   "&m[0]=" musicbrainz-id)
-           'utf-8)))
-    (url-retrieve emms-lastfm-submit-url
-                  'emms-lastfm-submission-sentinel)))
+                                        'info-playing-time))))
+    (emms-lastfm-http-POST
+     emms-lastfm-submit-url
+     (concat "&s="    emms-lastfm-session-id
+             "&a[0]=" (emms-escape-url artist)
+             "&t[0]=" (emms-escape-url title)
+             "&i[0]=" emms-lastfm-current-track-starting-time-string
+             "&o[0]=P" ;; TODO: Maybe support others.  See the API.
+             "&r[0]="  ;; The rating.  Empty if not applicable (for P it's not)
+             "&l[0]=" track-length
+             "&b[0]=" (emms-escape-url album)
+             "&n[0]=" track-number
+             "&m[0]=" musicbrainz-id)
+     'emms-lastfm-submission-sentinel)))
 
 (defun emms-lastfm-submission-sentinel (&rest args)
   "Parses the server reponse and inform the user if all worked
@@ -434,10 +444,9 @@ well or if an error occured."
 (defun emms-lastfm-radio-handshake (fn radio-url)
   "Handshakes with the last.fm server.
 Calls FN when done with RADIO-URL as its only argument."
-  (let ((url-request-method "GET"))
-    (url-retrieve (emms-lastfm-radio-get-handshake-url)
-                  'emms-lastfm-radio-handshake-sentinel
-                  (list fn radio-url))))
+  (emms-lastfm-http-GET (emms-lastfm-radio-get-handshake-url)
+                        'emms-lastfm-radio-handshake-sentinel
+                        (list fn radio-url)))
 
 (defun emms-lastfm-radio-handshake-sentinel (status fn radio-url)
   (let ((buffer (current-buffer)))
@@ -455,8 +464,8 @@ Calls FN when done with RADIO-URL as its only argument."
   "Internal function used by `emms-lastfm-radio'."
   (if (and emms-lastfm-radio-session
            emms-lastfm-radio-stream-url)
-      (let ((url-request-method "GET"))
-        (url-retrieve
+      (progn
+        (emms-lastfm-http-GET
          (concat emms-lastfm-radio-base-url
                  "adjust.php?"
                  "session=" emms-lastfm-radio-session
@@ -591,14 +600,13 @@ song."
   (emms-lastfm-radio-rating "ban"))
 
 (defun emms-lastfm-radio-rating (command)
-  (let ((url-request-method "GET"))
-    (url-retrieve
-     (concat emms-lastfm-radio-base-url
-             "control.php?"
-             "session="  emms-lastfm-radio-session
-             "&command=" command
-             "&debug="   (number-to-string 0))
-     'emms-lastfm-radio-rating-sentinel)))
+  (emms-lastfm-http-GET
+   (concat emms-lastfm-radio-base-url
+           "control.php?"
+           "session="  emms-lastfm-radio-session
+           "&command=" command
+           "&debug="   (number-to-string 0))
+   'emms-lastfm-radio-rating-sentinel))
 
 (defun emms-lastfm-radio-rating-sentinel (&rest args)
   (let ((buffer (current-buffer)))
@@ -617,15 +625,13 @@ first parameter.
 
 If DATA is given, it should be a list."
   (interactive)
-  (let ((url-request-method "GET")
-        (url-show-status nil))
-    (url-retrieve
-     (concat emms-lastfm-radio-base-url
-             "np.php?"
-             "session=" emms-lastfm-radio-session
-             "&debug="  (number-to-string 0))
-     (or fn 'emms-lastfm-radio-request-metadata-sentinel)
-     data)))
+  (emms-lastfm-http-GET
+   (concat emms-lastfm-radio-base-url
+           "np.php?"
+           "session=" emms-lastfm-radio-session
+           "&debug="  (number-to-string 0))
+   (or fn 'emms-lastfm-radio-request-metadata-sentinel)
+   data))
 
 (defun emms-lastfm-radio-request-metadata-sentinel (&rest args)
   (let ((buffer (current-buffer)))
