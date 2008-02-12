@@ -26,28 +26,33 @@
 ;;; Code:
 
 (require 'url)
+(require 'emms-compat)
 
-(defvar emms-url-specials
-  '((?\  . "%20")
-    (?\n . "%0D%0A")
-    (?&  . "%26")
-    (??  . "%3F"))
-  "*An alist of characters which must be represented specially in URLs.
-The transformation is the key of the pair.")
+(defun emms-url-quote (s &optional safe)
+  "Replace special characters in S using the `%xx' escape.
+Characters in [a-zA-Z_.-/] and SAFE(default is \"\") will never be
+quoted.
+e.g.,
+    (url-quote \"abc def\") => \"abc%20def\"."
+  (or safe (setq safe ""))
+  (mapconcat (lambda (c)
+               (if (if (string-match "]" safe)
+                       ;; ] should be place at the beginning inside []
+                       (string-match
+                        (format "[]a-zA-Z_.-/%s]"
+                                (emms-replace-regexp-in-string "]" "" safe))
+                        (char-to-string c))
+                     (string-match (format "[a-zA-Z_.-/%s]" safe)
+                                   (char-to-string c)))
+                   (char-to-string c)
+                 (format "%%%02x" c)))
+             (string-to-list (encode-coding-string s 'utf-8))
+             ""))
 
-(defun emms-escape-url (url)
-  "Escape specials in URL.
-
-The specials to escape are specified by the `emms-url-specials'
-variable."
-  (apply (function concat)
-         (mapcar
-          (lambda (ch)
-            (let ((repl (assoc ch emms-url-specials)))
-              (if (null repl)
-                  (char-to-string ch)
-                (cdr repl))))
-          (append url nil))))
+(defun emms-url-quote-plus (s &optional safe)
+  "Run (emms-url-quote s \" \"), then replace ` ' with `+'."
+  (emms-replace-regexp-in-string
+   " " "+" (emms-url-quote s (concat safe " "))))
 
 (defun emms-http-content-coding ()
   (save-match-data

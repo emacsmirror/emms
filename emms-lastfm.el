@@ -204,23 +204,25 @@ These will be displayed on the user's last.fm page."
          (musicbrainz-id "")
          (track-length (number-to-string
                         (emms-track-get emms-lastfm-current-track
-                                        'info-playing-time))))
-    ;; wait up to 5 seconds to submit np infos in order to finish handshaking.
-    (dotimes (i 5)
-      (when (not (and emms-lastfm-session-id
-                      emms-lastfm-now-playing-url))
-        (sit-for 1)))
-    (when (and emms-lastfm-session-id
-               emms-lastfm-now-playing-url)
-      (emms-lastfm-http-POST emms-lastfm-now-playing-url
-                             (concat "&s="    emms-lastfm-session-id
-                                     "&a[0]=" (emms-escape-url artist)
-                                     "&t[0]=" (emms-escape-url title)
-                                     "&b[0]=" (emms-escape-url album)
-                                     "&l[0]=" track-length
-                                     "&n[0]=" track-number
-                                     "&m[0]=" musicbrainz-id)
-                             'emms-lastfm-submit-now-playing-sentinel))))
+                                        'info-playing-time)))
+         (url-http-attempt-keepalives nil)
+         (url-show-status emms-lastfm-submission-verbose-p)
+         (url-request-method "POST")
+         (url-request-extra-headers
+          '(("Content-type" .
+             "application/x-www-form-urlencoded; charset=utf-8")))
+         (url-request-data
+          (encode-coding-string
+           (concat "&s="    emms-lastfm-session-id
+                   "&a[0]=" (emms-escape-url artist)
+                   "&t[0]=" (emms-escape-url title)
+                   "&b[0]=" (emms-escape-url album)
+                   "&l[0]=" track-length
+                   "&n[0]=" track-number
+                   "&m[0]=" musicbrainz-id)
+           'utf-8)))
+    (url-retrieve emms-lastfm-now-playing-url
+                  'emms-lastfm-submit-now-playing-sentinel)))
 
 (defun emms-lastfm-submit-now-playing-sentinel (&rest args)
   "Parses the server reponse and inform the user if all worked
@@ -340,7 +342,7 @@ handshake."
              "?hs=true&p=1.2"
              "&c=" emms-lastfm-client-id
              "&v=" (number-to-string emms-lastfm-client-version)
-             "&u=" (emms-escape-url emms-lastfm-username)
+             "&u=" (emms-url-quote emms-lastfm-username)
              "&t=" timestamp
              "&a=" (md5 (concat (md5 emms-lastfm-password) timestamp)))
      'emms-lastfm-handshake-sentinel)))
@@ -377,20 +379,28 @@ last.fm."
          (musicbrainz-id "")
          (track-length (number-to-string
                         (emms-track-get emms-lastfm-current-track
-                                        'info-playing-time))))
-    (emms-lastfm-http-POST
-     emms-lastfm-submit-url
-     (concat "&s="    emms-lastfm-session-id
-             "&a[0]=" (emms-escape-url artist)
-             "&t[0]=" (emms-escape-url title)
-             "&i[0]=" emms-lastfm-current-track-starting-time-string
-             "&o[0]=P" ;; TODO: Maybe support others.  See the API.
-             "&r[0]="  ;; The rating.  Empty if not applicable (for P it's not)
-             "&l[0]=" track-length
-             "&b[0]=" (emms-escape-url album)
-             "&n[0]=" track-number
-             "&m[0]=" musicbrainz-id)
-     'emms-lastfm-submission-sentinel)))
+                                        'info-playing-time)))
+         (url-http-attempt-keepalives nil)
+         (url-show-status emms-lastfm-submission-verbose-p)
+         (url-request-method "POST")
+         (url-request-extra-headers
+          '(("Content-type" .
+             "application/x-www-form-urlencoded; charset=utf-8")))
+         (url-request-data
+          (encode-coding-string
+           (concat "&s="    emms-lastfm-session-id
+                   "&a[0]=" (emms-escape-url artist)
+                   "&t[0]=" (emms-escape-url title)
+                   "&i[0]=" emms-lastfm-current-track-starting-time-string
+                   "&o[0]=P" ;; TODO: Maybe support others.  See the API.
+                   "&r[0]="  ;; The rating.  Empty if not applicable (for P it's not)
+                   "&l[0]=" track-length
+                   "&b[0]=" (emms-escape-url album)
+                   "&n[0]=" track-number
+                   "&m[0]=" musicbrainz-id)
+           'utf-8)))
+    (url-retrieve emms-lastfm-submit-url
+                  'emms-lastfm-submission-sentinel)))
 
 (defun emms-lastfm-submission-sentinel (&rest args)
   "Parses the server reponse and inform the user if all worked
@@ -437,7 +447,7 @@ well or if an error occured."
           "handshake.php?version=" (number-to-string
                                     emms-lastfm-client-version)
           "&platform="              emms-lastfm-client-id
-          "&username="              (emms-escape-url emms-lastfm-username)
+          "&username="              (emms-url-quote emms-lastfm-username)
           "&passwordmd5="           (md5 emms-lastfm-password)
           "&debug="                 (number-to-string 9)))
 
@@ -469,7 +479,7 @@ Calls FN when done with RADIO-URL as its only argument."
          (concat emms-lastfm-radio-base-url
                  "adjust.php?"
                  "session=" emms-lastfm-radio-session
-                 "&url="    (emms-escape-url lastfm-url)
+                 "&url="    (emms-url-quote lastfm-url)
                  "&debug="  (number-to-string 0))
          'emms-lastfm-radio-sentinel))
     (message "EMMS: Cannot play Last.fm stream")))
