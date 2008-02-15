@@ -30,18 +30,15 @@
 
 (defun emms-url-quote (s &optional safe)
   "Replace special characters in S using the `%xx' escape.
+This is useful for escaping parts of URLs, but not entire URLs.
+
 Characters in [a-zA-Z_.-/] and SAFE(default is \"\") will never be
 quoted.
 e.g.,
     (url-quote \"abc def\") => \"abc%20def\"."
   (or safe (setq safe ""))
   (save-match-data
-    (string-match "\\`\\([^:]+://\\)\\(.+\\)\\'" s)
-    (let ((handler (match-string 1 s))
-          (loc (or (match-string 2 s) s)))
-      (concat handler
-              (mapconcat
-               (lambda (c)
+    (mapconcat (lambda (c)
                  (if (if (string-match "]" safe)
                          ;; ] should be place at the beginning inside []
                          (string-match
@@ -52,8 +49,8 @@ e.g.,
                                      (char-to-string c)))
                      (char-to-string c)
                    (format "%%%02x" c)))
-               (string-to-list (encode-coding-string loc 'utf-8))
-               "")))))
+               (string-to-list (encode-coding-string s 'utf-8))
+               "")))
 
 (defun emms-url-quote-plus (s &optional safe)
   "Run (emms-url-quote s \" \"), then replace ` ' with `+'."
