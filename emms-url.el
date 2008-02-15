@@ -35,19 +35,25 @@ quoted.
 e.g.,
     (url-quote \"abc def\") => \"abc%20def\"."
   (or safe (setq safe ""))
-  (mapconcat (lambda (c)
-               (if (if (string-match "]" safe)
-                       ;; ] should be place at the beginning inside []
-                       (string-match
-                        (format "[]a-zA-Z_.-/%s]"
-                                (emms-replace-regexp-in-string "]" "" safe))
-                        (char-to-string c))
-                     (string-match (format "[a-zA-Z_.-/%s]" safe)
-                                   (char-to-string c)))
-                   (char-to-string c)
-                 (format "%%%02x" c)))
-             (string-to-list (encode-coding-string s 'utf-8))
-             ""))
+  (save-match-data
+    (string-match "\\`\\([^:]+:\\)\\(.+\\)\\'" s)
+    (let ((handler (match-string 1 s))
+          (loc (or (match-string 2 s) s)))
+      (concat handler
+              (mapconcat
+               (lambda (c)
+                 (if (if (string-match "]" safe)
+                         ;; ] should be place at the beginning inside []
+                         (string-match
+                          (format "[]a-zA-Z_.-/%s]"
+                                  (emms-replace-regexp-in-string "]" "" safe))
+                          (char-to-string c))
+                       (string-match (format "[a-zA-Z_.-/%s]" safe)
+                                     (char-to-string c)))
+                     (char-to-string c)
+                   (format "%%%02x" c)))
+               (string-to-list (encode-coding-string loc 'utf-8))
+               "")))))
 
 (defun emms-url-quote-plus (s &optional safe)
   "Run (emms-url-quote s \" \"), then replace ` ' with `+'."
