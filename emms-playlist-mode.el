@@ -569,6 +569,7 @@ WINDOW-WIDTH should be a positive integer."
                         (point-max)
                         '(face emms-playlist-track-face)))
   (setq buffer-read-only t)
+  (setq truncate-lines t)
   (setq buffer-undo-list nil))
 
 ;;;###autoload
