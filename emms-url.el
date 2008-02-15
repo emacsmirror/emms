@@ -36,7 +36,7 @@ e.g.,
     (url-quote \"abc def\") => \"abc%20def\"."
   (or safe (setq safe ""))
   (save-match-data
-    (string-match "\\`\\([^:]+:\\)\\(.+\\)\\'" s)
+    (string-match "\\`\\([^:]+://\\)\\(.+\\)\\'" s)
     (let ((handler (match-string 1 s))
           (loc (or (match-string 2 s) s)))
       (concat handler
