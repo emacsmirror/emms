@@ -758,7 +758,7 @@ Execute CALLBACK with CLOSURE as its first argument when done."
       (progn
         (require 'emms-url)
         (with-temp-buffer
-          (url-insert-file-contents (emms-url-quote url))
+          (url-insert-file-contents (emms-url-quote-entire url))
           (emms-http-decode-buffer (current-buffer))
           (emms-player-mpd-add-buffer-contents (current-buffer)
                                                closure callback)))

@@ -28,6 +28,31 @@
 (require 'url)
 (require 'emms-compat)
 
+(defvar emms-url-specials-entire
+  '((?\  . "%20")
+    (?\n . "%0D%0A"))
+  "*An alist of characters which must be represented specially in URLs.
+The transformation is the key of the pair.
+
+This is used by `emms-url-quote-entire'.")
+
+(defun emms-url-quote-entire (url)
+  "Escape specials conservatively in an entire URL.
+
+The specials to escape are specified by the `emms-url-specials-entire'
+variable.
+
+If you want to escape parts of URLs thoroughly, then use
+`emms-url-quote' instead."
+  (apply (function concat)
+         (mapcar
+          (lambda (ch)
+            (let ((repl (assoc ch emms-url-specials-entire)))
+              (if (null repl)
+                  (char-to-string ch)
+                (cdr repl))))
+          (append url nil))))
+
 (defun emms-url-quote (s &optional safe)
   "Replace special characters in S using the `%xx' escape.
 This is useful for escaping parts of URLs, but not entire URLs.
