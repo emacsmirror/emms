@@ -143,6 +143,7 @@ This is true for every invocation of `emms-playlist-mode-go'."
     (define-key map (kbd "?") 'describe-mode)
     (define-key map (kbd "r") 'emms-random)
     (define-key map (kbd "C") 'emms-playlist-mode-clear)
+    (define-key map (kbd "D") 'emms-playlist-mode-goto-dired-at-point)
     (define-key map (kbd "<mouse-2>") 'emms-playlist-mode-play-current-track)
     (define-key map (kbd "RET") 'emms-playlist-mode-play-smart)
     map)
@@ -322,6 +323,18 @@ set it as current."
               (insert "  ")))
           (goto-char (point-min))
           (message "Added %s" (symbol-name type)))))))
+
+(defun emms-playlist-mode-goto-dired-at-point ()
+  "Visit the track at point in a `dired' buffer."
+  (interactive)
+  (let ((track (emms-playlist-track-at)))
+    (if track
+	(let ((name (emms-track-get track 'name))
+	      (type (emms-track-get track 'type)))
+	  (if (eq type 'file)
+	      (dired (file-name-directory name))
+	    (error "Can't visit this track type in Dired")))
+      (error "No track at point"))))
 
 ;;; --------------------------------------------------------
 ;;; Killing and yanking
