@@ -60,22 +60,22 @@ This is useful for escaping parts of URLs, but not entire URLs.
 Characters in [a-zA-Z_.-/] and SAFE(default is \"\") will never be
 quoted.
 e.g.,
-    (url-quote \"abc def\") => \"abc%20def\"."
+    (emms-url-quote \"abc def\") => \"abc%20def\"."
   (or safe (setq safe ""))
   (save-match-data
-    (mapconcat (lambda (c)
-                 (if (if (string-match "]" safe)
-                         ;; ] should be place at the beginning inside []
-                         (string-match
-                          (format "[]a-zA-Z_.-/%s]"
-                                  (emms-replace-regexp-in-string "]" "" safe))
-                          (char-to-string c))
-                       (string-match (format "[a-zA-Z_.-/%s]" safe)
-                                     (char-to-string c)))
-                     (char-to-string c)
-                   (format "%%%02x" c)))
-               (string-to-list (encode-coding-string s 'utf-8))
-               "")))
+    (let ((re (if (string-match "]" safe)
+                  ;; `]' should be placed at the beginning inside []
+                  (format "[]a-zA-Z_.-/%s]"
+                          (emms-replace-regexp-in-string "]" "" safe))
+                (format "[a-zA-Z_.-/%s]" safe))))
+      (mapconcat
+       (lambda (c)
+         (let ((s1 (char-to-string c)))
+           (if (string-match re s1)
+               s1
+             (format "%%%02x" c))))
+       (string-to-list (encode-coding-string s 'utf-8))
+       ""))))
 
 (defun emms-url-quote-plus (s &optional safe)
   "Run (emms-url-quote s \" \"), then replace ` ' with `+'."
