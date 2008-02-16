@@ -61,21 +61,23 @@ Characters in [a-zA-Z_.-/] and SAFE(default is \"\") will never be
 quoted.
 e.g.,
     (emms-url-quote \"abc def\") => \"abc%20def\"."
-  (or safe (setq safe ""))
-  (save-match-data
-    (let ((re (if (string-match "]" safe)
-                  ;; `]' should be placed at the beginning inside []
-                  (format "[]a-zA-Z_.-/%s]"
-                          (emms-replace-regexp-in-string "]" "" safe))
-                (format "[a-zA-Z_.-/%s]" safe))))
-      (mapconcat
-       (lambda (c)
-         (let ((s1 (char-to-string c)))
-           (if (string-match re s1)
-               s1
-             (format "%%%02x" c))))
-       (string-to-list (encode-coding-string s 'utf-8))
-       ""))))
+  (if (not (stringp s))
+      ""
+    (or safe (setq safe ""))
+    (save-match-data
+      (let ((re (if (string-match "]" safe)
+                    ;; `]' should be placed at the beginning inside []
+                    (format "[]a-zA-Z_.-/%s]"
+                            (emms-replace-regexp-in-string "]" "" safe))
+                  (format "[a-zA-Z_.-/%s]" safe))))
+        (mapconcat
+         (lambda (c)
+           (let ((s1 (char-to-string c)))
+             (if (string-match re s1)
+                 s1
+               (format "%%%02x" c))))
+         (string-to-list (encode-coding-string s 'utf-8))
+         "")))))
 
 (defun emms-url-quote-plus (s &optional safe)
   "Run (emms-url-quote s \" \"), then replace ` ' with `+'."
