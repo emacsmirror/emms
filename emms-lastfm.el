@@ -203,8 +203,9 @@ These will be displayed on the user's last.fm page."
                                        'info-tracknumber))
          (musicbrainz-id "")
          (track-length (number-to-string
-                        (emms-track-get emms-lastfm-current-track
-                                        'info-playing-time))))
+                        (or (emms-track-get emms-lastfm-current-track
+                                            'info-playing-time)
+                            0))))
     ;; wait up to 5 seconds to submit np infos in order to finish handshaking.
     (dotimes (i 5)
       (when (not (and emms-lastfm-session-id
