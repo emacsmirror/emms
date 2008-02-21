@@ -422,10 +422,13 @@ Available tags are:
           (setq filename (emms-track-name track))
           (or fullname (setq filename (file-name-nondirectory filename)))
           (when (string-match (car pattern) filename)
-            (mapcar (lambda (pair)
-                      (emms-track-set track (car (rassoc (char-to-string (car pair)) emms-tag-editor-tags))
-                                      (match-string (cdr pair) filename)))
-                    (cdr pattern)))
+            (mapc (lambda (pair)
+                    (emms-track-set
+                     track
+                     (car (rassoc (char-to-string (car pair))
+                                  emms-tag-editor-tags))
+                     (match-string (cdr pair) filename)))
+                  (cdr pattern)))
           (emms-tag-editor-insert-track track))))))
 
 (defun emms-tag-editor-compile-pattern (pattern)

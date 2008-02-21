@@ -440,22 +440,22 @@ Argument STR Quanta of data."
 
     ;; Look for headers
     (unless emms-stream-info-header-flag
-      (mapcar (lambda (term)
-		(goto-char (point-min))
-		(if (re-search-forward 
-		     (concat (regexp-opt 
-			      (list "icy-" "ice-"))
-			     term
-			     ":\\(" 
-			     emms-stream-info-stream-header-regexp
-			     "\\)")
-		     (point-max) t)
-		    (progn
-		      (add-to-list 'emms-stream-info-found 
-				   (cons term 
-					 (emms-match-string-no-properties 1)))
-		      (setq emms-stream-info-header-flag t))))
-	      emms-stream-info-vocab))
+      (mapc (lambda (term)
+	      (goto-char (point-min))
+	      (if (re-search-forward
+		   (concat (regexp-opt
+			    (list "icy-" "ice-"))
+			   term
+			   ":\\("
+			   emms-stream-info-stream-header-regexp
+			   "\\)")
+		   (point-max) t)
+		  (progn
+		    (add-to-list 'emms-stream-info-found
+				 (cons term
+				       (emms-match-string-no-properties 1)))
+		    (setq emms-stream-info-header-flag t))))
+	    emms-stream-info-vocab))
 
     ;; Look for title
     (unless emms-stream-info-title-flag
