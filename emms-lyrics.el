@@ -34,26 +34,7 @@
 ;; Then either `M-x emms-lyrics-enable' or add (emms-lyrics 1) in
 ;; your .emacs to enable.
 
-;;; Known problems:
-
-;; 1. Sometimes EMMS might be blocked by some other processes, like Gnus
-;;    checking new messages, while emms-lyrics still goes on, thus make
-;;    music and lyrics asynchronical.
-;;
-;;    One possible solution is to pause EMMS when these processes are
-;;    running. e.g., for Gnus, try the following:
-;;
-;;         (defadvice gnus-group-get-new-news (around pause-emms)
-;;           "Pause emms while Gnus is fetching mails or news."
-;;           (if emms-player-playing-p
-;;               (progn (emms-pause)
-;;                      ad-do-it
-;;                      (emms-pause))
-;;             ad-do-it))
-;;
-;;         (ad-activate 'gnus-group-get-new-news)
-
-;;; Todo:
+;;; TODO:
 
 ;; 1. Maybe the lyric setup should run before `emms-start'.
 ;; 2. Give a user a chance to choose when finding out multiple lyrics.

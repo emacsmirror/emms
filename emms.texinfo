@@ -1057,7 +1057,7 @@ Unmarks same way as @command{emms-mark-forward} marks.
 @item % m
 @findex emms-mark-regexp
 Marks all tracks in the playlist matching the given regular
-expression. A prefix argument means to unmark them instead. 
+expression. A prefix argument means to unmark them instead.
 @end table
 
 When tracks are marked you can operate on them:
@@ -2089,27 +2089,6 @@ Disable displaying Emms lyrics.
 @defun emms-lyrics-toggle
 Toggle displaying Emms lyrics.
 @end defun
-
-@heading Known Problems
-
-Sometimes EMMS might be blocked by some other processes, like Gnus
-checking new messages, while emms-lyrics still goes on, thus make music
-and lyrics asynchronical.
-
-One possible solution is to pause EMMS when these processes are
-running. e.g., for Gnus, try the following:
-
-@lisp
-(defadvice gnus-group-get-new-news (around pause-emms)
-  "Pause emms while Gnus is fetching mails or news."
-  (if emms-player-playing-p
-      (progn (emms-pause)
-             ad-do-it
-             (emms-pause))
-    ad-do-it))
-
-(ad-activate 'gnus-group-get-new-news)
-@end lisp
 
 @node Volume
 @chapter Volume
