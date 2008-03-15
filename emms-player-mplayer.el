@@ -96,7 +96,7 @@
                                         (emms-replace-regexp-in-string
                                          (concat ext "$") el name))
                                       emms-player-mplayer-subtitle-extensions)))
-         (subtitle (mapconcat (lambda (el) el) choices ",")))
+         (subtitle (mapconcat 'identity choices ",")))
     (unless (string= subtitle "")
       (setq emms-player-mplayer-parameters
             (append emms-player-mplayer-parameters
