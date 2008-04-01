@@ -1,6 +1,6 @@
 ;;; emms-player-mplayer.el --- mplayer support for EMMS
 
-;; Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
+;; Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 
 ;; Authors: William Xu <william.xwl@gmail.com>
 ;;          Jorgen Schaefer <forcer@forcix.cx>
@@ -24,18 +24,14 @@
 ;;; Commentary:
 
 ;; This provides a player that uses mplayer. It supports pause and
-;; seeking.
+;; seeking. For loading subtitles automatically, try adding
+;; "sub-fuzziness=1" to your `~/.mplayer/config', see mplayer manual for
+;; more.
 
 ;;; Code:
 
 (require 'emms-compat)
 (require 'emms-player-simple)
-
-(defcustom emms-player-mplayer-subtitle-extensions
-  '("sub" "srt" "gb.srt" "big5.srt" "eng.srt" "chs.srt" "cht.srt")
-  "Possible movie subtitle file extensions."
-  :type 'symbol
-  :group 'emms)
 
 (define-emms-simple-player mplayer '(file url)
   (mapconcat 'regexp-quote
@@ -82,40 +78,6 @@
   (process-send-string
    emms-player-simple-process-name
    (format "seek %d 2\n" sec)))
-
-(defun emms-player-mplayer-subtitle-checker ()
-  (let* ((track (emms-playlist-current-selected-track))
-         (name (emms-track-name track))
-         (ext (file-name-extension name))
-         (choices
-          (emms-remove-if-not (lambda (i)
-                                (or (and (eq (emms-track-type track) 'file)
-					 (file-exists-p i))
-                                    (eq (emms-track-type track) 'url)))
-                              (mapcar (lambda (el)
-                                        (emms-replace-regexp-in-string
-                                         (concat ext "$") el name))
-                                      emms-player-mplayer-subtitle-extensions)))
-         (subtitle (mapconcat 'identity choices ",")))
-    (unless (string= subtitle "")
-      (setq emms-player-mplayer-parameters
-            (append emms-player-mplayer-parameters
-                    (list "-sub" subtitle))))))
-
-(defun emms-player-mplayer-start-with-subtitle-checker (track)
-  "Start the player process by checking possible subtitles
-additionally."
-  (let ((emms-player-mplayer-parameters emms-player-mplayer-parameters))
-    (emms-player-mplayer-subtitle-checker)
-    (emms-player-simple-start (emms-track-name track)
-                              emms-player-mplayer
-                              emms-player-mplayer-command-name
-                              emms-player-mplayer-parameters)))
-
-;; I have to redefine `emms-player-mplayer-start', since i can't figure
-;; out an easy way to achieve this based on current design. (xwl)
-(defalias 'emms-player-mplayer-start
-  'emms-player-mplayer-start-with-subtitle-checker)
 
 (provide 'emms-player-mplayer)
 ;;; emms-player-mplayer.el ends here
