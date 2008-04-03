@@ -271,7 +271,8 @@ FILE should be under the same directory as the music file, or under
                 (setq emms-lyrics-alist
                       (append emms-lyrics-alist `((,time . ,lyric))))
                 (setq time 0)))))
-        (sort emms-lyrics-alist (lambda (a b) (< (car a) (car b)))))
+        (setq emms-lyrics-alist
+              (sort emms-lyrics-alist (lambda (a b) (< (car a) (car b))))))
       t)))
 
 (defun emms-lyrics-start ()
