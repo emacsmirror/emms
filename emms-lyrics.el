@@ -1,6 +1,6 @@
 ;;; emms-lyrics.el --- Display lyrics synchronically
 
-;; Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
+;; Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 
 ;; Author: William Xu <william.xwl@gmail.com>
 ;; Keywords: emms music lyrics
@@ -76,8 +76,14 @@ same as the music file) and this directory."
   :type 'string
   :group 'emms-lyrics)
 
-(defcustom emms-lyrics-coding-system 'utf-8
-  "Coding system used in the output of lyrics."
+(defcustom emms-lyrics-coding-system nil
+  "Coding system for reading lyrics files.
+
+If all your lyrics use the same coding system, you can set this
+variable to that value; else you'd better leave it to nil, and
+rely on `prefer-coding-system', `file-coding-system-alist' or
+\(info \"(emacs)File Variables\"), sorted by priority
+increasingly."
   :type 'coding-system
   :group 'emms-lyrics)
 
