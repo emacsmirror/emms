@@ -1,6 +1,6 @@
 ;;; emms-playlist-sort.el --- sort emms playlist
 
-;; Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
+;; Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 
 ;; Author: William Xu <william.xwl@gmail.com>
 
@@ -22,9 +22,9 @@
 
 ;;; Code:
 
-(require 'emms-score)
-
 (eval-when-compile (require 'cl))
+(require 'emms-last-played)
+(require 'emms-playlist-mode)
 
 ;;; User Customizations
 
@@ -41,18 +41,28 @@ info-playing-time info-tracknumber."
   :type 'symbol
   :group 'emms-playlist-sort)
 
+(defcustom emms-playlist-sort-prefix "S"
+  "Prefix key sequence for `emms-playlist-sort-map'.
+Remember to call `emms-playlist-sort-map-setup' if you modify it."
+  :type 'string
+  :group 'emms-playlist-sort)
+
 
 ;;; User Interfaces
 
 (defmacro define-emms-playlist-sort (attribute)
-  "Macro for defining emms playlist sort functions."
+  "Macro for defining emms playlist sort functions on strings ."
   `(defun ,(intern (format "emms-playlist-sort-by-%s" attribute)) ()
-     ,(format "Sort emms playlist by %s, increasingly." attribute)
+     ,(format "Sort emms playlist by %s, increasingly.
+With a prefix argument, decreasingly." attribute)
      (interactive)
      (emms-playlist-sort
       (lambda (a b)
-	(emms-string< (emms-track-get a (quote ,attribute))
-                      (emms-track-get b (quote ,attribute)))))))
+        (if current-prefix-arg
+            (emms-string> (emms-track-get a (quote ,attribute))
+                          (emms-track-get b (quote ,attribute)))
+          (emms-string< (emms-track-get a (quote ,attribute))
+                        (emms-track-get b (quote ,attribute))))))))
 
 (define-emms-playlist-sort name)
 (define-emms-playlist-sort info-artist)
@@ -63,14 +73,6 @@ info-playing-time info-tracknumber."
 (define-emms-playlist-sort info-year)
 (define-emms-playlist-sort info-note)
 
-(defun emms-playlist-sort-by-score ()
-  "Sort emms playlist by score, decreasingly."
-  (interactive)
-  (emms-playlist-sort
-   (lambda (a b)
-     (> (emms-score-get-score (emms-track-get a 'name))
-	(emms-score-get-score (emms-track-get b 'name))))))
-
 (defun emms-playlist-sort-by-natural-order ()
   "Sort emms playlist by natural order.
 See `emms-sort-natural-order-less-p'."
@@ -79,24 +81,60 @@ See `emms-sort-natural-order-less-p'."
 
 (defun emms-playlist-sort-by-list ()
   "Sort emms playlist by `emms-playlist-sort-list'.
-The sort will be carried out until comparsion succeeds,
-increasingly."
+The sort will be carried out until comparsion succeeds, increasingly."
   (interactive)
   (emms-playlist-sort 'emms-playlist-sort-by-list-p))
 
-(eval-after-load 'emms-playlist-mode
-  '(progn
-     (define-key emms-playlist-mode-map (kbd "S n") 'emms-playlist-sort-by-name)
-     (define-key emms-playlist-mode-map (kbd "S a") 'emms-playlist-sort-by-info-artist)
-     (define-key emms-playlist-mode-map (kbd "S c") 'emms-playlist-sort-by-info-composer)
-     (define-key emms-playlist-mode-map (kbd "S p") 'emms-playlist-sort-by-info-performer)
-     (define-key emms-playlist-mode-map (kbd "S t") 'emms-playlist-sort-by-info-title)
-     (define-key emms-playlist-mode-map (kbd "S b") 'emms-playlist-sort-by-info-album)
-     (define-key emms-playlist-mode-map (kbd "S y") 'emms-playlist-sort-by-info-year)
-     (define-key emms-playlist-mode-map (kbd "S o") 'emms-playlist-sort-by-info-note)
-     (define-key emms-playlist-mode-map (kbd "S N") 'emms-playlist-sort-by-natural-order)
-     (define-key emms-playlist-mode-map (kbd "S l") 'emms-playlist-sort-by-list)
-     (define-key emms-playlist-mode-map (kbd "S s") 'emms-playlist-sort-by-score)))
+(defun emms-playlist-sort-by-last-played ()
+  "Sort emms playlist by last played time, increasingly.
+With a prefix argument, decreasingly."
+  (interactive)
+  (emms-playlist-sort
+   '(lambda (a b)
+      (let ((ret (time-less-p
+                  (or (emms-track-get a 'last-played) '(0 0 0))
+                  (or (emms-track-get b 'last-played) '(0 0 0)))))
+        (if current-prefix-arg
+            (not ret)
+          ret)))))
+
+(defun emms-playlist-sort-by-play-count ()
+  "Sort emms playlist by play-count, increasingly.
+With a prefix argument, decreasingly."
+  (interactive)
+  (emms-playlist-sort
+   '(lambda (a b)
+      (let ((ret (< (or (emms-track-get a 'play-count) 0)
+                    (or (emms-track-get b 'play-count) 0))))
+        (if current-prefix-arg
+            (not ret)
+          ret)))))
+
+(defvar emms-playlist-sort-map nil)
+
+(defun emms-playlist-sort-map-setup ()
+  "Setup sort map with latest `emms-playlist-sort-prefix'."
+  (setq emms-playlist-sort-map
+        (let ((map (make-sparse-keymap)))
+          (define-key map (kbd "n") 'emms-playlist-sort-by-natural-order)
+          (define-key map (kbd "a") 'emms-playlist-sort-by-info-artist)
+          (define-key map (kbd "c") 'emms-playlist-sort-by-play-count)
+          (define-key map (kbd "b") 'emms-playlist-sort-by-info-album)
+          (define-key map (kbd "l") 'emms-playlist-sort-by-last-played)
+          (define-key map (kbd "t") 'emms-playlist-sort-by-info-title)
+
+          (define-key map (kbd "p") 'emms-playlist-sort-by-info-performer)
+          (define-key map (kbd "y") 'emms-playlist-sort-by-info-year)
+          (define-key map (kbd "o") 'emms-playlist-sort-by-info-note)
+          (define-key map (kbd "C") 'emms-playlist-sort-by-info-composer)
+          (define-key map (kbd "L") 'emms-playlist-sort-by-list)
+          (define-key map (kbd "N") 'emms-playlist-sort-by-name)
+          map))
+
+  (define-key emms-playlist-mode-map
+    emms-playlist-sort-prefix emms-playlist-sort-map))
+
+(setq emms-playlist-sort-map (emms-playlist-sort-map-setup))
 
 
 ;;; Low Level Functions
@@ -104,28 +142,24 @@ increasingly."
 (defun emms-playlist-sort (predicate &optional start end)
   "Sort the playlist buffer by PREDICATE.
 If START and END are not provided, the whole buffer will be sorted."
-  (unless start (setq start (point-min)))
-  (unless end (setq end (point-max)))
+  (or start (setq start (point-min)))
+  (or end (setq end (point-max)))
   (with-current-emms-playlist
-    (save-excursion
-      (emms-playlist-ensure-playlist-buffer)
-      (widen)
-      (let ((current (emms-playlist-selected-track))
-            (tracks
-             (emms-playlist-tracks-in-region start end)))
-        (delete-region start end)
-        (run-hooks 'emms-playlist-cleared-hook)
-        (mapc 'emms-playlist-insert-track
-              (sort tracks predicate))
-        (let ((pos (text-property-any start end
-                                      'emms-track current)))
-          (if pos
-              (emms-playlist-select pos)
-            (emms-playlist-first)))))))
-
-(defun emms-string> (a b)
-  (not (or (emms-string< a b)
-	   (string= a b))))
+    (emms-playlist-ensure-playlist-buffer)
+    (widen)
+    (let ((current (emms-playlist-selected-track))
+          (tracks (emms-playlist-tracks-in-region start end)))
+      (delete-region start end)
+      (run-hooks 'emms-playlist-cleared-hook)
+      (mapc 'emms-playlist-insert-track (sort tracks predicate))
+      ;; Buffer size may change with some fancy user format function.
+      (when (> end (point-max))
+        (setq end (point-max)))
+      (let ((pos (text-property-any start end 'emms-track current)))
+        (if  pos
+            (emms-playlist-select pos)
+          (emms-playlist-first))
+        (emms-playlist-mode-center-current)))))
 
 (defun emms-sort-natural-order-less-p (a b)
   "Sort two tracks by natural order.
@@ -161,6 +195,11 @@ ie. by album name and then by track number."
   "Same as `string<' except this is case insensitive."
   (string< (and s1 (downcase s1)) (and s2 (downcase s2))))
 
+(defun emms-string> (s1 s2)
+  "Note this is case insensitive."
+  (let ((a (and s1 (downcase s1)))
+        (b (and s2 (downcase s2))))
+    (not (or (string= a b) (string< a b)))))
 
 (provide 'emms-playlist-sort)
 
