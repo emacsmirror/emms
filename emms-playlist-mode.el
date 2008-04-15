@@ -536,7 +536,7 @@ Default value for WINDOW-WIDTH is `emms-playlist-mode-window-width'.
 WINDOW-WIDTH should be a positive integer."
   (interactive)
   (setq emms-playlist-mode-window-width
-	(or window-width emms-playlist-mode-window-width))
+        (round (or window-width emms-playlist-mode-window-width)))
   (split-window-horizontally (- emms-playlist-mode-window-width))
   (other-window 1)
   (emms-playlist-mode-go)
