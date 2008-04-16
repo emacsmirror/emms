@@ -139,27 +139,25 @@ With a prefix argument, decreasingly."
 
 ;;; Low Level Functions
 
-(defun emms-playlist-sort (predicate &optional start end)
-  "Sort the playlist buffer by PREDICATE.
-If START and END are not provided, the whole buffer will be sorted."
-  (or start (setq start (point-min)))
-  (or end (setq end (point-max)))
+(defun emms-playlist-sort (predicate)
+  "Sort the playlist buffer by PREDICATE."
   (with-current-emms-playlist
     (emms-playlist-ensure-playlist-buffer)
-    (widen)
     (let ((current (emms-playlist-selected-track))
-          (tracks (emms-playlist-tracks-in-region start end)))
-      (delete-region start end)
+          (tracks (nreverse
+                   (emms-playlist-tracks-in-region
+                    (point-min) (point-max)))))
+      (delete-region (point-min) (point-max))
       (run-hooks 'emms-playlist-cleared-hook)
       (mapc 'emms-playlist-insert-track (sort tracks predicate))
-      ;; Buffer size may change with some fancy user format function.
-      (when (> end (point-max))
-        (setq end (point-max)))
-      (let ((pos (text-property-any start end 'emms-track current)))
-        (if  pos
+      (let ((pos (text-property-any
+                  (point-min) (point-max) 'emms-track current)))
+        (if pos
             (emms-playlist-select pos)
           (emms-playlist-first))
-        (emms-playlist-mode-center-current)))))
+        ;; (emms-playlist-mode-center-current)
+        (goto-char (point-min))
+        ))))
 
 (defun emms-sort-natural-order-less-p (a b)
   "Sort two tracks by natural order.
@@ -192,13 +190,11 @@ ie. by album name and then by track number."
            (throw 'return t)))))))
 
 (defun emms-string< (s1 s2)
-  "Same as `string<' except this is case insensitive."
-  (string< (and s1 (downcase s1)) (and s2 (downcase s2))))
+  (string< (downcase (or s1 "")) (downcase (or s2 ""))))
 
 (defun emms-string> (s1 s2)
-  "Note this is case insensitive."
-  (let ((a (and s1 (downcase s1)))
-        (b (and s2 (downcase s2))))
+  (let ((a (downcase (or s1 "")))
+        (b (downcase (or s2 ""))))
     (not (or (string= a b) (string< a b)))))
 
 (provide 'emms-playlist-sort)
