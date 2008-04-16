@@ -163,14 +163,16 @@ With a prefix argument, decreasingly."
   "Sort two tracks by natural order.
 This is the order in which albums where intended to be played.
 ie. by album name and then by track number."
-  (or (emms-string> (emms-track-get a 'info-album)
-		    (emms-track-get b 'info-album))
-      (and (string= (emms-track-get a 'info-album)
-		    (emms-track-get b 'info-album))
-	   (< (string-to-number (or (emms-track-get a 'info-tracknumber)
-				    "0"))
-	      (string-to-number (or (emms-track-get b 'info-tracknumber)
-				    "0"))))))
+  (let ((album-a (emms-track-get a 'info-album))
+        (album-b (emms-track-get b 'info-album)))
+    (or (emms-string< album-a album-b)
+        (and album-a
+             album-b
+             (string= album-a album-b)
+             (< (string-to-number (or (emms-track-get a 'info-tracknumber)
+                                      "0"))
+                (string-to-number (or (emms-track-get b 'info-tracknumber)
+                                      "0")))))))
 
 (defun emms-playlist-sort-by-list-p (a b)
   (catch 'return
