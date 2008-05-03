@@ -76,6 +76,7 @@
          (default (emms-tag-editor-make-format (remove 'info-date tags))))
     `(("mp3" . ,default)
       ("ogg" . ,(emms-tag-editor-make-format (remove 'info-year tags)))
+      ("flac" . ,(emms-tag-editor-make-format (remove 'info-year tags)))
       ("default" . ,default)))
   "Format to use when inserting the track.
 The CAR part is the extension of the track name, and the CDR part
@@ -123,7 +124,8 @@ See also `emms-tag-editor-default-parser'.")
       (info-year        . "y")
       (info-genre       . "g")
       (info-note        . "c")))
-    ("ogg" . emms-tag-editor-tag-ogg))
+    ("ogg" . emms-tag-editor-tag-ogg)
+    ("flac" . emms-tag-editor-tag-flac))
   "An alist used when committing changes to tags in files.
 If the external program sets tags by command line options
 one-by-one such as mp3info, then the list should like:
@@ -133,6 +135,24 @@ Otherwise, a function that accepts a single parameter, the track,
 should be given.
 
 See also `emms-tag-editor-tag-file' and `emms-tag-editor-tag-ogg'.")
+
+(defun emms-tag-editor-tag-flac (track)
+  "Commit changes to an OGG file according to TRACK."
+  (require 'emms-info-metaflac)
+  (with-temp-buffer
+    (let (need val)
+      (mapc (lambda (tag)
+              (let ((info-tag (intern (concat "info-" tag))))
+                (when (> (length (setq val (emms-track-get track info-tag))) 0)
+                  (insert (upcase tag) "=" val "\n"))))
+            '("artist" "composer" "performer" "title" "album" "tracknumber" "date" "genre" "note"))
+      (when (buffer-string)
+        (funcall #'call-process-region (point-min) (point-max)
+                 emms-info-metaflac-program-name nil
+                 (get-buffer-create emms-tag-editor-log-buffer)
+                 nil
+                 "--import-tags-from=-"
+                 (emms-track-name track))))))
 
 (defun emms-tag-editor-tag-ogg (track)
   "Commit changes to an OGG file according to TRACK."
