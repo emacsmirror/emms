@@ -1178,7 +1178,7 @@ order to prime the cache."
   (unless (string= dir "")
     (setq dir (emms-player-mpd-get-mpd-filename dir)))
   (emms-player-mpd-send
-   (concat "update " dir) nil
+   (concat "update " (emms-player-mpd-quote-file dir)) nil
    (lambda (closure response)
      (let ((id (cdr (assoc "updating_db"
                            (emms-player-mpd-get-alist
