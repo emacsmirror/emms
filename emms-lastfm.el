@@ -134,6 +134,8 @@ procedure. Only for internal use.")
   "The client ID of EMMS. Don't change it!")
 (defconst emms-lastfm-client-version 0.2
   "The version registered at last.fm. Don't change it!")
+(defconst emms-lastfm-protocol-version 1.2
+  "The version of the supported last.fm protocol.  Don't change it.")
 
 ;; used internally
 (defvar emms-lastfm-process nil "-- only used internally --")
@@ -169,7 +171,7 @@ paused track resumes) and sets the track submission timer."
           (setq emms-lastfm-timer
                 (run-with-timer secs nil 'emms-lastfm-submit-track))))))
   ;; Update the now playing info displayed on the user's last.fm page.  This
-  ;; doesn't affect the user's profile, so it con be done even for tracks that
+  ;; doesn't affect the user's profile, so it can be done even for tracks that
   ;; should not be submitted.
   (emms-lastfm-submit-now-playing))
 
@@ -338,7 +340,8 @@ handshake."
   (let ((timestamp (emms-lastfm-current-unix-time-string)))
     (emms-lastfm-http-GET
      (concat emms-lastfm-server
-             "?hs=true&p=1.2"
+             "?hs=true"
+             "&p=" (number-to-string emms-lastfm-protocol-version)
              "&c=" emms-lastfm-client-id
              "&v=" (number-to-string emms-lastfm-client-version)
              "&u=" (emms-url-quote emms-lastfm-username)
