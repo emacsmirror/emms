@@ -1,14 +1,10 @@
-EMACS=emacs
-SITEFLAG=--no-site-file
 GZIP=gzip
-ALLSOURCE=$(wildcard *.el)
-ALLCOMPILED=$(wildcard *.elc)
-SPECIAL=emms-auto.el emms-maint.el
-SOURCE=$(filter-out $(SPECIAL),$(ALLSOURCE))
-TARGET=$(patsubst %.el,%.elc,$(SOURCE))
 MAN1PAGES=emms-print-metadata.1
-
 DOCDIR=doc/
+LISPDIR=lisp
+
+ALLSOURCE=$(wildcard $(LISPDIR)/*.el)
+ALLCOMPILED=$(wildcard $(LISPDIR)/*.elc)
 
 DESTDIR=
 PREFIX=$(DESTDIR)/usr/local
@@ -18,26 +14,15 @@ SITELISP=$(PREFIX)/share/emacs/site-lisp/emms
 
 INSTALLINFO = /usr/sbin/install-info --info-dir=$(INFODIR)
 
-.PHONY: all install docs deb-install clean
+.PHONY: all install lisp docs deb-install clean
 .PRECIOUS: %.elc
-all: $(TARGET) emms-auto.el docs
+all: lisp docs
 
-emms-auto.el: emms-auto.in $(SOURCE)
-	cp emms-auto.in emms-auto.el
-	-rm -f emms-auto.elc
-	@$(EMACS) -q $(SITEFLAG) -batch \
-		-l emms-maint.el \
-		-l emms-auto.el \
-		-f generate-autoloads \
-		$(shell pwd)/emms-auto.el .
+lisp:
+	$(MAKE) -C $(LISPDIR)
 
 docs:
 	$(MAKE) -C $(DOCDIR)
-
-%.elc: %.el
-	@$(EMACS) -q $(SITEFLAG) -batch \
-		-l emms-maint.el \
-		-f batch-byte-compile $<
 
 emms-print-metadata: emms-print-metadata.c
 	$(CC) -o $@ $< -I/usr/include/taglib -L/usr/lib -ltag_c
@@ -61,4 +46,5 @@ ChangeLog:
 	darcs changes > $@
 
 clean:
-	-rm -f *~ *.elc emms-auto.el $(DOCDIR)emms.info $(DOCDIR)emms.html emms-print-metadata
+	-rm -f *~ $(DOCDIR)emms.info $(DOCDIR)emms.html emms-print-metadata
+	$(MAKE) -C $(LISPDIR) clean
