@@ -393,10 +393,12 @@ This is a good function to put in `emms-player-next-function'."
   (emms-start))
 
 (defun emms-pause ()
-  "Pause the current player."
+  "Pause the current player.
+If player hasn't started, then start it now."
   (interactive)
-  (when emms-player-playing-p
-    (emms-player-pause)))
+  (if emms-player-playing-p
+      (emms-player-pause)
+    (emms-start)))
 
 (defun emms-seek (seconds)
   "Seek the current player SECONDS seconds.
