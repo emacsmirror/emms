@@ -168,7 +168,7 @@ load-path. For example, if you put all those files into ~/elisp/emms/,
 then in your ~/.emacs, you should do:
 
 @lisp
-(add-to-list 'load-path "~/elisp/emms/")
+(add-to-list 'load-path "~/elisp/emms/lisp/")
 @end lisp
 @noindent
 
@@ -350,7 +350,7 @@ EMMS are located. Let's say you have them in @file{~/elisp/emms/}. So
 add this line to your @file{.emacs}.
 
 @lisp
-(add-to-list 'load-path "~/elisp/emms")
+(add-to-list 'load-path "~/elisp/emms/lisp/")
 @end lisp
 
 Further informations about installing EMMS can be found in the
