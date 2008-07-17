@@ -664,15 +664,17 @@ main EMMS playlist buffer."
            "clearerror"
            nil #'ignore))
       (cond ((string= state "stop")
-             (setq emms-player-mpd-last-state "stop")
              (if song
                  ;; a track remains: the user probably stopped MusicPD
                  ;; manually, so we'll stop EMMS completely
                  (let ((emms-player-stopped-p t))
+                   (setq emms-player-mpd-last-state "stop")
                    (emms-player-stopped))
                ;; no more tracks are left: we probably ran out of things
                ;; to play, so let EMMS do something further if it wants
-               (emms-player-stopped)))
+               (unless (string= emms-player-mpd-last-state "stop")
+                 (setq emms-player-mpd-last-state "stop")
+                 (emms-player-stopped))))
             ((and emms-player-mpd-last-state
                   (string= emms-player-mpd-last-state "stop"))
              ;; resume from a stop that occurred outside of EMMS
