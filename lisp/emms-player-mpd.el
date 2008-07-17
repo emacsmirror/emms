@@ -1,6 +1,6 @@
 ;;; emms-player-mpd.el --- MusicPD support for EMMS
 
-;; Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
+;; Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 
 ;; Author: Michael Olson <mwolson@gnu.org>
 
@@ -248,6 +248,7 @@ If your EMMS playlist contains stored playlists, set this to nil."
 (make-variable-buffer-local 'emms-player-mpd-playlist-id)
 
 (defvar emms-player-mpd-current-song nil)
+(defvar emms-player-mpd-last-state nil)
 (defvar emms-player-mpd-status-timer nil)
 
 (defvar emms-player-mpd-status-regexp
@@ -643,9 +644,17 @@ main EMMS playlist buffer."
      (cons emms-playlist-buffer (cons callback closure))
      #'emms-player-mpd-sync-from-mpd-1)))
 
+(defun emms-player-mpd-detect-song-change-2 (state info)
+  "Perform post-sync tasks after returning from a stop."
+  (setq emms-player-mpd-current-song nil)
+  (setq emms-player-playing-p 'emms-player-mpd)
+  (when (string= state "pause")
+    (setq emms-player-paused-p t))
+  (emms-player-mpd-detect-song-change info))
+
 (defun emms-player-mpd-detect-song-change-1 (closure info)
   (let ((song (emms-player-mpd-get-current-song nil #'ignore info))
-        (status (emms-player-mpd-get-mpd-state nil #'ignore info))
+        (state (emms-player-mpd-get-mpd-state nil #'ignore info))
         (time (emms-player-mpd-get-playing-time nil #'ignore info))
         (err-msg (cdr (assoc "error" info))))
     (if (stringp err-msg)
@@ -654,8 +663,8 @@ main EMMS playlist buffer."
           (emms-player-mpd-send
            "clearerror"
            nil #'ignore))
-      (cond ((string= status "stop")
-             (emms-player-mpd-disconnect t)
+      (cond ((string= state "stop")
+             (setq emms-player-mpd-last-state "stop")
              (if song
                  ;; a track remains: the user probably stopped MusicPD
                  ;; manually, so we'll stop EMMS completely
@@ -664,9 +673,17 @@ main EMMS playlist buffer."
                ;; no more tracks are left: we probably ran out of things
                ;; to play, so let EMMS do something further if it wants
                (emms-player-stopped)))
-            ((string= status "pause")
+            ((and emms-player-mpd-last-state
+                  (string= emms-player-mpd-last-state "stop"))
+             ;; resume from a stop that occurred outside of EMMS
+             (setq emms-player-mpd-last-state nil)
+             (emms-player-mpd-sync-from-mpd
+              state
+              #'emms-player-mpd-detect-song-change-2))
+            ((string= state "pause")
              nil)
-            ((string= status "play")
+            ((string= state "play")
+             (setq emms-player-mpd-last-state "play")
              (unless (or (null song)
                          (and (stringp emms-player-mpd-current-song)
                               (string= song emms-player-mpd-current-song)))
@@ -704,7 +721,10 @@ info from MusicPD."
   (when emms-player-mpd-status-timer
     (emms-cancel-timer emms-player-mpd-status-timer)
     (setq emms-player-mpd-status-timer nil))
-  (emms-player-mpd-send "clear" nil #'ignore))
+  (setq emms-player-mpd-last-state nil)
+  (emms-player-mpd-send "clear" nil #'ignore)
+  (let ((emms-player-stopped-p t))
+    (emms-player-stopped)))
 
 ;;; Adding to the MusicPD playlist
 
@@ -931,6 +951,7 @@ from other functions."
   (emms-cancel-timer emms-player-mpd-status-timer)
   (setq emms-player-mpd-status-timer nil)
   (setq emms-player-mpd-current-song nil)
+  (setq emms-player-mpd-last-state nil)
   (emms-player-mpd-close-process)
   (unless no-stop
     (let ((emms-player-stopped-p t))
