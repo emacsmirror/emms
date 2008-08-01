@@ -54,6 +54,7 @@ Starting out
 * Configuration::       More detailed setup and configuration.
 * Quickstart Guide::    First steps with EMMS for new users.
 * Getting Help::        Where to get help with Emms and make suggestions.
+* Formats and Freedom:: File formats without restrictions.
 
 Emms basics
 * Basic Commands::      How to control Emms with ease.
@@ -422,6 +423,33 @@ If you are familiar with the Gmane service, there is a Gmane newsgroup
 which mirrors this mailing address at gmane.emacs.emms.user.
 
 Emms also has a website at @url{http://www.gnu.org/software/emms/}.
+
+@node Formats and Freedom
+@chapter Formats and Freedom
+
+@cindex freedom
+@cindex format
+
+Emms is free software, but some of the file formats it can play carry
+restrictions, they are proprietary file formats. Proprietary software
+companies are pushing out audio and video formats which restrict when,
+where and how you can play them, and restrict developers from writing
+free software which interacts with them.
+
+Restrictive file formats put the corporate bottom-line before the
+public interest.
+
+Fortunately there are alternatives like Ogg. Ogg is a professional
+grade multimedia format. Ogg Vorbis is the compressed audio format
+(like MP3), and Ogg Theora is the video format. For more information,
+go to @url{http://www.xiph.org/}.
+
+If you want to transcode audio into a lossless format, you can try
+FLAC (Free Lossless Audio Codec). FLAC stands out as the fastest and
+most widely supported lossless audio codec, and the only one that at
+once is non-proprietary, is unencumbered by patents and has the source
+code for a reference implementation freely available. For more
+information about FLAC, go to @url{http://flac.sourceforge.net/}.
 
 @node Basic Commands
 @chapter Basic Commands
