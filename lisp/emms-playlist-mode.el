@@ -596,7 +596,7 @@ WINDOW-WIDTH should be a positive integer."
 
   (use-local-map emms-playlist-mode-map)
   (setq major-mode 'emms-playlist-mode
-	mode-name "Emms-Playlist")
+	mode-name "EMMS")
 
   (setq emms-playlist-insert-track-function
 	'emms-playlist-mode-insert-track)
