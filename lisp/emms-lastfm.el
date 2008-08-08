@@ -291,6 +291,9 @@ the current track, too."
                     'emms-lastfm-cancel-timer)
           (add-hook 'emms-player-paused-hook
                     'emms-lastfm-pause)
+          ;; Clean up after EMMS radio
+          (remove-hook 'emms-player-started-hook
+                       'emms-lastfm-cancel-timer-after-stop)
           (message "EMMS Last.fm plugin activated"))
       (remove-hook 'emms-player-started-hook
                    'emms-lastfm-handshake-if-needed)
@@ -521,19 +524,25 @@ high. (But then streaming a 128KHz mp3 won't be fun anyway.)"
                  (const :tag "Disable" nil))
   :group 'emms-lastfm)
 
+(defun emms-lastfm-cancel-timer-after-stop ()
+  (add-hook 'emms-player-stopped-hook
+            'emms-lastfm-cancel-timer))
+
 (defun emms-lastfm-radio-sentinel (&rest args)
   (let ((buffer (current-buffer)))
     (emms-http-decode-buffer buffer)
     (if (string= (emms-key-value "response" buffer) "OK")
         (progn
           (kill-buffer buffer)
+          (add-hook 'emms-player-started-hook
+                    'emms-lastfm-cancel-timer-after-stop)
           (emms-play-url emms-lastfm-radio-stream-url)
           (when emms-lastfm-radio-metadata-period
+            (when emms-lastfm-timer
+              (emms-lastfm-cancel-timer))
             (setq emms-lastfm-timer
                   (run-with-timer 0 emms-lastfm-radio-metadata-period
-                                  'emms-lastfm-radio-request-metadata))
-            (add-hook 'emms-player-stopped-hook
-                      'emms-lastfm-cancel-timer))
+                                  'emms-lastfm-radio-request-metadata)))
           (message "EMMS: Playing Last.fm stream"))
       (kill-buffer buffer)
       (message "EMMS: Bad response from Last.fm"))))
