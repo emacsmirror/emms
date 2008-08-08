@@ -86,6 +86,18 @@ track by track normally."
   :group 'emms
   :type 'boolean)
 
+(defcustom emms-completing-read-function
+  (if (and (boundp 'ido-mode)
+           ido-mode)
+      'ido-completing-read
+    'completing-read)
+  "Function to call when prompting user to choose between a list of options.
+This should take the same arguments as `completing-read'.
+Some possible values are `completing-read' and `ido-completing-read'.
+Note that you must set `ido-mode' if using`ido-completing-read'."
+  :group 'emms
+  :type 'function)
+
 (defcustom emms-track-description-function 'emms-track-simple-description
   "*Function for describing an EMMS track in a user-friendly way."
   :group 'emms
@@ -502,6 +514,13 @@ See  `emms-repeat-track'."
   (when (not emms-player-playing-p)
     (error "No EMMS player playing right now")))
 
+(defun emms-completing-read (&rest args)
+  "Read a string in the minibuffer, with completion.
+Set `emms-completing-read' to determine which function to use.
+
+See `completing-read' for a description of ARGS."
+  (apply emms-completing-read-function args))
+
 
 ;;; Compatibility functions
 
@@ -671,8 +690,8 @@ for that purpose.")
                                         #'(lambda (lbuf rbuf)
                                             (< (length (car lbuf))
                                                (length (car rbuf)))))))))
-           (completing-read "Playlist buffer to make current: "
-                            buf-list nil t default))))
+           (emms-completing-read "Playlist buffer to make current: "
+                                 buf-list nil t default))))
   (let ((buf (if buffer
                  (get-buffer buffer)
                (current-buffer))))

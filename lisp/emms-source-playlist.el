@@ -113,7 +113,7 @@ If `emms-source-playlist-default-format' is non-nil, use it
 instead of prompting the user."
   (or emms-source-playlist-default-format
       (intern
-       (completing-read
+       (emms-completing-read
         (concat "Playlist format: (default: "
                 (if emms-source-playlist-format-history
                     (car emms-source-playlist-format-history)

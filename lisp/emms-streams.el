@@ -436,7 +436,7 @@ Don't forget to run `emms-stream-save-bookmarks-file' after !"
     (read-string "Name of the bookmark: ")
     (read-string "URL: ")
     nil
-    (completing-read
+    (emms-completing-read
      "Type (url, streamlist, or lastfm): "
      (mapcar #'list '("url" "streamlist" "lastfm")))))
   (unless fd (setq fd (emms-stream-determine-fd name)))
