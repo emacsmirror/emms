@@ -430,6 +430,7 @@ The list will be in reverse order."
                            'file))
                    (track (emms-track type file)))
               (emms-info-mpd track song-info)
+              (run-hook-with-args 'emms-track-info-filters track)
               (setq tracks (cons track tracks)))))))
     (funcall (car closure) (cdr closure) tracks)))
 
@@ -1052,6 +1053,7 @@ positive or negative."
               (emms-track-set track 'type 'file))
             (emms-track-set track 'name file)
             (emms-info-mpd track info)
+            (run-hook-with-args 'emms-track-info-filters track)
             (setq track-desc (emms-track-description track))
             (when (and (stringp track-desc) (not (string= track-desc "")))
               (setq desc (if desc

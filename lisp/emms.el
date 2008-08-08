@@ -176,8 +176,16 @@ This can be used to initialize tracks with various info."
   :group 'emms
   :type 'hook)
 
+(defcustom emms-track-info-filters nil
+  "*List of functions to call when a track changes data, before updating
+the display.
+These functions are passed the track as an argument."
+  :group 'emms
+  :type 'hook)
+
 (defcustom emms-track-updated-functions nil
-  "*List of functions to call when a track changes data.
+  "*List of functions to call when a track changes data, after updating
+the display.
 These functions are passed the track as an argument."
   :group 'emms
   :type 'hook)
@@ -588,6 +596,7 @@ a description into a playlist buffer."
 
 (defun emms-track-updated (track)
   "Information in TRACK got updated."
+  (run-hook-with-args 'emms-track-info-filters track)
   (emms-playlist-track-updated track)
   (run-hook-with-args 'emms-track-updated-functions track))
 
