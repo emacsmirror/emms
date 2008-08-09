@@ -58,8 +58,8 @@
 ;; There are some functions for conveniently playing the Similar Artists and
 ;; the Global Tag Radio. Here you only need to enter the band's name or the tag
 ;; respectively.
-;;   `M-x emms-lastfm-radio-similar-artists RET Britney Spears'
-;;   `M-x emms-lastfm-radio-global-tag RET pop'
+;;   `M-x emms-play-lastfm-similar-artists RET Britney Spears'
+;;   `M-x emms-play-lastfm-global-tag RET pop'
 
 ;; When you're listening to a Last.fm radio station you have the possibility to
 ;; give feedback to them. If you like the current song, type
@@ -578,21 +578,35 @@ inserting it."
                (t (message msg))))))
    (list insertp (current-buffer) callback)))
 
-(defun emms-lastfm-radio-similar-artists (artist)
+(defun emms-lastfm-read-artist ()
+  "Read an artist name from the user."
+  (let ((artists nil))
+    (when (boundp 'emms-cache-db)
+      (maphash
+       #'(lambda (file track)
+           (let ((artist (emms-track-get track 'info-artist)))
+             (when artist
+               (add-to-list 'artists artist))))
+       emms-cache-db))
+    (if artists
+        (emms-completing-read "Artist: " artists)
+      (read-string "Artist: "))))
+
+(defun emms-play-lastfm-similar-artists (artist)
   "Plays the similar artist radio of ARTIST."
-  (interactive "sArtist: ")
+  (interactive (list (emms-lastfm-read-artist)))
   (emms-lastfm-radio (concat "lastfm://artist/"
                              artist
                              "/similarartists")))
 
-(defun emms-lastfm-radio-global-tag (tag)
+(defun emms-play-lastfm-global-tag (tag)
   "Plays the global tag radio of TAG."
   (interactive "sGlobal Tag: ")
   (emms-lastfm-radio (concat "lastfm://globaltags/" tag)))
 
-(defun emms-lastfm-radio-artist-fan (artist)
+(defun emms-play-lastfm-artist-fan (artist)
   "Plays the artist fan radio of ARTIST."
-  (interactive "sArtist: ")
+  (interactive (list (emms-lastfm-read-artist)))
   (emms-lastfm-radio (concat "lastfm://artist/" artist "/fans")))
 
 (defun emms-lastfm-radio-love ()

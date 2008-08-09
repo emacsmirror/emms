@@ -17,7 +17,7 @@
 @end direntry
 
 @copying
- @copyright{} 2004, 2005, 2006, 2007
+ @copyright{} 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -2271,17 +2271,17 @@ currently browsed (which might not be the ``current'' playlist), use
 For your convenience there are some functions which let you choose a
 common radio station without having to remember or type its last.fm URL.
 
-@defun emms-lastfm-radio-similar-artists artist
+@defun emms-play-lastfm-similar-artists artist
 Starts playing the similar artist radio of @var{artist}. When run
 interactively you will be prompted for an artist name.
 @end defun
 
-@defun emms-lastfm-radio-global-tag tag
+@defun emms-play-lastfm-global-tag tag
 Starts playing the global tag radio of @var{tag}. When run interactively
 you will be prompted for a tag name.
 @end defun
 
-@defun emms-lastfm-radio-artist-fan artist
+@defun emms-play-lastfm-artist-fan artist
 Starts playing the artist fan radio of @var{artist}. When run
 interactively you will be prompted for an artist name.
 @end defun
