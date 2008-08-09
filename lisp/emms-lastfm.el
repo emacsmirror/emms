@@ -55,10 +55,11 @@
 ;; To insert a Last.fm stream into a playlist, do
 ;;   (emms-insert-lastfm "lastfm://rest-of-url")
 
-;; There are some functions for conveniently playing the Similar Artists and
-;; the Global Tag Radio. Here you only need to enter the band's name or the tag
-;; respectively.
+;; There are some functions for conveniently playing the Similar
+;; Artists, Fan Radio, and the Global Tag Radio. Here you only need to
+;; enter the band's name (for the first two) or the tag.
 ;;   `M-x emms-play-lastfm-similar-artists RET Britney Spears'
+;;   `M-x emms-play-lastfm-artist-fan RET Modest Mouse'
 ;;   `M-x emms-play-lastfm-global-tag RET pop'
 
 ;; When you're listening to a Last.fm radio station you have the possibility to
