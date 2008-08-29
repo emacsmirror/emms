@@ -389,20 +389,28 @@ set it as current."
    (kill-region (region-beginning)
                 (region-end))))
 
+(defun emms-playlist-mode-correct-previous-yank ()
+  "Fix the previous yank if needed."
+  (when (and (< (point-at-bol) (point))
+	     (< (point) (point-at-eol)))
+    (newline)))
+
 ;; C-y
 (defun emms-playlist-mode-yank ()
   "Yank into the playlist buffer."
   (interactive)
   (emms-with-inhibit-read-only-t
    (goto-char (point-at-bol))
-   (yank)))
+   (yank)
+   (emms-playlist-mode-correct-previous-yank)))
 
 ;; M-y
 (defun emms-playlist-mode-yank-pop ()
   "Cycle through the kill-ring."
   (interactive)
   (emms-with-inhibit-read-only-t
-   (yank-pop nil)))
+   (yank-pop nil)
+   (emms-playlist-mode-correct-previous-yank)))
 
 ;;; --------------------------------------------------------
 ;;; Overlay
