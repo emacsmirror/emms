@@ -758,8 +758,8 @@ An Emms source for multiple directory trees - either @var{dir}, or the
 value of @var{emms-source-file-default-directory}.
 @end defun
 @defun emms-source-playlist file
-An EMMS source for playlists.  See `emms-source-playlist-formats' for
-a list of supported formats.
+An EMMS source for playlists.  See @var{emms-source-playlist-formats}
+for a list of supported formats.
 @end defun
 @defun emms-source-playlist-native file
 An EMMS source for a native EMMS playlist file.
@@ -845,7 +845,7 @@ buffer is also selected.
 
 @defun emms-playlist-save &optional format file
 Store the current playlist to FILE as the type FORMAT.  The default
-format is specified by `emms-source-playlist-default-format'.
+format is specified by @var{emms-source-playlist-default-format}.
 @end defun
 
 The current Emms playlist buffer is stored in the variable
@@ -1005,7 +1005,10 @@ Put the interactive playlist buffer at the end of the list of all
 buffers.
 @item C-x C-s
 @findex emms-playlist-save
-Save the current playlist buffer to a file.
+Save the current playlist buffer to a file. By default, Emms will ask
+you for confirmation before overwriting an existing playlist. You can
+silently overwrite existing playlist by setting
+@var{emms-source-playlist-ask-before-overwrite} to nil.
 @item ?
 @findex describe-mode
 Describe the mode.

@@ -71,6 +71,12 @@ If this is nil, you will be prompted for a format to use."
                  (symbol :tag "Other"))
   :group 'emms)
 
+(defcustom emms-source-playlist-ask-before-overwrite t
+  "*Ask before saving over an existing playlist.
+If this is nil, existig playlists will be quitely overwritten."
+  :type 'boolean
+  :group 'emms)
+
 ;;; General playlist
 
 (defsubst emms-source-playlist-p-sym (format)
@@ -139,7 +145,7 @@ The default format is specified by `emms-source-playlist-default-format'."
                                     (current-buffer))
                                   (current-buffer))
     (let ((backup-inhibited t))
-      (write-file file))))
+      (write-file file emms-source-playlist-ask-before-overwrite))))
 
 (defun emms-source-playlist-determine-format (&optional parse-files)
   "Determine the playlist format of the current buffer.
