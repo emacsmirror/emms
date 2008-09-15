@@ -14,9 +14,15 @@ SITELISP=$(PREFIX)/share/emacs/site-lisp/emms
 
 INSTALLINFO = /usr/sbin/install-info --info-dir=$(INFODIR)
 
+# The currently released version of EMMS
+VERSION=3.0
+
 .PHONY: all install lisp docs deb-install clean
 .PRECIOUS: %.elc
 all: lisp docs
+
+autoloads:
+	$(MAKE) -C $(LISPDIR) emms-auto.el
 
 lisp:
 	$(MAKE) -C $(LISPDIR)
@@ -48,3 +54,29 @@ ChangeLog:
 clean:
 	-rm -f *~ $(DOCDIR)emms.info $(DOCDIR)emms.html emms-print-metadata
 	$(MAKE) -C $(LISPDIR) clean
+
+dist: autoloads clean
+	git archive --format=tar --prefix=emms-$(VERSION)/ HEAD | \
+	  (cd .. && tar xf -)
+	rm -f ../emms-$(VERSION)/.gitignore
+	cp lisp/emms-autoloads.el ../emms-$(VERSION)/lisp
+
+release: dist
+	(cd .. && tar -czf emms-$(VERSION).tar.gz \
+	    emms-$(VERSION) ; \
+	  zip -r emms-$(VERSION).zip emms-$(VERSION) && \
+	  gpg --detach emms-$(VERSION).tar.gz && \
+	  gpg --detach emms-$(VERSION).zip)
+
+upload:
+	(cd .. && echo "Directory: emms" | gpg --clearsign > \
+	    emms-$(VERSION).tar.gz.directive.asc && \
+	  cp emms-$(VERSION).tar.gz.directive.asc \
+	    emms-$(VERSION).zip.directive.asc && \
+	  echo open ftp://ftp-upload.gnu.org > upload.lftp ; \
+	  echo cd /incoming/ftp >> upload.lftp ; \
+	  echo mput emms-$(VERSION).zip* >> upload.lftp ; \
+	  echo mput emms-$(VERSION).tar.gz* >> upload.lftp ; \
+	  echo close >> upload.lftp ; \
+	  lftp -f upload.lftp ; \
+	  rm -f upload.lftp)
