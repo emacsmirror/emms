@@ -58,7 +58,7 @@
       (when (zerop
              (let ((coding-system-for-read 'utf-8))
                (call-process "emms-print-metadata" 
-                             nil t nil
+                             nil '(t nil) nil
                              (emms-track-name track))))
         (goto-char (point-min))
         ;; Crush the trailing whitespace
