@@ -1,0 +1,8 @@
+# Files that we ignore when using git.
+
+*~
+*.elc
+/emms-print-metadata
+/doc/emms.info
+/doc/emms.html
+/lisp/emms-auto.el
