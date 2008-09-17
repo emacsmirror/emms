@@ -8,7 +8,7 @@ TARGET=$(patsubst %.el,%.elc,$(SOURCE))
 
 .PHONY: all clean
 .PRECIOUS: %.elc
-all: $(TARGET) emms-auto.el
+all: emms-auto.el $(TARGET)
 
 emms-auto.el: emms-auto.in $(SOURCE)
 	cp emms-auto.in emms-auto.el

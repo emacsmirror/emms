@@ -35,7 +35,7 @@ emms-print-metadata: emms-print-metadata.c
 
 install:
 	test -d $(SITELISP) || mkdir -p $(SITELISP)
-	[ -d $(INFODIR) ] || install -d $(INFODIR)
+	test -d $(INFODIR) || install -d $(INFODIR)
 	install -m 644 $(ALLSOURCE) $(SITELISP)
 	install -m 644 $(ALLCOMPILED) $(SITELISP)
 	install -m 0644 $(DOCDIR)emms.info $(INFODIR)/emms
