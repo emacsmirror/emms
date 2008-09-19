@@ -197,10 +197,14 @@ It should take same arguments as `open-network-stream' does."
 
 (defcustom emms-player-mpd-check-interval 1
   "How often to check to see whether MusicPD has advanced to the
-next song.  This may be an integer or a floating point number.
+next song.  This may be an integer, a floating point number, or
+nil.  If set to nil, this check will not be periodically
+performed.
 
-This is used only if `emms-player-mpd-sync-playlist' is non-nil"
-  :type 'number
+This variable is used only if `emms-player-mpd-sync-playlist' is
+non-nil."
+  :type '(choice (const :tag "Disable check" nil)
+                 number)
   :group 'emms-player-mpd)
 
 (defcustom emms-player-mpd-verbose nil
@@ -848,9 +852,11 @@ playlist."
          nil
          (lambda (closure response)
            (setq emms-player-mpd-current-song nil)
-           (setq emms-player-mpd-status-timer
-                 (run-at-time t emms-player-mpd-check-interval
-                              'emms-player-mpd-detect-song-change)))))
+           (if emms-player-mpd-check-interval
+               (setq emms-player-mpd-status-timer
+                     (run-at-time t emms-player-mpd-check-interval
+                                  'emms-player-mpd-detect-song-change))
+             (emms-player-mpd-detect-song-change)))))
     ;; we only want to play one track, so don't start the timer
     (emms-player-mpd-send
      "play"
@@ -913,9 +919,10 @@ This is called if `emms-player-mpd-sync-playlist' is non-nil."
       (setq emms-player-paused-p t))
     (unless (string= state "stop")
       (emms-player-mpd-detect-song-change info)
-      (setq emms-player-mpd-status-timer
-            (run-at-time t emms-player-mpd-check-interval
-                         'emms-player-mpd-detect-song-change)))))
+      (when emms-player-mpd-check-interval
+        (setq emms-player-mpd-status-timer
+              (run-at-time t emms-player-mpd-check-interval
+                           'emms-player-mpd-detect-song-change))))))
 
 ;;;###autoload
 (defun emms-player-mpd-connect ()
