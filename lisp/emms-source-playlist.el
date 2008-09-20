@@ -413,30 +413,6 @@ OUT should be the buffer where tracks are stored in pls format."
 
 ;; Not implemented yet
 
-;;; Helper functions
-
-(defun emms-source-playlist-first (buf)
-  "Return the first track in BUF.
-This moves point."
-  (with-current-buffer buf
-    (condition-case nil
-        (progn
-          (emms-playlist-first)
-          (emms-playlist-track-at (point)))
-      (error
-       nil))))
-
-(defun emms-source-playlist-next (buf)
-  "Return the next track in BUF.
-This moves point."
-  (with-current-buffer buf
-    (condition-case nil
-        (progn
-          (emms-playlist-next)
-          (emms-playlist-track-at (point)))
-      (error
-       nil))))
-
 ;;; Adding playlists as files
 
 ;;;###autoload (autoload 'emms-play-playlist-file "emms-source-playlist" nil t)
