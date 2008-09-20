@@ -1,9 +1,11 @@
 ;;; emms-score.el --- Scoring system for mp3player
 
-;; Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+;; Copyright (C) 2003, 2004, 2005, 2006, 2007,
+;;   2008 Free Software Foundation, Inc.
 
-;; Authors: Jean-Philippe Theberge <jphiltheberge@videotron.ca>, Yoni
-;;          Rabkin <yonirabkin@member.fsf.org>
+;; Authors: Jean-Philippe Theberge <jphiltheberge@videotron.ca>,
+;;          Yoni Rabkin <yonirabkin@member.fsf.org>
+;;
 ;; Keywords: emms, mp3, mpeg, multimedia
 
 ;; This file is part of EMMS.

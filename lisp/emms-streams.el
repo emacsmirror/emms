@@ -1,6 +1,6 @@
 ;; emms-streams.el -- interface to add and play streams
 
-;; Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+;; Copyright (C) 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 
 ;; Authors: Lucas Bonnet <lucas@rincevent.net>
 ;;          Jose A Ortega Ruiz <jao@gnu.org>

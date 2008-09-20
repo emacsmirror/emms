@@ -1,9 +1,9 @@
 ;;; emms-player-simple.el --- A generic simple player.
 
-;; Copyright (C) 2003, 2004, 2006, 2007 Free Software Foundation, Inc.
+;; Copyright (C) 2003, 2004, 2006, 2007, 2008 Free Software Foundation, Inc.
 
 ;; Authors: Ulrik Jensen <terryp@daimi.au.dk>
-;;          Jorgen SchÅ‰fer <forcer@forcix.cx>
+;;          Jorgen Sch√§fer <forcer@forcix.cx>
 ;; Keywords: emms, mpg321, ogg123, mplayer
 
 ;; This file is part of EMMS.

@@ -1,8 +1,9 @@
 ;;; emms.el --- The Emacs Multimedia System
 
-;; Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+;; Copyright (C) 2003, 2004, 2005, 2006, 2007,
+;;   2008 Free Software Foundation, Inc.
 
-;; Author: Jorgen Sch‰fer <forcer@forcix.cx>
+;; Author: Jorgen Sch√§fer <forcer@forcix.cx>
 ;; Keywords: emms, mp3, mpeg, multimedia
 
 ;; This file is part of EMMS.

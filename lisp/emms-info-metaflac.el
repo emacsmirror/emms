@@ -1,6 +1,6 @@
 ;;; emms-info-metaflac.el --- Info-method for EMMS using metaflac
 
-;; Copyright (C) 2006  Free Software Foundation, Inc.
+;; Copyright (C) 2006, 2007, 2008  Free Software Foundation, Inc.
 
 ;; Author: Matthew Kennedy <mkennedy@gentoo.org>
 ;; Keywords:
@@ -28,7 +28,7 @@
 
 ;; This code has been adapted from code found in mp3player.el, written
 ;; by Jean-Philippe Theberge (jphiltheberge@videotron.ca), Mario
-;; Domgoergen (kanaldrache@gmx.de) and Jorgen Sch‰fer
+;; Domgoergen (kanaldrache@gmx.de) and Jorgen Sch√§fer
 ;; <forcer@forcix.cx>
 
 ;; To activate this method for getting info, use something like:
