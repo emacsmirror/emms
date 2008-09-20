@@ -1,6 +1,6 @@
 ;;; emms-tag-editor.el --- Edit track tags.
 
-;; Copyright (C) 2006, 2007 Free Software Foundation, Inc.
+;; Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
 ;;
 ;; Author: Ye Wenbin <wenbinye@163.com>
 
@@ -33,6 +33,8 @@
     (require 'overlay)
   (error nil))
 (require 'emms)
+(eval-when-compile
+  (require 'emms-info-metaflac))
 (require 'emms-info-mp3info)
 (require 'emms-playlist-mode)
 (require 'emms-mark)
