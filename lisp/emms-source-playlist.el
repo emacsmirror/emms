@@ -118,18 +118,25 @@ If this is nil, existig playlists will be quitely overwritten."
 If `emms-source-playlist-default-format' is non-nil, use it
 instead of prompting the user."
   (or emms-source-playlist-default-format
-      (intern
-       (emms-completing-read
-        (concat "Playlist format: (default: "
-                (if emms-source-playlist-format-history
-                    (car emms-source-playlist-format-history)
-                  "native")
-                ") ")
-        (mapcar #'symbol-name emms-source-playlist-formats)
-        nil nil nil 'emms-source-playlist-format-history
-        (if emms-source-playlist-format-history
-            (car emms-source-playlist-format-history)
-          "native")))))
+      (let ((format
+             (emms-completing-read
+              (concat "Playlist format: (default: "
+                      (if emms-source-playlist-format-history
+                          (car emms-source-playlist-format-history)
+                        "native")
+                      ") ")
+              (mapcar #'symbol-name emms-source-playlist-formats)
+              nil nil nil 'emms-source-playlist-format-history
+              (if emms-source-playlist-format-history
+                  (car emms-source-playlist-format-history)
+                "native"))))
+        ;; Sometimes the completion function can put partial results
+        ;; onto the history, so pop the last one off and include the
+        ;; completed version instead.
+        (setq emms-source-playlist-format-history
+              (cons format
+                    (cdr emms-source-playlist-format-history)))
+      (intern format))))
 
 (defun emms-playlist-save (format file)
   "Store the current playlist to FILE as the type FORMAT.
@@ -203,15 +210,17 @@ OUT should be the buffer where tracks are stored in the native EMMS format."
       (with-current-buffer out
         (insert ";;; This is an EMMS playlist file."
                 " Play it with M-x emms-play-playlist\n")
-        (insert "(")
-        (let ((track (emms-source-playlist-first in))
-              (firstp t))
-          (while track
-            (if (not firstp)
-                (insert "\n ")
-              (setq firstp nil))
-            (prin1 track (current-buffer))
-            (setq track (emms-source-playlist-next in))))
+        (insert "("))
+      (let ((firstp t))
+        (goto-char (point-min))
+        (emms-walk-tracks
+          (let ((track (emms-playlist-track-at (point))))
+            (with-current-buffer out
+              (if (not firstp)
+                  (insert "\n ")
+                (setq firstp nil))
+              (prin1 track (current-buffer))))))
+      (with-current-buffer out
         (insert ")\n")))))
 
 ;;;###autoload (autoload 'emms-play-native-playlist "emms-source-playlist" nil t)
@@ -278,11 +287,11 @@ IN should be a buffer containing an m3u playlist.
 OUT should be the buffer where tracks are stored in m3u format."
   (with-current-buffer in ;; Don't modify the position
     (save-excursion       ;; in the IN buffer
-      (with-current-buffer out
-        (let ((track (emms-source-playlist-first in)))
-          (while track
-            (insert (emms-track-name track) ?\n)
-            (setq track (emms-source-playlist-next in))))))))
+      (goto-char (point-min))
+      (emms-walk-tracks
+        (let ((track (emms-playlist-track-at (point))))
+          (with-current-buffer out
+            (insert (emms-track-name track) ?\n)))))))
 
 ;;;###autoload (autoload 'emms-play-m3u-playlist "emms-source-playlist" nil t)
 ;;;###autoload (autoload 'emms-add-m3u-playlist "emms-source-playlist" nil t)
@@ -346,19 +355,21 @@ IN should be a buffer conatining a pls playlist.
 OUT should be the buffer where tracks are stored in pls format."
   (with-current-buffer in ;; Don't modify the position
     (save-excursion       ;; in the IN buffer
-      (with-current-buffer out
-        (let ((pos 0))
+      (let ((pos 0)
+            beg)
+        (with-current-buffer out
           (insert "[playlist]\n")
-          (save-restriction
-            (narrow-to-region (point) (point))
-            (let ((track (emms-source-playlist-first in)))
-              (while track
-                (setq pos (1+ pos))
-                (insert "File" (number-to-string pos) "="
-                        (emms-track-name track) ?\n)
-                (setq track (emms-source-playlist-next in))))
-            (goto-char (point-min))
-            (insert "NumberOfEntries=" (number-to-string pos) ?\n)))))))
+          (setq beg (point)))
+        (goto-char (point-min))
+        (emms-walk-tracks
+          (let ((track (emms-playlist-track-at (point))))
+            (setq pos (1+ pos))
+            (with-current-buffer out
+              (insert "File" (number-to-string pos) "="
+                      (emms-track-name track) ?\n))))
+        (with-current-buffer out
+          (goto-char beg)
+          (insert "NumberOfEntries=" (number-to-string pos) ?\n))))))
 
 ;;;###autoload (autoload 'emms-play-pls-playlist "emms-source-playlist" nil t)
 ;;;###autoload (autoload 'emms-add-pls-playlist "emms-source-playlist" nil t)
