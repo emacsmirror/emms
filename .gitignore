@@ -2,6 +2,7 @@
 
 *~
 *.elc
+/ChangeLog
 /emms-print-metadata
 /doc/emms.info
 /doc/emms.html

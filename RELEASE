@@ -2,7 +2,7 @@ This file tries to list the things people have to do before they do a
 release.
 
 1) Increase the version number in emms.el
-2) darcs changes > ChangeLog
-3) Create .tar.gz
-4) Put the .tar.gz on the website
-5) Update NEWS
+2) Update NEWS
+3) Run make release
+4) Run make upload
+5) Send announcement email

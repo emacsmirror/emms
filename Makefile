@@ -60,6 +60,7 @@ dist: autoloads clean
 	  (cd .. && tar xf -)
 	rm -f ../emms-$(VERSION)/.gitignore
 	cp lisp/emms-autoloads.el ../emms-$(VERSION)/lisp
+	git log --pretty=medium > ../emms-$(VERSION)/ChangeLog
 
 release: dist
 	(cd .. && tar -czf emms-$(VERSION).tar.gz \
