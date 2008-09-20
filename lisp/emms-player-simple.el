@@ -175,9 +175,9 @@ PLAYER is the name of the current player."
   (emms-player-simple-regexp "mp3" "ogg" "mod" "flac" "xm" "it" "ft")
   "gst-wrapper" "alsasink")
 (define-emms-simple-player mikmod '(file)
-  (emms-player-simple-regexp ".669" ".amf" ".dsm" ".far" ".gdm" ".it"
-                             ".imf" ".mod" ".med" ".mtm" ".okt" ".s3m"
-                             ".stm" ".stx" ".ult" ".apun" ".xm" ".mod")
+  (emms-player-simple-regexp "669" "amf" "dsm" "far" "gdm" "it"
+                             "imf" "mod" "med" "mtm" "okt" "s3m"
+                             "stm" "stx" "ult" "apun" "xm" "mod")
   "mikmod" "-q" "-p" "1" "-X")
 (define-emms-simple-player timidity '(file)
   (emms-player-simple-regexp "mid" "rmi" "rcp" "r36" "g18" "g36" "mfi")
@@ -186,7 +186,8 @@ PLAYER is the name of the current player."
   (emms-player-simple-regexp "mid")
   "fluidsynth" "-aalsa" "-in" "/media/music/sf/FluidR3-GM.SF2")
 (define-emms-simple-player alsaplayer '(file url)
-  (emms-player-simple-regexp ".ogg" ".mp3" ".wav" ".flac" ".pls" ".m3u" "http://")
+  (concat "\\`http://\\|"
+          (emms-player-simple-regexp "ogg" "mp3" "wav" "flac" "pls" "m3u"))
   "alsaplayer" "--quiet" "--nosave" "\"--interface text\"")
 
 (emms-player-set emms-player-alsaplayer

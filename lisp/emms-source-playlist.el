@@ -265,7 +265,7 @@ detected and simply return non-nil always."
 (defun emms-source-playlist-parse-m3u ()
   "Parse the m3u playlist in the current buffer."
   (mapcar (lambda (file)
-            (if (string-match "\\`http://\\|\\`mms://" file)
+            (if (string-match "\\`\\(http\\|mms\\)://" file)
                 (emms-track 'url file)
               (emms-track 'file file)))
           (emms-source-playlist-m3u-files)))
@@ -333,7 +333,7 @@ OUT should be the buffer where tracks are stored in m3u format."
 (defun emms-source-playlist-parse-pls ()
   "Parse the pls playlist in the current buffer."
   (mapcar (lambda (file)
-            (if (string-match "\\`http://\\|\\`mms://" file)
+            (if (string-match "\\`\\(http\\|mms\\)://" file)
                 (emms-track 'url file)
               (emms-track 'file file)))
           (emms-source-playlist-pls-files)))

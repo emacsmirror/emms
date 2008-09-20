@@ -164,7 +164,8 @@ or nil if we cannot figure it out."
   ;; Use a sane default, just in case
   (or (emms-player-mpd-get-supported-regexp)
       (concat "\\`http://\\|"
-              "\\.\\(m3u\\|ogg\\|flac\\|mp3\\|wav\\|mod\\|au\\|aiff\\)\\'"))
+              (emms-player-simple-regexp
+               "m3u" "ogg" "flac" "mp3" "wav" "mod" "au" "aiff")))
   "Formats supported by MusicPD."
   :type 'regexp
   :set (function

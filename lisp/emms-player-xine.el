@@ -35,11 +35,11 @@
 (require 'emms-player-simple)
 
 (define-emms-simple-player xine '(file url)
-  (mapconcat 'regexp-quote
-             '(".ogg" ".mp3" ".wav" ".mpg" ".mpeg" ".wmv" ".wma"
-               ".mov" ".avi" ".divx" ".ogm" ".asf" ".mkv" "http://" "mms://"
-               ".rm" ".rmvb" ".mp4" ".flac" ".vob")
-             "\\|")
+  (concat "\\`\\(http\\|mms\\)://\\|"
+          (emms-player-simple-regexp
+           "ogg" "mp3" "wav" "mpg" "mpeg" "wmv" "wma"
+           "mov" "avi" "divx" "ogm" "asf" "mkv"
+           "rm" "rmvb" "mp4" "flac" "vob"))
   "xine" "--no-gui" "--no-logo" "--no-splash" "--no-reload" "--stdctl")
 
 (emms-player-set emms-player-xine
