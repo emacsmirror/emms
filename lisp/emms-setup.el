@@ -50,7 +50,8 @@
   '(emms-player-mpg321
     emms-player-ogg123
     emms-player-mplayer-playlist
-    emms-player-mplayer)
+    emms-player-mplayer
+    emms-player-vlc)
   "*Default list of players for emms-setup."
   :group 'emms-setup
   :type 'list)
@@ -62,7 +63,8 @@ Invisible playlists and all the basics for playing media."
   (require 'emms-source-file)
   (require 'emms-source-playlist)
   (require 'emms-player-simple)
-  (require 'emms-player-mplayer))
+  (require 'emms-player-mplayer)
+  (require 'emms-player-vlc))
 
 ;;;###autoload
 (defun emms-standard ()
