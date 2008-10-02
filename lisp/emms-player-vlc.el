@@ -31,10 +31,14 @@
 ;; in order to accomodate VLC's particular idioms.
 (define-emms-simple-player vlc '(file url)
   (concat "\\`\\(http\\|mms\\)://\\|"
-          (emms-player-simple-regexp
-           "ogg" "mp3" "wav" "mpg" "mpeg" "wmv" "wma"
-           "mov" "avi" "divx" "ogm" "asf" "mkv"
-           "rm" "rmvb" "mp4" "flac" "vob" "m4a" "ape"))
+	  (emms-player-simple-regexp
+	   "ogg" "mp3" "wav" "mpg" "mpeg" "wmv" "wma"
+	   "mov" "avi" "divx" "ogm" "asf" "mkv"
+	   "rm" "rmvb" "mp4" "flac" "vob" "m4a" "ape"))
+  "vlc" "--intf" "rc")			; these are never used
+
+(define-emms-simple-player vlc-playlist '(streamlist)
+  "\\`http://"
   "vlc" "--intf" "rc")			; these are never used
 
 ;; (kludge) By default, VLC does not quit after finishing to play a
@@ -44,11 +48,11 @@
 (defun emms-player-vlc-start (track)
   "Cause vlc to play TRACK."
   (let ((process (apply 'start-process
-                        emms-player-simple-process-name
-                        nil
-                        "vlc"
-                        ;; splice in params here
-                        (append  '("vlc" "--intf" "rc")
+			emms-player-simple-process-name
+			nil
+			"vlc"
+			;; splice in params here
+			(append  '("vlc" "--intf" "rc")
 				 (list (emms-track-name track))
 				 '("vlc:quit")))))
     ;; add a sentinel for signaling termination
