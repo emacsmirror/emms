@@ -60,12 +60,15 @@
   (process-send-string
    emms-player-simple-process-name "pause\n"))
 
-;; Pending a patch to CVS vlc to add relative seeking to the "rc" vlc
-;; interface.
 (defun emms-player-vlc-seek (sec)
-  (message "Relative seeking not supported yet (bug yonirabkin@member.fsf.org about it)."))
+  "Seek relative within a stream."
+  (when (not (= 0 sec))
+    (process-send-string
+     emms-player-simple-process-name
+     (if (< 0 sec) "fastforward\n" "rewind\n"))))
 
 (defun emms-player-vlc-seek-to (sec)
+  "Seek to time SEC within the stream."
   (process-send-string
    emms-player-simple-process-name
    (format "seek %d\n" sec)))
