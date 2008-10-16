@@ -50,7 +50,7 @@ Can be either \"add\" or \"play\". The default is \"add\"."
   :type 'string
   :group 'emms-stream)
 
-(defface emms-stream-name-face '((t (:bold t :foreground nil :weight bold)))
+(defface emms-stream-name-face '((t (:bold t :weight bold)))
   "Face for stream names."
   :group 'emms-stream)
 
