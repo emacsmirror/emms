@@ -2,6 +2,7 @@ GZIP=gzip
 MAN1PAGES=emms-print-metadata.1
 DOCDIR=doc/
 LISPDIR=lisp
+SRCDIR=src
 
 ALLSOURCE=$(wildcard $(LISPDIR)/*.el)
 ALLCOMPILED=$(wildcard $(LISPDIR)/*.elc)
@@ -30,8 +31,8 @@ lisp:
 docs:
 	$(MAKE) -C $(DOCDIR)
 
-emms-print-metadata: emms-print-metadata.c
-	$(CC) -o $@ $< -I/usr/include/taglib -L/usr/lib -ltag_c
+emms-print-metadata: $(SRCDIR)/emms-print-metadata.c
+	$(CC) -o $(SRCDIR)/$@ $< -I/usr/include/taglib -L/usr/lib -ltag_c
 
 install:
 	test -d $(SITELISP) || mkdir -p $(SITELISP)
