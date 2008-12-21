@@ -55,7 +55,7 @@ this list, use `emms-i18n-default-coding-system' instead.")
 (defvar emms-i18n-coding-system-for-read 'utf-8
   "If coding detect failed, use this for decode")
 
-(defvar emms-i18n-default-coding-system nil
+(defvar emms-i18n-default-coding-system '(no-conversion . no-conversion)
   "If non-nil, used for decode and encode")
 
 (defvar emms-i18n-coding-dectect-functions nil
@@ -119,7 +119,7 @@ not perform."
       (setq pos (point)))
     (setq exit (apply 'call-process args))
     (when (and (eq (nth 2 args) 't)
-               (null (car emms-i18n-default-coding-system)))
+               (eq (car emms-i18n-default-coding-system) 'no-conversion))
       (save-restriction
         (narrow-to-region pos (point))
         (decode-coding-region (point-min) (point-max) (emms-i18n-detect-buffer-coding-system))))
