@@ -22,27 +22,94 @@
 
 ;;; Commentary:
 ;;
+;; Set `*emms-stream-info-backend*' to either 'vlc or 'mplayer, which
+;; are the two currently supported backends for retrieving stream
+;; information.  You can then either call `emms-stream-info-message'
+;; directly or hit "i" in the `emms-streams' buffer over stream you
+;; want to investigate.
+;;
+;; Note that you do not have to be playing the stream in question in
+;; order to find out what is playing on it since this library will
+;; open its own connection to the streaming server.
+;;
+;; Please send bug reports and stations which do not work to the
+;; maintainer (email at the top of this file).
+
+;;; History:
+;; 
 ;; This library was re-implemented from scratch around January of
 ;; 2009. If you are looking for the old code then grab source code
 ;; older than that.
 
 ;;; Code:
 
-(defvar *emms-stream-info-debug-buffer* "*stream-info-debug*")
+(defvar *emms-stream-info-backend* 'mplayer
+  "Symbol designating the backend program to use.")
 
-;; "http://di-fm-01.quintex.com:8888"
+;; using unhygienic macros for good... or is it evil?
+(defmacro emms-stream-info-defreg (symname regexp)
+  "Set SYMNAME to be the match for REGEXP."
+  `(save-excursion
+     (goto-char (point-min))
+     (re-search-forward ,regexp (point-max) t)
+     (when (and (match-string-no-properties 1)
+		(> (length (match-string-no-properties 1)) 0))
+       (setq ,symname (match-string-no-properties 1)))))
+
+(defun emms-stream-info-mplayer-backend (url)
+  "Backend command for running mplayer on URL."
+  (condition-case excep
+      (call-process "mplayer" nil t nil
+		    "-nocache" "-endpos" "0" "-vo" "null" "-ao" "null"
+		    url)
+    (file-error
+     (error "Could not find the mplayer backend binary"))))
+
+(defun emms-stream-info-vlc-backend (url)
+  "Backend command for running VLC on URL."
+  (condition-case excep
+      (call-process "vlc" nil t nil
+		    "-vvv" "--intf" "dummy" "--stop-time" "1" "--noaudio"
+		    url "vlc:quit")
+    (file-error
+     (error "Could not find the VLC backend binary"))))
 
 (defun emms-stream-info-call-backend (url)
-  (with-temp-buffer
-    (call-process "mplayer" nil *emms-stream-info-debug-buffer* nil
-		  "-endpos" "0" "-vo" "null" "-ao" "null" url)
-    (buffer-substring (point-min) (point-max))))
-
-(setq foo (emms-stream-info-call-backend "http://di-fm-01.quintex.com:8888"))
+  "Call backend and return a list of stream information for URL."
+  (let ((name "N/A")
+	(genre "N/A")
+	(bitrate "N/A")
+	(nowplaying "N/A"))
+    (with-temp-buffer
+      (message "querying stream...")
+      (cond
+       ((eq *emms-stream-info-backend* 'mplayer)
+	(emms-stream-info-mplayer-backend url)
+	(emms-stream-info-defreg name "^Name[ ]+:[ ]+\\(.*\\)$")
+	(emms-stream-info-defreg genre "^Genre[ ]+:[ ]+\\(.*\\)$")
+	(emms-stream-info-defreg bitrate "^Bitrate[ ]+:[ ]+\\(.*\\)$")
+	(emms-stream-info-defreg nowplaying "ICY Info: StreamTitle='\\(.+?\\)'"))
+       ((eq *emms-stream-info-backend* 'vlc)
+	(emms-stream-info-vlc-backend url)
+	(emms-stream-info-defreg name "'Title' = '\\(.*\\)'")
+	(emms-stream-info-defreg genre "Genre: \\(.*\\)")
+	(emms-stream-info-defreg bitrate "bitrate:\\([0-9].+\\)")
+	(emms-stream-info-defreg nowplaying "'Now Playing' = '\\(.+?\\)'"))
+       (t (error "Unknown backend"))))
+    (message "querying stream...done")
+    (list name genre bitrate nowplaying)))
 
 ;; point of entry
 (defun emms-stream-info-message (url)
-  'stub)
+  "Display a message with information about the stream at URL."
+  (interactive "Murl: ")
+  (let* ((stream-info (emms-stream-info-call-backend url))
+	 (name (nth 0 stream-info))
+	 (genre (nth 1 stream-info))
+	 (bitrate (nth 2 stream-info))
+	 (nowplaying (nth 3 stream-info)))
+    (message "now playing: %s on %s, genre: %s, bitrate: %s"
+	     nowplaying name genre bitrate)))
 
 (provide 'emms-stream-info)
 
