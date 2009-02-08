@@ -1,6 +1,6 @@
 ;;; emms-player-mpg321-remote.el --- play files with mpg321 -R
 
-;; Copyright (C) 2006, 2007, 2008  Free Software Foundation, Inc.
+;; Copyright (C) 2006, 2007, 2008, 2009  Free Software Foundation, Inc.
 
 ;; Author: Damien Elmes <emacs@repose.cx>
 ;; Keywords: emms, mp3, mpeg, multimedia

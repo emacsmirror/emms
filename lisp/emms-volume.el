@@ -1,6 +1,6 @@
 ;;; emms-volume.el --- Volume functions and a minor mode to adjust volume easily
 
-;; Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
+;; Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 
 ;; Author: Martin Schoenmakers <aiviru@diamond-age.net>
 

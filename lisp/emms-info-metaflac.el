@@ -1,6 +1,6 @@
 ;;; emms-info-metaflac.el --- Info-method for EMMS using metaflac
 
-;; Copyright (C) 2006, 2007, 2008  Free Software Foundation, Inc.
+;; Copyright (C) 2006, 2007, 2008, 2009  Free Software Foundation, Inc.
 
 ;; Author: Matthew Kennedy <mkennedy@gentoo.org>
 ;; Keywords:

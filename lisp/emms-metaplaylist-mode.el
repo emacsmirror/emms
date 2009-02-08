@@ -1,6 +1,6 @@
 ;;; emms-metaplaylist-mode.el --- A major mode for lists of Emms playlists
 
-;; Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
+;; Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 
 ;; Author: Yoni Rabkin <yonirabkin@member.fsf.org>
 

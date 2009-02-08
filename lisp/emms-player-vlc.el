@@ -1,6 +1,6 @@
 ;;; emms-player-vlc.el --- vlc support for EMMS
 
-;; Copyright (C) 2008 Free Software Foundation, Inc.
+;; Copyright (C) 2008, 2009 Free Software Foundation, Inc.
 
 ;; Authors: Yoni Rabkin <yonirabkin@member.fsf.org>
 

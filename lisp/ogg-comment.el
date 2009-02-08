@@ -1,7 +1,7 @@
 ;;;  ogg-comment.el --- Read Ogg-Vorbis file headers.
 
-;; Copyright (C) 2003, 2004, 2005, 2006, 2007,
-;;   2008 Free Software Foundation, Inc.
+;; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008,
+;;   2009 Free Software Foundation, Inc.
 
 ;; Filename: ogg-comment.el
 ;; Version: $Revision: 1.5 $

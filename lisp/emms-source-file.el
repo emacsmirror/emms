@@ -1,7 +1,7 @@
 ;;; emms-source-file.el --- EMMS sources from the filesystem.
 
-;; Copyright (C) 2003, 2004, 2005, 2006, 2007,
-;;   2008 Free Software Foundation, Inc.
+;; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008,
+;;   2009 Free Software Foundation, Inc.
 
 ;; Author: Jorgen Schäfer <forcer@forcix.cx>
 ;; Keywords: emms, mp3, mpeg, multimedia
