@@ -45,7 +45,10 @@ Documentation License".
 @node Top, Introduction, (dir), (dir)
 @top Emms Manual
 
-This is the Manual for the Emacs Multimedia System
+This is the Manual for the Emacs Multimedia System.
+
+@insertcopying
+
 @menu
 Starting out
 * Introduction::        Introduction to Emms.
