@@ -1,6 +1,6 @@
 ;;; emms-setup.el --- Setup script for EMMS
 
-;; Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+;; Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 
 ;; Author: Yoni Rabkin <yonirabkin@member.fsf.org>
 ;; Keywords: emms setup multimedia

@@ -1,6 +1,6 @@
 ;;; jack.el --- Jack Audio Connection Kit support
 
-;; Copyright (C) 2005, 2006, 2007, 2008  Free Software Foundation, Inc.
+;; Copyright (C) 2005, 2006, 2007, 2008, 2009  Free Software Foundation, Inc.
 
 ;; Author: Mario Lang <mlang@delysid.org>
 ;; Keywords: multimedia, processes

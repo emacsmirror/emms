@@ -1,6 +1,6 @@
 ;;; emms-lastfm.el --- add your listened songs to your profile at last.fm
 
-;; Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
+;; Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 
 ;; Author: Tassilo Horn <tassilo@member.fsf.org>
 
