@@ -1509,9 +1509,9 @@ included."
     (dolist (item search-list)
       (setq matched nil)
       (dolist (field (car item))
-        (when (string-match (cadr item)
-                            (emms-track-get track field ""))
-          (setq matched t)))
+        (let ((track-field (emms-track-get track field "")))
+          (when (and track-field (string-match (cadr item) track-field))
+            (setq matched t))))
       (unless matched
         (setq no-match t)))
     (not no-match)))
