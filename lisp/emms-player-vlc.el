@@ -54,7 +54,7 @@
 			;; splice in params here
 			(append  '("vlc" "--intf" "rc")
 				 (list (emms-track-name track))
-				 '("vlc:quit")))))
+				 '("vlc://quit")))))
     ;; add a sentinel for signaling termination
     (set-process-sentinel process 'emms-player-simple-sentinel))
   (emms-player-started emms-player-vlc))
