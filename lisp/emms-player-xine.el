@@ -38,7 +38,7 @@
   (concat "\\`\\(http\\|mms\\)://\\|"
           (emms-player-simple-regexp
            "ogg" "mp3" "wav" "mpg" "mpeg" "wmv" "wma"
-           "mov" "avi" "divx" "ogm" "asf" "mkv"
+           "mov" "avi" "divx" "ogm" "ogv" "asf" "mkv"
            "rm" "rmvb" "mp4" "flac" "vob"))
   "xine" "--no-gui" "--no-logo" "--no-splash" "--no-reload" "--stdctl")
 
