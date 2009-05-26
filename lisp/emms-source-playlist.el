@@ -263,12 +263,12 @@ the more restrictive playlist formats have already been
 detected and simply return non-nil always."
   t)
 
-(defun emms-source-playlist-parse-m3u ()
+(defun emms-source-playlist-parse-m3u (directory)
   "Parse the m3u playlist in the current buffer."
   (mapcar (lambda (file)
             (if (string-match "\\`\\(http\\|mms\\)://" file)
                 (emms-track 'url file)
-              (emms-track 'file file)))
+              (emms-track 'file (expand-file-name file directory))))
           (emms-source-playlist-m3u-files)))
 
 (defun emms-source-playlist-m3u-files ()
@@ -308,7 +308,7 @@ OUT should be the buffer where tracks are stored in m3u format."
           (goto-char (point-min))
           (when (not (emms-source-playlist-m3u-p))
             (error "Not an m3u playlist file."))
-          (emms-source-playlist-parse-m3u))))
+          (emms-source-playlist-parse-m3u (file-name-directory file)))))
 
 ;;; pls files
 
