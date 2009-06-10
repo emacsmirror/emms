@@ -99,11 +99,11 @@ If this is nil, existig playlists will be quitely overwritten."
                    (functionp (emms-source-playlist-files-sym format))))
       (funcall sym))))
 
-(defun emms-source-playlist-parse (format)
-  (funcall (emms-source-playlist-parse-sym format)))
+(defun emms-source-playlist-parse (format file)
+  (funcall (emms-source-playlist-parse-sym format) file))
 
-(defun emms-source-playlist-unparse (format playlist file)
-  (funcall (emms-source-playlist-unparse-sym format) playlist file))
+(defun emms-source-playlist-unparse (format playlist-buf file-buf)
+  (funcall (emms-source-playlist-unparse-sym format) playlist-buf file-buf))
 
 (defun emms-source-playlist-files (format)
   (let ((sym (emms-source-playlist-files-sym format)))
@@ -181,7 +181,7 @@ See `emms-source-playlist-formats' for a list of supported formats."
           (goto-char (point-min))
           (let ((format (emms-source-playlist-determine-format)))
             (if format
-                (emms-source-playlist-parse format)
+                (emms-source-playlist-parse format file)
               (error "Not a recognized playlist format"))))))
 
 ;;; EMMS native playlists
@@ -196,7 +196,7 @@ See `emms-source-playlist-formats' for a list of supported formats."
     (goto-char (point-min))
     (looking-at "^;;; This is an EMMS playlist file")))
 
-(defun emms-source-playlist-parse-native ()
+(defun emms-source-playlist-parse-native (file)
   "Parse the native EMMS playlist in the current buffer."
   (save-excursion
     (goto-char (point-min))
@@ -238,7 +238,7 @@ OUT should be the buffer where tracks are stored in the native EMMS format."
           (goto-char (point-min))
           (when (not (emms-source-playlist-native-p))
             (error "Not a native EMMS playlist file."))
-          (emms-source-playlist-parse-native))))
+          (emms-source-playlist-parse-native file))))
 
 ;;; m3u files
 
@@ -263,13 +263,16 @@ the more restrictive playlist formats have already been
 detected and simply return non-nil always."
   t)
 
-(defun emms-source-playlist-parse-m3u (directory)
-  "Parse the m3u playlist in the current buffer."
-  (mapcar (lambda (file)
-            (if (string-match "\\`\\(http\\|mms\\)://" file)
-                (emms-track 'url file)
-              (emms-track 'file (expand-file-name file directory))))
-          (emms-source-playlist-m3u-files)))
+(defun emms-source-playlist-parse-m3u (playlist-file)
+  "Parse the m3u playlist in the current buffer.
+Files will be relative to the directory of PLAYLIST-FILE, unless
+they have absolute paths."
+  (let ((dir (file-name-directory playlist-file)))
+    (mapcar (lambda (file)
+              (if (string-match "\\`\\(http\\|mms\\)://" file)
+                  (emms-track 'url file)
+                (emms-track 'file (expand-file-name file dir))))
+            (emms-source-playlist-m3u-files))))
 
 (defun emms-source-playlist-m3u-files ()
   "Extract a list of filenames from the given m3u playlist.
@@ -308,7 +311,7 @@ OUT should be the buffer where tracks are stored in m3u format."
           (goto-char (point-min))
           (when (not (emms-source-playlist-m3u-p))
             (error "Not an m3u playlist file."))
-          (emms-source-playlist-parse-m3u (file-name-directory file)))))
+          (emms-source-playlist-parse-m3u file))))
 
 ;;; pls files
 
@@ -331,13 +334,16 @@ OUT should be the buffer where tracks are stored in m3u format."
         t
       nil)))
 
-(defun emms-source-playlist-parse-pls ()
-  "Parse the pls playlist in the current buffer."
-  (mapcar (lambda (file)
-            (if (string-match "\\`\\(http\\|mms\\)://" file)
-                (emms-track 'url file)
-              (emms-track 'file file)))
-          (emms-source-playlist-pls-files)))
+(defun emms-source-playlist-parse-pls (playlist-file)
+  "Parse the pls playlist in the current buffer.
+Files will be relative to the directory of PLAYLIST-FILE, unless
+they have absolute paths."
+  (let ((dir (file-name-directory playlist-file)))
+    (mapcar (lambda (file)
+              (if (string-match "\\`\\(http\\|mms\\)://" file)
+                  (emms-track 'url file)
+                (emms-track 'file (expand-file-name file dir))))
+            (emms-source-playlist-pls-files))))
 
 (defun emms-source-playlist-pls-files ()
   "Extract a list of filenames from the given pls playlist.
@@ -386,7 +392,7 @@ OUT should be the buffer where tracks are stored in pls format."
           (goto-char (point-min))
           (when (not (emms-source-playlist-pls-p))
             (error "Not a pls playlist file."))
-          (emms-source-playlist-parse-pls))))
+          (emms-source-playlist-parse-pls file))))
 
 ;;; extm3u files
 
