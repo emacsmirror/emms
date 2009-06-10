@@ -74,7 +74,7 @@ If this is nil, you will be prompted for a format to use."
 
 (defcustom emms-source-playlist-ask-before-overwrite t
   "*Ask before saving over an existing playlist.
-If this is nil, existig playlists will be quitely overwritten."
+If this is nil, existing playlists will be quietly overwritten."
   :type 'boolean
   :group 'emms)
 
