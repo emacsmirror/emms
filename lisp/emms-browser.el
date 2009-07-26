@@ -656,10 +656,11 @@ compilations, etc."
                         'emms-browser-filter-tracks-hook track)
                  (setq field
                        (emms-browser-get-track-field track type))
-                 (setq existing-entry (gethash field hash))
-                 (if existing-entry
-                     (puthash field (cons track existing-entry) hash)
-                   (puthash field (list track) hash))))
+                 (when field
+                   (setq existing-entry (gethash field hash))
+                   (if existing-entry
+                       (puthash field (cons track existing-entry) hash)
+                     (puthash field (list track) hash)))))
              emms-cache-db)
     hash))
 
@@ -1508,9 +1509,9 @@ included."
     (dolist (item search-list)
       (setq matched nil)
       (dolist (field (car item))
-        (when (string-match (cadr item)
-                            (emms-track-get track field ""))
-          (setq matched t)))
+        (let ((track-field (emms-track-get track field "")))
+          (when (and track-field (string-match (cadr item) track-field))
+            (setq matched t))))
       (unless matched
         (setq no-match t)))
     (not no-match)))

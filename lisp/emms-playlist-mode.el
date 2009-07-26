@@ -118,6 +118,7 @@ This is true for every invocation of `emms-playlist-mode-go'."
     (define-key map (kbd "C-w") 'emms-playlist-mode-kill)
     (define-key map (kbd "C-_") 'emms-playlist-mode-undo)
     (define-key map (kbd "C-/") 'emms-playlist-mode-undo)
+    (define-key map (kbd "C-x u") 'emms-playlist-mode-undo)
     (define-key map (kbd "C-n") 'next-line)
     (define-key map (kbd "C-p") 'previous-line)
     (define-key map (kbd "C-j") 'emms-playlist-mode-insert-newline)

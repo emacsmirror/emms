@@ -302,7 +302,10 @@ a selected region.
 changes will only take effect on the tracks in the region."
   (interactive
    (list (emms-completing-read "Set tag: "
-                               emms-tag-editor-tags nil t)
+                               (mapcar (lambda (arg)
+                                         (list (symbol-name (car arg))))
+                                       emms-tag-editor-tags)
+                               nil t)
          (read-from-minibuffer "To: ")))
   (save-excursion
     (save-restriction
@@ -323,7 +326,10 @@ If `transient-mark-mode' is on and the mark is active, the
 changes will only take effect on the tracks in the region."
   (interactive
    (cons (emms-completing-read "Replace in tag: "
-                               emms-tag-editor-tags nil t)
+                               (mapcar (lambda (arg)
+                                         (list (symbol-name (car arg))))
+                                       emms-tag-editor-tags)
+                               nil t)
          (let ((common (query-replace-read-args
                         (if (and transient-mark-mode mark-active)
                             "Query replace regexp in region"
@@ -365,12 +371,19 @@ changes will only take effect on the tracks in the region."
 If `transient-mark-mode' is on and the mark is active, the
 changes will only take effect on the tracks in the region."
   (interactive
-   (let* ((tag1 (intern (emms-completing-read "Tag 1: "
-                                              emms-tag-editor-tags nil t)))
+   (let* ((tag1 (intern (emms-completing-read
+                         "Tag 1: "
+                         (mapcar (lambda (arg)
+                                         (list (symbol-name (car arg))))
+                                       emms-tag-editor-tags)
+                         nil t)))
           (tag2 (intern (emms-completing-read
                          "Tag 2: "
-                         (assq-delete-all tag1
-                                          (copy-sequence emms-tag-editor-tags))
+                         (mapcar (lambda (arg)
+                                   (list (symbol-name (car arg))))
+                                 (assq-delete-all
+                                  tag1
+                                  (copy-sequence emms-tag-editor-tags)))
                          nil t))))
      (list tag1 tag2)))
   (save-excursion
