@@ -56,6 +56,11 @@ Emacs."
   :type   'boolean
   :group  'emms-history)
 
+(defcustom emms-history-file-coding-system 'utf-8
+  "Coding system used for saving `emms-history-file'."
+  :type 'coding-system
+  :group 'emms-history)
+
 (defun emms-history-save ()
   "Save all playlists that are open in this Emacs session."
   (interactive)
@@ -83,6 +88,10 @@ Emacs."
                                                             (point-max)))))
                    playlists))))
         (with-temp-buffer
+          (insert
+           (concat ";;; emms history -*- mode: emacs-lisp; coding: "
+                   (symbol-name emms-history-file-coding-system)
+                   "; -*-\n"))
           (insert "(\n;; active playlist\n")
           (prin1 (buffer-name oldbuf) (current-buffer))
           (insert "\n;; playlists: ((BUFFER_NAME SELECT_POSITION TRACKS) ...)\n")
