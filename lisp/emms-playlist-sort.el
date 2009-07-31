@@ -130,6 +130,7 @@ With a prefix argument, decreasingly."
           (define-key map (kbd "b") 'emms-playlist-sort-by-info-album)
           (define-key map (kbd "l") 'emms-playlist-sort-by-last-played)
           (define-key map (kbd "t") 'emms-playlist-sort-by-info-title)
+          (define-key map (kbd "e") 'emms-playlist-sort-by-file-extension)
 
           (define-key map (kbd "p") 'emms-playlist-sort-by-info-performer)
           (define-key map (kbd "y") 'emms-playlist-sort-by-info-year)
