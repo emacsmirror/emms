@@ -57,12 +57,11 @@ Remember to call `emms-playlist-sort-map-setup' if you modify it."
 With a prefix argument, decreasingly." attribute)
      (interactive)
      (emms-playlist-sort
-      (lambda (a b)
-        (if current-prefix-arg
-            (emms-string> (emms-track-get a (quote ,attribute))
-                          (emms-track-get b (quote ,attribute)))
-          (emms-string< (emms-track-get a (quote ,attribute))
-                        (emms-track-get b (quote ,attribute))))))))
+      '(lambda (a b)
+         (funcall 
+          (if current-prefix-arg 'emms-string> 'emms-string<)
+          (emms-track-get a (quote ,attribute))
+          (emms-track-get b (quote ,attribute)))))))
 
 (define-emms-playlist-sort name)
 (define-emms-playlist-sort info-artist)
@@ -91,12 +90,11 @@ With a prefix argument, decreasingly."
   (interactive)
   (emms-playlist-sort
    '(lambda (a b)
-      (let ((ret (time-less-p
-                  (or (emms-track-get a 'last-played) '(0 0 0))
-                  (or (emms-track-get b 'last-played) '(0 0 0)))))
-        (if current-prefix-arg
-            (not ret)
-          ret)))))
+      (funcall 
+       (if current-prefix-arg 'not 'identity)
+       (time-less-p
+        (or (emms-track-get a 'last-played) '(0 0 0))
+        (or (emms-track-get b 'last-played) '(0 0 0)))))))
 
 (defun emms-playlist-sort-by-play-count ()
   "Sort emms playlist by play-count, increasingly.
@@ -104,11 +102,21 @@ With a prefix argument, decreasingly."
   (interactive)
   (emms-playlist-sort
    '(lambda (a b)
-      (let ((ret (< (or (emms-track-get a 'play-count) 0)
-                    (or (emms-track-get b 'play-count) 0))))
-        (if current-prefix-arg
-            (not ret)
-          ret)))))
+      (funcall 
+       (if current-prefix-arg 'not 'identity)
+       (< (or (emms-track-get a 'play-count) 0)
+          (or (emms-track-get b 'play-count) 0))))))
+
+(defun emms-playlist-sort-by-file-extension ()
+  "Sort emms playlist by file extension, increasingly.
+With a prefix argument, decreasingly."
+  (interactive)
+  (emms-playlist-sort
+   '(lambda (a b)
+      (funcall 
+       (if current-prefix-arg 'emms-string> 'emms-string<)
+       (file-name-extension (emms-track-get a 'name))
+       (file-name-extension (emms-track-get b 'name))))))
 
 (defvar emms-playlist-sort-map nil)
 
