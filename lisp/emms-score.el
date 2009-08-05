@@ -249,7 +249,7 @@ See also `emms-next-noerror'."
               (puthash (car elt) (cdr elt) emms-score-hash))
             (read
              (with-temp-buffer
-               (insert-file-contents emms-score-file)
+               (emms-insert-file-contents emms-score-file)
                (buffer-string))))
     ;; when file not exists, make empty but valid score file
     (emms-score-save-hash)))

@@ -112,7 +112,7 @@ Emacs."
              (file-exists-p emms-history-file))
     (let (history buf)
       (with-temp-buffer
-        (insert-file-contents emms-history-file)
+        (emms-insert-file-contents emms-history-file)
         (setq history (read (current-buffer)))
         (dolist (playlist (cadr history))
           (with-current-buffer (emms-playlist-new (car playlist))

@@ -775,7 +775,7 @@ Execute CALLBACK with CLOSURE as its first argument when done.
 This handles both m3u and pls type playlists."
   ;; This is useful for playlists of playlists
   (with-temp-buffer
-    (insert-file-contents playlist)
+    (emms-insert-file-contents playlist)
     (emms-player-mpd-add-buffer-contents (current-buffer) closure callback)))
 
 (defun emms-player-mpd-add-streamlist (url closure callback)

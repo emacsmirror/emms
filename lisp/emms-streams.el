@@ -323,7 +323,7 @@ POPUP-HEIGHT is the height of the new frame, defaulting to
   (let ((file (expand-file-name file)))
     (if (file-readable-p file)
         (with-temp-buffer
-          (insert-file-contents-literally file)
+          (emms-insert-file-contents file)
           (goto-char (point-min))
           (read (current-buffer)))
       emms-stream-default-list)))
