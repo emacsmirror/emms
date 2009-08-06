@@ -528,6 +528,27 @@ See `completing-read' for a description of ARGS."
 (require 'emms-compat)
 
 
+;;; Utility functions
+
+(defun emms-insert-file-contents (filename &optional visit)
+  "Insert the contents of file FILENAME after point.
+Do character code conversion and end-of-line conversion, but none
+of the other unnecessary things like format decoding or
+`find-file-hook'.
+
+If VISIT is non-nil, the buffer's visited filename
+and last save file modtime are set, and it is marked unmodified.
+If visiting and the file does not exist, visiting is completed
+before the error is signaled."
+  (let ((format-alist nil)
+        (after-insert-file-functions nil)
+        (inhibit-file-name-handlers
+         (append '(jka-compr-handler image-file-handler epa-file-handler)
+                 inhibit-file-name-handlers))
+        (inhibit-file-name-operation 'insert-file-contents))
+    (insert-file-contents filename visit)))
+
+
 ;;; Dictionaries
 
 ;; This is a simple helper data structure, used by both players

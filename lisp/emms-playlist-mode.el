@@ -447,9 +447,10 @@ It creates a buffer called \"filename\", and restores the contents
 of the saved playlist inside."
   (interactive "fFile: ")
   (let* ((s)
-	 (buffer (find-file-noselect filename))
+	 (buffer (get-buffer-create filename))
 	 (name   (buffer-name buffer)))
     (with-current-buffer buffer
+      (emms-insert-file-contents filename)
       (setq s (read (buffer-string))))
     (kill-buffer buffer)
     (with-current-buffer (emms-playlist-new name)

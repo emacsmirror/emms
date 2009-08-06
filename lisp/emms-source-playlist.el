@@ -177,7 +177,7 @@ See `emms-source-playlist-formats' for a list of supported formats."
                                      t)))
   (mapc #'emms-playlist-insert-track
         (with-temp-buffer
-          (insert-file-contents file)
+          (emms-insert-file-contents file)
           (goto-char (point-min))
           (let ((format (emms-source-playlist-determine-format)))
             (if format
@@ -234,7 +234,7 @@ OUT should be the buffer where tracks are stored in the native EMMS format."
                                      t)))
   (mapc #'emms-playlist-insert-track
         (with-temp-buffer
-          (insert-file-contents file)
+          (emms-insert-file-contents file)
           (goto-char (point-min))
           (when (not (emms-source-playlist-native-p))
             (error "Not a native EMMS playlist file."))
@@ -307,7 +307,7 @@ OUT should be the buffer where tracks are stored in m3u format."
                                      t)))
   (mapc #'emms-playlist-insert-track
         (with-temp-buffer
-          (insert-file-contents file)
+          (emms-insert-file-contents file)
           (goto-char (point-min))
           (when (not (emms-source-playlist-m3u-p))
             (error "Not an m3u playlist file."))
@@ -388,7 +388,7 @@ OUT should be the buffer where tracks are stored in pls format."
                                      t)))
   (mapc #'emms-playlist-insert-track
         (with-temp-buffer
-          (insert-file-contents file)
+          (emms-insert-file-contents file)
           (goto-char (point-min))
           (when (not (emms-source-playlist-pls-p))
             (error "Not a pls playlist file."))

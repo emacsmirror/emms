@@ -254,7 +254,7 @@ FILE should be under the same directory as the music file, or under
   (when (and file (file-exists-p file))
     (with-temp-buffer
       (let ((coding-system-for-read emms-lyrics-coding-system))
-        (insert-file-contents file)
+        (emms-insert-file-contents file)
         (while (search-forward-regexp "\\[[0-9:.]+\\].*" nil t)
           (let ((lyric-string (match-string 0))
                 (time 0)
