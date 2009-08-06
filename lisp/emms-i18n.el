@@ -53,13 +53,13 @@
 this list, use `emms-i18n-default-coding-system' instead.")
 
 (defvar emms-i18n-coding-system-for-read 'utf-8
-  "If coding detect failed, use this for decode")
+  "If coding detect failed, use this for decode.")
 
 (defvar emms-i18n-default-coding-system '(no-conversion . no-conversion)
-  "If non-nil, used for decode and encode")
+  "If non-nil, used for decode and encode.")
 
 (defvar emms-i18n-coding-dectect-functions nil
-  "A list of function to call to detect codings")
+  "A list of function to call to detect codings.")
 
 (defvar emms-i18n-detect-max-size 10000
   "Max bytes to detect coding system. Nil mean scan whole buffer.")
@@ -100,18 +100,20 @@ this list, use `emms-i18n-default-coding-system' instead.")
                         (cdr default-process-coding-system))))))
 
 (defun emms-i18n-call-process-simple (&rest args)
-  "This function run program and return the program result. If the CAR
-part of `emms-i18n-default-coding-system' is non-nil, the program result will
-be decode use the CAR part of emms-i18n-default-coding-system. Otherwise,
-use `emms-i18n-coding-dectect-functions' to detect the coding system of the
-result. If the emms-i18n-coding-dectect-functions failed, use
-`emms-i18n-detect-coding-function' to detect coding system. If all the
-coding system is nil or in `emms-i18n-nerver-used-coding-system', decode
-the result using `emms-i18n-coding-system-for-read'.
+  "This function run program and return the program result. 
+If the CAR part of `emms-i18n-default-coding-system' is non-nil,
+the program result will be decode use the CAR part of
+emms-i18n-default-coding-system. Otherwise, use
+`emms-i18n-coding-dectect-functions' to detect the coding system
+of the result. If the emms-i18n-coding-dectect-functions failed,
+use `emms-i18n-detect-coding-function' to detect coding
+system. If all the coding system is nil or in
+`emms-i18n-never-used-coding-system', decode the result using
+`emms-i18n-coding-system-for-read'.
 
-The rest arguments ARGS is as the same as `call-process', except the
-BUFFER should always have value t. Otherwise the coding detection will
-not perform."
+ARGS are the same as in `call-process', except the BUFFER should
+always have value t. Otherwise the coding detection will not
+perform."
   (let ((default-process-coding-system (copy-tree default-process-coding-system))
         (process-coding-system-alist nil) exit pos)
     (when (eq (nth 2 args) 't)
