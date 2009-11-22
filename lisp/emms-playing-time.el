@@ -165,7 +165,7 @@ could call `emms-playing-time-enable-display' and
 
 (defun emms-playing-time-display ()
   "Display playing time on the mode line."
-  (setq emms-playing-time (1+ emms-playing-time))
+  (setq emms-playing-time (round (1+ emms-playing-time)))
   (setq emms-playing-time-string "")
   (when emms-playing-time-display-p
     (let* ((min (/ emms-playing-time 60))
