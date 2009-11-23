@@ -45,9 +45,9 @@ The warning will say that NEW-NAME should be used instead.
 WHEN should be a string indicating when the function was
 first made obsolete, either the file's revision number or an
 EMMS release version number."
-  (condition-case nil
-      (make-obsolete old-name new-name when)
-    (wrong-number-of-arguments (make-obsolete old-name new-name))))
+  (if (featurep 'xemacs)
+      (make-obsolete old-name new-name)
+    (make-obsolete old-name new-name when)))
 
 
 ;;; Time and timers

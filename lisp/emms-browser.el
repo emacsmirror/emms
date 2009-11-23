@@ -1276,7 +1276,8 @@ Return the previous point-max before adding."
   (when emms-browser-seed-pending
     (random t)
     (setq emms-browser-seed-pending nil))
-  (goto-line (random (count-lines (point-min) (point-max)))))
+  (goto-char (point-min))
+  (forward-line (1- (random (count-lines (point-min) (point-max))))))
 
 (defun emms-browser-view-in-dired (&optional bdata)
   "View the current directory in dired."

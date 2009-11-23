@@ -447,7 +447,8 @@ Don't forget to run `emms-stream-save-bookmarks-file' after !"
     (setq emms-stream-list (emms-stream-insert-at index (list name url fd type)
                                                   emms-stream-list))
     (emms-stream-redisplay)
-    (goto-line line)))
+    (goto-char (point-min))
+    (forward-line (1- line))))
 
 (defun emms-stream-delete-bookmark ()
   "Deletes the bookmark under the point.
@@ -458,7 +459,8 @@ Don't forget to save your modifications !"
     (setq emms-stream-list
           (delete (emms-stream-get-bookmark-at-point) emms-stream-list))
     (emms-stream-redisplay)
-    (goto-line line)))
+    (goto-char (point-min))
+    (forward-line (1- line))))
 
 (defun emms-stream-edit-bookmark ()
   "Change the information of current bookmark."
@@ -558,7 +560,8 @@ Don't forget to save your modifications !"
                                   index streams emms-stream-list))
           (setq line (+ line (* (length streams) 2)))
           (emms-stream-redisplay)
-          (goto-line line))
+          (goto-char (point-min))
+          (forward-line (1- line)))
       (message "Not yanking anything"))))
 
 ;; Navigation

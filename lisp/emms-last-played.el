@@ -103,8 +103,8 @@ If non-existent, it is set to 1."
 Returns \"  ?  \" if there's bad input or if an other error occurs.
 Input should look like this: \"Sun, 14 Oct 2001 13:34:39 +0200\"."
   (condition-case ()
-      (let* ((messy-date (time-to-seconds messy-date))
-             (now (time-to-seconds (current-time)))
+      (let* ((messy-date (float-time messy-date))
+             (now (float-time (current-time)))
 	     ;;If we don't find something suitable we'll use this one
 	     (my-format "%b %d '%y"))
 	(let* ((difference (- now messy-date))

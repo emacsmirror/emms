@@ -308,8 +308,7 @@ job."
           emms-lyrics-elapsed-time 0)
     (emms-lyrics-read-file lrc t)
     (emms-lyrics-set-timer)
-    (emms-lyrics-seek
-     (time-to-seconds (time-since old-start)))))
+    (emms-lyrics-seek (float-time (time-since old-start)))))
 
 (defun emms-lyrics-stop ()
   "Stop displaying lyrics."
@@ -328,7 +327,7 @@ job."
       (setq emms-lyrics-pause-time (current-time))
     (when emms-lyrics-pause-time
       (setq emms-lyrics-elapsed-time
-	    (+ (time-to-seconds
+	    (+ (float-time
 		(time-subtract emms-lyrics-pause-time
 			       emms-lyrics-start-time))
 	       emms-lyrics-elapsed-time)))
@@ -342,7 +341,7 @@ job."
   "Seek forward or backward SEC seconds lyrics."
   (setq emms-lyrics-elapsed-time
 	(+ emms-lyrics-elapsed-time
-	   (time-to-seconds (time-since emms-lyrics-start-time))
+	   (float-time (time-since emms-lyrics-start-time))
 	   sec))
   (when (< emms-lyrics-elapsed-time 0)	; back to start point
     (setq emms-lyrics-elapsed-time 0))
@@ -490,7 +489,7 @@ NEXT-LYRIC."
   "Insert lyric time in the form: [01:23.21], then goto the
 beginning of next line."
   (interactive)
-  (let* ((total (+ (time-to-seconds
+  (let* ((total (+ (float-time
 		    (time-subtract (current-time)
 				   emms-lyrics-start-time))
 		   emms-lyrics-elapsed-time))
