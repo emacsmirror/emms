@@ -28,6 +28,7 @@
 ;;; Code:
 
 (require 'emms-playing-time)
+(require 'emms-info)
 
 (defun emms-cue-next ()
   "Play next track from .cue file."
@@ -57,7 +58,8 @@ When PREVIOUS-P is t, get previous track info instead."
          (name (emms-track-get track 'name))
          (cue (concat (file-name-sans-extension name)".cue")))
     (when (file-exists-p cue)
-      (with-current-buffer (find-file-noselect cue)
+      (with-temp-buffer
+        (emms-insert-file-contents cue)
         (save-excursion
           (if previous-p
               (goto-char (point-max))
@@ -87,6 +89,31 @@ When PREVIOUS-P is t, get previous track info instead."
 (defun emms-cue-previous-track ()
   "See `emms-cue-next-track'."
   (emms-cue-next-track t))
+
+(defun emms-info-cueinfo (track)
+  "Add track information to TRACK.
+This is a useful element for `emms-info-functions'."
+  (when (and (eq 'file (emms-track-type track))
+             (string-match "\\.\\(ape\\|flac\\)\\'" (emms-track-name track)))
+    (let ((cue (concat (file-name-sans-extension (emms-track-name track))
+                       ".cue")))
+      (when (file-exists-p cue)
+        (with-temp-buffer
+          (emms-insert-file-contents cue)
+          (save-excursion
+            (mapc (lambda (i)
+                    (goto-char (point-min))
+                    (when (let ((case-fold-search t))
+                            (search-forward-regexp 
+                             (concat (car i) " \\(.*\\)") nil t 1))
+                      (emms-track-set track 
+                                      (cdr i)
+                                      (replace-regexp-in-string
+                                       "\\`\"\\|\"\\'" "" (match-string 1)))))
+                  '(("performer" . info-artist)
+                    ("title" . info-album)
+                    ("title" . info-title)
+                    ("rem date" . info-year)))))))))
 
 
 (provide 'emms-cue)
