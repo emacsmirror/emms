@@ -109,7 +109,6 @@ stable features which come with the Emms distribution."
     (require 'emms-player-xine)
     (require 'emms-playlist-sort)
     (require 'emms-browser)
-    (require 'emms-lastfm)
     (require 'emms-mode-line-icon))
   ;; setup
   (emms-mode-line 1)
@@ -139,7 +138,8 @@ on the edge."
     (require 'emms-tag-editor)
     (require 'emms-volume)
     (require 'emms-playlist-limit)
-    (require 'emms-cue))
+    (require 'emms-cue)
+    (require 'emms-lastfm-client))
   ;; setup
   (add-hook 'emms-player-started-hook 'emms-last-played-update-current)
   (emms-score 1)
