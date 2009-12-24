@@ -420,7 +420,7 @@ Called once for each directory."
 
 (defvar emms-browser-top-level-type nil
   "The current mapping type, eg. 'info-artist.")
-(make-variable-buffer-local 'emms-browser-top-level-hash)
+(make-variable-buffer-local 'emms-browser-top-level-type)
 
 (defvar emms-browser-current-indent nil
   "Used to override the current indent, for the playlist, etc.")
