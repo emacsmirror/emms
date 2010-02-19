@@ -162,7 +162,7 @@ value of `emms-source-file-default-directory'."
                     (string-match emms-source-file-exclude-regexp file))
             (emms-playlist-insert-track
              (emms-track 'file file))))
-        (emms-source-file-directory-tree dir regex)))
+        (emms-source-file-directory-tree (expand-file-name dir) regex)))
 
 ;;;###autoload (autoload 'emms-play-dired "emms-source-file" nil t)
 ;;;###autoload (autoload 'emms-add-dired "emms-source-file" nil t)
@@ -199,7 +199,10 @@ This function uses only emacs functions, so it might be a bit slow."
     (while dirs
       (cond
        ((file-directory-p (car dirs))
-        (if (string-match "/\\.\\.?$" (car dirs))
+        (if (or (string-match "/\\.\\.?$" (car dirs))
+                (let ((symlink (file-symlink-p (car dirs))))
+                  (and symlink
+                       (string-equal dir (substring symlink 0 (string-width dir))))))
             (setq dirs (cdr dirs))
           (setq dirs
                 (condition-case nil
