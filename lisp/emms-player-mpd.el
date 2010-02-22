@@ -805,7 +805,8 @@ Execute CALLBACK with CLOSURE as its first argument when done."
           ((or (eq type 'playlist)
                (string-match "\\.\\(m3u\\|pls\\)\\'" name))
            (emms-player-mpd-add-playlist name closure callback))
-          ((eq type 'file)
+          ((and (eq type 'file)
+                (string-match emms-player-mpd-supported-regexp name))
            (emms-player-mpd-add-file name closure callback)))))
 
 (defun emms-player-mpd-add-several-tracks (tracks closure callback)
