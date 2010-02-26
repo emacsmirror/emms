@@ -1227,6 +1227,52 @@ the MusicPD database."
   (interactive)
   (emms-player-mpd-update-directory ""))
 
+(defvar emms-player-mpd-waiting-for-update-timer nil
+  "Timer object when waiting for MPD update to finish.")
+
+(defun emms-player-mpd-update-all-reset-cache ()
+  "Update all tracks in the MusicPD music directory.
+When update finishes, clear the EMMS cache and call
+`emms-cache-set-from-mpd-all' to dump the MusicPD data into the
+cache."
+  (interactive)
+  (if emms-player-mpd-waiting-for-update-timer
+      (message "Already waiting for an update to finish.")
+    (emms-player-mpd-send
+     "update" nil
+     'emms-player-mpd-wait-for-update)))
+
+(defun emms-player-mpd-wait-for-update (&optional closure response)
+  "Wait for a currently running mpd update to finish.
+Afterwards, clear the EMMS cache and call
+`emms-cache-set-from-mpd-all'."
+  (if response
+      ;; This is the first call after the update command
+      (let ((id (cdr (assoc "updating_db"
+			    (emms-player-mpd-get-alist
+			     (emms-player-mpd-parse-response response))))))
+	(if id
+	    (progn
+	      (message "Updating DB with ID %s.  Waiting for the update to finish..." id)
+	      (setq emms-player-mpd-waiting-for-update-timer
+		    (run-at-time 1 nil 'emms-player-mpd-wait-for-update)))
+	  (message "Could not update the DB")))
+    ;; Otherwise, check if update is still in progress
+    (emms-player-mpd-get-status-part
+     nil
+     (lambda (closure updating)
+       (if updating
+	   ;; MPD update still in progress, so wait another second
+	   (run-at-time 1 nil 'emms-player-mpd-wait-for-update)
+	 ;; MPD update finished
+	 (setq  emms-player-mpd-waiting-for-update-timer nil)
+	 (message "MPD update finished.")
+	 (sit-for 1)
+	 (clrhash emms-cache-db)
+	 (emms-cache-set-from-mpd-all)))
+     "updating_db")))
+
+
 (provide 'emms-player-mpd)
 
 ;;; emms-player-mpd.el ends here
