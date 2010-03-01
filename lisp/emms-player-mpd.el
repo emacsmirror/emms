@@ -994,7 +994,7 @@ from other functions."
            (secs (emms-player-mpd-get-playing-time nil #'ignore info)))
        (when (and song secs)
          (emms-player-mpd-send
-          (concat "seek " song " " (number-to-string (+ secs amount)))
+          (concat "seek " song " " (number-to-string (round (+ secs amount))))
           nil #'ignore))))))
 
 (defun emms-player-mpd-seek-to (pos)
@@ -1005,7 +1005,7 @@ from other functions."
    (lambda (pos song)
      (when (and song pos)
        (emms-player-mpd-send
-        (concat "seek " song " " (number-to-string pos))
+        (concat "seek " song " " (number-to-string (round pos)))
         nil #'ignore)))))
 
 (defun emms-player-mpd-next ()
