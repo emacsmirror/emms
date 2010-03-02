@@ -140,19 +140,24 @@ leave it set to nil."
 (defun emms-player-mpd-get-supported-regexp ()
   "Returns a regexp of file extensions that MusicPD supports,
 or nil if we cannot figure it out."
-  (let ((out (split-string (shell-command-to-string "mpd --version")
-                           "\n"))
+  (let ((out (shell-command-to-string "mpd --version"))
         (found-start nil)
         (supported nil))
     ;; Get supported formats
-    (while (car out)
-      (cond ((string= (car out) "Supported formats:")
-             (setq found-start t))
-            ((string= (car out) "")
-             (setq found-start nil))
-            (found-start
-             (setq supported (concat supported (car out)))))
-      (setq out (cdr out)))
+    ;; New version (0.15.x)
+    (if (string-match "Supported decoders:\\([^0]+?\\)Supported outputs:" out)
+	(setq supported (replace-regexp-in-string "\\[.+?\\]" ""
+						  (match-string 1 out)))
+      ;; Older versions
+      (setq out (split-string out "\n"))
+      (while (car out)
+	(cond ((string= (car out) "Supported formats:")
+	       (setq found-start t))
+	      ((string= (car out) "")
+	       (setq found-start nil))
+	      (found-start
+	       (setq supported (concat supported (car out)))))
+	(setq out (cdr out))))
     ;; Create regexp
     (when (and (stringp supported)
                (not (string= supported "")))
