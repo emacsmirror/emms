@@ -82,6 +82,7 @@ Modules and Extensions
 * Lyrics::               Displaying lyrics synchronously.
 * Volume::               Changing the volume.
 * Last.fm::              Interact with http://www.last.fm's services.
+* APE / FLAC Commands::  How to play next or previous track in these files.  
 * Extending Emms::       How to define new players and modules.
 
 Copying and license
@@ -860,13 +861,15 @@ The current Emms playlist buffer is stored in the variable
 @cindex track information
 @cindex info tags
 
-Emms is distributed with two predefined methods for retrieving info,
-provided by @file{emms-info-mp3info.el} and
-@file{emms-info-ogginfo.el}. Both packages are front-ends for
+Emms is distributed with three predefined methods for retrieving info,
+provided by @file{emms-info-mp3info.el}, @file{emms-info-ogginfo.el} and
+@file{emms-cue.el}. The first two packages are front-ends for
 command-line tools. Ogg track information is retrieved using the
 @uref{http://directory.fsf.org/audio/ogg/vorbistools.html, ogginfo}
 software. Likewise, mp3 track information is available using
-@uref{http://www.ibiblio.org/mp3info/, mp3info}.
+@uref{http://www.ibiblio.org/mp3info/, mp3info}. While,
+@file{emms-cue.el} retrieves tracks information for ape/flac files by
+parsing a cue sheet file, which is plain text.
 
 Automatic track information retrieval is enabled by default in the
 `emms-standard', `emms-all' and `emms-devel' setup levels provided by
@@ -1127,6 +1130,29 @@ position, the second argument should set to non-nil.
 This function is very similar to `emms-mark-do-with-marked-track'
 except it collects result of given function (that's why named with
 `mapcar').
+@end defun
+
+@node APE / FLAC Commands
+@chapter APE / FLAC Commands
+
+Often, a single APE or FLAC file contains a complete ablum.  We can still
+play next or previous track in the ablum with the help of
+@file{emms-cue.el} package, provided there is a corresponding cue sheet
+file.  This package also defines @code{emms-info-cueinfo} for retreiving
+the track information for APE / FLAC itself.  
+
+To load @file{emms-cue.el}: 
+
+@lisp
+(require 'emms-cue)
+(add-to-list 'emms-info-functions 'emms-info-cueinfo)
+@end lisp
+
+@defun emms-cue-next
+Play next track from .cue file
+@end defun
+@defun emms-cue-previous
+Play previous track from .cue file
 @end defun
 
 @node Extending Emms
