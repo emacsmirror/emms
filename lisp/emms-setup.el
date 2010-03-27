@@ -112,6 +112,7 @@ stable features which come with the Emms distribution."
     (require 'emms-mode-line-icon)
     (require 'emms-cue)
     (require 'emms-lastfm-client)
+    (require 'emms-bookmarks)
     (require 'emms-last-played))
   ;; setup
   (emms-mode-line 1)
@@ -135,7 +136,6 @@ on the edge."
     (require 'emms-metaplaylist-mode)
     (require 'emms-stream-info)
     (require 'emms-score)
-    (require 'emms-bookmarks)
     (require 'emms-history)
     (require 'emms-mark)
     (require 'emms-i18n)
