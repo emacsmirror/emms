@@ -111,13 +111,15 @@ stable features which come with the Emms distribution."
     (require 'emms-browser)
     (require 'emms-mode-line-icon)
     (require 'emms-cue)
-    (require 'emms-lastfm-client))
+    (require 'emms-lastfm-client)
+    (require 'emms-last-played))
   ;; setup
   (emms-mode-line 1)
   (emms-mode-line-blank)
   (emms-lyrics 1)
   (emms-playing-time 1)
-  (add-to-list 'emms-info-functions 'emms-info-cueinfo))
+  (add-to-list 'emms-info-functions 'emms-info-cueinfo)
+  (add-hook 'emms-player-started-hook 'emms-last-played-update-current))
 
 ;;;###autoload
 (defun emms-devel ()
@@ -133,7 +135,6 @@ on the edge."
     (require 'emms-metaplaylist-mode)
     (require 'emms-stream-info)
     (require 'emms-score)
-    (require 'emms-last-played)
     (require 'emms-bookmarks)
     (require 'emms-history)
     (require 'emms-mark)
@@ -142,7 +143,6 @@ on the edge."
     (require 'emms-volume)
     (require 'emms-playlist-limit))
   ;; setup
-  (add-hook 'emms-player-started-hook 'emms-last-played-update-current)
   (emms-score 1)
   (emms-playlist-limit 1))
 
