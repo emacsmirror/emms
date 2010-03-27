@@ -83,6 +83,7 @@ Modules and Extensions
 * Volume::               Changing the volume.
 * Last.fm::              Interact with the Last.fm service.
 * APE / FLAC Commands::  How to play next or previous track in these files.
+* Bookmarks::            Saving a place in a media file.
 * Extending Emms::       How to define new players and modules.
 
 Copying and license
@@ -1154,6 +1155,24 @@ Play next track from .cue file
 @defun emms-cue-previous
 Play previous track from .cue file
 @end defun
+
+@node Bookmarks
+@chapter Bookmarks
+
+Emms can save a ``temporal bookmark'' in a media file via
+emms-bookmarks. The file @file{emms-bookmarks.el} provides the package
+emms-bookmarks.
+
+While some media is playing, invoking @kbd{M-x emms-bookmarks-add}
+will first pause the playback and then prompt for a name describing
+the bookmark. Tracks can have multiple bookmarks associated with them.
+
+To jump to the next and previous bookmarks in the current track invoke
+@kbd{M-x emms-bookmarks-next} and @kbd{M-x emms-bookmarks-prev}
+respectively.
+
+To clear all of the bookmarks for the current track invoke @kbd{M-x
+emms-bookmarks-clear}.
 
 @node Extending Emms
 @chapter Extending Emms
