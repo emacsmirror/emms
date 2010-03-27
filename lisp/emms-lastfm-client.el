@@ -24,49 +24,9 @@
 
 ;;; Commentary:
 ;;
-;; There are restrictions on the use of this service. Quoting from
-;; [http://www.last.fm/api/radio]: "Who can I stream radio to? Any API
-;; account can only stream radio to Last.fm's paid subscribers".
-;;
-;; We've spoken to representatives from Last.fm and arrived at the
-;; following agreement: In order to be able to use the service while
-;; preserving the essential freedoms of the GPL each client must apply
-;; for their own API key from Last.fm.
-
-;;; Installation:
-;;
-;; Here is how to get authorization from Last.fm to stream
-;; music. Thankfully this only needs to be done _once_:
-;;
-;; 1. Complete steps 1 and 2 from
-;;    [http://www.last.fm/api/authentication] to get an API key and a
-;;    secret key. Set `emms-lastfm-client-api-key' and
-;;    `emms-lastfm-client-api-secret-key' accordingly.
-;;
-;; 2. M-x emms-lastfm-client-user-authorization
-;;
-;;    If this completes successfully a browser window will open asking
-;;    for confirmation to allow this application to access the Last.fm
-;;    account. Confirm and close the browser.
-;;
-;; 3. M-x emms-lastfm-client-get-session
-;;
-;;    After this last step the permanent session key will be stored in
-;;    `emms-lastfm-client-session-key-file'. As long as this key value
-;;    is accessible the authentication process need never be repeated.
-
-;;; Use:
-;;
-;; M-x emms-lastfm-client-play-similar-artists
-;;
-;; Call the ...-play- family of interactive functions, such the above,
-;; to start streaming music.
-;;
-;; To show the currently playing track: M-x emms-lastfm-client-show
-;;
-;; To skip to the next track: M-x emms-lastfm-client-track-advance
-;;
-;; ...more Last.fm functionality to come, so stay tuned.
+;; Definitive information on how to setup and use this package is
+;; provided in the wonderful Emms manual, in the /doc directory of the
+;; Emms distribution.
 
 ;;; Code:
 
