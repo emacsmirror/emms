@@ -102,6 +102,8 @@ stable features which come with the Emms distribution."
   ;; define
   (eval-and-compile
     (require 'emms-mode-line)
+    (require 'emms-mark)
+    (require 'emms-tag-editor)
     (require 'emms-streams)
     (require 'emms-lyrics)
     (require 'emms-playing-time)
@@ -137,9 +139,7 @@ on the edge."
     (require 'emms-stream-info)
     (require 'emms-score)
     (require 'emms-history)
-    (require 'emms-mark)
     (require 'emms-i18n)
-    (require 'emms-tag-editor)
     (require 'emms-volume)
     (require 'emms-playlist-limit))
   ;; setup
