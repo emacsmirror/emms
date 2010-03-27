@@ -82,7 +82,7 @@ Modules and Extensions
 * Lyrics::               Displaying lyrics synchronously.
 * Volume::               Changing the volume.
 * Last.fm::              Interact with the Last.fm service.
-* APE / FLAC Commands::  How to play next or previous track in these files.  
+* APE / FLAC Commands::  How to play next or previous track in these files.
 * Extending Emms::       How to define new players and modules.
 
 Copying and license
@@ -1139,9 +1139,9 @@ Often, a single APE or FLAC file contains a complete ablum.  We can still
 play next or previous track in the ablum with the help of
 @file{emms-cue.el} package, provided there is a corresponding cue sheet
 file.  This package also defines @code{emms-info-cueinfo} for retreiving
-the track information for APE / FLAC itself.  
+the track information for APE / FLAC itself.
 
-To load @file{emms-cue.el}: 
+To load @file{emms-cue.el}:
 
 @lisp
 (require 'emms-cue)
