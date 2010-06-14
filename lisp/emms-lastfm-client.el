@@ -31,6 +31,7 @@
 ;;; Code:
 
 (require 'md5)
+(require 'parse-time)
 (require 'xml)
 
 (defvar emms-lastfm-client-api-key nil
@@ -590,10 +591,8 @@ This function includes the cryptographic signature."
   "Function called on DATA if auth.getSession succeeds."
   (let ((session-key (nth 2 (nth 5 (cadr data)))))
     (cond (session-key
-	   (setq emms-lastfm-client-api-session-key
-		 session-key)
-	   (message "Emms Last.fm session key retrieval successful"
-		    session-key))
+	   (setq emms-lastfm-client-api-session-key session-key)
+	   (message "Emms Last.fm session key retrieval successful"))
 	  (t (error "failed to parse session key data %s" data)))))
 
 (defun emms-lastfm-client-auth-get-session-failed (data)
@@ -646,7 +645,7 @@ This function includes the cryptographic signature."
       (setq response (cdr response)))
     (when (not data)
       (error "could not parse station information %s" data))
-    (setq emms-lastfm-client-tuned-station-alist data)))
+    data))
 
 ;;; ------------------------------------------------------------------
 ;;; method: radio.getPlaylist [http://www.last.fm/api/show?service=256]
