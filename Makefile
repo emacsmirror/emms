@@ -56,11 +56,11 @@ clean:
 	-rm -f *~ $(DOCDIR)emms.info $(DOCDIR)emms.html emms-print-metadata
 	$(MAKE) -C $(LISPDIR) clean
 
-dist: autoloads clean
+dist: clean autoloads
 	git archive --format=tar --prefix=emms-$(VERSION)/ HEAD | \
 	  (cd .. && tar xf -)
 	rm -f ../emms-$(VERSION)/.gitignore
-	cp lisp/emms-autoloads.el ../emms-$(VERSION)/lisp
+	cp lisp/emms-auto.el ../emms-$(VERSION)/lisp
 	git log --pretty=medium > ../emms-$(VERSION)/ChangeLog
 
 release: dist
