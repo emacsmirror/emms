@@ -1,10 +1,4 @@
-# Don't delete if make is interrupted
-.PRECIOUS: %.info %.html
+## Process this file with automake to produce Makefile.in
 
-all: emms.info
-
-%.info: %.texinfo
-	makeinfo --no-split $<
-
-%.html: %.texinfo
-	makeinfo --html --no-split $<
+info_TEXINFOS = emms.texinfo
+emms_TEXINFOS = fdl.texi gpl.texi

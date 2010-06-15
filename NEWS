@@ -1,9 +1,13 @@
 News since version 3.0:
 
+  - The build system now uses autotools.
   - Drop support for emms-player-gstreamer.
   - emms-player-mplayer: Remove code for loading movie subtitles
     automatically by emms, since mplayer has an option
     (`sub-fuzziness') controlling that.
+  - emms-player-mplayer: Remove codes for loading movie subtitles
+    automatically by emms, since mplayer has an option(`sub-fuzziness')
+    controlling that.
 
 News since version 2.1:
 

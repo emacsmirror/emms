@@ -1,0 +1,14 @@
+* Makefile.am (dist): With autotools, it is necessary at the
+  moment to create a zip archive already at the `dist'
+  target (i. e. not only at the `release' target). Is this a
+  major nuisance?
+
+* Makefile.am (release): Remove temporary upload.lftp;
+  replace "$(distdir).{tar.gz,zip}.directive.asc" with
+  proper temporary file and name files to upload explicitly.
+
+* doc/Makefile.am (emms.info): Previously, `makeinfo' was
+  called with `--no-split'. Is it necessary?
+
+* lisp/Makefile.am (emms-autoloads.el/*.elc): Previously,
+  `emacs' was called with `--no-site-file'. Is it necessary?

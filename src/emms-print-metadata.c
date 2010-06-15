@@ -22,7 +22,7 @@ Boston, MA 02110-1301, USA.  */
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <tag_c.h>
+#include <taglib/tag_c.h>
 
 int
 main (int argc, char **argv)
