@@ -1,0 +1,4 @@
+2010-06-15  Tim Landscheidt  <tim@tim-landscheidt.de>
+
+	* The ChangeLog is auto-generated when releasing.  If you are
+	seeing this, use `git log' for a detailed list of changes.
