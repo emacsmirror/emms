@@ -77,7 +77,7 @@
 (defmacro with-part-of-file (file-spec &rest body)
   "Execute BODY in a buffer containing part of FILE.
 
-BEG and END are as `insert-file-contents' (q.v.).
+BEG and END are as used for `insert-file-contents'.
 
 \(fn (FILE &optional BEG END) &rest BODY)"
   (let (file beg end)
@@ -198,7 +198,7 @@ comment header is prepended to the string as a 4-byte lsb int."
 (defun oggc-write-comments (file comments)
   "Write COMMENTS to FILE.
 
-COMMENTS should be as for `oggc-construct-comment-string' (q.v.)."
+COMMENTS should be as for `oggc-construct-comment-string'."
   (with-temp-buffer
     ;; dog slow for large files.
     ;; an alternative would be to use head/tail/cut as needed to

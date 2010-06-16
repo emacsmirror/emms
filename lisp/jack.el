@@ -33,8 +33,8 @@
 ;; its design focuses on two key areas: synchronous execution of all
 ;; clients, and low latency operation.
 ;;
-;; jack.el provides a fascility for starting jackd from within Emacs.
-;; It also povides convenience functions for prompting the user for
+;; jack.el provides a facility for starting jackd from within Emacs.
+;; It also provides convenience functions for prompting the user for
 ;; jack client and port names in the minibuffer, as well as the
 ;; functions `jack-connect' and `jack-disconnect' which can be used to
 ;; rearrange jack port wiring with a minimum of keystrokes.

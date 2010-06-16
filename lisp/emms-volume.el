@@ -25,7 +25,7 @@
 ;;
 ;; This file provides generally two things:
 ;; Generic volume setting functions and some appropriate bindings for EMMS
-;; playlist buffers. These can also be bound to global keys,however, the
+;; playlist buffers. These can also be bound to global keys, however, the
 ;; second part may be more useful for this. This part provides functions
 ;; meant to be bound to a global key (the author uses C-c e + and C-c e -),
 ;; which then temporarily activates a minor mode allowing you to change the
