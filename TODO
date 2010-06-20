@@ -1,3 +1,7 @@
+* Makefile.am (all): emms-print-metadata gets built and
+  installed unconditionally. It would be nice if this could
+  be controlled by some option.
+
 * Makefile.am (dist): With autotools, it is necessary at the
   moment to create a zip archive already at the `dist'
   target (i. e. not only at the `release' target). Is this a
