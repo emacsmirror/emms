@@ -53,7 +53,7 @@
 NAME is used to contruct the name of the function like
 emms-player-NAME. TYPES is a list of track types understood by
 this player. REGEX must be a regexp that matches the filenames
-the player can play. COMMAND specifies the command line arguement
+the player can play. COMMAND specifies the command line argument
 to call the player and ARGS are the command line arguments."
   (let ((group (intern (concat "emms-player-" (symbol-name name))))
         (command-name (intern (concat "emms-player-"

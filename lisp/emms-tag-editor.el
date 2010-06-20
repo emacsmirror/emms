@@ -130,7 +130,7 @@ See also `emms-tag-editor-default-parser'.")
     ("flac" . emms-tag-editor-tag-flac))
   "An alist used when committing changes to tags in files.
 If the external program sets tags by command line options
-one-by-one such as mp3info, then the list should like:
+one-by-one such as mp3info, then the list should resemble:
  (EXTENSION PROGRAM COMMAND_LINE_OPTIONS)
 
 Otherwise, a function that accepts a single parameter, the track,
@@ -349,7 +349,7 @@ changes will only take effect on the tracks in the region."
             (map-y-or-n-p
              (lambda (match)
                (move-overlay overlay (match-beginning 0) (match-end 0))
-               (format "Replace %s to %s" match to))
+               (format "Replace %s with %s" match to))
              (lambda (match)
                (delete-region (- (point) (length match)) (point))
                (insert to))
@@ -404,22 +404,23 @@ changes will only take effect on the tracks in the region."
           (emms-tag-editor-insert-track track))))))
 
 (defun emms-tag-editor-guess-tag-filename (pattern fullname)
-  "A pattern is a string like \"%a-%t-%y\" which stand for
-the file name is constructed by artist, title, year with seperator '-'.
-see `emms-tag-editor-compile-pattern' for detail about pattern syntax.
-Available tags are list in `emms-tag-editor-tags'.
+  "A pattern is a string like \"%a-%t-%y\" which stands for the
+file name constructed by artist, title, year with separator '-'.
+See `emms-tag-editor-compile-pattern' for details about pattern
+syntax.  Available tags are listed in `emms-tag-editor-tags'.
 
-if with prefix argument, the information will extract from full
-name, otherwise just match in file name.
+If called with a prefix argument, the information will be
+extracted from the full name, otherwise just match in file name.
 
-An example to guess tag from file name, which the file directory is
-the aritist and file name is the title. It can be done like:
+Guessing tags from the file name, in which the file directory is
+the artist and the file name the title, can be done like:
+
 C-u M-x emms-tag-editor-guess-tag-filename RET
 %{a:[^/]+}/%{t:[^/]+}\.mp3 RET
 "
   (interactive
    (list
-    (read-from-minibuffer (format "Match in %sfile name(C-h for help): "
+    (read-from-minibuffer (format "Match in %sfile name (C-h for help): "
                                   (if current-prefix-arg "FULL " ""))
                           nil
      (let ((map (make-sparse-keymap)))
@@ -429,9 +430,10 @@ C-u M-x emms-tag-editor-guess-tag-filename RET
            (interactive)
            (with-output-to-temp-buffer "*Help*"
              (princ
-              "A pattern is a string like \"%a-%t-%y\" which stand for
-the file name is constructed by artist, title, year with seperator '-'.
-see `emms-tag-editor-compile-pattern' for detail about pattern syntax.
+              "A pattern is a string like \"%a-%t-%y\" which stands for
+the file name constructed by artist, title, year with separator '-'.
+See `emms-tag-editor-compile-pattern' for details about pattern
+syntax.
 
 Available tags are:
 ")
@@ -469,7 +471,7 @@ Available tags are:
           (emms-tag-editor-insert-track track))))))
 
 (defun emms-tag-editor-compile-pattern (pattern)
-  "A pattern to regexp convertor. \"%a-%{b:[a-z]+}\" will compile to
+  "A pattern to regexp converter. \"%a-%{b:[a-z]+}\" will compile to
 \"\\([^-]+\\)-\\([a-z]+\\)\"."
   (let ((index 0)
         (paren 0)
@@ -597,7 +599,7 @@ With prefix argument, bury the tag edit buffer."
               ;; old-file = newfile which causes the problem.
               (rename-file (emms-track-name track) filename 1))
             (emms-track-set old 'name filename)
-            ;; for re-enter this function
+            ;; to re-enter this function
             (emms-track-set track 'name filename)
             (setq need-sync t)
             ;; register to emms-cache-db
@@ -693,12 +695,12 @@ With prefix argument, bury the tag edit buffer."
     (insert (apply 'format args) "\n")))
 
 ;;
-;; Renaming files according their tags
+;; Renaming files according to their tags
 ;;
 
 (defvar emms-tag-editor-rename-format "%a - %l - %n - %t"
   "When `emms-tag-editor-rename' is invoked the track's file will
-be renamed according this format specification.  The file
+be renamed according to this format specification.  The file
 extension will be added automatically.
 
 It uses the format specs defined in `emms-tag-editor-tags'.")
@@ -713,8 +715,8 @@ tracks according to the value of
     (emms-tag-editor-rename-track (emms-tag-editor-track-at))))
 
 (defun emms-tag-editor-rename-track (track &optional dont-apply)
-  "Rename TRACK's file according `emms-tag-editor-rename-format's
-value.
+  "Rename TRACK's file according to
+`emms-tag-editor-rename-format's value.
 
 If DONT-APPLY is non-nil the changes won't be applied directly.
 Then it's the callers job to apply them afterwards with
@@ -748,7 +750,7 @@ Then it's the callers job to apply them afterwards with
   (let ((tracks (emms-mark-mapcar-marked-track
                  'emms-tag-editor-track-at t)))
     (if (null tracks)
-        (message "No track marked!")
+        (message "No tracks marked!")
       (dolist (track tracks)
         (emms-tag-editor-rename-track track t))
       (emms-tag-editor-apply tracks))))
