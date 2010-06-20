@@ -11,6 +11,10 @@
   replace "$(distdir).{tar.gz,zip}.directive.asc" with
   proper temporary file and name files to upload explicitly.
 
+* README: There should be a clean-up of the existing
+  installation instructions including a reference to INSTALL
+  per GNU standards.
+
 * doc/Makefile.am (emms.info): Previously, `makeinfo' was
   called with `--no-split'. Is it necessary?
 
