@@ -1703,7 +1703,7 @@ could do:
 
 The format specifiers available include:
 
-@itemize @w
+@itemize @w{}
 @item
 %i    indent relative to the current level
 @item
