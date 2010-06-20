@@ -1,3 +1,0 @@
-#!/bin/sh
-
-exec gst-launch filesrc location="$2" ! spider ! $1

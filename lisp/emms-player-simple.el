@@ -172,9 +172,6 @@ PLAYER is the name of the current player."
 (define-emms-simple-player playsound '(file)
   (emms-player-simple-regexp "wav")
   "playsound")
-(define-emms-simple-player gstreamer '(file)
-  (emms-player-simple-regexp "mp3" "ogg" "mod" "flac" "xm" "it" "ft")
-  "gst-wrapper" "alsasink")
 (define-emms-simple-player mikmod '(file)
   (emms-player-simple-regexp "669" "amf" "dsm" "far" "gdm" "it"
                              "imf" "mod" "med" "mtm" "okt" "s3m"

@@ -1,5 +1,6 @@
 News since version 3.0:
 
+  - Drop support for emms-player-gstreamer.
   - emms-player-mplayer: Remove codes for loading movie subtitles
     automatically by emms, since mplayer has an option(`sub-fuzziness')
     controlling that.
