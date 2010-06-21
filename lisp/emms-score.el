@@ -27,25 +27,20 @@
 
 ;;; Commentary:
 
-;; NOTE: This is experimental stuff - comments welcome!  There
-;; shouldn't worky anything in that file... scores aren't saved, they
-;; even don't have any consequence on playing order and there's just
-;; one mood in the moment. But it's a beginning and you can score down
-;; or up tracks... :)
-;;
+;; FIXME: Skipping doesn't score down.
+
 ;; * How to use scoring in emms
 ;;
-;; When you load emms, you are set to a default mood
-;; 'emms-default-mood' A mood is a one word string describing how
-;; you feel (like "funny", "tired", "aggresive"...)  Each mood have is
-;; own set of scoring rules.
+;; When you load emms, you are set to a default mood.  A mood is a one
+;; word string describing how you feel (like "funny", "tired",
+;; "aggressive", ...).  Each mood has its own set of scoring rules.
 ;;
 ;; You can change your mood with M-x emms-score-change-mood.
 ;;
-;; Every music file start with a default score of 0 the command
-;; emms-score-up-playing and emms-score-down-playing modify the
-;; score of the file you are curently listening by 1 In addition,
-;; skipping a file (with emms-skip) automaticaly score the file
+;; Every music file start with a default score of 0; the command
+;; emms-score-up-playing and emms-score-down-playing modify the score
+;; of the file you are currently listening by 1.  In addition,
+;; skipping a file (with emms-skip) automatically scores the file
 ;; down.
 ;;
 ;; With scoring on (this mean the variable emms-use-scoring is t),
@@ -53,12 +48,13 @@
 ;; decide if it is played or not.
 ;;
 ;; The default tolerance level is 0 (or the variable
-;; emms-score-min-score).  This mean files with a score of 0 or more will
-;; be played and files with a score of -1 or less will be skipped.
+;; emms-score-min-score).  This means files with a score of 0 or more
+;; will be played and files with a score of -1 or less will be
+;; skipped.
 ;;
 ;; You can change the tolerance (by 1) with M-x
-;; emms-score-lower-tolerance and M-x
-;; emms-score-be-more-tolerant
+;; emms-score-lower-tolerance RET and M-x emms-score-be-more-tolerant
+;; RET.
 
 ;;; Code:
 
@@ -73,8 +69,8 @@
   "If non-nil, emms score is active.")
 
 (defcustom emms-score-file (concat (file-name-as-directory emms-directory) "scores")
-  "*Directory to store the score file."
-  :type 'directory
+  "*Absolute path to the score file."
+  :type 'file
   :group 'emms)
 
 
@@ -118,8 +114,8 @@ off otherwise."
     (emms-score-enable)))
 
 (defun emms-score-change-mood (mood)
-  "Change the current MOOD.
-The score hash is automatically saved."
+  "Change the current MOOD.  The score hash is automatically
+saved."
   (interactive "sMood: ")
   (emms-score-save-hash)
   (setq emms-score-current-mood (intern (downcase mood))))
@@ -145,13 +141,13 @@ The score hash is automatically saved."
   (emms-score-change-score -1 (emms-score-track-at-filename)))
 
 (defun emms-score-less-tolerant ()
-  "Only play mp3 with a higher score"
+  "Only play track with a higher score"
   (interactive)
   (setq emms-score-min-score (+ emms-score-min-score 1))
   (message "Will play songs with a score >= %d" emms-score-min-score))
 
 (defun emms-score-more-tolerant ()
-  "Allow playing of mp3 with a lower score."
+  "Allow playing of track with a lower score."
   (interactive)
   (setq emms-score-min-score (- emms-score-min-score 1))
   (message "Will play songs with a score >= %d" emms-score-min-score))
@@ -209,8 +205,8 @@ The score hash is automatically saved."
   (emms-track-get (emms-playlist-track-at) 'name))
 
 (defun emms-score-next-noerror ()
-  "Run `emms-next-noerror' with score check.
-See also `emms-next-noerror'."
+  "Run `emms-next-noerror' with score check.  See also
+`emms-next-noerror'."
   (interactive)
   (when emms-player-playing-p
     (error "A track is already being played"))
@@ -252,6 +248,7 @@ See also `emms-next-noerror'."
                (emms-insert-file-contents emms-score-file)
                (buffer-string))))
     ;; when file not exists, make empty but valid score file
+    ;; FIXME: Why?
     (emms-score-save-hash)))
 
 (defun emms-score-get-plist (filename)
@@ -271,7 +268,7 @@ See also `emms-next-noerror'."
 	   emms-score-hash))
 
 (defun emms-score-get-score (filename)
-  "Return score of TRACK."
+  "Return score of FILENAME."
   (let ((plist (emms-score-get-plist filename)))
     (if (member emms-score-current-mood plist)
 	(plist-get plist emms-score-current-mood)
