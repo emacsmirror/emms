@@ -29,7 +29,7 @@
 ;; This code has been adapted from code found in mp3player.el, written
 ;; by Jean-Philippe Theberge (jphiltheberge@videotron.ca), Mario
 ;; Domgoergen (kanaldrache@gmx.de) and Jorgen Schäfer
-;; <forcer@forcix.cx>
+;; <forcer@forcix.cx>.
 
 ;; To activate this method for getting info, use something like:
 

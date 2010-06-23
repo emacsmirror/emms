@@ -28,7 +28,7 @@
 ;;; Commentary:
 
 ;; This file provides an interface to retrieving comments from
-;; ogg-files, using Lawrence Mitchells ogg-comment.el.
+;; ogg-files, using Lawrence Mitchell's ogg-comment.el.
 
 ;; To activate, put something like this in your ~/.emacs:
 

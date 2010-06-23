@@ -28,11 +28,11 @@
 
 ;;; Commentary:
 ;; This file provides a minimal interface to reading the "comment"
-;; section from an Ogg-Vorbis stream as defined in <URL:
-;; http://www.xiph.org/ogg/vorbis/doc/Vorbis_I_spec.html>
-;; It relies on all the comments being in the first 28kilobytes of
-;; the file, thus removing the need to read the whole ogg file into
-;; an Emacs buffer.
+;; section from an Ogg-Vorbis stream as defined in
+;; <URL:http://www.xiph.org/ogg/vorbis/doc/Vorbis_I_spec.html>.  It
+;; relies on all the comments being in the first 28 KBytes of the
+;; file, thus removing the need to read the whole ogg file into an
+;; Emacs buffer.
 
 ;; The implementation is rather "byte-oriented", due to the way the
 ;; Ogg-Vorbis file headers are specified.  Any improvements in making
@@ -131,7 +131,7 @@ are ignored."
                              (make-vector 9 nil)
                              string)
     string))
-      
+
 (defun oggc-read-string (length)
   "Read a string from `point' of LENGTH characters.
 
@@ -212,7 +212,7 @@ COMMENTS should be as for `oggc-construct-comment-string'."
           (insert (oggc-construct-vendor vendor)
                   (oggc-construct-comment-string comments))))
       (write-region nil nil file))))
-  
+
 (defun oggc-construct-comment-string (comments)
   "Construct a string off Ogg-Vorbis comment headers from COMMENTS.
 

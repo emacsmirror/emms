@@ -22,21 +22,24 @@
 
 ;;; Commentary:
 
-;; When read from process, first check the CAR part of
-;; `emms-i18n-default-coding-system', if non-nil, use this for decode, and
-;; nerver detect coding system, if nil, first call
-;; `emms-i18n-coding-dectect-functions' to get coding system, if success,
-;; decode the result, otherwise, use `emms-i18n-detect-coding-function',
-;; the emacs detect coding function, if the coding detected is not in
+;; When reading from process, first check the car part of
+;; `emms-i18n-default-coding-system', if non-nil, use this for decode,
+;; and nerver detect coding system, if nil, first call
+;; `emms-i18n-coding-detect-functions' to get coding system, if
+;; success, decode the result, otherwise, use
+;; `emms-i18n-detect-coding-function', the Emacs detect coding
+;; function, if the coding detected is not in
 ;; `emms-i18n-nerver-used-coding-system', decode it, otherwise use
 ;; locale-coding-system.
 ;;
-;; When write send data to process, first check the CDR part of
-;; `emms-i18n-default-coding-system', if non-nil, use this to encode data,
-;; otherwise do nothing, that means use `default-process-coding-system' or
-;; `process-coding-system-alist' to encode data.
+;; When writing/sending data to process, first check the cdr part of
+;; `emms-i18n-default-coding-system', if non-nil, use this to encode
+;; data, otherwise do nothing, that means use
+;; `default-process-coding-system' or `process-coding-system-alist' to
+;; encode data.
 
-;; Put this file into your load-path and the following into your ~/.emacs:
+;; Put this file into your load-path and the following into your
+;; ~/.emacs:
 ;;   (require 'emms-i18n)
 
 ;;; Code:
@@ -49,20 +52,22 @@
 
 (defvar emms-i18n-nerver-used-coding-system
   '(raw-text undecided)
-  "If the `emms-i18n-coding-dectect-functions' return coding system in
-this list, use `emms-i18n-default-coding-system' instead.")
+  "If the `emms-i18n-coding-detect-functions' return coding
+system in this list, use `emms-i18n-default-coding-system'
+instead.")
 
 (defvar emms-i18n-coding-system-for-read 'utf-8
   "If coding detect failed, use this for decode.")
 
 (defvar emms-i18n-default-coding-system '(no-conversion . no-conversion)
-  "If non-nil, used for decode and encode.")
+  "If non-nil, use this for decode and encode.")
 
-(defvar emms-i18n-coding-dectect-functions nil
+(defvar emms-i18n-coding-detect-functions nil
   "A list of function to call to detect codings.")
 
 (defvar emms-i18n-detect-max-size 10000
-  "Max bytes to detect coding system. Nil mean scan whole buffer.")
+  "Maximum amount of bytes to detect coding system.  nil mean
+  scan whole buffer.")
 
 (defun emms-i18n-iconv (from to str)
   "Convert STR from FROM coding to TO coding."
@@ -85,7 +90,7 @@ this list, use `emms-i18n-default-coding-system' instead.")
     (emms-i18n-iconv-region (point-min) (point-max) from to)))
 
 (defun emms-i18n-set-default-coding-system (read-coding write-coding)
-  "Set `emms-i18n-default-coding-system'"
+  "Set `emms-i18n-default-coding-system'."
   (interactive "zSet coding system for read: \nzSet coding system for write: ")
   (setq emms-i18n-default-coding-system
         (cons
@@ -93,27 +98,27 @@ this list, use `emms-i18n-default-coding-system' instead.")
          (and (coding-system-p write-coding) write-coding)))
   (message (concat
             (if (car emms-i18n-default-coding-system)
-                (format "The coding system for read is %S." (car emms-i18n-default-coding-system))
-              "Good, you want detect coding system by me!")
-            (format " The coding system for write is %S."
+                (format "The coding system for reading is %S." (car emms-i18n-default-coding-system))
+              "Good, you want me to detect coding system!")
+            (format " The coding system for writing is %S."
                     (or (cdr emms-i18n-default-coding-system)
                         (cdr default-process-coding-system))))))
 
 (defun emms-i18n-call-process-simple (&rest args)
-  "This function run program and return the program result. 
-If the CAR part of `emms-i18n-default-coding-system' is non-nil,
-the program result will be decode use the CAR part of
-emms-i18n-default-coding-system. Otherwise, use
-`emms-i18n-coding-dectect-functions' to detect the coding system
-of the result. If the emms-i18n-coding-dectect-functions failed,
-use `emms-i18n-detect-coding-function' to detect coding
-system. If all the coding system is nil or in
+  "This function runs a program and returns the program result.
+If the car part of `emms-i18n-default-coding-system' is non-nil,
+the program result will be decoded using the car part of
+emms-i18n-default-coding-system.  Otherwise, use
+`emms-i18n-coding-detect-functions' to detect the coding system
+of the result.  If the `emms-i18n-coding-detect-functions'
+failed, use `emms-i18n-detect-coding-function' to detect coding
+system.  If all the coding systems are nil or in
 `emms-i18n-never-used-coding-system', decode the result using
 `emms-i18n-coding-system-for-read'.
 
 ARGS are the same as in `call-process', except the BUFFER should
-always have value t. Otherwise the coding detection will not
-perform."
+always have value t.  Otherwise the coding detection will not be
+performed."
   (let ((default-process-coding-system (copy-tree default-process-coding-system))
         (process-coding-system-alist nil) exit pos)
     (when (eq (nth 2 args) 't)
@@ -129,10 +134,11 @@ perform."
 
 ;; Is this function useful?
 (defun emms-i18n-call-process (&rest args)
-  "Run the program like `call-process'. If
-the cdr part `emms-i18n-default-coding-system' is non-nil, the string in
-ARGS will be encode by the CDR part of `emms-i18n-default-coding-system',
-otherwise, it is pass all parameter to `call-process'."
+  "Run the program like `call-process'.  If the cdr part of
+`emms-i18n-default-coding-system' is non-nil, the string in ARGS
+will be encoded by the cdr part of
+`emms-i18n-default-coding-system', otherwise, all parameters are
+simply passed to `call-process'."
   (with-temp-buffer
     (if (cdr emms-i18n-default-coding-system)
         (let ((default-process-coding-system emms-i18n-default-coding-system)
@@ -148,9 +154,10 @@ otherwise, it is pass all parameter to `call-process'."
                            (point)) t))
 
 (defun emms-i18n-detect-buffer-coding-system (&optional buf)
-  "Before call this function, make sure the buffer is literal"
+  "Before calling this function, make sure the buffer is
+literal."
   (let ((size (- (point-max) (point-min)))
-        (func (append emms-i18n-coding-dectect-functions 'emms-i18n-detect-coding-function))
+        (func (append emms-i18n-coding-detect-functions 'emms-i18n-detect-coding-function))
         coding)
     (save-excursion
       (and buf (set-buffer buf))

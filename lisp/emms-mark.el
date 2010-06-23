@@ -1,4 +1,4 @@
-;;; emms-mark.el --- mark track like dired
+;;; emms-mark.el --- mark tracks like dired
 
 ;; Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 ;;
@@ -22,7 +22,7 @@
 
 ;;; Commentary:
 
-;; Provide mark operation to tracks
+;; Provide mark operations to tracks.
 
 ;; Put this file into your load-path and the following into your ~/.emacs:
 ;;   (require 'emms-mark)
@@ -133,7 +133,7 @@ See `emms-mark-unmark-track' for further details."
   (emms-mark-do-with-marked-track 'emms-mark-unmark-track))
 
 (defun emms-mark-regexp (regexp arg)
-  "Mark all tracks matching REGEXP. A prefix argument means to
+  "Mark all tracks matching REGEXP.  A prefix argument means to
 unmark them instead."
   (interactive
    (list

@@ -1,9 +1,9 @@
 News since version 3.0:
 
   - Drop support for emms-player-gstreamer.
-  - emms-player-mplayer: Remove codes for loading movie subtitles
-    automatically by emms, since mplayer has an option(`sub-fuzziness')
-    controlling that.
+  - emms-player-mplayer: Remove code for loading movie subtitles
+    automatically by emms, since mplayer has an option
+    (`sub-fuzziness') controlling that.
 
 News since version 2.1:
 
@@ -44,7 +44,7 @@ News since version 2.1:
       emms-lastfm is loaded and active.
   - emms-playing-time supports different display styles now.
   - emms-lyrics: Now support lyrics auto-scrolling.
-  - emms-player-mplayer: capable of loading movie subtitles
+  - emms-player-mplayer: Capable of loading movie subtitles
     automatically now.
 
 News since version 2.0:
@@ -64,5 +64,5 @@ News since version 2.0:
 
 User-visible bug fixes:
 
-  - The emms-playlist-mode is now much faster
+  - The emms-playlist-mode is now much faster.
   - MP3s with errors are now playable when using the remote player.

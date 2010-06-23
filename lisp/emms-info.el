@@ -34,11 +34,13 @@
 ;; info-performer - string naming the performer
 ;; info-title - string naming the title of the song
 ;; info-album - string naming the album
-;; info-tracknumber - string(?) naming the track number
+;; info-tracknumber - string (?) naming the track number
 ;; info-year - string naming the year
 ;; info-note - string of free-form entry
 ;; info-genre - string naming the genre
 ;; info-playing-time - number giving the seconds of playtime
+
+;; FIXME: info-tracknumber: really string?
 
 ;;; Code:
 
@@ -46,26 +48,26 @@
 (require 'later-do)
 
 (defgroup emms-info nil
-  "*Track information. ID3, OGG, etc."
+  "*Track information.  ID3, OGG, etc."
   :group 'emms)
 
 (defcustom emms-info-auto-update t
-  "*Non-nil when EMMS should update track information if the file changes.
-This will cause hard drive activity on track loading. If this is
+  "*Non-nil if EMMS should update track information if the file changes.
+This will cause hard drive activity on track loading.  If this is
 too annoying for you, set this variable to nil."
   :type 'boolean
   :group 'emms-info)
 
 (defcustom emms-info-asynchronously t
-  "*Non-nil when track information should be loaded asynchronously.
+  "*Non-nil if track information should be loaded asynchronously.
 This requires `later-do', which should come with EMMS."
   :type 'boolean
   :group 'emms-info)
 
 (defcustom emms-info-report-each-num-tracks 200
   "*Non-zero will report progress information every number of tracks.
-The default is to display a message every 200 tracks.
-This variable is only used when adding tracks asynchronously."
+The default is to display a message every 200 tracks.  This
+variable is only used when adding tracks asynchronously."
   :type 'integer
   :group 'emms-info)
 
@@ -112,7 +114,7 @@ Return t when the track got changed."
           (if (zerop
                (mod emms-info-asynchronous-tracks
                     emms-info-report-each-num-tracks))
-              (message "EMMS: %d tracks to go.."
+              (message "EMMS: %d tracks to go..."
                        emms-info-asynchronous-tracks)))))))
 
 (defun emms-info-track-file-mtime (track)

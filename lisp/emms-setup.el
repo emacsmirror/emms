@@ -25,7 +25,7 @@
 ;;; Commentary:
 
 ;; This file provides the `emms-setup' feature. With `emms-setup' we
-;; can setup Emms with different features enabled. The use of this
+;; can setup Emms with different features enabled.  The use of this
 ;; feature is documented in the Emms manual which is distributed with
 ;; Emms.
 ;;
@@ -95,7 +95,7 @@ audio files, and a metadata cache."
 ;;;###autoload
 (defun emms-all ()
   "An Emms setup script.
-Everything included in the `emms-standard' setup and adds all the
+Everything included in the `emms-standard' setup and all the
 stable features which come with the Emms distribution."
   ;; include
   (emms-standard)
@@ -127,10 +127,10 @@ stable features which come with the Emms distribution."
 ;;;###autoload
 (defun emms-devel ()
   "An Emms setup script.
-Everything included in the `emms-all' setup and adds all the
-features which come with the Emms distribution regardless of if
-they are considered stable or not.  Use this if you like living
-on the edge."
+Everything included in the `emms-all' setup and all the features
+which come with the Emms distribution regardless of whether they
+are considered stable or not.  Use this if you like living on the
+edge."
   ;; include
   (emms-all)
   ;; define
