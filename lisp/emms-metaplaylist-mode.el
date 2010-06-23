@@ -24,9 +24,8 @@
 ;;; Commentary:
 ;;
 ;; `emms-metaplaylist-mode' creates an interactive list of all the
-;; Emms playlist buffers. The currently active buffer is
-;; highlighted. You can choose a buffer from the list with RET and get
-;; taken there.
+;; Emms playlist buffers.  The currently active buffer is highlighted.
+;; You can choose a buffer from the list with RET and get taken there.
 
 ;;; Code:
 
@@ -103,8 +102,8 @@
 		     (point-at-eol))))
 
 ;; Since there will never be a significantly large amount of playlist
-;; buffers co-existing at once, we allow ourselves not to keep
-;; state. We regenerate the playlists buffer anew on demand.
+;; buffers co-existing at once, we allow ourselves not to keep state.
+;; We regenerate the playlists buffer anew on demand.
 (defun emms-metaplaylist-mode-create ()
   "Create or recreate the meta-playlist buffer."
   (let ((name emms-metaplaylist-mode-buffer-name)
@@ -140,7 +139,7 @@
   "Creates a new buffer called buffer-name, which will be ready
 to host EMMS tracks."
   (interactive "sBuffer Name: ")
-  (if(get-buffer buffer-name)
+  (if (get-buffer buffer-name)
       (error "Buffer must not exist.")
     (let ((buf (get-buffer-create buffer-name)))
       (with-current-buffer buf
@@ -171,10 +170,9 @@ to host EMMS tracks."
   (kill-all-local-variables)
 
   (use-local-map emms-metaplaylist-mode-map)
-  (setq major-mode 'emms-metaplaylist-mode
-	mode-name "Emms-MetaPlaylist")
-
-  (setq buffer-read-only t)
+  (setq major-mode       'emms-metaplaylist-mode
+        mode-name        "Emms-MetaPlaylist"
+        buffer-read-only t)
 
   (run-hooks 'emms-metaplaylist-mode-hooks))
 

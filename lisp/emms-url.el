@@ -57,10 +57,10 @@ If you want to escape parts of URLs thoroughly, then use
   "Replace special characters in S using the `%xx' escape.
 This is useful for escaping parts of URLs, but not entire URLs.
 
-Characters in [a-zA-Z_.-/] and SAFE(default is \"\") will never be
-quoted.
-e.g.,
-    (emms-url-quote \"abc def\") => \"abc%20def\"."
+Characters in [a-zA-Z_.-/] and SAFE (default is \"\") will never
+be quoted.
+
+E. g., (emms-url-quote \"abc def\") => \"abc%20def\"."
   (if (not (stringp s))
       ""
     (or safe (setq safe ""))

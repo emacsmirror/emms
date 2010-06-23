@@ -31,7 +31,7 @@
   :group 'emms)
 
 (defcustom emms-playlist-limit-hook nil
-  "Hooks to run after each limit operations."
+  "Hooks to run after each limit operation."
   :type 'symbol
   :group 'emms-playing-limit)
 
@@ -121,7 +121,7 @@
 ;;; Low Level Functions
 
 (defvar emms-playlist-limit-tracks nil
-  "All tracks in playlist buffer(unlimited).")
+  "All tracks in playlist buffer (unlimited).")
 
 (defun emms-playlist-limit-insert ()
   "Run in `emms-playlist-source-inserted-hook'."
@@ -142,8 +142,7 @@
 
 (defun emms-playlist-limit-do (name value)
   "Limit by NAME with VALUE.
-e.g.,
-    (emms-playlist-limit-do 'info-artist \"Jane Zhang\")
+E. g., (emms-playlist-limit-do 'info-artist \"Jane Zhang\").
 
 When NAME is nil, show all tracks again.
 

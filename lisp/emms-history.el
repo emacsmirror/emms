@@ -22,8 +22,8 @@
 
 ;;; Commentary:
 
-;; Saves all playlists when you close emacs.  When you start it up again use
-;; M-x emms-history-load to restore all saved playlists.
+;; Saves all playlists when you close emacs.  When you start it up
+;; again use M-x emms-history-load RET to restore all saved playlists.
 
 ;; To use it put the following into your ~/.emacs:
 ;;

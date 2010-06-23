@@ -28,7 +28,7 @@
 
 ;; This is a simple player interface - if you have an external player
 ;; that just expects the filename to play as an argument, this should
-;; be able to use it. See the define-emms-simple-player lines at the
+;; be able to use it.  See the define-emms-simple-player lines at the
 ;; end of this file for examples.
 
 ;; Add the following to your `emms-player-list':
@@ -51,9 +51,9 @@
 (defmacro define-emms-simple-player (name types regex command &rest args)
   "Define a simple player with the use of `emms-define-player'.
 NAME is used to contruct the name of the function like
-emms-player-NAME. TYPES is a list of track types understood by
-this player. REGEX must be a regexp that matches the filenames
-the player can play. COMMAND specifies the command line argument
+emms-player-NAME.  TYPES is a list of track types understood by
+this player.  REGEX must be a regexp that matches the filenames
+the player can play.  COMMAND specifies the command line argument
 to call the player and ARGS are the command line arguments."
   (let ((group (intern (concat "emms-player-" (symbol-name name))))
         (command-name (intern (concat "emms-player-"
@@ -104,10 +104,10 @@ to call the player and ARGS are the command line arguments."
 
 ;; Global variables
 (defvar emms-player-simple-process-name "emms-player-simple-process"
-  "The name of the simple player process")
+  "The name of the simple player process.")
 
 (defun emms-player-simple-stop ()
-  "Stop the currently playing process, if indeed there is one"
+  "Stop the currently playing process, if indeed there is one."
   (let ((process (get-process emms-player-simple-process-name)))
     (when process
       (kill-process process)
@@ -115,9 +115,9 @@ to call the player and ARGS are the command line arguments."
 
 ;; Utility-functions
 (defun emms-player-simple-start (filename player cmdname params)
-  "Starts a process playing FILENAME using the specified CMDNAME with
-the specified PARAMS.
-PLAYER is the name of the current player."
+  "Starts a process playing FILENAME using the specified CMDNAME
+with the specified PARAMS.  PLAYER is the name of the current
+player."
   (let ((process (apply 'start-process
                         emms-player-simple-process-name
                         nil
