@@ -26,7 +26,7 @@
 ;;; Commentary:
 
 ;; This file contains a track source for EMMS that is based on the
-;; file system. You can retrieve single files or whole directories.
+;; file system.  You can retrieve single files or whole directories.
 ;; Also, this file offers the commands to play from these sources.
 
 ;;; Code:
@@ -57,14 +57,13 @@
 
 (defcustom emms-source-file-directory-tree-function
   'emms-source-file-directory-tree-internal
-  "*A function to call that searches in a given directory all files
-that match a given regex. DIR and REGEX are the only arguments passed
-to this function.
-You have two build-in options:
-`emms-source-file-directory-tree-internal' will work always, but might
-be slow.
-`emms-source-file-directory-tree-find' will work only if you have GNU
-find, but it's faster."
+  "*A function to call that searches in a given directory all
+files that match a given regex.  DIR and REGEX are the only
+arguments passed to this function.  You have two built-in
+options: `emms-source-file-directory-tree-internal' will work
+always, but might be slow.
+`emms-source-file-directory-tree-find' will work only if you have
+GNU find, but it's faster."
   :type 'function
   :options '(emms-source-file-directory-tree-internal
              emms-source-file-directory-tree-find)
@@ -97,8 +96,8 @@ in code."
 ;;;###autoload (autoload 'emms-play-file "emms-source-file" nil t)
 ;;;###autoload (autoload 'emms-add-file "emms-source-file" nil t)
 (define-emms-source file (file)
-  "An EMMS source for a single file - either FILE, or queried from the
-user."
+  "An EMMS source for a single file - either FILE, or queried
+from the user."
   (interactive (list (read-file-name "Play file: "
                                      emms-source-file-default-directory
                                      emms-source-file-default-directory
@@ -111,8 +110,8 @@ user."
 ;;;###autoload (autoload 'emms-play-directory "emms-source-file" nil t)
 ;;;###autoload (autoload 'emms-add-directory "emms-source-file" nil t)
 (define-emms-source directory (dir)
-  "An EMMS source for a whole directory tree - either DIR, or queried
-from the user."
+  "An EMMS source for a whole directory tree - either DIR, or
+queried from the user."
   (interactive (list
                 (emms-read-directory-name "Play directory: "
                                           emms-source-file-default-directory
@@ -129,8 +128,8 @@ from the user."
 ;;;###autoload (autoload 'emms-play-directory-tree "emms-source-file" nil t)
 ;;;###autoload (autoload 'emms-add-directory-tree "emms-source-file" nil t)
 (define-emms-source directory-tree (dir)
-  "An EMMS source for multiple directory trees - either DIR, or the
-value of `emms-source-file-default-directory'."
+  "An EMMS source for multiple directory trees - either DIR, or
+the value of `emms-source-file-default-directory'."
   (interactive (list
                 (emms-read-directory-name "Play directory tree: "
                                           emms-source-file-default-directory
@@ -142,7 +141,7 @@ value of `emms-source-file-default-directory'."
     (emms-playlist-ensure-playlist-buffer)
     (mapc (lambda (file)
 	    (unless (string-match emms-source-file-exclude-regexp file)
-	      (funcall emms-playlist-insert-track-function 
+	      (funcall emms-playlist-insert-track-function
 		       (emms-track 'file file))))
 	  files)))
 
@@ -176,7 +175,6 @@ value of `emms-source-file-default-directory'."
         (with-current-buffer emms-source-old-buffer
           (dired-get-marked-files))))
 
-
 ;;; Helper functions
 
 ;;;###autoload
@@ -193,7 +191,8 @@ This function uses `emms-source-file-directory-tree-function'."
 
 (defun emms-source-file-directory-tree-internal (dir regex)
   "Return a list of all files under DIR that match REGEX.
-This function uses only emacs functions, so it might be a bit slow."
+This function uses only emacs functions, so it might be a bit
+slow."
   (let ((files '())
         (dirs (list dir)))
     (while dirs
@@ -220,8 +219,8 @@ This function uses only emacs functions, so it might be a bit slow."
 
 (defun emms-source-file-directory-tree-find (dir regex)
   "Return a list of all files under DIR that match REGEX.
-This function uses the external find utility. The name for GNU find
-may be supplied using `emms-source-file-gnu-find'."
+This function uses the external find utility.  The name for GNU
+find may be supplied using `emms-source-file-gnu-find'."
   (with-temp-buffer
     (call-process emms-source-file-gnu-find
                   nil t nil
@@ -244,8 +243,8 @@ may be supplied using `emms-source-file-gnu-find'."
 
 ;;;###autoload
 (defun emms-source-file-regex ()
-  "Return a regexp that matches everything any player (that supports
-files) can play."
+  "Return a regexp that matches everything any player (that
+supports files) can play."
   (mapconcat (lambda (player)
                (or (emms-player-get player 'regex)
                    ""))
@@ -258,7 +257,7 @@ files) can play."
 
 ;;;###autoload
 (defun emms-locate (regexp)
-  "Search for REGEXP and display the results in a locate buffer"
+  "Search for REGEXP and display the results in a locate buffer."
   (interactive "sRegexp to search for: ")
   (require 'locate)
   (save-window-excursion
@@ -286,7 +285,8 @@ files) can play."
 ;;;###autoload (autoload 'emms-play-streamlist "emms-source-file" nil t)
 ;;;###autoload (autoload 'emms-add-streamlist "emms-source-file" nil t)
 (define-emms-source streamlist (streamlist)
-  "An EMMS source for streaming playlists (usually URLs ending in .pls)."
+  "An EMMS source for streaming playlists (usually URLs ending in
+.pls)."
   (interactive "sPlay streamlist URL: ")
   (emms-playlist-insert-track (emms-track 'streamlist streamlist)))
 
@@ -296,7 +296,6 @@ files) can play."
   "An EMMS source for Last.fm URLs, which begin with lastfm://."
   (interactive "sPlay Last.fm URL: ")
   (emms-playlist-insert-track (emms-track 'lastfm lastfm-url)))
-
 
 (provide 'emms-source-file)
 ;;; emms-source-file.el ends here

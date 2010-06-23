@@ -51,14 +51,14 @@ Remember to call `emms-playlist-sort-map-setup' if you modify it."
 ;;; User Interfaces
 
 (defmacro define-emms-playlist-sort (attribute)
-  "Macro for defining emms playlist sort functions on strings ."
+  "Macro for defining emms playlist sort functions on strings."
   `(defun ,(intern (format "emms-playlist-sort-by-%s" attribute)) ()
      ,(format "Sort emms playlist by %s, increasingly.
 With a prefix argument, decreasingly." attribute)
      (interactive)
      (emms-playlist-sort
       '(lambda (a b)
-         (funcall 
+         (funcall
           (if current-prefix-arg 'emms-string> 'emms-string<)
           (emms-track-get a (quote ,attribute))
           (emms-track-get b (quote ,attribute)))))))
@@ -80,7 +80,8 @@ See `emms-sort-natural-order-less-p'."
 
 (defun emms-playlist-sort-by-list ()
   "Sort emms playlist by `emms-playlist-sort-list'.
-The sort will be carried out until comparsion succeeds, increasingly."
+The sort will be carried out until comparison succeeds,
+increasingly."
   (interactive)
   (emms-playlist-sort 'emms-playlist-sort-by-list-p))
 
@@ -90,7 +91,7 @@ With a prefix argument, decreasingly."
   (interactive)
   (emms-playlist-sort
    '(lambda (a b)
-      (funcall 
+      (funcall
        (if current-prefix-arg 'not 'identity)
        (time-less-p
         (or (emms-track-get a 'last-played) '(0 0 0))
@@ -102,7 +103,7 @@ With a prefix argument, decreasingly."
   (interactive)
   (emms-playlist-sort
    '(lambda (a b)
-      (funcall 
+      (funcall
        (if current-prefix-arg 'not 'identity)
        (< (or (emms-track-get a 'play-count) 0)
           (or (emms-track-get b 'play-count) 0))))))
@@ -113,7 +114,7 @@ With a prefix argument, decreasingly."
   (interactive)
   (emms-playlist-sort
    '(lambda (a b)
-      (funcall 
+      (funcall
        (if current-prefix-arg 'emms-string> 'emms-string<)
        (file-name-extension (emms-track-get a 'name))
        (file-name-extension (emms-track-get b 'name))))))
@@ -170,8 +171,8 @@ With a prefix argument, decreasingly."
 
 (defun emms-sort-natural-order-less-p (a b)
   "Sort two tracks by natural order.
-This is the order in which albums where intended to be played.
-ie. by album name and then by track number."
+This is the order in which albums where intended to be played,
+i. e. by album name and then by track number."
   (let ((album-a (emms-track-get a 'info-album))
         (album-b (emms-track-get b 'info-album)))
     (or (emms-string< album-a album-b)

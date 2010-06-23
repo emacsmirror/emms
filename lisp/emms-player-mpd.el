@@ -1277,7 +1277,6 @@ Afterwards, clear the EMMS cache and call
 	 (emms-cache-set-from-mpd-all)))
      "updating_db")))
 
-
 (provide 'emms-player-mpd)
 
 ;;; emms-player-mpd.el ends here

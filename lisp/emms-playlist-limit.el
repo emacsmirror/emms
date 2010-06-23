@@ -171,7 +171,6 @@ See `emms-info-mp3find-arguments' for possible options for NAME."
       (run-hooks 'emms-playlist-limit-hook)
       (emms-playlist-mode-center-current))))
 
-
 (provide 'emms-playlist-limit)
 
 ;;; emms-playlist-limit.el ends here

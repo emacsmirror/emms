@@ -37,7 +37,7 @@
 ;; maintainer (email at the top of this file).
 
 ;;; History:
-;; 
+;;
 ;; This library was re-implemented from scratch around January of
 ;; 2009. If you are looking for the old code then grab source code
 ;; older than that.

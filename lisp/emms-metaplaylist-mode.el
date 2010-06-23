@@ -149,7 +149,7 @@ to host EMMS tracks."
 
 (defun emms-metaplaylist-set-active ()
   (interactive)
-  (emms-playlist-set-playlist-buffer 
+  (emms-playlist-set-playlist-buffer
    (get-buffer (buffer-substring (point-at-bol) (point-at-eol))))
   (let ((ici (point)))
     (emms-metaplaylist-mode-go)

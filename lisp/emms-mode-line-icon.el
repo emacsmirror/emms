@@ -24,7 +24,7 @@
 ;; along with EMMS; if not, write to the Free Software Foundation,
 ;; Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
 
-;; Commentary: 
+;; Commentary:
 
 ;; This EMMS extension shows an icon in the mode-line next to the
 ;; info-tag.
@@ -38,9 +38,9 @@
 
 (defvar emms-mode-line-icon-before-format ""
   "String to put before the icon, in the mode-line.
-For example, if you want to have something like :
+For example, if you want to have something like:
 \[ <icon> Foo - The Foo Song ]
-You should set it to \"[\", and set emms-mode-line-format to \"%s ]\"")
+You should set it to \"[\", and set emms-mode-line-format to \"%s ]\".")
 
 (defvar emms-mode-line-icon-image-cache
   `(image :type xpm :ascent center :data ,(concat "/* XPM */
@@ -62,7 +62,6 @@ static char *note[] = {
 \"#######...\",
 \"######....\",
 \"#######..#\"};")))
-
 
 (defun emms-mode-line-icon-function ()
   (concat " "

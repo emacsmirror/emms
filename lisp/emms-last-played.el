@@ -61,7 +61,6 @@ You can use the functions `emms-last-played-seconds-today',
 number of seconds passed since the start of today, of this month,
 of this year, respectively.")
 
-
 (defun emms-last-played-update-track (track)
   "Updates the last-played time of TRACK."
   (emms-track-set track 'last-played (current-time)))

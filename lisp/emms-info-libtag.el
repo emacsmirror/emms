@@ -29,7 +29,7 @@
 ;; This code has been adapted from code found in mp3player.el, written
 ;; by Jean-Philippe Theberge (jphiltheberge@videotron.ca), Mario
 ;; Domgoergen (kanaldrache@gmx.de) and Jorgen Schäfer
-;; <forcer@forcix.cx>
+;; <forcer@forcix.cx>.
 
 ;; To activate this method for getting info, use something like:
 
@@ -37,9 +37,8 @@
 ;; (add-to-list 'emms-info-functions 'emms-info-libtag)
 
 ;; Note that you should remove emms-info-mp3info and emms-info-ogginfo
-;; from the emms-info-functions list if you want to avoid
-;; conflicts. For example, to set libtag as your exclusive info
-;; provider:
+;; from the emms-info-functions list if you want to avoid conflicts.
+;; For example, to set libtag as your exclusive info provider:
 
 ;; (setq emms-info-functions '(emms-info-libtag))
 
@@ -52,7 +51,7 @@
 
 (defun emms-info-libtag (track)
   (when (and (eq 'file (emms-track-type track))
-             (string-match 
+             (string-match
               "\\.\\([Mm][Pp]3\\|[oO][gG][gG]\\|[fF][lL][aA][cC]\\|[sS][pP][xX]\\)\\'"
               (emms-track-name track)))
     (with-temp-buffer

@@ -45,7 +45,6 @@
 
 ;;; Code:
 
-
 (require 'emms)
 (require 'emms-playlist-mode)
 (require 'emms-volume-amixer)

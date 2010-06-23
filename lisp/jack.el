@@ -23,15 +23,16 @@
 ;;; Commentary:
 
 ;; JACK is a low-latency audio server, written for POSIX conformant
-;; operating systems such as GNU/Linux and Apple's OS X. It can connect a
-;; number of different applications to an audio device, as well as
-;; allowing them to share audio between themselves. Its clients can run in
-;; their own processes (ie. as normal applications), or they can run
-;; within the JACK server (ie. as a "plugin").
+;; operating systems such as GNU/Linux and Apple's OS X.  It can
+;; connect a number of different applications to an audio device, as
+;; well as allowing them to share audio between themselves.  Its
+;; clients can run in their own processes (i. e. as normal
+;; applications), or they can run within the JACK server (i. e. as a
+;; "plugin").
 ;;
-;; JACK was designed from the ground up for professional audio work, and
-;; its design focuses on two key areas: synchronous execution of all
-;; clients, and low latency operation.
+;; JACK was designed from the ground up for professional audio work,
+;; and its design focuses on two key areas: synchronous execution of
+;; all clients, and low latency operation.
 ;;
 ;; jack.el provides a facility for starting jackd from within Emacs.
 ;; It also provides convenience functions for prompting the user for
@@ -237,7 +238,7 @@ is given in jackd command-line."
 		  (append (list (append (list 'properties) (mapcar #'intern (split-string (match-string 1) ",")))) (cdr current-port)))))
 	(forward-line 1))
       result)))
-	  
+
 (defun jack-ports (program)
   (cdr (assoc program (jack-list))))
 
@@ -252,7 +253,7 @@ is given in jackd command-line."
     (or (car (member 'output props))
 	(car (member 'input props))
 	(error "Neither input nor output port"))))
-      
+
 (defun jack-read-program (prompt &optional predicate)
   (let ((progs (if (functionp predicate)
 		   (emms-remove-if-not predicate (jack-list))

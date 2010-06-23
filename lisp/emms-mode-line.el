@@ -134,7 +134,6 @@ Optional TRACK is used to be compatible with
     (setq frame-title-format
 	  (list "" emms-mode-line-initial-titlebar (funcall emms-mode-line-titlebar-function)))))
 
-
 (defun emms-mode-line-blank ()
   "Blank mode-line and titlebar but not quit `emms-mode-line'."
   (setq emms-mode-line-string nil)

@@ -25,9 +25,9 @@
 ;;; Commentary:
 
 ;; This code allows you to browse the metadata cache and add tracks to
-;; your playlist. To be properly useful, you should M-x
-;; emms-add-directory-tree to all the files you own at least once so
-;; that the cache is fully populated.
+;; your playlist.  To be properly useful, you should M-x
+;; emms-add-directory-tree RET to all the files you own at least once
+;; so that the cache is fully populated.
 
 ;; Usage
 ;; -------------------------------------------------------------------
@@ -38,17 +38,17 @@
 ;; (global-set-key (kbd "<f2>") 'emms-smart-browse)
 
 ;; The 'smart browsing' code attempts to link the browser and playlist
-;; windows together, so that closing one will close both. Activating
+;; windows together, so that closing one will close both.  Activating
 ;; it will toggle between three states:
 
-;; a) both windows displayed, with the browser focused
-;; b) focus switched to the playlist window
-;; c) the extra window closed, and both buffers buried
+;; a) both windows displayed, with the browser focused,
+;; b) focus switched to the playlist window,
+;; c) the extra window closed, and both buffers buried.
 
-;; If you just want access to the browser, try M-x
-;; emms-browse-by-TYPE, where TYPE is one of artist, album, composer,
-;; genre or year. These commands can also be used while smart browsing to
-;; change the browsing category.
+;; If you just want access to the browser, try M-x emms-browse-by-TYPE
+;; RET, where TYPE is one of artist, album, composer, genre or year.
+;; These commands can also be used while smart browsing to change the
+;; browsing category.
 
 ;; If you don't want to activate the code with (emms-devel), you can
 ;; activate it manually with:
@@ -112,34 +112,34 @@
 ;; -------------------------------------------------------------------
 
 ;; The browser will attempt to display cover images if they're
-;; available. By default it looks for images cover_small.jpg,
-;; cover_med.jpg, etc. Customize emms-browser-covers to use your own
-;; covers. Note that you'll probably want to resize your existing
-;; covers to particular sizes. Suggested sizes are 100x100 for small,
+;; available.  By default it looks for images cover_small.jpg,
+;; cover_med.jpg, etc.  Customize `emms-browser-covers' to use your
+;; own covers.  Note that you'll probably want to resize your existing
+;; covers to particular sizes.  Suggested sizes are 100x100 for small,
 ;; and 200x200 for medium.
 
 ;; Also emacs by default will jump around a lot when scrolling a
-;; buffer with images. Set the following variables to prevent that:
+;; buffer with images.  Set the following variables to prevent that:
 
 ;;   scroll-up-aggressively 0.0
 ;;   scroll-down-aggressively 0.0
 
 ;; To show a 'no cover' image for albums which don't have a cover, add
-;; the following code to your .emacs:
+;; the following code to your ~/.emacs:
 
 ;; (setq emms-browser-default-covers
 ;;   (list "/path/to/cover_small.jpg" nil nil)
 
-;; (the medium and large images can be set too, if you want)
+;; (The medium and large images can be set too, if you want.)
 
-;; You can download an example 'no cover' image from:
-;; http://repose.cx/cover_small.jpg
+;; You can download an example 'no cover' image from
+;; <URI:http://repose.cx/cover_small.jpg>.
 
 ;; Filtering tracks
 ;; -------------------------------------------------------------------
 
 ;; If you want to display a subset of your collection (such as a
-;; directory of 80s music, only avi files, etc), then you can make
+;; directory of 80s music, only AVI files, etc.), then you can make
 ;; some filters using code like this:
 
 ;; ;; show everything
@@ -148,7 +148,7 @@
 ;; ;; Set "all" as the default filter
 ;; (emms-browser-set-filter (assoc "all" emms-browser-filters))
 
-;; ;; show all files (no streamlists, etc)
+;; ;; show all files (no streamlists, etc.)
 ;; (emms-browser-make-filter
 ;;  "all-files" (emms-browser-filter-only-type 'file))
 
@@ -161,12 +161,12 @@
 ;;  "last-month" (emms-browser-filter-only-recent 30))
 
 ;; After executing the above commands, you can use M-x
-;; emms-browser-show-all, emms-browser-show-80s, etc to toggle
-;; between different collections. Alternatively you can use '<' and
+;; emms-browser-show-all RET, emms-browser-show-80s, etc. to toggle
+;; between different collections.  Alternatively you can use '<' and
 ;; '>' to cycle through the available filters.
 
 ;; The second argument to make-filter is a function which returns t if
-;; a single track should be filtered. You can write your own filter
+;; a single track should be filtered.  You can write your own filter
 ;; functions to check the type of a file, etc.
 
 ;; Some more examples:
@@ -189,7 +189,7 @@
 ;; -------------------------------------------------------------------
 
 ;; You can change the way the tree is displayed by modifying
-;; `emms-browser-next-mapping-type'. The following code displays
+;; `emms-browser-next-mapping-type'.  The following code displays
 ;; artist->track instead of artist->album->track when you switch to
 ;; the 'singles' filter.
 
@@ -209,16 +209,16 @@
 ;; -------------------------------------------------------------------
 
 ;; Format strings govern the way items are displayed in the browser
-;; and playlist. You can customize these if you wish.
+;; and playlist.  You can customize these if you wish.
 
 ;; `emms-browser-default-format' controls the format to use when no
-;; other format has been explicitly defined. By default, only track and
-;; albums deviate from the default.
+;; other format has been explicitly defined.  By default, only track
+;; and albums deviate from the default.
 
 ;; To customise the format of a particular type, find the name of the
-;; field you want to use (eg `info-artist', `info-title', etc), and
-;; insert that into emms-browser-<type>-format or
-;; emms-browser-playlist-<type>-format. For example, if you wanted to
+;; field you want to use (e. g. `info-artist', `info-title', etc.),
+;; and insert that into emms-browser-<type>-format or
+;; emms-browser-playlist-<type>-format.  For example, if you wanted to
 ;; remove track numbers from tracks in both the browser and playlist,
 ;; you could do:
 
@@ -229,7 +229,7 @@
 ;; The format specifiers available include:
 
 ;; %i    indent relative to the current level
-;; %n    the value of the item - eg -info-artist might be "pink floyd"
+;; %n    the value of the item - e. g. -info-artist might be "pink floyd"
 ;; %y    the album year
 ;; %A    the album name
 ;; %a    the artist name of the track
@@ -241,6 +241,8 @@
 ;; %cM   a medium album cover
 ;; %cL   a big album cover
 
+;; FIXME: Documentation of '%n' is unclear.
+
 ;; Note that if you use track-related items like %t, it will take the
 ;; data from the first track.
 
@@ -250,9 +252,9 @@
 ;; The faces used to display the various fields are also customizable.
 ;; They are in the format emms-browser-<type>-face, where type is one
 ;; of "year/genre", "artist", "composer", "performer", "album" or
-;; "track". Note that faces lack the initial "info-" part. For example,
-;; to change the artist face, type
-;; M-x customize-face emms-browser-artist-face.
+;; "track".  Note that faces lack the initial "info-" part.  For
+;; example, to change the artist face, type M-x customize-face
+;; emms-browser-artist-face RET.
 
 ;; Deleting files
 ;; -------------------------------------------------------------------
@@ -273,8 +275,8 @@
 ;;       (condition-case nil
 ;;           (delete-file (concat dir cover))
 ;;         (error nil)))
-;;     ;; try and delete empty parents - we actually do the work of the
-;;     ;; calling function here, too
+;;     ;; try and delete empty parents - we actually do the work of
+;;     ;; the calling function here, too
 ;;     (let (failed)
 ;;       (while (and (not (string= dir "/"))
 ;;                   (not failed))
@@ -314,8 +316,9 @@
 (defcustom emms-browser-make-name-function
   'emms-browser-make-name-standard
   "*A function to make names for entries and subentries.
-Overriding this function allows you to customise how various elements
-are displayed. It is called with two arguments - track and type."
+Overriding this function allows you to customise how various
+elements are displayed.  It is called with two arguments - track
+and type."
   :group 'emms-browser
   :type 'function)
 
@@ -323,9 +326,9 @@ are displayed. It is called with two arguments - track and type."
   'emms-browser-get-track-field-simple
   "*A function to get an element from a track.
 Change this to customize the way data is organized in the
-browser. For example,
+browser.  For example,
 `emms-browser-get-track-field-use-directory-name' uses the
-directory name to determine the artist. This means that
+directory name to determine the artist.  This means that
 soundtracks, compilations and so on don't populate the artist
 view with lots of 1-track elements."
   :group 'emms-browser
@@ -403,8 +406,8 @@ Use nil for no sorting."
 
 (defcustom emms-browser-delete-files-hook nil
   "*Hook run after files have been deleted.
-This hook can be used to clean up extra files, such as album covers.
-Called once for each directory."
+This hook can be used to clean up extra files, such as album
+covers.  Called once for each directory."
   :group 'emms-browser
   :type 'hook)
 
@@ -415,7 +418,7 @@ Called once for each directory."
   "The default buffer name.")
 
 (defvar emms-browser-top-level-hash nil
-  "The current mapping db, eg. artist -> track.")
+  "The current mapping db, e. g. artist -> track.")
 (make-variable-buffer-local 'emms-browser-top-level-hash)
 
 (defvar emms-browser-top-level-type nil
@@ -513,12 +516,12 @@ Called once for each directory."
 
 (defun emms-browser-create-or-focus (type)
   "Create a new browser buffer with BROWSE-FUNC, or switch.
-BROWSE-FUNC should fill the buffer with something of interest. An
-example function is `emms-browse-by-artist'."
+BROWSE-FUNC should fill the buffer with something of interest.
+An example function is `emms-browse-by-artist'."
   (let ((buf (emms-browser-get-buffer))
         wind)
     (if buf
-        ;; if the buffer is displayed, switch the window instead
+        ;; if the buffer is displayed, switch to the window instead
         (progn
           (setq wind (get-buffer-window buf))
           (if wind
@@ -565,7 +568,7 @@ example function is `emms-browse-by-artist'."
       (emms-browser-create))))
 
 (defun emms-browser-get-buffer ()
-  "Return the current buffer if it exists, or nil."
+  "Return the current browser buffer if it exists, or nil."
   (unless (or (null emms-browser-buffer)
               (not (buffer-live-p emms-browser-buffer)))
     emms-browser-buffer))
@@ -581,11 +584,11 @@ example function is `emms-browse-by-artist'."
   (bury-buffer))
 
 ;; --------------------------------------------------
-;; Top-level browsing methods - by artist/album/etc
+;; Top-level browsing methods - by artist/album/etc.
 ;; --------------------------------------------------
 
 ;; Since the number of tracks may be rather large, we use a hash to
-;; sort the top level elements into various categories. All
+;; sort the top level elements into various categories.  All
 ;; subelements will be stored in a bdata alist structure.
 
 (defmacro emms-browser-add-category (name type)
@@ -647,7 +650,7 @@ compilations, etc."
     (car (split-string basedir " - "))))
 
 (defun emms-browser-make-hash-by (type)
-  "Make a hash, mapping with TYPE, eg artist -> tracks."
+  "Make a hash, mapping with TYPE, e. g. artist -> tracks."
   (let ((hash (make-hash-table
                :test emms-browser-comparison-test))
         field existing-entry)
@@ -701,13 +704,14 @@ files are.
 
 Try the following commands:
 
- M-x emms-add-directory-tree:
+ M-x emms-add-directory-tree RET:
   Add all music in a directory and its subdirectories.
 
- M-x emms-add-directory:
+ M-x emms-add-directory RET:
   Add all music in a directory
 
- M-x emms-add-file: Add a single music file.
+ M-x emms-add-file RET:
+  Add a single music file.
 
 After you have added some files, wait for EMMS to say
 'all track information loaded,' then return to the
@@ -719,7 +723,8 @@ browser, and hit 'b 1' to refresh.")))
 
 (defun emms-browser-next-mapping-type (current-mapping)
   "Return the next sensible mapping.
-Eg. if CURRENT-MAPPING is currently 'info-artist, return 'info-album."
+E. g. if CURRENT-MAPPING is currently 'info-artist, return
+'info-album."
   (cond
    ((eq current-mapping 'info-artist) 'info-album)
    ((eq current-mapping 'info-composer) 'info-album)
@@ -776,7 +781,7 @@ artist1 -> album1 -> *track* 1.."
 
 (defun emms-browser-track-number (track)
   "Return a string representation of a track number.
-The string will end in a space. If no track number is available,
+The string will end in a space.  If no track number is available,
 return an empty string."
   (let ((tracknum (emms-track-get track 'info-tracknumber)))
     (if (or (not (stringp tracknum)) (string= tracknum "0"))
@@ -797,10 +802,10 @@ This will be in the form '(1998) '."
 
 (defun emms-browser-make-bdata (data name type level)
   "Return a browser data item from ALIST.
-DATA should be a list of DB items, or a list of tracks.
-NAME is a name for the DB item.
-TYPE is a category the data is organised by, such as 'info-artist.
-LEVEL is the number of the sublevel the db item will be placed in."
+DATA should be a list of DB items, or a list of tracks.  NAME is
+a name for the DB item.  TYPE is a category the data is organised
+by, such as 'info-artist.  LEVEL is the number of the sublevel
+the db item will be placed in."
   (list (cons 'type type)
         (cons 'level level)
         (cons 'name name)
@@ -830,7 +835,7 @@ Items with no metadata for TYPE will be placed in 'misc'"
 
 (defun emms-browser-make-sorted-alist (type tracks)
   "Return a sorted alist of TRACKS.
-TYPE is the metadata to make the alist by - eg. if it's
+TYPE is the metadata to make the alist by - e. g. if it's
 'info-artist, an alist of artists will be made."
   (emms-browser-sort-alist
    (emms-browser-make-alist type tracks)
@@ -931,7 +936,8 @@ Uses `emms-browser-alpha-sort-function'."
 
 (defun emms-browser-bdata-at-point ()
   "Return the bdata object at point.
-Includes information at point (such as album name), and metadata."
+Includes information at point (such as album name), and
+metadata."
   (get-text-property (point-at-bol)
                      'emms-browser-bdata))
 
@@ -977,8 +983,8 @@ information."
 
 (defun emms-browser-find-entry-more-than-level (level)
   "Move point to next entry more than LEVEL and return point.
-If no entry exits, return nil.
-Returns point if currently on a an entry more than LEVEL."
+If no entry exits, return nil.  Returns point if currently on a
+an entry more than LEVEL."
   (let ((old-pos (point))
         level-at-point)
     (forward-line 1)
@@ -990,11 +996,11 @@ Returns point if currently on a an entry more than LEVEL."
       nil)))
 
 (defun emms-browser-subitems-visible ()
-  "True if there are any subentries visible point."
+  "True if there are any subentries visible below point."
   (let ((current-level (emms-browser-level-at-point))
         new-level)
     (save-excursion
-      (re-search-forward "\n" nil t)
+      (re-search-forward "\n" nil t)   ;; FIXME: Replace with forward-line?
       (when (setq new-level (emms-browser-level-at-point))
         (> new-level current-level)))))
 
@@ -1006,8 +1012,8 @@ Returns point if currently on a an entry more than LEVEL."
 
 (defun emms-browser-move-up-level (&optional direction)
   "Move up one level if possible.
-Return true if we were able to move up.
-If DIRECTION is 1, move forward, otherwise move backwards."
+Return true if we were able to move up.  If DIRECTION is 1, move
+forward, otherwise move backwards."
   (let ((moved nil)
         (continue t)
         (current-level (emms-browser-level-at-point)))
@@ -1051,7 +1057,7 @@ Stops at the next line at the same level, or EOF."
                         (point-at-bol 2)))))))
 
 ;; --------------------------------------------------
-;; Dealing with the playlist (queuing songs, etc)
+;; Dealing with the playlist (queuing songs, etc.)
 ;; --------------------------------------------------
 
 (defun emms-browser-playlist-insert-group (bdata)
@@ -1302,7 +1308,7 @@ Disabled by default."
              (format "Really permanently delete these %d tracks? "
                      (length tracks)))
       (error "Cancelled!"))
-    (message "Deleting files..")
+    (message "Deleting files...")
     (dolist (track tracks)
       (setq path (emms-track-get track 'name))
       (delete-file path)
@@ -1316,7 +1322,7 @@ Disabled by default."
         (error nil)))
     ;; remove the item from the browser
     (emms-browser-delete-current-node)
-    (message "Deleting files..done")))
+    (message "Deleting files...done")))
 
 (put 'emms-browser-delete-files 'disabled t)
 
@@ -1380,13 +1386,13 @@ Disabled by default."
 
 (defcustom emms-browser-switch-to-playlist-on-add
   nil
-  "Whether to switch to to the playlist after adding files."
+  "Whether to switch to the playlist after adding files."
   :group 'emms-browser
   :type 'boolean)
 
 (defun emms-smart-browse ()
   "Display browser and playlist.
-Toggle between selecting browser, playlist or hiding both. Tries
+Toggle between selecting browser, playlist or hiding both.  Tries
 to behave sanely if the user has manually changed the window
 configuration."
   (interactive)
@@ -1434,7 +1440,7 @@ configuration."
     (emms-browser)))))
 
 (defun emms-browser-get-linked-buffer ()
-  "Return linked buffer (eg browser if playlist is selected."
+  "Return linked buffer (e. g. browser if playlist is selected)."
   (cond
    ((eq major-mode 'emms-browser-mode)
     (car (emms-playlist-buffer-list)))
@@ -1442,7 +1448,7 @@ configuration."
     emms-browser-buffer)))
 
 (defun emms-browser-get-linked-window ()
-  "Return linked window (eg browser if playlist is selected."
+  "Return linked window (e. g. browser if playlist is selected)."
   (let ((buf (emms-browser-get-linked-buffer)))
     (when buf
       (get-buffer-window buf))))
@@ -1453,7 +1459,7 @@ Returns the playlist window."
   (interactive)
   (let ((pbuf (emms-browser-get-linked-buffer))
         (pwin (emms-browser-get-linked-window)))
-    ;; if the window isn't alive..
+    ;; if the window isn't alive...
     (unless (window-live-p pwin)
       (save-selected-window
         (split-window-horizontally)
@@ -1481,8 +1487,8 @@ Returns the playlist window."
     (when (and other-win
                (window-live-p other-win))
       (delete-window other-win))
-    ;; bury the buffer, or it becomes visible when we hide the
-    ;; linked buffer
+    ;; bury the buffer, or it becomes visible when we hide the linked
+    ;; buffer
     (bury-buffer other-buf)))
 
 ;; --------------------------------------------------
@@ -1497,7 +1503,6 @@ SEARCH-LIST is a list of cons pairs, in the form:
 
 If string matches any of the fields in a cons pair, it will be
 included."
-
   (let (tracks)
     (maphash (lambda (k track)
                (when (emms-browser-matches-p track search-list)
@@ -1645,7 +1650,7 @@ included."
 ;; --------------------------------------------------
 
 (defun emms-browser-bdata-first-track (bdata)
-  "Return the first track from a given bdata.
+  "Return the first track from a given BDATA.
 If > album level, most of the track data will not make sense."
   (let ((type (emms-browser-bdata-type bdata)))
     (if (eq type 'info-title)
@@ -1716,8 +1721,8 @@ If > album level, most of the track data will not make sense."
 
     (setq str (emms-browser-format-spec str format-choices))
 
-    ;; give tracks a 'boost' if they're not top-level
-    ;; (covers take up an extra space)
+    ;; give tracks a 'boost' if they're not top-level (covers take up
+    ;; an extra space)
     (when (and (eq type 'info-title)
                (not (string= indent "")))
       (setq str (concat " " str)))
@@ -1885,9 +1890,10 @@ the text that it generates."
 (defmacro emms-browser-make-filter (name func)
   "Make a user-level function for filtering tracks.
 This:
- - defines an interactive function M-x emms-browser-show-NAME.
- - defines a variable emms-browser-filter-NAME of (name . func).
- - adds the filter to emms-browser-filters."
+- defines an interactive function emms-browser-show-NAME.
+- defines a variable emms-browser-filter-NAME with the
+  value (name . func).
+- adds the filter to emms-browser-filters."
   (let ((funcnam (intern (concat "emms-browser-show-" name)))
         (var  (intern (concat "emms-browser-filter-" name)))
         (desc (concat "Filter the cache using rule '"

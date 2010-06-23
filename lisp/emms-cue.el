@@ -70,7 +70,7 @@ When PREVIOUS-P is t, get previous track info instead."
                 ;; track.
                 (one-more-track previous-p))
             (while (and (not offset)
-                        (funcall 
+                        (funcall
                          (if previous-p 'search-backward-regexp 'search-forward-regexp)
                          "INDEX 01 \\([0-9][0-9]\\):\\([0-9][0-9]\\):\\([0-9][0-9]\\)" nil t 1))
               (let* ((min (string-to-number (match-string-no-properties 1)))
@@ -104,9 +104,9 @@ This is a useful element for `emms-info-functions'."
             (mapc (lambda (i)
                     (goto-char (point-min))
                     (when (let ((case-fold-search t))
-                            (search-forward-regexp 
+                            (search-forward-regexp
                              (concat (car i) " \\(.*\\)") nil t 1))
-                      (emms-track-set track 
+                      (emms-track-set track
                                       (cdr i)
                                       (replace-regexp-in-string
                                        "\\`\"\\|\"\\'" "" (match-string 1)))))
@@ -114,7 +114,6 @@ This is a useful element for `emms-info-functions'."
                     ("title" . info-album)
                     ("title" . info-title)
                     ("rem date" . info-year)))))))))
-
 
 (provide 'emms-cue)
 ;;; emms-cue.el ends here

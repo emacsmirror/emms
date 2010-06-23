@@ -22,7 +22,7 @@
 
 ;;; Commentary
 
-;; This file will execute lisp code "later on". This way it is
+;; This file will execute lisp code "later on".  This way it is
 ;; possible to work while elisp does some longer calculations, if you
 ;; can convert those calculations into a sequence of function calls.
 
@@ -42,17 +42,16 @@
   :type 'number)
 
 (defvar later-do-list nil
-  "A list of functions to be called lateron.")
+  "A list of functions to be called later on.")
 
 (defvar later-do-timer nil
   "The timer that later-do uses.")
 
 (defun later-do (function &rest args)
-  "Apply FUNCTION to ARGS later on. This is an unspecified amount of
-time after this call, and definitely not while lisp is still
-executing.
-Code added using `later-do' is guaranteed to be executed in the
-sequence it was added."
+  "Apply FUNCTION to ARGS later on.  This is an unspecified
+amount of time after this call, and definitely not while lisp is
+still executing.  Code added using `later-do' is guaranteed to be
+executed in the sequence it was added."
   (setq later-do-list (nconc later-do-list
                               (list (cons function args))))
   (unless later-do-timer

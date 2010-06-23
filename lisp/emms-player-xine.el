@@ -87,6 +87,5 @@ LIST should be a list of integers."
                 dist    ndist))))
     nearest))
 
-
 (provide 'emms-player-xine)
 ;;; emms-player-xine.el ends here
