@@ -25,7 +25,7 @@
 
 ;;; Commentary:
 ;;
-;; To activate put simply the following line in your Emacs:
+;; To activate put simply the following line in your ~/.emacs:
 ;;
 ;;   (require 'emms-mode-line)
 ;;   (emms-mode-line 1)
@@ -40,7 +40,7 @@
   :group 'emms)
 
 (defcustom emms-mode-line-mode-line-function 'emms-mode-line-playlist-current
-  "Function for showing infos in mode-line or nil if don't want to."
+  "Function for showing infos in mode-line or nil if you don't want to."
   :type '(choice (const :tag "Don't show info on mode-line" nil) function)
   :group 'emms-mode-line)
 
@@ -116,7 +116,7 @@
   "Alter mode-line/titlebar.
 
 Optional TRACK is used to be compatible with
-`emms-track-updated-functions'. It's simply ignored currently."
+`emms-track-updated-functions'.  It's simply ignored currently."
   (emms-mode-line-alter-mode-line)
   (emms-mode-line-alter-titlebar))
 
@@ -148,7 +148,7 @@ Optional TRACK is used to be compatible with
     (force-mode-line-update)))
 
 (defun emms-mode-line-restore-titlebar ()
-  "Restore the mode-line."
+  "Restore the titlebar."
   (when emms-mode-line-titlebar-function
     (setq frame-title-format
 	  (list emms-mode-line-initial-titlebar))))

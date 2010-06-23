@@ -25,11 +25,11 @@
 ;;; Commentary:
 
 ;; The cache is a mapping of a full path name to information, and so
-;; it is invalidated when you rename or move files about. It also does
-;; not differentiate between file or uri tracks.
+;; it is invalidated when you rename or move files about.  It also
+;; does not differentiate between file or uri tracks.
 
 ;; Because cache lookups are much faster than disk access, this works
-;; much better with a later-do-interval of something like 0.001. Also
+;; much better with a later-do-interval of something like 0.001.  Also
 ;; consider using synchronous mode, as it's quite fast now.
 
 ;; This code is activated by (emms-standard) and above.

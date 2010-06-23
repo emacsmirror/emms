@@ -92,8 +92,8 @@
 ;; EMMS playlist contains only stored playlists.
 
 ;; If at any time you wish to replace the current EMMS playlist buffer
-;; with the contents of the MusicPD playlist, type
-;; M-x emms-player-mpd-connect.
+;; with the contents of the MusicPD playlist, type M-x
+;; emms-player-mpd-connect RET.
 ;;
 ;; This will also run the relevant seek functions, so that if you use
 ;; emms-playing-time, the displayed time will be accurate.
@@ -128,8 +128,8 @@
 (defcustom emms-player-mpd-music-directory nil
   "The value of 'music_directory' in your MusicPD configuration file.
 
-You need this if your playlists use absolute file names, otherwise
-leave it set to nil."
+You need this if your playlists use absolute file names,
+otherwise leave it set to nil."
   ;; The :format part ensures that entering directories happens on the
   ;; next line, where there is more space to work with
   :type '(choice :format "%{%t%}:\n   %[Value Menu%] %v"
@@ -196,7 +196,8 @@ It should take same arguments as `open-network-stream' does."
   :group 'emms-player-mpd)
 
 (defcustom emms-player-mpd-server-password nil
-  "The password for the MusicPD server that we should connect to."
+  "The password for the MusicPD server that we should connect
+to."
   :type '(choice (const :tag "None" nil)
                  string)
   :group 'emms-player-mpd)
@@ -225,7 +226,8 @@ and errors."
 If your EMMS playlist contains music files rather than playlists,
 leave this set to non-nil.
 
-If your EMMS playlist contains stored playlists, set this to nil."
+If your EMMS playlist contains stored playlists, set this to
+nil."
   :type 'boolean
   :group 'emms-player-mpd)
 
@@ -312,8 +314,8 @@ return at the end of a request.")
 
 (defun emms-player-mpd-close-process (&optional from-sentinel)
   "Terminate the current MusicPD client process.
-FROM-SENTINEL indicates whether this was called by the process sentinel,
-in which case certain checks should not be made."
+FROM-SENTINEL indicates whether this was called by the process
+sentinel, in which case certain checks should not be made."
   (when (or from-sentinel
             (and (processp emms-player-mpd-process)
                  (memq (process-status emms-player-mpd-process) '(run open))))
@@ -356,10 +358,9 @@ This usually means adding a prefix."
 (defun emms-player-mpd-parse-response (response)
   "Convert the given MusicPD response into a list.
 
-The car of the list is special:
-If an error has occurred, it will contain a cons cell whose car is
-an error number and whose cdr is the corresponding message.
-Otherwise, it will be nil."
+The car of the list is special: If an error has occurred, it will
+contain a cons cell whose car is an error number and whose cdr is
+the corresponding message.  Otherwise, it will be nil."
   (when (stringp response)
     (save-match-data
       (let* ((data (split-string response "\n"))
@@ -446,8 +447,8 @@ The list will be in reverse order."
 
 (defun emms-player-mpd-get-tracks (closure callback)
   "Get the current playlist from MusicPD in the form of a list of
-EMMS tracks.
-Call CALLBACK with CLOSURE and result when the request is complete."
+EMMS tracks.  Call CALLBACK with CLOSURE and result when the
+request is complete."
   (emms-player-mpd-send "playlistinfo" (cons callback closure)
                         #'emms-player-mpd-get-tracks-1))
 
@@ -467,9 +468,9 @@ second."
 
 (defun emms-player-mpd-get-status-part (closure callback item &optional info)
   "Get ITEM from the current MusicPD status.
-Call CALLBACK with CLOSURE and result when the request is complete.
-If INFO is specified, use that instead of acquiring the necessary
-info from MusicPD."
+Call CALLBACK with CLOSURE and result when the request is
+complete.  If INFO is specified, use that instead of acquiring
+the necessary info from MusicPD."
   (if info
       (funcall callback closure (cdr (assoc item info)))
     (emms-player-mpd-get-status
@@ -482,18 +483,18 @@ info from MusicPD."
 
 (defun emms-player-mpd-get-playlist-id (closure callback &optional info)
   "Get the current playlist ID from MusicPD.
-Call CALLBACK with CLOSURE and result when the request is complete.
-If INFO is specified, use that instead of acquiring the necessary
-info from MusicPD."
+Call CALLBACK with CLOSURE and result when the request is
+complete.  If INFO is specified, use that instead of acquiring
+the necessary info from MusicPD."
   (when info
     (setq callback (lambda (closure id) id)))
   (emms-player-mpd-get-status-part closure callback "playlist" info))
 
 (defun emms-player-mpd-get-volume (closure callback &optional info)
   "Get the current volume from MusicPD.
-Call CALLBACK with CLOSURE and result when the request is complete.
-If INFO is specified, use that instead of acquiring the necessary
-info from MusicPD."
+Call CALLBACK with CLOSURE and result when the request is
+complete.  If INFO is specified, use that instead of acquiring
+the necessary info from MusicPD."
   (when info
     (setq callback (lambda (closure volume) volume)))
   (emms-player-mpd-get-status-part closure callback "volume" info))
@@ -503,9 +504,9 @@ info from MusicPD."
 This is in the form of a number that indicates the position of
 the song on the current playlist.
 
-Call CALLBACK with CLOSURE and result when the request is complete.
-If INFO is specified, use that instead of acquiring the necessary
-info from MusicPD."
+Call CALLBACK with CLOSURE and result when the request is
+complete.  If INFO is specified, use that instead of acquiring
+the necessary info from MusicPD."
   (when info
     (setq callback (lambda (closure id) id)))
   (emms-player-mpd-get-status-part closure callback "song" info))
@@ -514,9 +515,9 @@ info from MusicPD."
   "Get the current state of the MusicPD server.
 This is either \"play\", \"stop\", or \"pause\".
 
-Call CALLBACK with CLOSURE and result when the request is complete.
-If INFO is specified, use that instead of acquiring the necessary
-info from MusicPD."
+Call CALLBACK with CLOSURE and result when the request is
+complete.  If INFO is specified, use that instead of acquiring
+the necessary info from MusicPD."
   (when info
     (setq callback (lambda (closure id) id)))
   (emms-player-mpd-get-status-part closure callback "state" info))
@@ -525,9 +526,9 @@ info from MusicPD."
   "Get the number of seconds that the current song has been playing,
 or nil if we cannot obtain this information.
 
-Call CALLBACK with CLOSURE and result when the request is complete.
-If INFO is specified, use that instead of acquiring the necessary
-info from MusicPD."
+Call CALLBACK with CLOSURE and result when the request is
+complete.  If INFO is specified, use that instead of acquiring
+the necessary info from MusicPD."
   (if info
       (emms-player-mpd-get-status-part
        nil
@@ -720,7 +721,8 @@ info from MusicPD."
     (emms-player-mpd-get-status nil #'emms-player-mpd-detect-song-change-1)))
 
 (defun emms-player-mpd-quote-file (file)
-  "Escape special characters in FILE and surround in double-quotes."
+  "Escape special characters in FILE and surround in
+double-quotes."
   (concat "\""
           (emms-replace-regexp-in-string
            "\"" "\\\\\""
@@ -837,7 +839,7 @@ Execute CALLBACK with CLOSURE as its first argument when done."
 ;;; EMMS API
 
 (defun emms-player-mpd-playable-p (track)
-  "Return non-nil when we can play this track."
+  "Return non-nil if we can play this track."
   (and (memq (emms-track-type track) '(file url playlist streamlist))
        (string-match (emms-player-get emms-player-mpd 'regex)
                      (emms-track-name track))
@@ -938,9 +940,9 @@ This is called if `emms-player-mpd-sync-playlist' is non-nil."
 Afterward, the status of MusicPD will be tracked.
 
 This also has the effect of changing the current EMMS playlist to
-be the same as the current MusicPD playlist.  Thus, this
-function is useful to call if the contents of the EMMS playlist
-buffer get out-of-sync for some reason."
+be the same as the current MusicPD playlist.  Thus, this function
+is useful to call if the contents of the EMMS playlist buffer get
+out-of-sync for some reason."
   (interactive)
   (when emms-player-mpd-status-timer
     (emms-cancel-timer emms-player-mpd-status-timer)
@@ -1097,9 +1099,9 @@ If CALLBACK is a function, call it with the current buffer and
 description as arguments instead of displaying the description or
 inserting it.
 
-This function uses `emms-show-format' to format the current track.
-It differs from `emms-show' in that it asks MusicPD for the current track,
-rather than EMMS."
+This function uses `emms-show-format' to format the current
+track.  It differs from `emms-show' in that it asks MusicPD for
+the current track, rather than EMMS."
   (interactive "P")
   (emms-player-mpd-send "currentsong"
                         (cons insertp (cons callback (current-buffer)))

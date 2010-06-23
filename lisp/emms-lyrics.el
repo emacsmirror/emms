@@ -1,4 +1,4 @@
-;;; emms-lyrics.el --- Display lyrics synchronically
+;;; emms-lyrics.el --- Display lyrics synchronously
 
 ;; Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 
@@ -24,21 +24,22 @@
 ;;; Commentary:
 
 ;; This package enables you to play music files and display lyrics
-;; synchronically! :-) Plus, it provides a `emms-lyrics-mode' for
+;; synchronously! :-)  Plus, it provides a `emms-lyrics-mode' for
 ;; making lyric files.
 
 ;; Put this file into your load-path and the following into your
 ;; ~/.emacs:
+;;
 ;;             (require 'emms-lyrics)
 ;;
-;; Then either `M-x emms-lyrics-enable' or add (emms-lyrics 1) in
-;; your .emacs to enable.
+;; Then either `M-x emms-lyrics-enable RET' or add (emms-lyrics 1) in
+;; your ~/.emacs to enable.
 
 ;;; TODO:
 
 ;; 1. Maybe the lyric setup should run before `emms-start'.
-;; 2. Give a user a chance to choose when finding out multiple lyrics.
-;; 3. Search .lrc format lyrics from internet ?
+;; 2. Give the user a chance to choose when finding multiple lyrics.
+;; 3. Search .lrc format lyrics on the internet?
 
 ;;; Code:
 
@@ -66,8 +67,8 @@
 
 (defcustom emms-lyrics-dir "~/music/lyrics"
   "Local lyrics repository.
-`emms-lyrics-find-lyric' will look for lyrics in current directory(i.e.,
-same as the music file) and this directory."
+`emms-lyrics-find-lyric' will look for lyrics in current
+directory (i. e. same as the music file) and this directory."
   :type 'string
   :group 'emms-lyrics)
 
@@ -103,7 +104,7 @@ increasingly."
   :group 'emms-lyrics)
 
 (defcustom emms-lyrics-scroll-timer-interval 0.4
-  "Interval between scroller timers. The shorter, the faster."
+  "Interval between scroller timers.  The shorter, the faster."
   :type 'number
   :group 'emms-lyrics)
 
@@ -139,14 +140,14 @@ increasingly."
     (emms-lyrics-enable)))
 
 (defun emms-lyrics-toggle-display-on-minibuffer ()
-  "Toggle display lyrics on minibbufer."
+  "Toggle display lyrics on minibuffer."
   (interactive)
   (if emms-lyrics-display-on-minibuffer
       (progn
 	(setq emms-lyrics-display-on-minibuffer nil)
-	(message "Disable lyrics on minibufer"))
+	(message "Disable lyrics on minibuffer"))
     (setq emms-lyrics-display-on-minibuffer t)
-    (message "Enable lyrics on minibufer")))
+    (message "Enable lyrics on minibuffer")))
 
 (defun emms-lyrics-toggle-display-on-modeline ()
   "Toggle display lyrics on mode line."
@@ -160,30 +161,32 @@ increasingly."
     (message "Enable lyrics on mode line")))
 
 (defun emms-lyrics (arg)
-  "Turn on emms lyrics display if ARG is positive, off otherwise."
+  "Turn on emms lyrics display if ARG is positive, off
+otherwise."
   (interactive "p")
   (if (and arg (> arg 0))
       (progn
         (setq emms-lyrics-display-p t)
-        (add-hook 'emms-player-started-hook     'emms-lyrics-start)
-        (add-hook 'emms-player-stopped-hook     'emms-lyrics-stop)
-        (add-hook 'emms-player-finished-hook    'emms-lyrics-stop)
-        (add-hook 'emms-player-paused-hook      'emms-lyrics-pause)
-        (add-hook 'emms-player-seeked-functions 'emms-lyrics-seek)
+        (add-hook 'emms-player-started-hook       'emms-lyrics-start)
+        (add-hook 'emms-player-stopped-hook       'emms-lyrics-stop)
+        (add-hook 'emms-player-finished-hook      'emms-lyrics-stop)
+        (add-hook 'emms-player-paused-hook        'emms-lyrics-pause)
+        (add-hook 'emms-player-seeked-functions   'emms-lyrics-seek)
         (add-hook 'emms-player-time-set-functions 'emms-lyrics-sync))
     (emms-lyrics-stop)
     (setq emms-lyrics-display-p nil)
     (emms-lyrics-restore-mode-line)
-    (remove-hook 'emms-player-started-hook     'emms-lyrics-start)
-    (remove-hook 'emms-player-stopped-hook     'emms-lyrics-stop)
-    (remove-hook 'emms-player-finished-hook    'emms-lyrics-stop)
-    (remove-hook 'emms-player-paused-hook      'emms-lyrics-pause)
-    (remove-hook 'emms-player-seeked-functions 'emms-lyrics-seek)
+    (remove-hook 'emms-player-started-hook       'emms-lyrics-start)
+    (remove-hook 'emms-player-stopped-hook       'emms-lyrics-stop)
+    (remove-hook 'emms-player-finished-hook      'emms-lyrics-stop)
+    (remove-hook 'emms-player-paused-hook        'emms-lyrics-pause)
+    (remove-hook 'emms-player-seeked-functions   'emms-lyrics-seek)
     (remove-hook 'emms-player-time-set-functions 'emms-lyrics-sync)))
 
 (defun emms-lyrics-visit-lyric ()
   "Visit playing track's lyric file.
-If we can't find it from local disk, then search it from internet."
+If we can't find it on local disk, then search it on the
+internet."
   (interactive)
   (let* ((track (emms-playlist-current-selected-track))
          (name (emms-track-get track 'name))
@@ -194,33 +197,33 @@ If we can't find it from local disk, then search it from internet."
                         (file-name-nondirectory name)))))
     (if (and lrc (file-exists-p lrc) (not (string= lrc "")))
         (find-file lrc)
-      (message "lyric file does not exist, search it from internet...")
+      (message "lyric file does not exist, searching it on the internet...")
       (let ((title (emms-track-get track 'title))
             (filename (file-name-sans-extension
                        (file-name-nondirectory name)))
             (url ""))
         (unless title
           (setq title filename))
-        (cond ((string-match "\\cc" title) ; chinese lyrics
+        (cond ((string-match "\\cc" title) ;; chinese lyrics
                ;; Since tag info might be encoded using various coding
                ;; systems, we'd better fall back on filename.
                (setq url (format
                           "http://mp3.baidu.com/m?f=ms&rn=10&tn=baidump3lyric&ct=150994944&word=%s&lm=-1"
                           (emms-url-quote-plus
                            (encode-coding-string filename 'gb2312)))))
-              (t                        ; english lyrics
+              (t                        ;; english lyrics
                (setq url (format "http://search.lyrics.astraweb.com/?word=%s"
                                  ;;"http://www.lyrics007.com/cgi-bin/s.cgi?q="
                                  (emms-url-quote-plus title)))))
         (browse-url url)
-        (message "lyric file does not exist, search it from internet...done")))))
+        (message "lyric file does not exist, searching it on the internet...done")))))
 
 
 ;;; EMMS Lyrics
 
 (defvar emms-lyrics-alist nil
-  "a list of the form: '((time0 . lyric0) (time1 . lyric1)...)). In
-short, at time-i, display lyric-i.")
+  "a list of the form: '((time0 . lyric0) (time1 . lyric1)...)).
+In short, at time-i, display lyric-i.")
 
 (defvar emms-lyrics-timers nil
   "timers for displaying lyric.")
@@ -232,23 +235,23 @@ short, at time-i, display lyric-i.")
   "emms lyric pause time.")
 
 (defvar emms-lyrics-elapsed-time 0
-  "How long time has emms lyric played.")
+  "How long has emms lyric played.")
 
 (defvar emms-lyrics-scroll-timers nil
   "Lyrics scroller timers.")
 
 (defun emms-lyrics-read-file (file &optional catchup)
-  "Read a lyric file(LRC format).
-Optional CATCHUP is for recognizing `emms-lyrics-catchup'.
-FILE should end up with \".lrc\", its content looks like one of the
+  "Read a lyric file (LRC format).
+Optional CATCHUP is for recognizing `emms-lyrics-catchup'.  FILE
+should end up with \".lrc\", its content looks like one of the
 following:
 
     [1:39]I love you, Emacs!
     [00:39]I love you, Emacs!
     [00:39.67]I love you, Emacs!
 
-FILE should be under the same directory as the music file, or under
-`emms-lyrics-dir'."
+FILE should be under the same directory as the music file, or
+under `emms-lyrics-dir'."
   (or catchup
       (setq file (funcall emms-lyrics-find-lyric-function file)))
   (when (and file (file-exists-p file))
@@ -282,7 +285,7 @@ FILE should be under the same directory as the music file, or under
       t)))
 
 (defun emms-lyrics-start ()
-  "Start displaying lryics."
+  "Start displaying lyrics."
   (setq emms-lyrics-start-time (current-time)
 	emms-lyrics-pause-time nil
 	emms-lyrics-elapsed-time 0)
@@ -298,10 +301,10 @@ FILE should be under the same directory as the music file, or under
     (emms-lyrics-set-timer)))
 
 (defun emms-lyrics-catchup (lrc)
-  "Catchup with later downloaded LRC file(full path).
-If you write some lyrics crawler, which is running asynchronically,
-then this function would be useful to call when the crawler finishes its
-job."
+  "Catchup with later downloaded LRC file (full path).
+If you write some lyrics crawler, which is running synchronously,
+then this function would be useful to call when the crawler
+finishes its job."
   (let ((old-start emms-lyrics-start-time))
     (setq emms-lyrics-start-time (current-time)
           emms-lyrics-pause-time nil
@@ -343,7 +346,7 @@ job."
 	(+ emms-lyrics-elapsed-time
 	   (float-time (time-since emms-lyrics-start-time))
 	   sec))
-  (when (< emms-lyrics-elapsed-time 0)	; back to start point
+  (when (< emms-lyrics-elapsed-time 0)   ;; back to start point
     (setq emms-lyrics-elapsed-time 0))
   (setq emms-lyrics-start-time (current-time))
   (when emms-lyrics-alist
@@ -383,7 +386,7 @@ job."
       (setq lyrics-alist (cdr lyrics-alist)))))
 
 (defun emms-lyrics-mode-line ()
-  "Add lyric to the mode line."
+  "Add lyrics to the mode line."
   (or global-mode-string (setq global-mode-string '("")))
   (unless (member 'emms-lyrics-mode-line-string
 		  global-mode-string)
@@ -398,7 +401,7 @@ job."
   (force-mode-line-update))
 
 (defun emms-lyrics-display-handler (lyric next-lyric diff)
-  "DIFF is the timestamp differences between current LYRIC and
+  "DIFF is the timestamp difference between current LYRIC and
 NEXT-LYRIC."
   (emms-lyrics-display (format emms-lyrics-display-format lyric))
   (when emms-lyrics-scroll-p
@@ -425,9 +428,9 @@ display."
 
 (defun emms-lyrics-find-lyric (file)
   "Return full path of found lrc FILE, or nil if not found.
-Use `emms-source-file-directory-tree-function' to find lrc FILE under
-current directory and `emms-lyrics-dir'.
-e.g., (emms-lyrics-find-lyric \"abc.lrc\")"
+Use `emms-source-file-directory-tree-function' to find lrc FILE
+under current directory and `emms-lyrics-dir'.
+E. g., (emms-lyrics-find-lyric \"abc.lrc\")"
   (let* ((track (emms-playlist-current-selected-track))
          (lyric-under-curr-dir
           (concat (file-name-directory (emms-track-get track 'name))
@@ -442,7 +445,7 @@ e.g., (emms-lyrics-find-lyric \"abc.lrc\")"
 ;; (setq emms-lyrics-scroll-width 20)
 
 (defun emms-lyrics-scroll (lyric next-lyric diff)
-  "Scroll LYRIC to left smoothly in DIFF seconds.
+  "Scroll LYRIC to the left smoothly in DIFF seconds.
 DIFF is the timestamp differences between current LYRIC and
 NEXT-LYRIC."
   (setq diff (floor diff))
@@ -486,7 +489,7 @@ NEXT-LYRIC."
         (- rem y)))))
 
 (defun emms-lyrics-insert-time ()
-  "Insert lyric time in the form: [01:23.21], then goto the
+  "Insert lyric time in the form: [01:23.21], then go to the
 beginning of next line."
   (interactive)
   (let* ((total (+ (float-time
@@ -500,12 +503,12 @@ beginning of next line."
   (emms-lyrics-next-line))
 
 (defun emms-lyrics-next-line ()
-  "Goto the beginning of next line."
+  "Go to the beginning of next line."
   (interactive)
   (forward-line 1))
 
 (defun emms-lyrics-previous-line ()
-  "Goto the beginning of previous line."
+  "Go to the beginning of previous line."
   (interactive)
   (forward-line -1))
 

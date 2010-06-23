@@ -23,10 +23,10 @@
 
 ;;; Commentary:
 
-;; This provides a player that uses mplayer. It supports pause and
-;; seeking. For loading subtitles automatically, try adding
-;; "sub-fuzziness=1" to your `~/.mplayer/config', see mplayer manual for
-;; more.
+;; This provides a player that uses mplayer.  It supports
+;; pause and seeking.  For loading subtitles automatically,
+;; try adding "sub-fuzziness=1" to your ~/.mplayer/config,
+;; see mplayer manual for more.
 
 ;;; Code:
 

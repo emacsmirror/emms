@@ -29,7 +29,7 @@
 ;; This code has been adapted from code found in mp3player.el, written
 ;; by Jean-Philippe Theberge (jphiltheberge@videotron.ca), Mario
 ;; Domgoergen (kanaldrache@gmx.de) and Jorgen Schäfer
-;; <forcer@forcix.cx>
+;; <forcer@forcix.cx>.
 
 ;; To activate this method for getting info, use something like:
 
@@ -70,8 +70,9 @@ external metaflac program"
   :group 'emms-info-metaflac)
 
 (defun emms-info-metaflac (track)
-  "Get the FLAC tag of file TRACK, using `emms-info-metaflac-program'
-and return an emms-info structure representing it."
+  "Get the FLAC tag of file TRACK, using
+`emms-info-metaflac-program' and return an emms-info structure
+representing it."
   (when (and (eq 'file (emms-track-type track))
              (string-match "\\.\\(flac\\|FLAC\\)\\'" (emms-track-name track)))
     (with-temp-buffer

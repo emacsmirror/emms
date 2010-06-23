@@ -79,8 +79,8 @@
 (defun tq-create (process)
   "Create and return a transaction queue communicating with PROCESS.
 PROCESS should be a subprocess capable of sending and receiving
-streams of bytes.  It may be a local process, or it may be connected
-to a tcp server on another machine."
+streams of bytes.  It may be a local process, or it may be
+connected to a TCP server on another machine."
   (let ((tq (cons nil (cons process
 			    (generate-new-buffer
 			     (concat " tq-temp-"
@@ -106,14 +106,15 @@ to a tcp server on another machine."
 
 (defun tq-enqueue (tq question regexp closure fn &optional delay-question)
   "Add a transaction to transaction queue TQ.
-This sends the string QUESTION to the process that TQ communicates with.
+This sends the string QUESTION to the process that TQ
+communicates with.
 
 When the corresponding answer comes back, we call FN with two
 arguments: CLOSURE, which may contain additional data that FN
 needs, and the answer to the question.
 
-REGEXP is a regular expression to match the entire answer;
-that's how we tell where the answer ends.
+REGEXP is a regular expression to match the entire answer; that's
+how we tell where the answer ends.
 
 If DELAY-QUESTION is non-nil, delay sending this question until
 the process has finished replying to any previous questions.
