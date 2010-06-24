@@ -88,7 +88,7 @@
     (radio-getplaylist . ("radio.getplaylist"
 			  emms-lastfm-client-radio-getplaylist-ok
 			  emms-lastfm-client-radio-getplaylist-failed)))
-  "Mapping symbols to method calls. This is a list of cons pairs
+  "Mapping symbols to method calls.  This is a list of cons pairs
   where the CAR is the symbol name of the method and the CDR is a
   list whose CAR is the method call string, CADR is the function
   to call on a success and CADDR is the function to call on
@@ -190,7 +190,7 @@ This function includes the cryptographic signature."
 	  (t (error "unknown response status %s" status)))))
 
 ;;; ------------------------------------------------------------------
-;;; Unathorized request token for an API account
+;;; Unauthorized request token for an API account
 ;;; ------------------------------------------------------------------
 
 (defun emms-lastfm-client-construct-urt ()
@@ -240,7 +240,8 @@ This function includes the cryptographic signature."
 ;; 32-character hexadecimal md5 hash.
 
 (defun emms-lastfm-client-construct-lexi (arguments)
-  "Return ARGUMENTS sorted in lexicographic order."
+  "Return ARGUMENTS sorted in lexical order."
+  ;; TODO: This looks like a case for mapconcat.
   (let ((lexi (sort arguments
 		    '(lambda (a b) (string< (car a) (car b)))))
 	(out ""))
@@ -310,7 +311,7 @@ This function includes the cryptographic signature."
       out)))
 
 (defun emms-lastfm-client-xspf-tracklist (data)
-  "Return the start of the track-list in DATE."
+  "Return the start of the track-list in DATA."
   (nthcdr 3 (nth 11 (cadr data))))
 
 (defun emms-lastfm-client-xspf-header-date (header-alist)
@@ -367,7 +368,7 @@ This function includes the cryptographic signature."
 
 ;; timed playlist invalidation is a part of the Last.fm API
 (defun emms-lastfm-client-set-timer (header)
-  "Start timer countdown to playlist invalidation"
+  "Start timer countdown to playlist invalidation."
   (when (not header)
     (error "can't set timer with no header data"))
   (let ((expiry (parse-integer

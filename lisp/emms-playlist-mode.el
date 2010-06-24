@@ -260,7 +260,7 @@ Otherwise play the track immediately."
   "Switch to the playlist buffer and then switch back if called again.
 
 This function switches to the current Emms playlist buffer and
-remembers the buffer switched from. When called again the
+remembers the buffer switched from.  When called again the
 function switches back to the remembered buffer."
   (interactive)
   (if (eq (current-buffer)
@@ -517,7 +517,8 @@ When NO-NEWLINE is non-nil, do not insert a newline after the track."
 ;;; --------------------------------------------------------
 
 (defun emms-playlist-mode-go ()
-  "Switch to the current emms-playlist buffer and use emms-playlist-mode."
+  "Switch to the current emms-playlist buffer and use
+`emms-playlist-mode'."
   (interactive)
   (if (or (null emms-playlist-buffer)
 	  (not (buffer-live-p emms-playlist-buffer)))
@@ -531,7 +532,7 @@ When NO-NEWLINE is non-nil, do not insert a newline after the track."
 
 (defun emms ()
   "Switch to the current emms-playlist buffer, use
-emms-playlist-mode and query for a directory tree to add to the
+`emms-playlist-mode' and query for a directory tree to add to the
 playlist."
   (interactive)
   (if (or (null emms-playlist-buffer)
