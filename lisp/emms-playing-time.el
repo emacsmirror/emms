@@ -29,9 +29,9 @@
 ;;     (require 'emms-playing-time)
 ;;     (emms-playing-time 1)
 
-;; Note: `(emms-playing-time -1)' will disable emms-playing-time module
-;; completely, and is not recommended. (since some other emms modules
-;; may rely on it, such as `emms-lastfm.el')
+;; Note: `(emms-playing-time -1)' will disable emms-playing-time
+;; module completely, and is not recommended (since some other emms
+;; modules may rely on it, such as `emms-lastfm.el').
 
 ;; Instead, to toggle displaying playing time on mode line, one could
 ;; call `emms-playing-time-enable-display' and
@@ -51,7 +51,7 @@
 
 (defcustom emms-playing-time-display-short-p nil
   "Non-nil will only display elapsed time.
-e.g., display 02:37 instead of 02:37/05:49."
+E. g., display 02:37 instead of 02:37/05:49."
   :type 'boolean
   :group 'emms-playing-time)
 
@@ -62,15 +62,17 @@ e.g., display 02:37 instead of 02:37/05:49."
 
 (defcustom emms-playing-time-style 'time
   "Style used for displaying playing time.
-Valid styles are `time' (e.g., 01:30/4:20) and `bar' (e.g., [===>  ])."
-  :type 'symbol
+Valid styles are `time' (e. g., 01:30/4:20) and `bar' (e. g., [===>  ])."
+  :type '(choice
+          (const :tag "Time" time)
+          (const :tag "Bar" bar))
   :group 'emms-playing-time)
 
 
 ;;; Emms Playing Time
 
 (defvar emms-playing-time-display-p nil
-  "Whether to display playing time on mode line or not")
+  "Whether to display playing time on mode line or not.")
 
 (defvar emms-playing-time 0
   "Time elapsed in current track.")
@@ -83,7 +85,7 @@ Valid styles are `time' (e.g., 01:30/4:20) and `bar' (e.g., [===>  ])."
   "Whether emms-playing-time module is enabled or not")
 
 (defun emms-playing-time-start ()
-  "Get ready for display playing time."
+  "Get ready for displaying playing time."
   (setq emms-playing-time 0)
   (unless emms-playing-time-display-timer
     (setq emms-playing-time-display-timer
@@ -123,8 +125,8 @@ Valid styles are `time' (e.g., 01:30/4:20) and `bar' (e.g., [===>  ])."
   "Turn on emms playing time if ARG is positive, off otherwise.
 
 Note: `(emms-playing-time -1)' will disable emms-playing-time
-module completely, and is not recommended. (since some other emms
-modules may rely on it, such as `emms-lastfm.el')
+module completely, and is not recommended (since some other emms
+modules may rely on it, such as `emms-lastfm.el').
 
 Instead, to toggle displaying playing time on mode line, one
 could call `emms-playing-time-enable-display' and

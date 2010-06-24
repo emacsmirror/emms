@@ -23,8 +23,8 @@
 ;;; Commentary:
 
 ;; This file provides an emms-player which uses mpg321's remote mode
-;; to play files. This is a persistent process which isn't killed each
-;; time a new file is played.
+;; to play files.  This is a persistent process which isn't killed
+;; each time a new file is played.
 
 ;; The remote process copes graciously with errors in music files, and
 ;; allows you to seek in files.
@@ -54,7 +54,7 @@
   :group 'emms-player-mpg321-remote)
 
 (defcustom emms-player-mpg321-remote-parameters nil
-  "*Extra arguments to pass to mpg321 when using remote mode
+  "*Extra arguments to pass to mpg321 when using remote mode.
 For example: (list \"-o\" \"alsa\")"
   :type  '(repeat string)
   :group 'emms-player-mpg321-remote)
@@ -72,7 +72,7 @@ For example: (list \"-o\" \"alsa\")"
   "Initial args to pass to the mpg321 process.")
 
 (defvar emms-player-mpg321-remote-process-name "emms-player-mpg321-remote-proc"
-  "The name of the mpg321 remote player process")
+  "The name of the mpg321 remote player process.")
 
 (defvar emms-player-mpg321-remote-ignore-stop 0
   "Number of stop messages to ignore, due to user action.")
@@ -91,7 +91,7 @@ For example: (list \"-o\" \"alsa\")"
  'seek 'emms-player-mpg321-remote-seek)
 
 ;; --------------------------------------------------
-;; Process maintenence
+;; Process maintenance
 ;; --------------------------------------------------
 
 (defun emms-player-mpg321-remote-start-process ()
@@ -107,7 +107,7 @@ For example: (list \"-o\" \"alsa\")"
     process))
 
 (defun emms-player-mpg321-remote-stop ()
-  "Stop the currently playing process, if indeed there is one"
+  "Stop the currently playing process, if indeed there is one."
   (let ((process (emms-player-mpg321-remote-process)))
     (when process
       (kill-process process)
@@ -124,7 +124,7 @@ For example: (list \"-o\" \"alsa\")"
          (eq (process-status proc) 'run))))
 
 (defun emms-player-mpg321-remote-sentinel (proc str)
-  "Sentinel for determining the end of process"
+  "Sentinel for determining the end of process."
   (when (or (eq (process-status proc) 'exit)
             (eq (process-status proc) 'signal))
     ;; reset
@@ -171,8 +171,8 @@ If the remote process is not running, launch it."
 
 (defun emms-player-mpg321-remote-notify-emms (&optional user-action)
   "Tell emms that the current song has finished.
-If USER-ACTION, set `emms-player-mpg321-remote-ignore-stop' so that we
-ignore the next message from mpg321."
+If USER-ACTION, set `emms-player-mpg321-remote-ignore-stop' so
+that we ignore the next message from mpg321."
   (if user-action
       (let ((emms-player-ignore-stop t))
         ;; so we ignore the next stop message
