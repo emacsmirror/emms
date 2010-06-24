@@ -26,10 +26,10 @@
 
 ;;; Commentary:
 
-;; It is part of the EMMS package
+;; It is part of the EMMS package.
 
-;; Heavily based on bmk-mgr.el by Jose A Ortega Ruiz <jao@gnu.org>
-;; thanks to you !
+;; Heavily based on bmk-mgr.el by Jose A Ortega Ruiz <jao@gnu.org>.
+;; Thanks to you!
 
 ;;; Code:
 
@@ -47,8 +47,10 @@
 
 (defcustom emms-stream-default-action "add"
   "*The default action when you press RET in the EMMS Stream interface.
-Can be either \"add\" or \"play\". The default is \"add\"."
-  :type 'string
+Can be either \"add\" or \"play\".  The default is \"add\"."
+  :type '(choice
+          (const :tag "Add"  "add")
+          (const :tag "Play" "play"))
   :group 'emms-stream)
 
 (defface emms-stream-name-face '((t (:bold t :weight bold)))
@@ -73,7 +75,7 @@ Can be either \"add\" or \"play\". The default is \"add\"."
   "*A hook run when you add or play an EMMS stream via the popup.")
 
 (defvar emms-stream-hook nil
-"*A hook run when you call emms-streams or emms-stream-popup.")
+  "*A hook run when you call emms-streams or emms-stream-popup.")
 
 (defvar emms-stream-current-stream nil
   "The stream currently being played.
@@ -149,14 +151,11 @@ needed info.")
    ("DNA Lounge Radio"
     "http://www.dnalounge.com/webcast/dnaradio.m3u" 1 streamlist)
    ("Virgin Radio, The Groove"
-    "http://www.smgradio.com/core/audio/ogg/live.pls?service=grbb"
-    1 streamlist)
+    "http://www.smgradio.com/core/audio/ogg/live.pls?service=grbb" 1 streamlist)
    ("Virgin Radio, Virgin Classic"
-    "http://www.smgradio.com/core/audio/ogg/live.pls?service=vcbb"
-    1 streamlist)
+    "http://www.smgradio.com/core/audio/ogg/live.pls?service=vcbb" 1 streamlist)
    ("Virgin Radio, Virgin 1215AM"
-    "http://www.smgradio.com/core/audio/ogg/live.pls?service=vrbb"
-    1 streamlist)
+    "http://www.smgradio.com/core/audio/ogg/live.pls?service=vrbb" 1 streamlist)
    ("Voices From Within - Words From Beyond"
     "http://207.200.96.225:8024/listen.pls" 1 streamlist)
    ("WCPE, Classical Music"
@@ -174,8 +173,7 @@ needed info.")
    ("radio.wazee - Modern Alternative Rock"
     "http://www.wazee.org/128.pls" 1 streamlist)
    ("ChroniX Aggression - Loud & Clear"
-    "http://www.chronixradio.com/chronixaggression/listen/listen.pls"
-    1 streamlist)
+    "http://www.chronixradio.com/chronixaggression/listen/listen.pls" 1 streamlist)
    ("WFMU, Freeform radio"
     "http://www.wfmu.org/wfmu.pls" 1 streamlist)
    ("KEXP - Seattle Community Radio"
@@ -283,7 +281,7 @@ otherwise just remove the special bindings from the stream menu."
   (remove-hook 'emms-stream-quit-hook 'emms-stream-popup-revert))
 
 (defun emms-stream-popup (&optional popup-height)
-  "Pops up the stream Menu, for the new stream selection.
+  "Pops up the stream menu, for the new stream selection.
 
 POPUP-HEIGHT is the height of the new frame, defaulting to
 `emms-popup-default-height'."
@@ -363,7 +361,7 @@ POPUP-HEIGHT is the height of the new frame, defaulting to
 
 (defun emms-stream-display ()
   "Displays the bookmark list in the current buffer, in a human
-  readable way."
+readable way."
   (mapc 'emms-stream-display-line emms-stream-list)
   (goto-char (point-min)))
 
@@ -431,7 +429,7 @@ plus one."
 (defun emms-stream-add-bookmark (name url fd type)
   "Creates a new bookmark, and inserts it at point position.
 
-Don't forget to run `emms-stream-save-bookmarks-file' after !"
+Don't forget to run `emms-stream-save-bookmarks-file' after!"
   (interactive
    (list
     (read-string "Name of the bookmark: ")
@@ -453,7 +451,7 @@ Don't forget to run `emms-stream-save-bookmarks-file' after !"
 (defun emms-stream-delete-bookmark ()
   "Deletes the bookmark under the point.
 
-Don't forget to save your modifications !"
+Don't forget to save your modifications!"
   (interactive)
   (let ((line (emms-line-number-at-pos (point))))
     (setq emms-stream-list
@@ -608,10 +606,10 @@ right now (and thus erase the current active playlist)."
 ;    :get 'emms-info-url-get)
 ;;   :set 'emms-info-url-set)
 
-;; A way to get the last element.  it is either the only one, or the
-;; last one added by emms-add-url. so in both cases, that's what we
+;; A way to get the last element.  It is either the only one, or the
+;; last one added by emms-add-url.  So in both cases, that's what we
 ;; want.
-;; FIXME : not working with the new design. Yrk ?
+;; FIXME: Not working with the new design. Yrk?
 ; (defun emms-stream-last-element ()
 ;  (elt emms-playlist (- (length emms-playlist) 1)))
 
