@@ -216,8 +216,8 @@
 ;; and albums deviate from the default.
 
 ;; To customise the format of a particular type, find the name of the
-;; field you want to use (e. g. `info-artist', `info-title', etc.),
-;; and insert that into emms-browser-<type>-format or
+;; field you want to use (e.g. `info-artist', `info-title', etc.), and
+;; insert that into emms-browser-<type>-format or
 ;; emms-browser-playlist-<type>-format.  For example, if you wanted to
 ;; remove track numbers from tracks in both the browser and playlist,
 ;; you could do:
@@ -229,7 +229,7 @@
 ;; The format specifiers available include:
 
 ;; %i    indent relative to the current level
-;; %n    the value of the item - e. g. -info-artist might be "pink floyd"
+;; %n    the value of the item - e.g. -info-artist might be "pink floyd"
 ;; %y    the album year
 ;; %A    the album name
 ;; %a    the artist name of the track
@@ -418,11 +418,11 @@ covers.  Called once for each directory."
   "The default buffer name.")
 
 (defvar emms-browser-top-level-hash nil
-  "The current mapping db, e. g. artist -> track.")
+  "The current mapping db, e.g. artist -> track.")
 (make-variable-buffer-local 'emms-browser-top-level-hash)
 
 (defvar emms-browser-top-level-type nil
-  "The current mapping type, eg. 'info-artist.")
+  "The current mapping type, e.g. 'info-artist.")
 (make-variable-buffer-local 'emms-browser-top-level-type)
 
 (defvar emms-browser-current-indent nil
@@ -650,7 +650,7 @@ compilations, etc."
     (car (split-string basedir " - "))))
 
 (defun emms-browser-make-hash-by (type)
-  "Make a hash, mapping with TYPE, e. g. artist -> tracks."
+  "Make a hash, mapping with TYPE, e.g. artist -> tracks."
   (let ((hash (make-hash-table
                :test emms-browser-comparison-test))
         field existing-entry)
@@ -723,7 +723,7 @@ browser, and hit 'b 1' to refresh.")))
 
 (defun emms-browser-next-mapping-type (current-mapping)
   "Return the next sensible mapping.
-E. g. if CURRENT-MAPPING is currently 'info-artist, return
+E.g. if CURRENT-MAPPING is currently 'info-artist, return
 'info-album."
   (cond
    ((eq current-mapping 'info-artist) 'info-album)
@@ -835,7 +835,7 @@ Items with no metadata for TYPE will be placed in 'misc'"
 
 (defun emms-browser-make-sorted-alist (type tracks)
   "Return a sorted alist of TRACKS.
-TYPE is the metadata to make the alist by - e. g. if it's
+TYPE is the metadata to make the alist by - e.g. if it's
 'info-artist, an alist of artists will be made."
   (emms-browser-sort-alist
    (emms-browser-make-alist type tracks)
@@ -1440,7 +1440,7 @@ configuration."
     (emms-browser)))))
 
 (defun emms-browser-get-linked-buffer ()
-  "Return linked buffer (e. g. browser if playlist is selected)."
+  "Return linked buffer (e.g. browser if playlist is selected)."
   (cond
    ((eq major-mode 'emms-browser-mode)
     (car (emms-playlist-buffer-list)))
@@ -1448,7 +1448,7 @@ configuration."
     emms-browser-buffer)))
 
 (defun emms-browser-get-linked-window ()
-  "Return linked window (e. g. browser if playlist is selected)."
+  "Return linked window (e.g. browser if playlist is selected)."
   (let ((buf (emms-browser-get-linked-buffer)))
     (when buf
       (get-buffer-window buf))))

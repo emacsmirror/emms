@@ -26,8 +26,8 @@
 ;; operating systems such as GNU/Linux and Apple's OS X.  It can
 ;; connect a number of different applications to an audio device, as
 ;; well as allowing them to share audio between themselves.  Its
-;; clients can run in their own processes (i. e. as normal
-;; applications), or they can run within the JACK server (i. e. as a
+;; clients can run in their own processes (i.e. as normal
+;; applications), or they can run within the JACK server (i.e. as a
 ;; "plugin").
 ;;
 ;; JACK was designed from the ground up for professional audio work,

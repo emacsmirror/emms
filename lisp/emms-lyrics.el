@@ -68,7 +68,7 @@
 (defcustom emms-lyrics-dir "~/music/lyrics"
   "Local lyrics repository.
 `emms-lyrics-find-lyric' will look for lyrics in current
-directory (i. e. same as the music file) and this directory."
+directory (i.e. same as the music file) and this directory."
   :type 'string
   :group 'emms-lyrics)
 

@@ -172,7 +172,7 @@ With a prefix argument, decreasingly."
 (defun emms-sort-natural-order-less-p (a b)
   "Sort two tracks by natural order.
 This is the order in which albums where intended to be played,
-i. e. by album name and then by track number."
+i.e. by album name and then by track number."
   (let ((album-a (emms-track-get a 'info-album))
         (album-b (emms-track-get b 'info-album)))
     (or (emms-string< album-a album-b)

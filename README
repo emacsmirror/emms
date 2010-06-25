@@ -17,7 +17,7 @@ the sources, and the players.
 the basic functionality to use all the other features of Emms.  It
 provides the common user commands and interfaces for other parts.  It
 thinks in tracks, where a track is the combination of a type and a
-name - e. g.  the track type 'file has a name that is the file name.
+name - e.g. the track type 'file has a name that is the file name.
 Other track types are possible.
 
    To get to tracks, the core needs sources.  The file
@@ -109,7 +109,7 @@ actions on the current playlist.  Here are some basic commands:
        available with `<mouse-2>'.
 
 `q'....Put the interactive playlist buffer at the end of the list of
-       all buffers (i. e. bury it).
+       all buffers (i.e. bury it).
 
 As always, for more commands see the mode documentation and the
 "Interactive Playlists" section of the Emms manual.

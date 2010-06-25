@@ -51,7 +51,7 @@
 
 (defcustom emms-playing-time-display-short-p nil
   "Non-nil will only display elapsed time.
-E. g., display 02:37 instead of 02:37/05:49."
+E.g., display 02:37 instead of 02:37/05:49."
   :type 'boolean
   :group 'emms-playing-time)
 
@@ -62,7 +62,7 @@ E. g., display 02:37 instead of 02:37/05:49."
 
 (defcustom emms-playing-time-style 'time
   "Style used for displaying playing time.
-Valid styles are `time' (e. g., 01:30/4:20) and `bar' (e. g., [===>  ])."
+Valid styles are `time' (e.g., 01:30/4:20) and `bar' (e.g., [===>  ])."
   :type '(choice
           (const :tag "Time" time)
           (const :tag "Bar" bar))
