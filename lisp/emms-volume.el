@@ -96,7 +96,7 @@ This should be a positive integer."
             ("-" . emms-volume-mode-minus)))
 
 (defvar emms-volume-mode-timeout 2
-  "*The timeout in amount of seconds used by `emms-volume-minor-mode'.")
+  "*The timeout in seconds used by `emms-volume-minor-mode'.")
 
 (defvar emms-volume-mode-timer nil
   "The timer `emms-volume-minor-mode' uses.")
