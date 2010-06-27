@@ -694,7 +694,7 @@ Return a description of @var{track}.  This function uses
 @end defun
 @defun emms-player-for track
 Return an Emms player capable of playing @var{track}.  This will be the
-first player whose @var{:playablep} function returns non-nil, or nil if no
+first player whose @code{:playablep} function returns non-nil, or nil if no
 such player exists.
 @end defun
 @defun emms-playlist-current-selected-track
@@ -867,9 +867,9 @@ provided by @file{emms-info-mp3info.el}, @file{emms-info-ogginfo.el} and
 @file{emms-cue.el}.  The first two packages are front-ends for
 command-line tools.  Ogg track information is retrieved using the
 @uref{http://directory.fsf.org/audio/ogg/vorbistools.html, ogginfo}
-software.  Likewise, mp3 track information is available using
+software.  Likewise, MP3 track information is available using
 @uref{http://www.ibiblio.org/mp3info/, mp3info}.  While,
-@file{emms-cue.el} retrieves tracks information for ape/flac files by
+@file{emms-cue.el} retrieves tracks information for APE/FLAC files by
 parsing a cue sheet file, which is plain text.
 
 Automatic track information retrieval is enabled by default in the
@@ -1626,8 +1626,8 @@ Show all files that are not in the pending directory:
 @section Displaying Covers
 
 The browser will attempt to display cover images if they're
-available.  By default it looks for images cover_small.jpg,
-cover_med.jpg, etc.  Customize @code{emms-browser-covers} to use your
+available.  By default it looks for images @file{cover_small.jpg},
+@file{cover_med.jpg}, etc.  Customize @code{emms-browser-covers} to use your
 own covers.  Note that you'll probably want to resize your existing
 covers to particular sizes.  Suggested sizes are 100x100 for small, and
 200x200 for medium.
@@ -1894,7 +1894,7 @@ To write tags to the track file, an external program should be specified in this
 variable.
 
 If the external program has an interface like @command{mp3info}, you don't have
-to write a function.  Take MP3 and Ogg as example.
+to write a function.  Take @samp{mp3} and @samp{ogg} as example.
 @end defvar
 
 @heading Renaming Files
@@ -2062,7 +2062,7 @@ Cause all tracks in the MusicPD music directory to be updated in
 the MusicPD database.
 @end defun
 
-@subsubheading emms-cache.el integration
+@subsubheading @file{emms-cache.el} integration
 
 @defun emms-cache-set-from-mpd-directory dir
 Dump all MusicPD data from @var{dir} into the EMMS cache.
@@ -2075,7 +2075,7 @@ This is useful to do once, just before using @file{emms-browser.el}, in
 order to prime the cache.
 @end defun
 
-@subsubheading emms-volume.el integration
+@subsubheading @file{emms-volume.el} integration
 
 To activate this, add the following to your @file{~/.emacs}.
 
