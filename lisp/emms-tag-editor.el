@@ -471,8 +471,8 @@ Available tags are:
           (emms-tag-editor-insert-track track))))))
 
 (defun emms-tag-editor-compile-pattern (pattern)
-  "A pattern to regexp converter. \"%a-%{b:[a-z]+}\" will compile to
-\"\\([^-]+\\)-\\([a-z]+\\)\"."
+  "A pattern to regexp converter.  \"%a-%{b:[a-z]+}\" will
+compile to \"\\([^-]+\\)-\\([a-z]+\\)\"."
   (let ((index 0)
         (paren 0)
         (i 0)

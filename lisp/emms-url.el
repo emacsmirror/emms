@@ -60,7 +60,7 @@ This is useful for escaping parts of URLs, but not entire URLs.
 Characters in [a-zA-Z_.-/] and SAFE (default is \"\") will never
 be quoted.
 
-E. g., (emms-url-quote \"abc def\") => \"abc%20def\"."
+E.g., (emms-url-quote \"abc def\") => \"abc%20def\"."
   (if (not (stringp s))
       ""
     (or safe (setq safe ""))
@@ -93,7 +93,7 @@ E. g., (emms-url-quote \"abc def\") => \"abc%20def\"."
          (intern-soft (downcase (match-string 1 url-http-content-type))))))
 
 (defun emms-http-decode-buffer (&optional buffer)
-  "Recode the buffer with `url-retrieve's contents. Else the
+  "Recode the buffer with `url-retrieve's contents.  Else the
 buffer would contain multibyte chars like \\123\\456."
   (with-current-buffer (or buffer (current-buffer))
     (let* ((default (or (car default-process-coding-system) 'utf-8))

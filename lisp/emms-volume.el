@@ -17,21 +17,21 @@
 ;; GNU General Public License for more details.
 ;;
 ;; You should have received a copy of the GNU General Public License
-;; along with EMMS; see the file COPYING. If not, write to the
-;; Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
-;; Boston, MA 02110-1301, USA.
+;; along with EMMS; see the file COPYING.  If not, write to the Free
+;; Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+;; 02110-1301, USA.
 
 ;;; Commentary:
 ;;
-;; This file provides generally two things:
-;; Generic volume setting functions and some appropriate bindings for EMMS
-;; playlist buffers. These can also be bound to global keys, however, the
-;; second part may be more useful for this. This part provides functions
-;; meant to be bound to a global key (the author uses C-c e + and C-c e -),
-;; which then temporarily activates a minor mode allowing you to change the
-;; volume with just + and -. This mode deactivates a short (configurable)
-;; amount of time after the last volume change. This allows for easier volume
-;; adjustment without getting in the way.
+;; This file provides generally two things: Generic volume setting
+;; functions and some appropriate bindings for EMMS playlist buffers.
+;; These can also be bound to global keys, however, the second part
+;; may be more useful for this.  This part provides functions meant to
+;; be bound to a global key (the author uses C-c e + and C-c e -),
+;; which then temporarily activates a minor mode allowing you to
+;; change the volume with just + and -.  This mode deactivates a short
+;; (configurable) amount of time after the last volume change.  This
+;; allows for easier volume adjustment without getting in the way.
 
 ;;; History:
 

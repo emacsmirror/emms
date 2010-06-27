@@ -41,10 +41,11 @@
   "\\`http://"
   "vlc" "--intf" "rc")			; these are never used
 
-;; (kludge) By default, VLC does not quit after finishing to play a
-;; track, so the player sentinel has no way of telling that the next
-;; track should be played. Therefore I redefine this low-level
-;; function and add a "quit" track which is invisible to Emms.
+;; (kludge) By default, VLC does not quit after finishing to
+;; play a track, so the player sentinel has no way of
+;; telling that the next track should be played.  Therefore
+;; I redefine this low-level function and add a "quit" track
+;; which is invisible to Emms.
 (defadvice emms-player-vlc-start (around quit-vlc-after-finish activate)
   (let ((process (apply 'start-process
 			emms-player-simple-process-name

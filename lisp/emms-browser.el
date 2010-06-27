@@ -1154,7 +1154,7 @@ After expanding, jump to the currently marked entry."
 
 (defun emms-browser-go-to-parent ()
   "Move point to the parent of the current node.
-Return point. If at level one, return the current point."
+Return point.  If at level one, return the current point."
   (let ((current-level (emms-browser-level-at-point)))
     (unless (eq current-level 1)
       (while (<= current-level (emms-browser-level-at-point))

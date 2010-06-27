@@ -104,9 +104,9 @@ needed info.")
 
 ;; Format: (("descriptive name" url feed-number type))
 ;;
-;; type could be either url, playlist, or lastfm. If url, then it
-;; represents a direct IP, if streamlist it's a stream playlist, if
-;; lastfm it's a lastfm station
+;; type could be either url, playlist, or lastfm.  If url, then it
+;; represents a direct IP, if streamlist, it's a stream playlist, if
+;; lastfm, it's a lastfm station.
 (defvar emms-stream-default-list
  '(("SomaFM: Beatblender"
     "http://www.somafm.com/beatblender.pls" 1 streamlist)
@@ -609,7 +609,7 @@ right now (and thus erase the current active playlist)."
 ;; A way to get the last element.  It is either the only one, or the
 ;; last one added by emms-add-url.  So in both cases, that's what we
 ;; want.
-;; FIXME: Not working with the new design. Yrk?
+;; FIXME: Not working with the new design.  Yrk?
 ; (defun emms-stream-last-element ()
 ;  (elt emms-playlist (- (length emms-playlist) 1)))
 

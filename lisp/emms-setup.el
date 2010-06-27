@@ -24,7 +24,7 @@
 
 ;;; Commentary:
 
-;; This file provides the `emms-setup' feature. With `emms-setup' we
+;; This file provides the `emms-setup' feature.  With `emms-setup' we
 ;; can setup Emms with different features enabled.  The use of this
 ;; feature is documented in the Emms manual which is distributed with
 ;; Emms.

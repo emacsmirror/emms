@@ -22,13 +22,13 @@
 
 ;;; Commentary:
 
-;; This provides a player that uses xine. It supports pause and
+;; This provides a player that uses xine.  It supports pause and
 ;; seeking.
 
 ;;; Code:
 
-;; TODO: The video window cannot be disabled. I asked on
-;; gmane.comp.video.xine.user (<87y7ohqcbq.fsf@baldur.tsdh.de>)...
+;; TODO: The video window cannot be disabled.  I asked on
+;; gmane.comp.video.xine.user (<87y7ohqcbq.fsf@baldur.tsdh.de>) ...
 
 ;; TODO: Implement seek-to with "SetPositionX%\n" where X is in {0,10,..,90}
 

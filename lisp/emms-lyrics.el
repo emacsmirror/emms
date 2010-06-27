@@ -430,7 +430,7 @@ display."
   "Return full path of found lrc FILE, or nil if not found.
 Use `emms-source-file-directory-tree-function' to find lrc FILE
 under current directory and `emms-lyrics-dir'.
-E. g., (emms-lyrics-find-lyric \"abc.lrc\")"
+E.g., (emms-lyrics-find-lyric \"abc.lrc\")"
   (let* ((track (emms-playlist-current-selected-track))
          (lyric-under-curr-dir
           (concat (file-name-directory (emms-track-get track 'name))

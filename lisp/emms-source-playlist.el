@@ -19,9 +19,9 @@
 ;; GNU General Public License for more details.
 ;;
 ;; You should have received a copy of the GNU General Public License
-;; along with EMMS; see the file COPYING. If not, write to the
-;; Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
-;; Boston, MA 02110-1301, USA.
+;; along with EMMS; see the file COPYING.  If not, write to the Free
+;; Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+;; 02110-1301, USA.
 
 ;;; Commentary:
 
@@ -187,7 +187,7 @@ See `emms-source-playlist-formats' for a list of supported formats."
 ;;; EMMS native playlists
 
 ;; Format:
-;; ;;; This is an EMMS playlist file. Play it with M-x emms-play-playlist
+;; ;;; This is an EMMS playlist file.  Play it with M-x emms-play-playlist RET.
 ;; <sexpr>
 
 (defun emms-source-playlist-native-p ()
@@ -209,8 +209,7 @@ OUT should be the buffer where tracks are stored in the native EMMS format."
   (with-current-buffer in ;; Don't modify the position
     (save-excursion       ;; in the IN buffer
       (with-current-buffer out
-        (insert ";;; This is an EMMS playlist file."
-                " Play it with M-x emms-play-playlist\n")
+        (insert ";;; This is an EMMS playlist file.  Play it with M-x emms-play-playlist RET.\n")
         (insert "("))
       (let ((firstp t))
         (goto-char (point-min))

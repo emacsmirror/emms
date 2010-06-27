@@ -142,7 +142,7 @@
 
 (defun emms-playlist-limit-do (name value)
   "Limit by NAME with VALUE.
-E. g., (emms-playlist-limit-do 'info-artist \"Jane Zhang\").
+E.g., (emms-playlist-limit-do 'info-artist \"Jane Zhang\").
 
 When NAME is nil, show all tracks again.
 

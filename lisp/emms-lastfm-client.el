@@ -223,20 +223,20 @@ This function includes the cryptographic signature."
 ;;
 ;; Construct your api method signatures by first ordering all the
 ;; parameters sent in your call alphabetically by parameter name and
-;; concatenating them into one string using a <name><value>
-;; scheme. So for a call to auth.getSession you may have:
+;; concatenating them into one string using a <name><value> scheme.
+;; So for a call to auth.getSession you may have:
 ;;
 ;;   api_keyxxxxxxxxmethodauth.getSessiontokenxxxxxxx
 ;;
-;; Ensure your parameters are utf8 encoded. Now append your secret
-;; to this string. Finally, generate an md5 hash of the resulting
-;; string. For example, for an account with a secret equal to
+;; Ensure your parameters are utf8 encoded.  Now append your secret to
+;; this string.  Finally, generate an md5 hash of the resulting
+;; string.  For example, for an account with a secret equal to
 ;; 'mysecret', your api signature will be:
 ;;
 ;;   api signature = md5("api_keyxxxxxxxxmethodauth.getSessiontokenxxxxxxxmysecret")
 ;;
 ;; Where md5() is an md5 hashing operation and its argument is the
-;; string to be hashed. The hashing operation should return a
+;; string to be hashed.  The hashing operation should return a
 ;; 32-character hexadecimal md5 hash.
 
 (defun emms-lastfm-client-construct-lexi (arguments)

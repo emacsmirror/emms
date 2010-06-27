@@ -47,7 +47,7 @@
 (defvar *emms-stream-info-backend* 'mplayer
   "Symbol designating the backend program to use.")
 
-;; using unhygienic macros for good... or is it evil?
+;; using unhygienic macros for good ... or is it evil?
 (defmacro emms-stream-info-defreg (symname regexp)
   "Set SYMNAME to be the match for REGEXP."
   `(save-excursion
