@@ -240,8 +240,8 @@ non-nil, load the playlist at point into a new buffer.
 Otherwise play the track immediately."
   (interactive)
   (save-excursion
-    ;; move to the start of the line, in case the point is on the \n,
-    ;; which isn't propertized
+    ;; move to the start of the line, in case point is on
+    ;; the \n, which isn't propertized
     (emms-move-beginning-of-line nil)
     (if (not emms-playlist-mode-open-playlists)
         (emms-playlist-mode-play-current-track)

@@ -392,7 +392,8 @@ Positions are counted starting with 0."
     (append before new-list after)))
 
 (defun emms-stream-look-behind ()
-  "Return non-nil if the position behind the point is an emms-stream."
+  "Return non-nil if the position behind point is an
+emms-stream."
   (and (not (bobp))
        (get-text-property (1- (point)) 'emms-stream)))
 
@@ -449,7 +450,7 @@ Don't forget to run `emms-stream-save-bookmarks-file' after!"
     (forward-line (1- line))))
 
 (defun emms-stream-delete-bookmark ()
-  "Deletes the bookmark under the point.
+  "Deletes the bookmark under point.
 
 Don't forget to save your modifications!"
   (interactive)

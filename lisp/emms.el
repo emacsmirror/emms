@@ -332,10 +332,10 @@ This also disables any read-onliness of the current buffer."
 
 (defmacro emms-walk-tracks (&rest body)
   "Execute BODY for each track in the current buffer, starting at point.
-The point will be placed at the beginning of the track before
+Point will be placed at the beginning of the track before
 executing BODY.
 
-The point will not be restored afterward."
+Point will not be restored afterward."
   (let ((donep (make-symbol "donep")))
     `(let ((,donep nil))
        ;; skip to first track if not on one

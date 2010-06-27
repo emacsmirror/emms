@@ -1,6 +1,7 @@
 EMMS --- The Emacs Multi-Media System                -*-outline-*-
 =====================================
 
+
 * Introduction, Overview
 ========================
 
@@ -17,7 +18,7 @@ the sources, and the players.
 the basic functionality to use all the other features of Emms.  It
 provides the common user commands and interfaces for other parts.  It
 thinks in tracks, where a track is the combination of a type and a
-name - e.g. the track type 'file has a name that is the file name.
+name--e.g., the track type 'file has a name that is the file name.
 Other track types are possible.
 
    To get to tracks, the core needs sources.  The file
@@ -81,6 +82,7 @@ emms-play-file ............. Play a single file
 emms-play-directory ........ Play a whole directory
 emms-play-directory-tree ... Play a directory tree
 
+
 * The Interactive Playlist buffer
 =================================
 
@@ -114,6 +116,7 @@ actions on the current playlist.  Here are some basic commands:
 As always, for more commands see the mode documentation and the
 "Interactive Playlists" section of the Emms manual.
 
+
 * Bare Bones Setup
 ==================
 
@@ -130,6 +133,7 @@ sources for tracks (trivial file system based sources, such as this
 (setq emms-player-list '(emms-player-mpg321
                          emms-player-ogg123
                          emms-player-mplayer))
+
 
 * Advanced configuration
 ========================
@@ -152,6 +156,7 @@ Seeking works through the following functions:
 `emms-seek' which takes a negative or positive amount of seconds.
 `emms-seek-forward' which seeks ten seconds forward.
 `emms-seek-backward' which seeks ten seconds backward.
+
 
 * Using libtag for reading tags
 ===============================
@@ -179,6 +184,7 @@ is akin to Emacs and Gnus, ignoring that Emms is pronounced
 ee-em-em-es, and not a single name.  emms is highlighting that emms is
 a case-sensitive file name and Emacs Lisp command.
 
+
 * Getting help
 ==============
 
@@ -188,6 +194,7 @@ familiar with the Gmane service, there is a Gmane newsgroup which
 mirrors this mailing address at gmane.emacs.emms.user.
 
 Emms also has a website at <http://www.gnu.org/software/emms/>.
+
 
 * License
 =========

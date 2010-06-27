@@ -107,14 +107,14 @@ If ARG is negative, also unmark the previous ARG-1 tracks."
     (emms-mark-track arg)))
 
 (defun emms-mark-forward (arg)
-  "Mark one or more tracks and move the point past the newly-marked tracks.
+  "Mark one or more tracks and move point past the newly-marked tracks.
 See `emms-mark-track' for further details."
   (interactive "p")
   (emms-mark-track arg)
   (forward-line arg))
 
 (defun emms-mark-unmark-forward (arg)
-  "Unmark one or more tracks and move the point past the tracks.
+  "Unmark one or more tracks and move point past the tracks.
 See `emms-mark-unmark-track' for further details."
   (interactive "p")
   (emms-mark-unmark-track arg)
