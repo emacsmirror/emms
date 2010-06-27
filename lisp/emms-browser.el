@@ -1663,7 +1663,7 @@ If > album level, most of the track data will not make sense."
 (defun emms-browser-make-indent (level)
   (or
    emms-browser-current-indent
-   (make-string (* 1 (1- level)) ?\  )))
+   (make-string (* 1 (1- level)) ?\s)))
 
 (defun emms-browser-format-elem (format-string elem)
   (cdr (assoc elem format-string)))
