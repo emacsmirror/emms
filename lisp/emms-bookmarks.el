@@ -23,12 +23,12 @@
 
 ;;; Commentary:
 ;;
-;; You can use this to add "temporal bookmarks" (term by Lucas Bonnet)
-;; into your media files.  The interesting functions here are
+;; You can use this to add ``temporal bookmarks'' (term by Lucas
+;; Bonnet) to your media files.  The interesting functions here are
 ;; `emms-bookmarks-next', `emms-bookmarks-prev', `emms-bookmarks-add'
 ;; (which pauses the player while you describe the bookmark) and
-;; `emms-bookmarks-clear'.  All of which do exactly what you think they
-;; do.
+;; `emms-bookmarks-clear'.  All of which do exactly what you think
+;; they do.
 
 ;;; Code:
 
@@ -132,7 +132,7 @@ FAILURE-MESSAGE should be a string."
 (defun emms-bookmarks-add ()
   "Add a new bookmark to the current track.
 
-This function pauses the player while promting the user for a
+This function pauses the player while prompting the user for a
 description of the bookmark.  The function resumes the player
 after the prompt."
   (interactive)
