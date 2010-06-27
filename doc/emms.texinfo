@@ -162,7 +162,7 @@ to play them.  @file{emms-player-simple.el} defines a few useful players, and
 allows you to define your own in a very simple way.
 
 The way Emms works is easy to customize with your own code or by using
-@kbd{M-x customize RET}.
+@kbd{M-x customize @key{RET}}.
 
 @node Installation
 @chapter Installation
@@ -316,7 +316,7 @@ The first @code{setq} turns off the asynchronous updating of info tags.  The
 second sets the default name of the Emms playlist buffer.
 
 Another way to change Emms variables is to use the @kbd{M-x
-customize RET} mechanism provided by Emacs.
+customize @key{RET}} mechanism provided by Emacs.
 
 @menu
 * Finding files and speed::     Finding files quickly or portably.
@@ -398,16 +398,16 @@ OK, now we've set up EMMS.  Reload your @file{~/.emacs} or restart Emacs to
 let the changes have an effect.
 
 Now we will add all our music to a playlist by invoking @kbd{M-x
-emms-add-directory-tree RET ~/Music/ RET}.  We do this because then EMMS
+emms-add-directory-tree @key{RET} ~/Music/ @key{RET}}.  We do this because then EMMS
 will read the tags of all your music files and cache them.  This is
 required for the browser, @xref{The Browser}.
 
-To switch to the playlist buffer, invoke @kbd{M-x emms-playlist-mode-go RET}
-or simply @kbd{M-x emms RET}.  You can see that most tracks are displayed
+To switch to the playlist buffer, invoke @kbd{M-x emms-playlist-mode-go @key{RET}}
+or simply @kbd{M-x emms @key{RET}}.  You can see that most tracks are displayed
 with their file name, but track by track the filename gets replaced with
 the artist and track name of the file's tag.
 
-Hit @kbd{RET} on a track to start playback.
+Hit @key{RET} on a track to start playback.
 
 Now you can start exploring EMMS.  It's probably best to begin with the
 basic commands (@pxref{Basic Commands}), the interactive playlists
@@ -994,7 +994,7 @@ Display the current track in the center of the screen.
 @item RET
 @findex emms-playlist-mode-play-current-track
 Start playing the track under point.  Note that this is also available
-with @kbd{<mouse-2>}.
+with @kbd{Mouse-2}.
 @item SPC
 @findex scroll-up
 Scroll up a near full page.
@@ -1066,9 +1066,9 @@ To enable the Markable Playlists you have to add
 @end lisp
 
 to your @file{~/.emacs}.  Then you can activate @code{emms-mark-mode} by
-executing @kbd{M-x emms-mark-mode RET} in a playlist buffer.  You can
+executing @kbd{M-x emms-mark-mode @key{RET}} in a playlist buffer.  You can
 return to the default interactive playlist mode with @kbd{M-x
-emms-mark-mode-disable RET}.
+emms-mark-mode-disable @key{RET}}.
 
 If you wish to make this the default EMMS playlist mode, add the
 following to your @file{~/.emacs}.
@@ -1163,16 +1163,16 @@ Emms can save a ``temporal bookmark'' in a media file via
 @code{emms-bookmarks}.  The file @file{emms-bookmarks.el} provides the package
 @code{emms-bookmarks}.
 
-While some media is playing, invoking @kbd{M-x emms-bookmarks-add RET}
+While some media is playing, invoking @kbd{M-x emms-bookmarks-add @key{RET}}
 will first pause the playback and then prompt for a name describing
 the bookmark.  Tracks can have multiple bookmarks associated with them.
 
 To jump to the next and previous bookmarks in the current track invoke
-@kbd{M-x emms-bookmarks-next RET} and @kbd{M-x emms-bookmarks-prev RET}
+@kbd{M-x emms-bookmarks-next @key{RET}} and @kbd{M-x emms-bookmarks-prev @key{RET}}
 respectively.
 
 To clear all of the bookmarks for the current track invoke @kbd{M-x
-emms-bookmarks-clear RET}.
+emms-bookmarks-clear @key{RET}}.
 
 @node Extending Emms
 @chapter Extending Emms
@@ -1357,7 +1357,7 @@ explicitly with:
 @end lisp
 
 To be properly useful, you should do @kbd{M-x
-emms-add-directory-tree RET} to add all the files you own at least
+emms-add-directory-tree @key{RET}} to add all the files you own at least
 once so that the cache is fully populated.
 
 @menu
@@ -1594,7 +1594,7 @@ Show all tracks played in the last month:
 @end lisp
 
 After executing the above commands, you can use @kbd{M-x
-emms-browser-show-all RET}, @kbd{M-x emms-browser-show-80s RET}, etc., to toggle between
+emms-browser-show-all @key{RET}}, @kbd{M-x emms-browser-show-80s @key{RET}}, etc., to toggle between
 different collections.  Alternatively you can use @kbd{<} and @kbd{>} to cycle
 through the available filters.
 
@@ -1738,7 +1738,7 @@ The faces used to display the various fields are also customizable.
 They are in the format @code{emms-browser-@var{type}-face}, where @var{type} is one of
 @code{year/genre}, @code{artist}, @code{album} or @code{track}.  Note that faces lack the
 initial @samp{info-} part.  For example, to change the artist face, type @kbd{M-x
-customize-face RET emms-browser-artist-face RET}.
+customize-face @key{RET} emms-browser-artist-face @key{RET}}.
 
 @node Sorting Playlists
 @chapter Sorting Playlists
@@ -2271,13 +2271,13 @@ secret key.  Set the variables @code{emms-lastfm-client-api-key} and
 @code{emms-lastfm-client-api-secret-key} respectively.
 
 @item
-Invoke @kbd{M-x emms-lastfm-client-user-authorization RET}.  On successful
+Invoke @kbd{M-x emms-lastfm-client-user-authorization @key{RET}}.  On successful
 completion a browser window will open asking for confirmation to allow
 this application access to your Last.fm account.  Confirm and close the
 browser.
 
 @item
-Invoke @kbd{M-x emms-lastfm-client-get-session RET}.  On successful
+Invoke @kbd{M-x emms-lastfm-client-get-session @key{RET}}.  On successful
 completion your permanent session key will be stored in
 @code{emms-lastfm-client-session-key-file}.  As long as this value is
 accessible the authentication process need not be repeated.
@@ -2298,15 +2298,15 @@ Note that Last.fm streams cannot be paused or replayed.  Doing so may
 cause Last.fm to suspend your account.
 
 To play the Similar-Artists stream invoke @kbd{M-x
-emms-lastfm-client-play-similar-artists RET}.  Then enter the name of the
+emms-lastfm-client-play-similar-artists @key{RET}}.  Then enter the name of the
 artist.  The input will auto-complete from the Emms cache.  If an artist
 is not in the Emms cache and has a name with spaces, use @kbd{C-q
-SPC} to enter literal spaces.
+@key{SPC}} to enter literal spaces.
 
 To show information about the currently playing track invoke @kbd{M-x
-emms-lastfm-client-show RET}.
+emms-lastfm-client-show @key{RET}}.
 
-To skip a track invoke @kbd{M-x emms-lastfm-client-track-advance RET}.
+To skip a track invoke @kbd{M-x emms-lastfm-client-track-advance @key{RET}}.
 
 @node Streaming Audio
 @chapter Streaming Audio
@@ -2328,7 +2328,7 @@ The Emms interface for streaming audio is enabled by default in the
 Emms setup levels, @pxref{Simple Setup}.
 
 Enter the @code{emms-streams} interface by invoking @kbd{M-x
-emms-streams RET}.  The @code{emms-streams} interface comes with a
+emms-streams @key{RET}}.  The @code{emms-streams} interface comes with a
 built-in, eclectic list of streaming audio channels from throughout the
 Web.  Emms can of course play other streams than the ones listed by
 default, you are free to remove any or all of them and add your
@@ -2350,7 +2350,7 @@ interface:
 @item RET
 @kindex RET (emms-streams)
 @vindex emms-stream-default-action
-Perform the default action when you press RET in the Emms Stream
+Perform the default action when you press @key{RET} in the Emms Stream
 interface.  Can be either @code{add} or @code{play}.  The default is @code{add},
 which adds the station under point to the Emms playlist.  When
 @code{emms-stream-default-action} is @code{play}, Emms will play the
