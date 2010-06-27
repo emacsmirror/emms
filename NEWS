@@ -50,7 +50,7 @@ News since version 2.1:
 News since version 2.0:
 
   - A new player that uses mpg321's remote mode is now available
-    (emms-player-mpg321-remote) - this allows seeking and copes with
+    (emms-player-mpg321-remote)--this allows seeking and copes with
     errors in files.
   - A metadata browser has been added in emms-browser.el.
   - Recording of the time a track was last played is now supported.

@@ -166,8 +166,7 @@ With a prefix argument, decreasingly."
             (emms-playlist-select pos)
           (emms-playlist-first))
         ;; (emms-playlist-mode-center-current)
-        (goto-char (point-min))
-        ))))
+        (goto-char (point-min))))))
 
 (defun emms-sort-natural-order-less-p (a b)
   "Sort two tracks by natural order.

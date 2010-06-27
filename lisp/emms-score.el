@@ -255,7 +255,7 @@ saved."
   (gethash filename emms-score-hash))
 
 (defun emms-score-change-score (score filename)
-  (let ((sp (emms-score-get-plist filename) )
+  (let ((sp (emms-score-get-plist filename))
 	(sc (emms-score-get-score filename)))
     (puthash filename
 	     (plist-put sp emms-score-current-mood (+ sc score))
