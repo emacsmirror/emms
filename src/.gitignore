@@ -1,0 +1,5 @@
+/.deps/
+/Makefile
+/Makefile.in
+/emms-print-metadata
+/emms-print-metadata.o

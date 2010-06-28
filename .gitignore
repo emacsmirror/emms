@@ -1,23 +1,12 @@
-# Files that we ignore when using git.
-
-*.elc
 *~
+/Makefile
+/Makefile.in
 /aclocal.m4
 /autom4te.cache
 /config.log
 /config.status
 /configure
-/doc/emms.html
-/doc/emms.info
 /emms-*.tar.gz
 /emms-*.tar.gz.sig
 /emms-*.zip
 /emms-*.zip.sig
-/lisp/elc-stamp
-/lisp/emms-auto.el
-/lisp/emms-autoloads.el
-/src/.deps/
-/src/emms-print-metadata
-/src/emms-print-metadata.o
-Makefile
-Makefile.in

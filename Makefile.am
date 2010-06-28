@@ -2,7 +2,6 @@
 
 SUBDIRS = doc lisp src
 dist_doc_DATA = README FAQ
-dist_man_MANS = emms-print-metadata.1
 EXTRA_DIST = RELEASE TODO
 
 dist-hook:
