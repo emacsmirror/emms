@@ -31,15 +31,15 @@
 ;; in order to accomodate VLC's particular idioms.
 (define-emms-simple-player vlc '(file url)
   (concat "\\`\\(http\\|mms\\)://\\|"
-	  (emms-player-simple-regexp
-	   "ogg" "mp3" "wav" "mpg" "mpeg" "wmv" "wma"
-	   "mov" "avi" "divx" "ogm" "ogv" "asf" "mkv"
-	   "rm" "rmvb" "mp4" "flac" "vob" "m4a" "ape"))
-  "vlc" "--intf" "rc")			; these are never used
+          (emms-player-simple-regexp
+           "ogg" "mp3" "wav" "mpg" "mpeg" "wmv" "wma"
+           "mov" "avi" "divx" "ogm" "ogv" "asf" "mkv"
+           "rm" "rmvb" "mp4" "flac" "vob" "m4a" "ape"))
+  "vlc" "--intf=rc")
 
 (define-emms-simple-player vlc-playlist '(streamlist)
   "\\`http://"
-  "vlc" "--intf" "rc")			; these are never used
+  "vlc" "--intf=rc")
 
 ;; (kludge) By default, VLC does not quit after finishing to play a
 ;; track, so the player sentinel has no way of telling that the next
@@ -47,13 +47,13 @@
 ;; function and add a "quit" track which is invisible to Emms.
 (defadvice emms-player-vlc-start (around quit-vlc-after-finish activate)
   (let ((process (apply 'start-process
-			emms-player-simple-process-name
-			nil
-			"vlc"
-			;; splice in params here
-			(append  '("vlc" "--intf" "rc")
-				 (list (emms-track-name (ad-get-arg 0)))
-				 '("vlc://quit")))))
+                        emms-player-simple-process-name
+                        nil
+                        emms-player-vlc-command-name
+                        ;; splice in params here
+                        (append emms-player-vlc-parameters
+                                (list (emms-track-name (ad-get-arg 0)))
+                                '("vlc://quit")))))
     ;; add a sentinel for signaling termination
     (set-process-sentinel process 'emms-player-simple-sentinel))
   (emms-player-started emms-player-vlc))
