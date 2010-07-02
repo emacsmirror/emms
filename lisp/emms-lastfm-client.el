@@ -31,7 +31,12 @@
 
 (require 'md5)
 (require 'parse-time)
+(require 'emms)
+(require 'emms-source-file)
 (require 'xml)
+
+(defvar emms-lastfm-client-username nil
+  "Valid Last.fm account username.")
 
 (defvar emms-lastfm-client-api-key nil
   "Key for the Last.fm API.")
@@ -67,13 +72,40 @@
   "Latest Last.fm track.")
 
 (defvar emms-lastfm-client-original-next-function nil
-  "Original `-next-function' to be restored.")
+  "Original `-next-function'.")
 
 (defvar emms-lastfm-client-playlist-buffer-name "*Emms Last.fm*"
   "Name for non-interactive Emms Last.fm buffer.")
 
 (defvar emms-lastfm-client-playlist-buffer nil
   "Non-interactive Emms Last.fm buffer.")
+
+(defvar emms-lastfm-client-client-identifier "emm"
+  "Client identifier for Emms (Last.fm define this, not us).")
+
+(defvar emms-lastfm-client-submission-protocol-number "1.2.1"
+  "Version of the submissions protocol to which Emms conforms.")
+
+(defvar emms-lastfm-client-published-version "1.0"
+  "Version of this package published to the Last.fm service.")
+
+(defvar emms-lastfm-client-submission-session-id nil
+  "Scrobble session id, for now-playing and submission requests.")
+
+(defvar emms-lastfm-client-submission-now-playing-url nil
+  "URL that should be used for a now-playing request.")
+
+(defvar emms-lastfm-client-submission-url nil
+  "URL that should be used for submissions")
+
+(defvar emms-lastfm-client-track-play-start-timestamp nil
+  "UTC timestamp.")
+
+(defvar emms-lastfm-client-submission-api t
+  "Use the Last.fm submission API if true, otherwise don't.")
+
+(defvar emms-lastfm-client-inhibit-cleanup nil
+  "If true, do not perform clean-up after `emms-stop'.")
 
 (defvar emms-lastfm-client-api-method-dict
   '((auth-get-token    . ("auth.gettoken"
@@ -87,7 +119,13 @@
 			  emms-lastfm-client-radio-tune-failed))
     (radio-getplaylist . ("radio.getplaylist"
 			  emms-lastfm-client-radio-getplaylist-ok
-			  emms-lastfm-client-radio-getplaylist-failed)))
+			  emms-lastfm-client-radio-getplaylist-failed))
+    (track-love        . ("track.love"
+			  emms-lastfm-client-track-love-ok
+			  emms-lastfm-client-track-love-failed))
+    (track-ban         . ("track.ban"
+			  emms-lastfm-client-track-ban-ok
+			  emms-lastfm-client-track-ban-failed)))
   "Mapping symbols to method calls. This is a list of cons pairs
   where the CAR is the symbol name of the method and the CDR is a
   list whose CAR is the method call string, CADR is the function
@@ -180,7 +218,7 @@ This function includes the cryptographic signature."
 (defun emms-lastfm-client-handle-response (method xml-response)
   "Dispatch the handler functions of METHOD for XML-RESPONSE."
   (let ((status (cdr (assoc 'status (nth 1 (car xml-response)))))
-	(data (cddar xml-response)))
+	(data (cdr (cdr (car xml-response)))))
     (when (not status)
       (error "error parsing status from: %s" xml-response))
     (cond ((string= status "failed")
@@ -344,6 +382,24 @@ This function includes the cryptographic signature."
 	(error "could not read playlist from: %s" data)
       playlist)))
 
+;; note: the result of this function can be used with
+;; `emms-lastfm-client-xspf-get' as well
+(defun emms-lastfm-client-xspf-extension (track)
+  "Return the Extension portion of TRACK."
+  (let ((this (copy-sequence track))
+	(cont t))
+    (while (and cont this)
+      (when (consp this)
+	(let ((head (car this)))
+	  (when (consp head)
+	    (when (equal 'extension (car head))
+	      (setq cont nil)))))
+      (when cont
+	(setq this (cdr this))))
+    (if this
+	(car this)
+      (error "could not find track extension data"))))
+
 (defun emms-lastfm-client-xspf-get (node track)
   "Return data associated with NODE in TRACK."
   (let ((result nil))
@@ -373,11 +429,14 @@ This function includes the cryptographic signature."
   (let ((expiry (parse-integer
 		 (emms-lastfm-client-xspf-header-expiry header))))
     (setq emms-lastfm-client-playlist-valid t)
+    (when emms-lastfm-client-playlist-timer
+      (cancel-timer emms-lastfm-client-playlist-timer))
     (setq emms-lastfm-client-playlist-timer
 	  (run-at-time
 	   expiry nil
-	   '(lambda () (setq emms-lastfm-client-playlist-valid
-			     nil))))))
+	   '(lambda ()
+	      (cancel-timer emms-lastfm-client-playlist-timer)
+	      (setq emms-lastfm-client-playlist-valid nil))))))
 
 ;;; ------------------------------------------------------------------
 ;;; Player
@@ -400,39 +459,104 @@ This function includes the cryptographic signature."
       (error "playlist invalid"))))
 
 (defun emms-lastfm-client-set-lastfm-playlist-buffer ()
-  (when (not (buffer-live-p emms-lastfm-client-playlist-buffer))
-    (setq emms-lastfm-client-playlist-buffer
-	  (emms-playlist-new
-	   emms-lastfm-client-playlist-buffer-name))
-    (setq emms-playlist-buffer emms-lastfm-client-playlist-buffer)))
+  "Set `emms-playlist-buffer' to a be an Emms lastfm buffer."
+  (when (buffer-live-p emms-lastfm-client-playlist-buffer)
+    (kill-buffer emms-lastfm-client-playlist-buffer))
+  (setq emms-lastfm-client-playlist-buffer
+	(emms-playlist-new
+	 emms-lastfm-client-playlist-buffer-name))
+  (setq emms-playlist-buffer emms-lastfm-client-playlist-buffer))
+
+(defun emms-lastfm-client-timestamp ()
+  "Return a UNIX UTC timestamp."
+  (format-time-string "%s" (current-time) t))
 
 (defun emms-lastfm-client-load-next-track ()
+  "Queue the next track from Last.fm."
   (with-current-buffer emms-lastfm-client-playlist-buffer
-    (emms-playlist-clear)
+    (let ((inhibit-read-only t))
+      (widen)
+      (delete-region (point-min)
+		     (point-max)))
     (if emms-lastfm-client-playlist
 	(let ((track (emms-lastfm-client-consume-next-track)))
 	  (setq emms-lastfm-client-track track)
-	  (when emms-player-playing-p
-	    (emms-stop))
-	  (emms-play-url
-	   (emms-lastfm-client-xspf-get 'location track)))
+	  (setq emms-lastfm-client-track-play-start-timestamp
+		(emms-lastfm-client-timestamp))
+	  (let ((emms-lastfm-client-inhibit-cleanup t))
+	    (emms-play-url
+	     (emms-lastfm-client-xspf-get 'location track))))
       (emms-lastfm-client-make-call-radio-getplaylist)
       (emms-lastfm-client-load-next-track))))
 
+(defun emms-lastfm-client-love-track ()
+  "Submit the currently playing track with a `love' rating."
+  (interactive)
+  (if emms-lastfm-client-track
+      (let ((result (emms-lastfm-client-make-submission-call
+		     emms-lastfm-client-track 'love)))
+	;; the following submission API call looks redundant but
+	;; isn't; indeed, it might be done away with in a future
+	;; version of the Last.fm API (see API docs)
+	(emms-lastfm-client-make-call-track-love)
+	(when (equal result 'track-successfully-submitted)
+	  (message "track sucessfully submitted with a `love' rating")))
+    (error "no current track")))
+
+(defun emms-lastfm-client-ban-track ()
+  "Submit currently playing track with a `ban' rating and skip."
+  (interactive)
+  (if emms-lastfm-client-track
+      (let ((result (emms-lastfm-client-make-submission-call
+		     emms-lastfm-client-track 'ban)))
+	(emms-lastfm-client-make-call-track-ban)
+	(when (equal result 'track-successfully-submitted)
+	  (message "track sucessfully submitted with a `ban' rating"))
+	(emms-lastfm-client-load-next-track))
+    (error "no current track")))
+
 ;; call this `-track-advance' to avoid confusion with Emms'
 ;; `-next-track-' mechanism
-(defun emms-lastfm-client-track-advance ()
+(defun emms-lastfm-client-track-advance (&optional first)
+  "Move to the next track in the playlist."
   (interactive)
   (when (equal emms-playlist-buffer
 	       emms-lastfm-client-playlist-buffer)
+    (when (and emms-lastfm-client-submission-api
+	       (not first))
+      (let ((result (emms-lastfm-client-make-submission-call
+		     emms-lastfm-client-track nil)))
+	(when (equal result 'track-successfully-submitted)
+	  (message "track sucessfully submitted"))))
     (emms-lastfm-client-load-next-track)))
+
+(defun emms-lastfm-client-next-function ()
+  "Replacement function for `emms-next-noerror'."
+  (if (equal emms-playlist-buffer
+	     emms-lastfm-client-playlist-buffer)
+      (emms-lastfm-client-track-advance)
+    (funcall emms-lastfm-client-original-next-function)))
+
+(defun emms-lastfm-client-clean-after-stop ()
+  "Kill the emms-lastfm buffer."
+  (when (and (equal emms-playlist-buffer
+		    emms-lastfm-client-playlist-buffer)
+	     (not emms-lastfm-client-inhibit-cleanup))
+    (kill-buffer emms-lastfm-client-playlist-buffer)
+    (setq emms-lastfm-client-playlist-buffer nil)))
 
 (defun emms-lastfm-client-play-playlist ()
   "Entry point to play tracks from Last.fm."
   (emms-lastfm-client-set-lastfm-playlist-buffer)
-  (add-hook 'emms-player-finished-hook
-	    'emms-lastfm-client-track-advance)
-  (emms-lastfm-client-track-advance))
+  (when (not (equal emms-player-next-function
+		    'emms-lastfm-client-next-function))
+    (add-to-list 'emms-player-stopped-hook
+		 'emms-lastfm-client-clean-after-stop)
+    (setq emms-lastfm-client-original-next-function
+	  emms-player-next-function)
+    (setq emms-player-next-function
+	  'emms-lastfm-client-next-function))
+  (emms-lastfm-client-track-advance t))
 
 ;; stolen from Tassilo Horn's original emms-lastfm.el
 (defun emms-lastfm-client-read-artist ()
@@ -449,16 +573,75 @@ This function includes the cryptographic signature."
 	(emms-completing-read "Artist: " artists)
       (read-string "Artist: "))))
 
+(defun emms-lastfm-client-initialize-session ()
+  "Run per-session functions."
+  (emms-lastfm-client-check-session-key))
+
+;;; ------------------------------------------------------------------
+;;; Stations
+;;; ------------------------------------------------------------------
+
+(defun emms-lastfm-client-play-user-station (username url)
+  "Play URL for USERNAME."
+  (when (not (and username url))
+    (error "username and url must be set"))
+  (emms-lastfm-client-initialize-session)
+  (emms-lastfm-client-make-call-radio-tune
+   (format url username))
+  (emms-lastfm-client-make-call-radio-getplaylist)
+  (emms-lastfm-client-handshake)
+  (emms-lastfm-client-play-playlist))
+
 (defun emms-lastfm-client-play-similar-artists (artist)
   "Play a Last.fm station with music similar to ARTIST."
   (interactive (list (emms-lastfm-client-read-artist)))
   (when (not (stringp artist))
     (error "not a string: %s" artist))
-  (emms-lastfm-client-check-session-key)
+  (emms-lastfm-client-initialize-session)
   (emms-lastfm-client-make-call-radio-tune
    (format "lastfm://artist/%s/similarartists" artist))
   (emms-lastfm-client-make-call-radio-getplaylist)
+  (emms-lastfm-client-handshake)
   (emms-lastfm-client-play-playlist))
+
+(defun emms-lastfm-client-play-loved ()
+  "Play a Last.fm station with \"loved\" tracks."
+  (interactive)
+  (emms-lastfm-client-play-user-station
+   emms-lastfm-client-username
+   "lastfm://user/%s/loved"))
+
+(defun emms-lastfm-client-play-neighborhood ()
+  "Play a Last.fm station with \"neighborhood\" tracks."
+  (interactive)
+  (emms-lastfm-client-play-user-station
+   emms-lastfm-client-username
+   "lastfm://user/%s/neighbours"))
+
+(defun emms-lastfm-client-play-library ()
+  "Play a Last.fm station with \"library\" tracks."
+  (interactive)
+  (emms-lastfm-client-play-user-station
+   emms-lastfm-client-username
+   "lastfm://user/%s/personal"))
+
+(defun emms-lastfm-client-play-user-loved (user)
+  (interactive "sLast.fm username: ")
+  (emms-lastfm-client-play-user-station
+   user
+   "lastfm://user/%s/loved"))
+
+(defun emms-lastfm-client-play-user-neighborhood (user)
+  (interactive "sLast.fm username: ")
+  (emms-lastfm-client-play-user-station
+   user
+   "lastfm://user/%s/neighbours"))
+
+(defun emms-lastfm-client-play-user-library (user)
+  (interactive "sLast.fm username: ")
+  (emms-lastfm-client-play-user-station
+   user
+   "lastfm://user/%s/personal"))
 
 ;;; ------------------------------------------------------------------
 ;;; Information
@@ -640,7 +823,7 @@ This function includes the cryptographic signature."
 		 (car response)
 		 (= (length (car response)) 3))
 	(add-to-list 'data (cons (caar response)
-				 (caddr (car response)))))
+				 (car (cdr (cdr (car response)))))))
       (setq response (cdr response)))
     (when (not data)
       (error "could not parse station information %s" data))
@@ -695,6 +878,254 @@ This function includes the cryptographic signature."
     (emms-lastfm-client-set-timer header)
     (setq emms-lastfm-client-playlist
 	  (emms-lastfm-client-list-filter tracklist))))
+
+;;; ------------------------------------------------------------------
+;;; method: track.love [http://www.last.fm/api/show?service=260]
+;;; ------------------------------------------------------------------
+
+(defun emms-lastfm-client-construct-track-love ()
+  "Return a request for setting current track rating to `love'."
+  (let ((arguments
+	 (emms-lastfm-client-encode-arguments
+	  `(("sk"      . ,emms-lastfm-client-api-session-key)
+	    ("api_key" . ,emms-lastfm-client-api-key)
+	    ("track"   . ,(emms-lastfm-client-xspf-get
+			   'title emms-lastfm-client-track))
+	    ("artist"  . ,(emms-lastfm-client-xspf-get
+			   'creator emms-lastfm-client-track))))))
+    (emms-lastfm-client-construct-write-method-call
+     'track-love arguments)))
+
+(defun emms-lastfm-client-make-call-track-love ()
+  "Make call for setting track rating to `love'."
+  (let ((url-request-method "POST")
+	(url-request-extra-headers
+	 `(("Content-type" . "application/x-www-form-urlencoded")))
+	(url-request-data
+	 (emms-lastfm-client-construct-track-love)))
+    (let ((response
+	   (url-retrieve-synchronously
+	    emms-lastfm-client-api-base-url)))
+      (emms-lastfm-client-handle-response
+       'track-love
+       (with-current-buffer response
+	 (xml-parse-region (point-min) (point-max)))))))
+
+(defun emms-lastfm-client-track-love-failed (data)
+  "Function called with DATA when setting `love' rating fails."
+  'stub-needs-to-handle-track-love-issues
+  (emms-lastfm-client-default-error-handler data))
+
+(defun emms-lastfm-client-track-love-ok (data)
+  "Function called with DATA after `love' rating succeeds."
+  'track-love-succeed)
+
+;;; ------------------------------------------------------------------
+;;; method: track.ban [http://www.last.fm/api/show?service=261]
+;;; ------------------------------------------------------------------
+
+(defun emms-lastfm-client-construct-track-ban ()
+  "Return a request for setting current track rating to `ban'."
+  (let ((arguments
+	 (emms-lastfm-client-encode-arguments
+	  `(("sk"      . ,emms-lastfm-client-api-session-key)
+	    ("api_key" . ,emms-lastfm-client-api-key)
+	    ("track"   . ,(emms-lastfm-client-xspf-get
+			   'title emms-lastfm-client-track))
+	    ("artist"  . ,(emms-lastfm-client-xspf-get
+			   'creator emms-lastfm-client-track))))))
+    (emms-lastfm-client-construct-write-method-call
+     'track-ban arguments)))
+
+(defun emms-lastfm-client-make-call-track-ban ()
+  "Make call for setting track rating to `ban'."
+  (let ((url-request-method "POST")
+	(url-request-extra-headers
+	 `(("Content-type" . "application/x-www-form-urlencoded")))
+	(url-request-data
+	 (emms-lastfm-client-construct-track-ban)))
+    (let ((response
+	   (url-retrieve-synchronously
+	    emms-lastfm-client-api-base-url)))
+      (emms-lastfm-client-handle-response
+       'track-ban
+       (with-current-buffer response
+	 (xml-parse-region (point-min) (point-max)))))))
+
+(defun emms-lastfm-client-track-ban-failed (data)
+  "Function called with DATA when setting `ban' rating fails."
+  'stub-needs-to-handle-track-ban-issues
+  (emms-lastfm-client-default-error-handler data))
+
+(defun emms-lastfm-client-track-ban-ok (data)
+  "Function called with DATA after `ban' rating succeeds."
+  'track-ban-succeed)
+
+;;; ------------------------------------------------------------------
+;;; Submission API [http://www.last.fm/api/submissions]
+;;; ------------------------------------------------------------------
+
+;; 1.3 Authentication Token for Web Services Authentication: token =
+;; md5(shared_secret + timestamp)
+
+(defun emms-lastfm-client-make-token-for-web-services (timestamp)
+  (when (not (and emms-lastfm-client-api-secret-key timestamp))
+    (error "secret and timestamp needed to make an auth token"))
+  (md5 (concat emms-lastfm-client-api-secret-key timestamp)))
+
+;; Handshake: The initial negotiation with the submissions server to
+;; establish authentication and connection details for the session.
+
+(defun emms-lastfm-client-make-handshake-call ()
+  "Return a submission protocol handshake string."
+  (when (not (and emms-lastfm-client-submission-protocol-number
+		  emms-lastfm-client-client-identifier
+		  emms-lastfm-client-published-version
+		  emms-lastfm-client-username))
+    (error "missing variables to generate handshake call"))
+  (let ((timestamp (format-time-string "%s")))
+    (concat
+     "http://post.audioscrobbler.com/?hs=true"
+     "&p=" emms-lastfm-client-submission-protocol-number
+     "&c=" emms-lastfm-client-client-identifier
+     "&v=" emms-lastfm-client-published-version
+     "&u=" emms-lastfm-client-username
+     "&t=" timestamp
+     "&a=" (emms-lastfm-client-make-token-for-web-services timestamp)
+     "&api_key=" emms-lastfm-client-api-key
+     "&sk=" emms-lastfm-client-api-session-key)))
+
+(defun emms-lastfm-client-handshake ()
+  "Make handshake call."
+  (if emms-lastfm-client-playlist-valid
+      (let* ((url-request-method "GET"))
+	(let ((response
+	       (url-retrieve-synchronously
+		(emms-lastfm-client-make-handshake-call))))
+	  (emms-lastfm-client-handle-handshake
+	   (with-current-buffer response
+	     (buffer-substring-no-properties
+	      (point-min) (point-max))))))
+    (error "cannot handshake without initializing the client")))
+
+(defun emms-lastfm-client-handle-handshake (response)
+  (let ((ok200 "HTTP/1.1 200 OK"))
+    (when (not (string= ok200 (substring response 0 15)))
+      (error "server not responding correctly"))
+    (with-temp-buffer
+      (insert response)
+      (goto-char (point-min))
+      (re-search-forward "\n\n")
+      (let ((status (buffer-substring-no-properties
+		     (point-at-bol) (point-at-eol))))
+	(cond ((string= status "OK")
+	       (forward-line)
+	       (setq emms-lastfm-client-submission-session-id
+		     (buffer-substring-no-properties
+		      (point-at-bol) (point-at-eol)))
+	       (forward-line)
+	       (setq emms-lastfm-client-submission-now-playing-url
+		     (buffer-substring-no-properties
+		      (point-at-bol) (point-at-eol)))
+	       (forward-line)
+	       (setq emms-lastfm-client-submission-url
+		     (buffer-substring-no-properties
+		      (point-at-bol) (point-at-eol))))
+	      ((string= status "BANNED")
+	       (error "this version of Emms has been BANNED"))
+	      ((string= status "BADAUTH")
+	       (error "bad authentication paramaters to handshake"))
+	      ((string= status "BADTIME")
+	       (error "handshake timestamp diverges too much"))
+	      (t
+	       (error "unhandled handshake failure")))))))
+
+(defun emms-lastfm-client-assert-submission-handshake ()
+  (when (not (and emms-lastfm-client-submission-session-id
+		  emms-lastfm-client-submission-now-playing-url
+		  emms-lastfm-client-submission-url))
+    (error "cannot use submission API before handshake")))
+
+(defun emms-lastfm-client-hexify-encode (str)
+  "UTF-8 encode and URL-hexify STR."
+  (url-hexify-string (encode-coding-string str 'utf-8)))
+
+(defun emms-lastfm-client-submission-data (track rating)
+  (emms-lastfm-client-assert-submission-handshake)
+  (setq rating
+	(cond ((equal 'love rating) "L")
+	      ((equal 'ban rating) "B")
+	      ((equal 'skip rating) "S")
+	      (t "")))
+  (concat
+   "s=" (emms-lastfm-client-hexify-encode
+	 emms-lastfm-client-submission-session-id)
+   "&a[0]=" (emms-lastfm-client-hexify-encode
+	     (emms-lastfm-client-xspf-get 'creator track))
+   "&t[0]=" (emms-lastfm-client-hexify-encode
+	     (emms-lastfm-client-xspf-get 'title track))
+   ;; warning: won't extend to submitting multiple tracks
+   "&i[0]=" (emms-lastfm-client-hexify-encode
+	     emms-lastfm-client-track-play-start-timestamp)
+   "&o[0]=L" (emms-lastfm-client-hexify-encode
+	      (emms-lastfm-client-xspf-get
+	       'trackauth
+	       (emms-lastfm-client-xspf-extension track)))
+   "&r[0]=" (emms-lastfm-client-hexify-encode rating)
+   "&l[0]=" "" ; empty string to be explicit
+   "&b[0]=" "" ; empty string to be explicit
+   "&n[0]=" "" ; empty string to be explicit
+   "&m[0]=" "" ; empty string to be explicit
+   ))
+
+(defun emms-lastfm-client-handle-submission-response (response track rating)
+  (let ((ok200 "HTTP/1.1 200 OK"))
+    (when (not (string= ok200 (substring response 0 15)))
+      (error "submission server not responding correctly"))
+    (with-temp-buffer
+      (insert response)
+      (goto-char (point-min))
+      (re-search-forward "\n\n")
+      (let ((status (buffer-substring-no-properties
+		     (point-at-bol) (point-at-eol))))
+	(cond ((string= status "OK")
+	       ;; From the API docs: This indicates that the
+	       ;; submission request was accepted for processing. It
+	       ;; does not mean that the submission was valid, but
+	       ;; only that the authentication and the form of the
+	       ;; submission was validated.
+	       'track-successfully-submitted)
+	      ((string= status "BADSESSION")
+	       (emms-lastfm-client-handshake)
+	       (emms-lastfm-client-make-submission-call track rating))
+	      (t
+	       (error "unhandled submission failure")))))))
+
+(defun emms-lastfm-client-make-submission-call (track rating)
+  "Make submission call."
+  (if emms-lastfm-client-playlist-valid
+      (let* ((url-request-method "POST")
+	     (url-request-data
+	      (emms-lastfm-client-submission-data track rating))
+	     (url-request-extra-headers
+	      `(("Content-type"
+		 . "application/x-www-form-urlencoded"))))
+	(let ((response
+	       (url-retrieve-synchronously
+		emms-lastfm-client-submission-url)))
+	  (emms-lastfm-client-handle-submission-response
+	   (with-current-buffer response
+	     (buffer-substring-no-properties
+	      (point-min) (point-max)))
+	   track rating)))
+    (error "cannot make submission call without initializing the client")))
+
+(defun emms-lastfm-client-submit ()
+  "Submit the current track as having been played."
+  (if emms-lastfm-client-track
+      (emms-lastfm-client-make-submission-call
+       emms-lastfm-client-track nil)
+    (error "no current track")))
 
 (provide 'emms-lastfm-client)
 
