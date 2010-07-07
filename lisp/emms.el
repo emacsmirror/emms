@@ -8,20 +8,20 @@
 
 ;; This file is part of EMMS.
 
-;; EMMS is free software; you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
+;; EMMS is free software; you can redistribute it and/or modify it
+;; under the terms of the GNU General Public License as published by
 ;; the Free Software Foundation; either version 3, or (at your option)
 ;; any later version.
-;;
-;; EMMS is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
-;;
+
+;; EMMS is distributed in the hope that it will be useful, but WITHOUT
+;; ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+;; or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+;; License for more details.
+
 ;; You should have received a copy of the GNU General Public License
-;; along with EMMS; see the file COPYING.  If not, write to the
-;; Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
-;; Boston, MA 02110-1301, USA.
+;; along with EMMS; see the file COPYING.  If not, write to the Free
+;; Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+;; 02110-1301, USA.
 
 ;;; Commentary:
 
@@ -93,9 +93,10 @@ track by track normally."
       'ido-completing-read
     'completing-read)
   "Function to call when prompting user to choose between a list of options.
-This should take the same arguments as `completing-read'.
-Some possible values are `completing-read' and `ido-completing-read'.
-Note that you must set `ido-mode' if using`ido-completing-read'."
+This should take the same arguments as `completing-read'.  Some
+possible values are `completing-read' and `ido-completing-read'.
+Note that you must set `ido-mode' if using
+`ido-completing-read'."
   :group 'emms
   :type 'function)
 
@@ -106,10 +107,10 @@ Note that you must set `ido-mode' if using`ido-completing-read'."
 
 (defcustom emms-player-delay 0
   "The delay to pause after a player finished.
-This is a floating-point number of seconds.
-This is necessary for some platforms where it takes a bit to free
-the audio device after a player has finished. If EMMS is skipping
-songs, increase this number."
+This is a floating-point number of seconds.  This is necessary
+for some platforms where it takes a bit to free the audio device
+after a player has finished.  If EMMS is skipping songs, increase
+this number."
   :type 'number
   :group 'emms)
 
@@ -124,7 +125,7 @@ songs, increase this number."
   :group 'emms)
 
 (defcustom emms-playlist-uniq-function 'emms-playlist-simple-uniq
-  "*The function to use for make track uniq in the playlist."
+  "*The function to use for removing duplicate tracks in the playlist."
   :type 'function
   :group 'emms)
 
@@ -153,7 +154,7 @@ sorts before the second (see `sort')."
 
 (defcustom emms-playlist-update-track-function 'emms-playlist-simple-update-track
   "*A function to update the track at point.
-This is called when the track information changed. This also
+This is called when the track information changed.  This also
 shouldn't assume that the track has been inserted before."
   :group 'emms
   :type 'function)
@@ -218,9 +219,9 @@ See `emms-player-finished-hook'."
 (defcustom emms-player-finished-hook nil
   "*Hook run when an EMMS player finishes playing a track.
 Please pay attention to the differences between
-`emms-player-finished-hook' and `emms-player-stopped-hook'.
-The former is called only when the player actually finishes
-playing a track; the latter, only when the player is stopped
+`emms-player-finished-hook' and `emms-player-stopped-hook'.  The
+former is called only when the player actually finishes playing a
+track; the latter, only when the player is stopped
 interactively."
   :group 'emms
   :type 'hook)
@@ -239,8 +240,7 @@ Use `emms-player-paused-p' to find the current state."
   :type 'hook)
 
 (defcustom emms-seek-seconds 10
-  "The number of seconds to seek forward or backward when seeking.
-This is a number in seconds."
+  "The number of seconds to seek forward or backward when seeking."
   :group 'emms
   :type 'number)
 
@@ -330,10 +330,10 @@ This also disables any read-onliness of the current buffer."
 
 (defmacro emms-walk-tracks (&rest body)
   "Execute BODY for each track in the current buffer, starting at point.
-The point will be placed at the beginning of the track before
+Point will be placed at the beginning of the track before
 executing BODY.
 
-The point will not be restored afterward."
+Point will not be restored afterward."
   (let ((donep (make-symbol "donep")))
     `(let ((,donep nil))
        ;; skip to first track if not on one
@@ -480,7 +480,7 @@ This uses `emms-playlist-sort-function'."
       (funcall emms-playlist-sort-function))))
 
 (defun emms-uniq ()
-  "Uniq the current playlist.
+  "Remove duplicates from the current playlist.
 This uses `emms-playlist-uniq-function'."
   (interactive)
   (with-current-emms-playlist
@@ -498,7 +498,7 @@ See `emms-repeat-playlist'."
 
 (defun emms-toggle-repeat-track ()
   "Toggle whether emms repeats the current track.
-See  `emms-repeat-track'."
+See `emms-repeat-track'."
   (interactive)
   (setq emms-repeat-track (not emms-repeat-track))
   (if emms-repeat-track
@@ -628,8 +628,9 @@ If there is no value, return DEFAULT (or nil, if not given)."
 
 (defun emms-track-description (track)
   "Return a description of TRACK.
-This function uses the global value for `emms-track-description-function',
-rather than anything the current mode might have set.
+This function uses the global value for
+`emms-track-description-function', rather than anything the
+current mode might have set.
 
 Use `emms-track-force-description' instead if you need to insert
 a description into a playlist buffer."
@@ -644,8 +645,9 @@ a description into a playlist buffer."
 (defun emms-track-simple-description (track)
   "Simple function to give a user-readable description of a track.
 If it's a file track, just return the file name.  Otherwise,
-return the type and the name with a colon in between. Hex-encoded
-characters in URLs are replaced by the decoded character."
+return the type and the name with a colon in between.
+Hex-encoded characters in URLs are replaced by the decoded
+character."
   (let ((type (emms-track-type track)))
     (cond ((eq 'file type)
            (emms-track-name track))
@@ -673,9 +675,9 @@ string), a confusing error message would result."
 
 ;;; The Playlist
 
-;; Playlists are stored in buffers. The current playlist buffer is
-;; remembered in the `emms-playlist' variable. The buffer consists of
-;; any kind of data. Strings of text with a `emms-track' property are
+;; Playlists are stored in buffers.  The current playlist buffer is
+;; remembered in the `emms-playlist' variable.  The buffer consists of
+;; any kind of data.  Strings of text with a `emms-track' property are
 ;; the tracks in the buffer.
 
 (defvar emms-playlist-buffers nil
@@ -689,7 +691,7 @@ for that purpose.")
 (make-variable-buffer-local 'emms-playlist-selected-marker)
 
 (defvar emms-playlist-buffer-p nil
-  "Non-nil when the current buffer is an EMMS playlist.")
+  "Non-nil if the current buffer is an EMMS playlist.")
 (make-variable-buffer-local 'emms-playlist-buffer-p)
 
 (defun emms-playlist-ensure-playlist-buffer ()
@@ -726,9 +728,9 @@ for that purpose.")
 
 (defun emms-playlist-new (&optional name)
   "Create a new playlist buffer.
-The buffer is named NAME, but made unique. NAME defaults to
-`emms-playlist-buffer-name'.
-If called interactively, the new buffer is also selected."
+The buffer is named NAME, but made unique.  NAME defaults to
+`emms-playlist-buffer-name'.  If called interactively, the new
+buffer is also selected."
   (interactive)
   (let ((buf (generate-new-buffer (or name
                                       emms-playlist-buffer-name))))
@@ -886,7 +888,7 @@ If no playlist exists, a new one is generated."
     (emms-playlist-selected-track)))
 
 (defun emms-playlist-selected-track-at-p (&optional point)
-  "Return non-nil when POINT (defaulting to point) is on the selected track."
+  "Return non-nil if POINT (defaulting to point) is on the selected track."
   (when emms-playlist-selected-marker
     (or (= emms-playlist-selected-marker
            (or point (point)))
@@ -1071,7 +1073,7 @@ This is supplying ARGS as arguments to the source."
 
 (defun emms-playlist-simple-update-track ()
   "Update the track at point.
-Since we don't do anything special with the track anyways, just
+Since we don't do anything special with the track anyway, just
 ignore this."
   nil)
 
@@ -1134,7 +1136,7 @@ ignore this."
 (defun emms-uniq-list (list stringify)
   "Compare stringfied element of list, and remove duplicate elements."
   ;; This uses a fast append list, keeping a pointer to the last cons
-  ;; cell of the list (TAIL). It might be worthwhile to provide an
+  ;; cell of the list (TAIL).  It might be worthwhile to provide an
   ;; abstraction for this eventually.
   (let* ((hash (make-hash-table :test 'equal))
          (result (cons nil nil))
@@ -1148,7 +1150,8 @@ ignore this."
     (cdr result)))
 
 (defun emms-playlist-simple-uniq ()
-  "Remove duplicate tracks"
+  "Remove duplicate tracks."
+  ;; TODO: This seems unnecessarily destructive.
   (emms-playlist-ensure-playlist-buffer)
   (widen)
   (let ((inhibit-read-only t)
@@ -1205,18 +1208,18 @@ If POS does not contain PROP, try to find PROP just before POS."
 ;; It should use `emms-playlist-insert-track' to insert the tracks it
 ;; knows about.
 ;;
-;; The define-emms-source macro also defines functions emms-play-SOURCE
-;; and emms-add-SOURCE.  The former will replace the current playlist,
-;; while the latter will add to the end.
+;; The define-emms-source macro also defines functions
+;; emms-play-SOURCE and emms-add-SOURCE.  The former will replace the
+;; current playlist, while the latter will add to the end.
 
 (defmacro define-emms-source (name arglist &rest body)
   "Define a new EMMS source called NAME.
-This macro defines three functions: `emms-source-NAME', `emms-play-NAME'
-and `emms-add-NAME'. BODY should use `emms-playlist-insert-track'
-do insert all tracks to be played, which is exactly what
-`emms-source-NAME' will do.
-The other two functions will be simple wrappers around `emms-source-NAME';
-any `interactive' form that you specify in BODY will end up in these.
+This macro defines three functions: `emms-source-NAME',
+`emms-play-NAME' and `emms-add-NAME'.  BODY should use
+`emms-playlist-insert-track' to insert all tracks to be played,
+which is exactly what `emms-source-NAME' will do.  The other two
+functions will be simple wrappers around `emms-source-NAME'; any
+`interactive' form that you specify in BODY will end up in these.
 See emms-source-file.el for some examples."
   (let ((source-name (intern (format "emms-source-%s" name)))
         (source-play (intern (format "emms-play-%s" name)))
@@ -1308,18 +1311,19 @@ See emms-source-file.el for some examples."
 (defun emms-player (start stop playablep)
   "Create a new EMMS player.
 The start function will be START, and the stop function STOP.
-PLAYABLEP should return non-nil for tracks that this player can play.
+PLAYABLEP should return non-nil for tracks that this player can
+play.
 
-When trying to play a track, EMMS walks `emms-player-list'.
-For each player,it calls the PLAYABLEP function.
-The player corresponding to the first PLAYABLEP function that returns
-non-nil is used to play the track.
-To actually play the track, EMMS calls the START function,
-passing the chosen track as a parameter.
+When trying to play a track, EMMS walks through
+`emms-player-list'.  For each player, it calls the PLAYABLEP
+function.  The player corresponding to the first PLAYABLEP
+function that returns non-nil is used to play the track.  To
+actually play the track, EMMS calls the START function, passing
+the chosen track as a parameter.
 
-If the user tells EMMS to stop playing, the STOP function is called.
-Once the player has finished playing, it should call `emms-player-stopped'
-to let EMMS know."
+If the user tells EMMS to stop playing, the STOP function is
+called.  Once the player has finished playing, it should call
+`emms-player-stopped' to let EMMS know."
   (let ((p (emms-dictionary '*player*)))
     (emms-player-set p 'start start)
     (emms-player-set p 'stop stop)
@@ -1342,8 +1346,8 @@ to let EMMS know."
 
 (defun emms-player-for (track)
   "Return an EMMS player capable of playing TRACK.
-This will be the first player whose PLAYABLEP function returns non-nil,
-or nil if no such player exists."
+This will be the first player whose PLAYABLEP function returns
+non-nil, or nil if no such player exists."
   (let ((lis emms-player-list))
     (while (and lis
                 (not (funcall (emms-player-get (car lis) 'playablep)
@@ -1370,7 +1374,7 @@ or nil if no such player exists."
   "Declare that the given EMMS PLAYER has started.
 This should only be done by the current player itself."
   (setq emms-player-playing-p player
-        emms-player-paused-p nil)
+        emms-player-paused-p  nil)
   (run-hooks 'emms-player-started-hook))
 
 (defun emms-player-stop ()
@@ -1417,8 +1421,8 @@ This should only be done by the current player itself."
 
 (defun emms-player-seek (seconds)
   "Seek the current player by SECONDS seconds.
-This can be a floating point number for fractions of a second,
-or negative to seek backwards."
+This can be a floating point number for fractions of a second, or
+negative to seek backwards."
   (if (not emms-player-playing-p)
       (error "Can't seek player, nothing playing right now")
     (let ((seek (emms-player-get emms-player-playing-p 'seek)))
@@ -1429,8 +1433,8 @@ or negative to seek backwards."
 
 (defun emms-player-seek-to (seconds)
   "Seek the current player to SECONDS seconds.
-This can be a floating point number for fractions of a second,
-or negative to seek backwards."
+This can be a floating point number for fractions of a second, or
+negative to seek backwards."
   (if (not emms-player-playing-p)
       (error "Can't seek-to player, nothing playing right now")
     (let ((seek (emms-player-get emms-player-playing-p 'seek-to)))
