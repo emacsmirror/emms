@@ -1000,9 +1000,10 @@ with @kbd{<mouse-2>}.
 Scroll up a near full page.
 @item M-<
 @findex emms-playlist-mode-first
-Go to the first track in the playlist. @kbd{M->} completes this
-command by going to the last track in the playlist using
-@command{emms-playlist-mode-last}.
+Go to the first track in the playlist.
+@item M->
+@findex emms-playlist-mode-last
+Go to the last track in the playlist.
 @item r
 @findex emms-random
 Go to a randomly selected track in the playlist.
