@@ -1,6 +1,6 @@
 ;;; emms-lyrics.el --- Display lyrics synchronically
 
-;; Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+;; Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 
 ;; Author: William Xu <william.xwl@gmail.com>
 ;; Keywords: emms music lyrics
@@ -42,6 +42,7 @@
 
 ;;; Code:
 
+(require 'hl-line)
 (require 'emms)
 (require 'emms-player-simple)
 (require 'emms-source-file)
@@ -61,6 +62,11 @@
 
 (defcustom emms-lyrics-display-on-minibuffer nil
   "If non-nil, display lyrics on minibuffer."
+  :type 'boolean
+  :group 'emms-lyrics)
+
+(defcustom emms-lyrics-display-buffer nil
+  "Non-nil will create deciated `emms-lyrics-buffer' to display lyrics."
   :type 'boolean
   :group 'emms-lyrics)
 
@@ -98,7 +104,10 @@ increasingly."
   :group 'emms-lyrics)
 
 (defcustom emms-lyrics-scroll-p t
-  "Non-nil value will enable lyrics scrolling."
+  "Non-nil value will enable lyrics scrolling on mode line.
+
+Note: Even if this is set to t, it also depends on
+`emms-lyrics-display-on-modeline' to be t."
   :type 'boolean
   :group 'emms-lyrics)
 
@@ -115,6 +124,9 @@ increasingly."
 
 (defvar emms-lyrics-mode-line-string ""
   "Current lyric.")
+
+(defvar emms-lyrics-buffer nil
+  "Buffer to show lyrics.")
 
 ;;;###autoload
 (defun emms-lyrics-enable ()
@@ -158,6 +170,16 @@ increasingly."
 	(message "Disable lyrics on mode line"))
     (setq emms-lyrics-display-on-modeline t)
     (message "Enable lyrics on mode line")))
+
+(defun emms-lyrics-toggle-display-buffer ()
+  "Toggle showing/hiding `emms-lyrics-buffer'."
+  (interactive)
+  (let ((w (get-buffer-window emms-lyrics-buffer)))
+    (if w
+        (delete-window w)
+      (save-selected-window
+        (pop-to-buffer emms-lyrics-buffer)
+        (set-window-dedicated-p w t)))))
 
 (defun emms-lyrics (arg)
   "Turn on emms lyrics display if ARG is positive, off otherwise."
@@ -281,6 +303,20 @@ FILE should be under the same directory as the music file, or under
               (sort emms-lyrics-alist (lambda (a b) (< (car a) (car b))))))
       t)))
 
+(defun emms-lyrics-create-buffer ()
+  "Create `emms-lyrics-buffer' dedicated to lyrics. "
+  ;; leading white space in buffer name to hide the buffer
+  (setq emms-lyrics-buffer (get-buffer-create " *EMMS Lyrics*"))
+  (set-buffer emms-lyrics-buffer)
+  (setq buffer-read-only nil
+        cursor-type nil)
+  (erase-buffer)
+  (mapc (lambda (time-lyric) (insert (cdr time-lyric) "\n"))
+        emms-lyrics-alist)
+  (goto-char (point-min))
+  (hl-line-mode 1)
+  (setq buffer-read-only t))
+
 (defun emms-lyrics-start ()
   "Start displaying lryics."
   (setq emms-lyrics-start-time (current-time)
@@ -295,6 +331,8 @@ FILE should be under the same directory as the music file, or under
 	    (concat "\\." (file-name-extension file) "\\'")
             ".lrc"
             (file-name-nondirectory file))))
+    (when emms-lyrics-display-buffer
+      (emms-lyrics-create-buffer))
     (emms-lyrics-set-timer)))
 
 (defun emms-lyrics-catchup (lrc)
@@ -362,7 +400,8 @@ job."
 (defun emms-lyrics-set-timer ()
   "Set timers for displaying lyrics."
   (setq emms-lyrics-timers '())
-  (let ((lyrics-alist emms-lyrics-alist))
+  (let ((lyrics-alist emms-lyrics-alist)
+        (line 0))
     (while lyrics-alist
       (let ((time (- (caar lyrics-alist) emms-lyrics-elapsed-time))
             (lyric (cdar lyrics-alist))
@@ -371,6 +410,7 @@ job."
                                emms-lyrics-elapsed-time)))
             (next-lyric (and (cdr lyrics-alist)
                              (cdr (cadr lyrics-alist)))))
+        (setq line (1+ line))
         (setq emms-lyrics-timers
               (append emms-lyrics-timers
                       (list
@@ -379,6 +419,7 @@ job."
                                     'emms-lyrics-display-handler
                                     lyric
                                     next-lyric
+                                    line
                                     (and next-time (- next-time time)))))))
       (setq lyrics-alist (cdr lyrics-alist)))))
 
@@ -397,14 +438,14 @@ job."
 	(remove 'emms-lyrics-mode-line-string global-mode-string))
   (force-mode-line-update))
 
-(defun emms-lyrics-display-handler (lyric next-lyric diff)
+(defun emms-lyrics-display-handler (lyric next-lyric line diff)
   "DIFF is the timestamp differences between current LYRIC and
-NEXT-LYRIC."
-  (emms-lyrics-display (format emms-lyrics-display-format lyric))
-  (when emms-lyrics-scroll-p
+NEXT-LYRIC; LINE corresponds line number for LYRIC in `emms-lyrics-buffer'."
+  (emms-lyrics-display (format emms-lyrics-display-format lyric) line)
+  (when (and emms-lyrics-display-on-modeline emms-lyrics-scroll-p)
     (emms-lyrics-scroll lyric next-lyric diff)))
 
-(defun emms-lyrics-display (lyric)
+(defun emms-lyrics-display (lyric line)
   "Display LYRIC now.
 See `emms-lyrics-display-on-modeline' and
 `emms-lyrics-display-on-minibuffer' on how to config where to
@@ -413,15 +454,23 @@ display."
     (when emms-lyrics-display-on-modeline
       (emms-lyrics-mode-line)
       (setq emms-lyrics-mode-line-string lyric)
-;;       (setq emms-lyrics-mode-line-string ; make it fit scroller width
-;;             (concat emms-lyrics-mode-line-string
-;;                     (make-string
-;;                      (abs (- emms-lyrics-scroll-width (length lyric)))
-;;                      (string-to-char " "))))
+      ;; (setq emms-lyrics-mode-line-string ; make it fit scroller width
+      ;;       (concat emms-lyrics-mode-line-string
+      ;;               (make-string
+      ;;                (abs (- emms-lyrics-scroll-width (length lyric)))
+      ;;                (string-to-char " "))))
       (force-mode-line-update))
+
     (when emms-lyrics-display-on-minibuffer
       (unless (minibuffer-window-active-p (selected-window))
-        (message lyric)))))
+        (message lyric)))
+
+    (when emms-lyrics-display-buffer
+      (with-current-buffer emms-lyrics-buffer
+        (when line
+          (goto-char (point-min))
+          (forward-line (1- line))
+          (hl-line-highlight))))))
 
 (defun emms-lyrics-find-lyric (file)
   "Return full path of found lrc FILE, or nil if not found.
@@ -460,7 +509,8 @@ NEXT-LYRIC."
                                     'emms-lyrics-display
                                     (if (>= (length lyric) pos)
                                         (substring scrolled-lyric pos)
-                                      (throw 'return t))))))
+                                      (throw 'return t))
+                                    nil))))
         (setq time (+ time emms-lyrics-scroll-timer-interval))
         (setq pos (1+ pos))))))
 
