@@ -1,6 +1,6 @@
 ;;; emms-info.el --- Retrieving track information
 
-;; Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation Inc.
+;; Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation Inc.
 
 ;; Author: Jorgen Schaefer <forcer@forcix.cx>
 
@@ -132,7 +132,8 @@ Return nil otherwise."
       (concat artist " - " title))
      (title
       title)
-     (emms-track-simple-description track))))
+     (t
+      (emms-track-simple-description track)))))
 
 (provide 'emms-info)
 ;;; emms-info.el ends here
