@@ -2341,10 +2341,6 @@ Library.
 @kbd{M-x emms-lastfm-client-play-user-neighborhood}: A Last.fm user's
 ``neighborhood''.
 
-The submission process isn't instantaneous. A high latency Internet
-connection may produce annoying ``freezes'' while Emacs synchronously
-communicates with the Last.fm servers.
-
 @node Streaming Audio
 @chapter Streaming Audio
 
