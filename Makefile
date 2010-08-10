@@ -32,7 +32,7 @@ docs:
 	$(MAKE) -C $(DOCDIR)
 
 emms-print-metadata: $(SRCDIR)/emms-print-metadata.c
-	$(CC) -o $(SRCDIR)/$@ $< `taglib-config --cflags --libs` -ltag_c
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $(SRCDIR)/$@ $< `taglib-config --cflags --libs` -ltag_c
 
 install:
 	test -d $(SITELISP) || mkdir -p $(SITELISP)
