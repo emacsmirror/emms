@@ -493,7 +493,7 @@ This function includes the cryptographic signature."
   "Submit the currently playing track with a `love' rating."
   (interactive)
   (if emms-lastfm-client-track
-      (let ((result (emms-lastfm-client-make-submission-call
+      (let ((result (emms-lastfm-client-make-async-submission-call
 		     emms-lastfm-client-track 'love)))
 	;; the following submission API call looks redundant but
 	;; isn't; indeed, it might be done away with in a future
@@ -507,7 +507,7 @@ This function includes the cryptographic signature."
   "Submit currently playing track with a `ban' rating and skip."
   (interactive)
   (if emms-lastfm-client-track
-      (let ((result (emms-lastfm-client-make-submission-call
+      (let ((result (emms-lastfm-client-make-async-submission-call
 		     emms-lastfm-client-track 'ban)))
 	(emms-lastfm-client-make-call-track-ban)
 	(when (equal result 'track-successfully-submitted)
@@ -524,7 +524,7 @@ This function includes the cryptographic signature."
 	       emms-lastfm-client-playlist-buffer)
     (when (and emms-lastfm-client-submission-api
 	       (not first))
-      (let ((result (emms-lastfm-client-make-submission-call
+      (let ((result (emms-lastfm-client-make-async-submission-call
 		     emms-lastfm-client-track nil)))
 	(when (equal result 'track-successfully-submitted)
 	  (message "track sucessfully submitted"))))
@@ -1094,38 +1094,48 @@ This function includes the cryptographic signature."
 	       ;; does not mean that the submission was valid, but
 	       ;; only that the authentication and the form of the
 	       ;; submission was validated.
-	       'track-successfully-submitted)
+	       (message "successfully submitted %s"
+			(emms-lastfm-client-xspf-get 'title track)))
 	      ((string= status "BADSESSION")
 	       (emms-lastfm-client-handshake)
-	       (emms-lastfm-client-make-submission-call track rating))
+	       (emms-lastfm-client-make-async-submission-call track rating))
 	      (t
 	       (error "unhandled submission failure")))))))
 
-(defun emms-lastfm-client-make-submission-call (track rating)
-  "Make submission call."
+(defun emms-lastfm-client-submit ()
+  "Submit the current track as having been played."
+  (if emms-lastfm-client-track
+      (emms-lastfm-client-make-async-submission-call
+       emms-lastfm-client-track nil)
+    (error "no current track")))
+
+;;; ------------------------------------------------------------------
+;;; Asynchronous Submission
+;;; ------------------------------------------------------------------
+
+(defun emms-lastfm-client-async-submission-callback (status &optional cbargs)
+  "Pass response of asynchronous submission call to handler."
+  (let ((response (copy-sequence
+		   (buffer-substring-no-properties
+		    (point-min) (point-max)))))
+    (emms-lastfm-client-handle-submission-response
+     response
+     (car cbargs) ; track
+     (cdr cbargs) ; rating
+     )))
+
+(defun emms-lastfm-client-make-async-submission-call (track rating)
+  "Make asynchronous submission call."
   (if emms-lastfm-client-playlist-valid
       (let* ((url-request-method "POST")
 	     (url-request-data
 	      (emms-lastfm-client-submission-data track rating))
 	     (url-request-extra-headers
-	      `(("Content-type"
-		 . "application/x-www-form-urlencoded"))))
-	(let ((response
-	       (url-retrieve-synchronously
-		emms-lastfm-client-submission-url)))
-	  (emms-lastfm-client-handle-submission-response
-	   (with-current-buffer response
-	     (buffer-substring-no-properties
-	      (point-min) (point-max)))
-	   track rating)))
+	      `(("Content-type" . "application/x-www-form-urlencoded"))))
+	(url-retrieve emms-lastfm-client-submission-url
+		      #'emms-lastfm-client-async-submission-callback
+		      (list (cons track rating))))
     (error "cannot make submission call without initializing the client")))
-
-(defun emms-lastfm-client-submit ()
-  "Submit the current track as having been played."
-  (if emms-lastfm-client-track
-      (emms-lastfm-client-make-submission-call
-       emms-lastfm-client-track nil)
-    (error "no current track")))
 
 (provide 'emms-lastfm-client)
 
