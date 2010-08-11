@@ -51,7 +51,7 @@ ChangeLog:
 	$(CHANGELOG_CMD) > $@
 
 clean:
-	-rm -f *~ $(DOCDIR)emms.info $(DOCDIR)emms.html emms-print-metadata
+	-rm -f *~ $(DOCDIR)emms.info $(DOCDIR)emms.html $(SRCDIR)/emms-print-metadata
 	$(MAKE) -C $(LISPDIR) clean
 
 dist: clean autoloads
