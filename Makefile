@@ -14,6 +14,7 @@ MAN1DIR=$(PREFIX)/share/man/man1
 SITELISP=$(PREFIX)/share/emacs/site-lisp/emms
 
 INSTALLINFO = /usr/sbin/install-info --info-dir=$(INFODIR)
+CHANGELOG_CMD = git log --pretty=medium
 
 # The currently released version of EMMS
 VERSION=3.0
@@ -32,7 +33,7 @@ docs:
 	$(MAKE) -C $(DOCDIR)
 
 emms-print-metadata: $(SRCDIR)/emms-print-metadata.c
-	$(CC) -o $(SRCDIR)/$@ $< `taglib-config --cflags --libs` -ltag_c
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $(SRCDIR)/$@ $< `taglib-config --cflags --libs` -ltag_c
 
 install:
 	test -d $(SITELISP) || mkdir -p $(SITELISP)
@@ -46,14 +47,11 @@ install:
 remove-info:
 	$(INSTALLINFO) --remove emms.info
 
-deb-install:
-	install -m 644 $(ALLSOURCE) $(SITELISP)
-
 ChangeLog:
-	darcs changes > $@
+	$(CHANGELOG_CMD) > $@
 
 clean:
-	-rm -f *~ $(DOCDIR)emms.info $(DOCDIR)emms.html emms-print-metadata
+	-rm -f *~ $(DOCDIR)emms.info $(DOCDIR)emms.html $(SRCDIR)/emms-print-metadata
 	$(MAKE) -C $(LISPDIR) clean
 
 dist: clean autoloads
@@ -61,7 +59,7 @@ dist: clean autoloads
 	  (cd .. && tar xf -)
 	rm -f ../emms-$(VERSION)/.gitignore
 	cp lisp/emms-auto.el ../emms-$(VERSION)/lisp
-	git log --pretty=medium > ../emms-$(VERSION)/ChangeLog
+	$(CHANGELOG_CMD) > ../emms-$(VERSION)/ChangeLog
 
 release: dist
 	(cd .. && tar -czf emms-$(VERSION).tar.gz \
