@@ -118,6 +118,7 @@ Track Information
 Last.fm
 * Last.fm Setup::            Configuring Emms to use Last.fm.
 * Last.fm Radio::            Listening to music through Last.fm.
+* Last.fm Audioscrobbler::   Submitting music to Last.fm
 
 Extending Emms
 * New Player::               How to define a new player.
@@ -2251,6 +2252,7 @@ Last.fm's paid subscribers''.
 @menu
 * Last.fm Setup::            Configuring Emms to use Last.fm.
 * Last.fm Radio::            Listening to music through Last.fm
+* Last.fm Audioscrobbler::   Submitting music to Last.fm
 @end menu
 
 @node Last.fm Setup
@@ -2340,6 +2342,31 @@ Library.
 
 @kbd{M-x emms-lastfm-client-play-user-neighborhood}: A Last.fm user's
 ``neighborhood''.
+
+@node Last.fm Audioscrobbler
+@section Last.fm Audioscrobbler
+
+Emms can submit the tracks you play to your Last.fm profile. Assuming
+you have obtained a Last.fm api key, as explained in the chapter
+@xref{Last.fm Setup}, all the audioscrobbler needs is your username in
+@var{emms-lastfm-client-username}. You can enter it with @kbd{M-x
+customize-group RET emms-lastfm}.
+
+@kbd{M-x emms-lastfm-scrobbler-enable} turns on audioscrobbling.
+
+To turn it off use @kbd{M-x emms-lastfm-scrobbler-disable}.
+
+To turn on Emms' audioscrobber in your .emacs file add:
+@lisp
+(require 'emms-lastfm-client)
+
+(setq emms-lastfm-client-username "your-lastfm-username")
+(setq emms-lastfm-client-api-key "your-lastfm-api-key")
+(setq emms-lastfm-client-api-secret-key "your-lastfm-api-secret-key")
+
+(emms-lastfm-scrobbler-enable)
+@end lisp
+
 
 @node Streaming Audio
 @chapter Streaming Audio
