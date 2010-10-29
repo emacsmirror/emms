@@ -594,6 +594,13 @@ This function includes the cryptographic signature."
    emms-lastfm-client-username
    "lastfm://user/%s/loved"))
 
+(defun emms-lastfm-client-play-mix ()
+  "Play the \"Mix\" station the current user."
+  (interactive)
+  (emms-lastfm-client-play-user-station
+   emms-lastfm-client-username
+   "lastfm://user/%s/mix"))
+
 (defun emms-lastfm-client-play-neighborhood ()
   "Play a Last.fm station with \"neighborhood\" tracks."
   (interactive)
