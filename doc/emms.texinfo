@@ -2333,6 +2333,8 @@ and remove stations emms-lastfm-client will be updated accordingly)
 
 @kbd{M-x emms-lastfm-client-play-loved}: Your ``loved'' tracks.
 
+@kbd{M-x emms-lastfm-client-play-recommended}: Your ``recommended'' tracks.
+
 @kbd{M-x emms-lastfm-client-play-mix}: Your ``mix'' radio.
 
 @kbd{M-x emms-lastfm-client-play-neighborhood}: Your ``neighborhood''.
