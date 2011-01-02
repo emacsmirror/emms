@@ -342,8 +342,12 @@ they have absolute paths."
     (mapcar (lambda (file)
               (if (string-match "\\`\\(http\\|mms\\)://" file)
                   (emms-track 'url file)
-                (emms-track 'file (expand-file-name file dir))))
-            (emms-source-playlist-pls-files))))
+		(if (string-match "\\`file://" file) ;; handle file:// uris 
+		  (let ((file (url-unhex-string (substring file 7))))
+		    (emms-track 'file file))
+		  (emms-track 'file (expand-file-name file dir)))))
+      (emms-source-playlist-pls-files))))
+
 
 (defun emms-source-playlist-pls-files ()
   "Extract a list of filenames from the given pls playlist.
