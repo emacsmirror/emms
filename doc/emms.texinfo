@@ -2324,9 +2324,18 @@ Space} to enter literal spaces.
 
 There are personal streams you can tune into:
 
+(at the time of writing these are in a state of flux as Last.fm
+depreciate old stations and bring in new ones; If a station which used
+to work doesn't anymore that is probably the reason. As Last.fm add
+and remove stations emms-lastfm-client will be updated accordingly)
+
 @kbd{M-x emms-lastfm-client-play-library}: Your Last.fm Library.
 
 @kbd{M-x emms-lastfm-client-play-loved}: Your ``loved'' tracks.
+
+@kbd{M-x emms-lastfm-client-play-recommended}: Your ``recommended'' tracks.
+
+@kbd{M-x emms-lastfm-client-play-mix}: Your ``mix'' radio.
 
 @kbd{M-x emms-lastfm-client-play-neighborhood}: Your ``neighborhood''.
 
