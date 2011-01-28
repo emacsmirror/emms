@@ -2294,8 +2294,11 @@ access your Last.fm account.
 @node Last.fm Radio
 @section Last.fm Radio
 
-To show information about the currently playing track invoke:
+To show the currently streaming track invoke:
 @kbd{M-x emms-lastfm-client-show}.
+
+To display information and a photo of currently streaming artist:
+@kbd{M-x emms-lastfm-client-info}.
 
 There are three ratings you can submit while streaming audio from
 Last.fm: ``love''-ing a track, skipping to the next song (simply
