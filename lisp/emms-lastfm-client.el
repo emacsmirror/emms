@@ -1,6 +1,6 @@
 ;;; emms-lastfm-client.el --- Last.FM Music API
 
-;; Copyright (C) 2009, 2010  Free Software Foundation, Inc.
+;; Copyright (C) 2009, 2010, 2011  Free Software Foundation, Inc.
 
 ;; Author: Yoni Rabkin <yonirabkin@member.fsf.org>
 
