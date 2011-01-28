@@ -34,6 +34,7 @@
 (require 'emms)
 (require 'emms-source-file)
 (require 'xml)
+(require 'w3m)
 (require 'emms-lastfm-scrobbler)
 
 (defcustom emms-lastfm-client-username nil
@@ -72,6 +73,12 @@
 	  "emms-lastfm-client-sessionkey")
   "File for storing the Last.fm API session key.")
 
+(defvar emms-lastfm-client-cache-directory
+  (file-name-as-directory
+   (concat (file-name-as-directory emms-directory)
+	   "emms-lastfm-client-cache"))
+  "File for storing Last.fm cache data.")
+
 (defvar emms-lastfm-client-playlist-valid nil
   "True if the playlist hasn't expired.")
 
@@ -87,7 +94,8 @@
 (defvar emms-lastfm-client-original-next-function nil
   "Original `-next-function'.")
 
-(defvar emms-lastfm-client-playlist-buffer-name "*Emms Last.fm*"
+(defvar emms-lastfm-client-playlist-buffer-name
+  "*Emms Last.fm*"
   "Name for non-interactive Emms Last.fm buffer.")
 
 (defvar emms-lastfm-client-playlist-buffer nil
@@ -95,6 +103,13 @@
 
 (defvar emms-lastfm-client-inhibit-cleanup nil
   "If true, do not perform clean-up after `emms-stop'.")
+
+(defvar emms-lastfm-client-image-size "mega"
+  "Default size for artist information images.")
+
+(defvar emms-lastfm-client-artist-info-buffer-name
+  "*Emms Last.fm Artist Info*"
+  "Name for displaying artist information.")
 
 (defvar emms-lastfm-client-api-method-dict
   '((auth-get-token    . ("auth.gettoken"
@@ -114,7 +129,10 @@
 			  emms-lastfm-client-track-love-failed))
     (track-ban         . ("track.ban"
 			  emms-lastfm-client-track-ban-ok
-			  emms-lastfm-client-track-ban-failed)))
+			  emms-lastfm-client-track-ban-failed))
+    (artist-getinfo    . ("artist.getinfo"
+			  emms-lastfm-client-artist-getinfo-ok
+			  emms-lastfm-client-artist-getinfo-failed)))
   "Mapping symbols to method calls. This is a list of cons pairs
   where the CAR is the symbol name of the method and the CDR is a
   list whose CAR is the method call string, CADR is the function
@@ -560,6 +578,11 @@ This function includes the cryptographic signature."
   "Run per-session functions."
   (emms-lastfm-client-check-session-key))
 
+(defun emms-lastfm-client-info ()
+  "Display information about the latest track."
+  (interactive)
+  (emms-lastfm-client-make-call-artist-getinfo))
+
 ;;; ------------------------------------------------------------------
 ;;; Stations
 ;;; ------------------------------------------------------------------
@@ -917,6 +940,121 @@ This function includes the cryptographic signature."
 (defun emms-lastfm-client-track-love-ok (data)
   "Function called with DATA after `love' rating succeeds."
   'track-love-succeed)
+
+;;; ------------------------------------------------------------------
+;;; method: artist.getInfo [http://www.last.fm/api/show?service=267]
+;;; ------------------------------------------------------------------
+
+(defun emms-lastfm-client-cache-file (url)
+  "Download a file from URL and return a pathname."
+  (make-directory emms-lastfm-client-cache-directory t)
+  (let ((files (directory-files emms-lastfm-client-cache-directory
+				t)))
+    (dolist (file files)
+      (when (file-regular-p file)
+	(delete-file file)))
+    (call-process "wget" nil nil nil url "-P"
+		  (expand-file-name
+		   emms-lastfm-client-cache-directory))
+    (car (directory-files emms-lastfm-client-cache-directory
+			  t ".jpg"))))
+
+(defun emms-lastfm-client-display-artist-getinfo (artist-name
+						  lastfm-url
+						  artist-image
+						  stats-listeners
+						  stats-playcount
+						  bio-summary
+						  bio-complete)
+  "Display a buffer with the artist information."
+  (let ((buf (get-buffer-create
+	      emms-lastfm-client-artist-info-buffer-name)))
+    (with-current-buffer buf
+      (let ((inhibit-read-only t))
+	(delete-region (point-min) (point-max))
+	(insert-image
+	 (create-image (emms-lastfm-client-cache-file artist-image)))
+	(insert (format "\n\n%s\n\n"
+			(decode-coding-string artist-name 'utf-8)))
+	(insert (format "Last.fm page: %s\n\n" lastfm-url))
+	(insert (format "Listeners: %s\n" stats-listeners))
+	(insert (format "Plays: %s\n\n" stats-playcount))
+	(let ((p (point)))
+	  (insert (format "<p>%s</p>" bio-complete))
+	  (w3m-region p (point))))
+      (setq buffer-read-only t)
+      (text-mode)
+      (goto-char (point-min)))
+    (switch-to-buffer buf)))
+
+(defun emms-lastfm-client-parse-artist-getinfo (data)
+  "Parse the artist information."
+  (when (or (not data)
+	    (not (listp data)))
+    (error "no artist info to parse"))
+  (let ((c (copy-seq (nth 1 data)))
+	artist-name lastfm-url artist-image
+	stats-listeners stats-playcount
+	bio-summary bio-complete)
+    (while c
+      (let ((entry (car c)))
+	(when (listp entry)
+	  (let ((name (nth 0 entry))
+		(value (nth 2 entry)))
+	    (cond ((equal name 'name) (setq artist-name value))
+		  ((equal name 'url)  (setq lastfm-url value))
+		  ((equal name 'image)
+		   (let ((size (cdar (nth 1 entry))))
+		     (when (string-equal emms-lastfm-client-image-size
+					 size)
+		       (setq artist-image value))))
+		  ((equal name 'stats)
+		   (setq stats-listeners (nth 2 (nth 3 entry))
+			 stats-playcount (nth 2 (nth 5 entry))))
+		  ((equal name 'bio)
+		   (setq bio-summary (nth 2 (nth 5 entry))
+			 bio-complete (nth 2 (nth 7 entry))))))))
+      (setq c (cdr c)))
+    (emms-lastfm-client-display-artist-getinfo
+     artist-name lastfm-url artist-image
+     stats-listeners stats-playcount
+     bio-summary bio-complete)))
+
+(defun emms-lastfm-client-construct-artist-getinfo ()
+  "Return a request for getting info about an artist."
+  (let ((arguments
+	 (emms-lastfm-client-encode-arguments
+	  `(("sk"      . ,emms-lastfm-client-api-session-key)
+	    ("api_key" . ,emms-lastfm-client-api-key)
+	    ("autocorrect" . "1")
+	    ("artist"  . ,(emms-lastfm-client-xspf-get
+			   'creator emms-lastfm-client-track))))))
+    (emms-lastfm-client-construct-write-method-call
+     'artist-getinfo arguments)))
+
+(defun emms-lastfm-client-make-call-artist-getinfo ()
+  "Make a call for artist info."
+  (let ((url-request-method "POST")
+	(url-request-extra-headers
+	 `(("Content-type" . "application/x-www-form-urlencoded")))
+	(url-request-data
+	 (emms-lastfm-client-construct-artist-getinfo)))
+    (let ((response
+	   (url-retrieve-synchronously
+	    emms-lastfm-client-api-base-url)))
+      (emms-lastfm-client-handle-response
+       'artist-getinfo
+       (with-current-buffer response
+	 (xml-parse-region (point-min) (point-max)))))))
+
+(defun emms-lastfm-client-artist-getinfo-failed (data)
+  "Function called with DATA when setting `ban' rating fails."
+  'stub-needs-to-handle-artist-getinfo-issues
+  (emms-lastfm-client-default-error-handler data))
+
+(defun emms-lastfm-client-artist-getinfo-ok (data)
+  "Function called with DATA after `ban' rating succeeds."
+  (emms-lastfm-client-parse-artist-getinfo data))
 
 ;;; ------------------------------------------------------------------
 ;;; method: track.ban [http://www.last.fm/api/show?service=261]
