@@ -957,7 +957,7 @@ This function includes the cryptographic signature."
 		  (expand-file-name
 		   emms-lastfm-client-cache-directory))
     (car (directory-files emms-lastfm-client-cache-directory
-			  t ".jpg"))))
+			  t ".\\(jpg\\|png\\)"))))
 
 (defun emms-lastfm-client-display-artist-getinfo (artist-name
 						  lastfm-url
