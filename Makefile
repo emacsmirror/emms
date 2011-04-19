@@ -14,7 +14,7 @@ MAN1DIR=$(PREFIX)/share/man/man1
 SITELISP=$(PREFIX)/share/emacs/site-lisp/emms
 
 INSTALLINFO = /usr/sbin/install-info --info-dir=$(INFODIR)
-CHANGELOG_CMD = git log --pretty=medium
+CHANGELOG_CMD = git log --pretty=medium --no-merges
 
 # The currently released version of EMMS
 VERSION=3.0
