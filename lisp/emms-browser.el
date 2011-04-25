@@ -795,6 +795,16 @@ This will be in the form '(1998) '."
       (concat
        "(" year ") "))))
 
+(defun emms-browser-track-duration (track)
+  "Return a string representation of a track duration.
+If no duration is available, return an empty string."
+  (let ((pmin (emms-track-get track 'info-playing-time-min))
+        (psec (emms-track-get track 'info-playing-time-sec))
+        (ptot (emms-track-get track 'info-playing-time)))
+    (cond ((and pmin psec) (format "%02d:%02d" pmin psec))
+          (ptot (format  "%02d:%02d" (/ ptot 60) (% ptot 60)))
+          (t ""))))
+
 (defun emms-browser-make-bdata (data name type level)
   "Return a browser data item from ALIST.
 DATA should be a list of DB items, or a list of tracks.
@@ -1691,6 +1701,7 @@ If > album level, most of the track data will not make sense."
             ("p" . ,(emms-track-get track 'info-performer))
             ("t" . ,(emms-track-get track 'info-title))
             ("T" . ,(emms-browser-track-number track))
+            ("d" . ,(emms-browser-track-duration track))
             ("cS" . ,(emms-browser-get-cover-str path 'small))
             ("cM" . ,(emms-browser-get-cover-str path 'medium))
             ("cL" . ,(emms-browser-get-cover-str path 'large))))
