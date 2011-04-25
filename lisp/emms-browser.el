@@ -72,7 +72,7 @@
 ;; C               emms-browser-clear-playlist
 ;; E               emms-browser-expand-all
 ;; d               emms-browser-view-in-dired
-;; d               emms-browser-delete-files
+;; D               emms-browser-delete-files
 ;; q               emms-browser-bury-buffer
 ;; r               emms-browser-goto-random
 ;; n               next-line
