@@ -1777,10 +1777,6 @@ Sort playlist by year in ascending order.
 Sort playlist by notes in ascending order.
 @end defun
 
-@defun emms-playlist-sort-by-score
-Sort emms playlist by score in descending order.
-@end defun
-
 @node Persistent Playlists
 @chapter Persistent Playlists
 
