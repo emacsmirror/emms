@@ -89,7 +89,8 @@ off otherwise."
 	(setq emms-score-enabled-p t)
         (setq emms-player-next-function 'emms-score-next-noerror)
 	(emms-score-load-hash)
-	(add-hook 'kill-emacs-hook 'emms-score-save-hash))
+        (unless noninteractive
+          (add-hook 'kill-emacs-hook 'emms-score-save-hash)))
     (setq emms-score-enabled-p nil)
     (setq emms-player-next-function 'emms-next-noerror)
     (emms-score-save-hash)
