@@ -42,12 +42,12 @@
 
 ;;; Code:
 
-(require 'hl-line)
 (require 'emms)
 (require 'emms-player-simple)
 (require 'emms-source-file)
 (require 'time-date)
 (require 'emms-url)
+(require 'emms-compat)
 
 ;;; User Customization
 
@@ -314,7 +314,7 @@ FILE should be under the same directory as the music file, or under
   (mapc (lambda (time-lyric) (insert (cdr time-lyric) "\n"))
         emms-lyrics-alist)
   (goto-char (point-min))
-  (hl-line-mode 1)
+  (emms-activate-highlighting-mode)
   (setq buffer-read-only t))
 
 (defun emms-lyrics-start ()
@@ -470,7 +470,7 @@ display."
         (when line
           (goto-char (point-min))
           (forward-line (1- line))
-          (hl-line-highlight))))))
+          (emms-line-highlight))))))
 
 (defun emms-lyrics-find-lyric (file)
   "Return full path of found lrc FILE, or nil if not found.
