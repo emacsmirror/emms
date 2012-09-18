@@ -786,6 +786,15 @@ return an empty string."
            (concat "0" tracknum)
          tracknum)))))
 
+(defun emms-browser-disc-number (track)
+  "Return a string representation of a track number.
+The string will end in a space. If no track number is available,
+return an empty string."
+  (let ((discnum (emms-track-get track 'info-discnumber)))
+    (if (or (not (stringp discnum)) (string= discnum "0"))
+        ""
+      discnum)))
+
 (defun emms-browser-year-number (track)
   "Return a string representation of a track's year.
 This will be in the form '(1998) '."
@@ -1700,6 +1709,7 @@ If > album level, most of the track data will not make sense."
             ("C" . ,(emms-track-get track 'info-composer))
             ("p" . ,(emms-track-get track 'info-performer))
             ("t" . ,(emms-track-get track 'info-title))
+	    ("D" . ,(emms-browser-disc-number track))
             ("T" . ,(emms-browser-track-number track))
             ("d" . ,(emms-browser-track-duration track))
             ("cS" . ,(emms-browser-get-cover-str path 'small))
