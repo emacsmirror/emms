@@ -30,6 +30,7 @@
 
 (require 'emms)
 (require 'emms-playing-time)
+(require 'emms-lastfm-client)
 
 ;; Variables referenced from emms-lastfm-client:
 ;;  emms-lastfm-client-username, emms-lastfm-client-api-key,
