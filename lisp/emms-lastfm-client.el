@@ -34,8 +34,6 @@
 (require 'emms)
 (require 'emms-source-file)
 (require 'xml)
-(require 'w3m)
-(require 'emms-lastfm-scrobbler)
 
 (defcustom emms-lastfm-client-username nil
   "Valid Last.fm account username."
@@ -980,8 +978,7 @@ This function includes the cryptographic signature."
 	(insert (format "Listeners: %s\n" stats-listeners))
 	(insert (format "Plays: %s\n\n" stats-playcount))
 	(let ((p (point)))
-	  (insert (format "<p>%s</p>" bio-complete))
-	  (w3m-region p (point))))
+	  (insert (format "<p>%s</p>" bio-complete))))
       (setq buffer-read-only t)
       (text-mode)
       (goto-char (point-min)))
