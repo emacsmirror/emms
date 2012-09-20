@@ -674,7 +674,7 @@ compilations, etc."
      (sort-lines nil (point-min) (point-max)))))
 
 (defun case-fold-string= (a b)
-  (compare-strings a nil nil b nil nil t))
+  (eq t (compare-strings a nil nil b nil nil t)))
 
 (defun case-fold-string-hash (a)
   (sxhash (upcase a)))
