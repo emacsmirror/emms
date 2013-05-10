@@ -670,6 +670,9 @@ Toggle whether emms repeats the playlist after it is done. See
 Toggle whether emms repeats the current track. See
 @var{emms-repeat-track}.
 @end defun
+@defun emms-toggle-random-playlist
+Toggle whether emms plays the tracks randomly or sequentially. See
+@var{emms-random-playlist}.
 
 Some functions deal with the getting and setting track information.
 
