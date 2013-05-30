@@ -501,7 +501,7 @@ See `emms-random-playlist'."
   (if emms-random-playlist
       (progn (setq emms-player-next-function 'emms-random)
              (message "Will play the tracks randomly."))
-    (setq emms-play-next-function 'emms-next-noerror)
+    (setq emms-player-next-function 'emms-next-noerror)
     (message "Will play the tracks sequentially.")))
 
 (defun emms-toggle-repeat-playlist ()
