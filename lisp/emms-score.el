@@ -246,14 +246,15 @@ See also `emms-next-noerror'."
   "Load score hash from `emms-score-file'."
   (interactive)
   (if (file-exists-p emms-score-file)
-      (mapc (lambda (elt)
-              (puthash (car elt) (cdr elt) emms-score-hash))
-            (read
-             (with-temp-buffer
-               (emms-insert-file-contents emms-score-file)
-               (buffer-string))))
-    ;; when file not exists, make empty but valid score file
-    (emms-score-save-hash)))
+      (let ((score-string (with-temp-buffer
+			    (emms-insert-file-contents emms-score-file)
+			    (buffer-string))))
+	(if (> (length score-string) 0)
+	    (mapc (lambda (elt)
+		    (puthash (car elt) (cdr elt) emms-score-hash))
+		  (read score-string)))
+	;; when file not exists, make empty but valid score file
+	(emms-score-save-hash))))
 
 (defun emms-score-get-plist (filename)
   (gethash filename emms-score-hash))
