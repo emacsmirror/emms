@@ -137,6 +137,15 @@
   to call on a success and CADDR is the function to call on
   failure.")
 
+(defvar emms-lastfm-scrobbler-track-play-start-timestamp nil
+  "UTC timestamp.")
+
+(declare-function emms-lastfm-scrobbler-timestamp "emms-lastfm-scrobbler")
+(declare-function emms-lastfm-scrobbler-make-async-submission-call
+		  "emms-lastfm-scrobbler")
+(declare-function emms-lastfm-scrobbler-handshake "emms-lastfm-scrobbler")
+
+
 ;;; ------------------------------------------------------------------
 ;;; API method call
 ;;; ------------------------------------------------------------------
@@ -285,7 +294,7 @@ This function includes the cryptographic signature."
 (defun emms-lastfm-client-construct-lexi (arguments)
   "Return ARGUMENTS sorted in lexicographic order."
   (let ((lexi (sort arguments
-		    '(lambda (a b) (string< (car a) (car b)))))
+		    #'(lambda (a b) (string< (car a) (car b)))))
 	(out ""))
     (while lexi
       (setq out (concat out (caar lexi) (cdar lexi)))
@@ -989,7 +998,7 @@ This function includes the cryptographic signature."
   (when (or (not data)
 	    (not (listp data)))
     (error "no artist info to parse"))
-  (let ((c (copy-seq (nth 1 data)))
+  (let ((c (copy-sequence (nth 1 data)))
 	artist-name lastfm-url artist-image
 	stats-listeners stats-playcount
 	bio-summary bio-complete)

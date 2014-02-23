@@ -72,9 +72,6 @@ To submit every track to Last.fm, set this to t."
 (defvar emms-lastfm-scrobbler-client-identifier "emm"
   "Client identifier for Emms (Last.fm define this, not us).")
 
-(defvar emms-lastfm-scrobbler-track-play-start-timestamp nil
-  "UTC timestamp.")
-
 ;; 1.3 Authentication Token for Web Services Authentication: token =
 ;; md5(shared_secret + timestamp)
 
