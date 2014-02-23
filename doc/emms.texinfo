@@ -81,7 +81,6 @@ Modules and Extensions
 * Streaming Audio::      Interface to streaming audio.
 * Lyrics::               Displaying lyrics synchronously.
 * Volume::               Changing the volume.
-* Last.fm::              Interact with the Last.fm service.
 * APE / FLAC Commands::  How to play next or previous track in these files.
 * Bookmarks::            Saving a place in a media file.
 * Extending Emms::       How to define new players and modules.
@@ -114,11 +113,6 @@ The Core File
 
 Track Information
 * Defining Info Methods::    Defining new info methods.
-
-Last.fm
-* Last.fm Setup::            Configuring Emms to use Last.fm.
-* Last.fm Radio::            Listening to music through Last.fm.
-* Last.fm Audioscrobbler::   Submitting music to Last.fm
 
 Extending Emms
 * New Player::               How to define a new player.
@@ -2228,158 +2222,6 @@ by six steps of @code{emms-volume-change-amount}, you would simply type
 @kbd{C-c + + + + + +}.
 
 
-@node Last.fm
-@chapter Last.fm
-
-@cindex last.fm
-
-Last.fm is a popular commercial music streaming service. Last.fm
-allows a subscriber to listen to streaming music. Last.fm can also
-accept data as to what music is played locally. This information can
-be used by the Last.fm service. As usual the responsibility is on the
-user to decide how much information to share with third-parties.
-
-The emms-lastfm-client package, provided the file
-@file{emms-lastfm-client.el} provides native Last.fm support from
-within Emms.
-
-Emms does not provide a subscription to the Last.fm service, nor is it
-affiliated with the service in any way. There are restrictions on the
-use of this service. Quoting from @uref{http://www.last.fm/api/radio}:
-``Who can I stream radio to? Any API account can only stream radio to
-Last.fm's paid subscribers''.
-
-@menu
-* Last.fm Setup::            Configuring Emms to use Last.fm.
-* Last.fm Radio::            Listening to music through Last.fm
-* Last.fm Audioscrobbler::   Submitting music to Last.fm
-@end menu
-
-@node Last.fm Setup
-@section Last.fm Setup
-
-We've spoken to representatives from Last.fm and arrived at the
-following agreement: In order to be able to use the service while
-preserving the essential freedoms of the GPL each client must apply
-for their own API key from Last.fm.
-
-Here are the steps for getting authorization from Last.fm to stream
-music. Thankfully this only needs to be done once:
-
-@enumerate
-
-@item
-Complete steps 1 and 2 from
-@uref{http://www.last.fm/api/authentication} to get an API key and a
-secret key. Set the variables @var{emms-lastfm-client-api-key} and
-@var{emms-lastfm-client-api-secret-key} respectively.
-
-@item
-Invoke @kbd{M-x emms-lastfm-client-user-authorization}. On successful
-completion a browser window will open asking for confirmation to allow
-this application access to your Last.fm account. Confirm and close the
-browser.
-
-@item
-Invoke @kbd{M-x emms-lastfm-client-get-session}. On successful
-completion your permanent session key will be stored in
-@var{emms-lastfm-client-session-key-file}. As long as this value is
-accessible the authentication process need not be repeated.
-
-@end enumerate
-
-After successfully completing the above Emms should be authorized to
-access your Last.fm account.
-
-@node Last.fm Radio
-@section Last.fm Radio
-
-To show the currently streaming track invoke:
-@kbd{M-x emms-lastfm-client-show}.
-
-To display information and a photo of currently streaming artist:
-@kbd{M-x emms-lastfm-client-info}.
-
-There are three ratings you can submit while streaming audio from
-Last.fm: ``love''-ing a track, skipping to the next song (simply
-skipping also counts as a form of ``scrobbing'') and ``ban''-ing
-(which also skips).
-
-@kbd{M-x emms-lastfm-client-love-track}: ``love'' the currently
-streaming track.
-
-@kbd{M-x emms-lastfm-client-track-advance}: Skip to the next streaming
-track.
-
-@kbd{M-x emms-lastfm-client-ban-track}: ``ban'' the currently
-streaming track.
-
-Note that Last.fm streams cannot be paused or replayed. Doing so may
-cause Last.fm to suspend your account.
-
-There are a number of stations you can tune into:
-
-@kbd{M-x emms-lastfm-client-play-similar-artists}: Play
-Similar-Artists stream. You will be prompted to enter the name of the
-artist. The input will auto-complete from the Emms cache. If an artist
-is not in the Emms cache and has a name with spaces, use @kbd{C-q
-Space} to enter literal spaces.
-
-There are personal streams you can tune into:
-
-(at the time of writing these are in a state of flux as Last.fm
-depreciate old stations and bring in new ones; If a station which used
-to work doesn't anymore that is probably the reason. As Last.fm add
-and remove stations emms-lastfm-client will be updated accordingly)
-
-@kbd{M-x emms-lastfm-client-play-library}: Your Last.fm Library.
-
-@kbd{M-x emms-lastfm-client-play-loved}: Your ``loved'' tracks.
-
-@kbd{M-x emms-lastfm-client-play-recommended}: Your ``recommended'' tracks.
-
-@kbd{M-x emms-lastfm-client-play-mix}: Your ``mix'' radio.
-
-@kbd{M-x emms-lastfm-client-play-neighborhood}: Your ``neighborhood''.
-
-You can use similar commands to tune into other people's streams. For
-each of these commands you will be prompted for the Last.fm username
-of the person whose radio you wish to hear.
-
-@kbd{M-x emms-lastfm-client-play-user-library}: A Last.fm user's
-Library.
-
-@kbd{M-x emms-lastfm-client-play-user-loved}: A Last.fm user's
-``loved'' tracks.
-
-@kbd{M-x emms-lastfm-client-play-user-neighborhood}: A Last.fm user's
-``neighborhood''.
-
-@node Last.fm Audioscrobbler
-@section Last.fm Audioscrobbler
-
-Emms can submit the tracks you play to your Last.fm profile. Assuming
-you have obtained a Last.fm api key, as explained in the chapter
-@xref{Last.fm Setup}, all the audioscrobbler needs is your username in
-@var{emms-lastfm-client-username}. You can enter it with @kbd{M-x
-customize-group RET emms-lastfm}.
-
-@kbd{M-x emms-lastfm-scrobbler-enable} turns on audioscrobbling.
-
-To turn it off use @kbd{M-x emms-lastfm-scrobbler-disable}.
-
-To turn on Emms' audioscrobber in your .emacs file add:
-@lisp
-(require 'emms-lastfm-client)
-
-(setq emms-lastfm-client-username "your-lastfm-username")
-(setq emms-lastfm-client-api-key "your-lastfm-api-key")
-(setq emms-lastfm-client-api-secret-key "your-lastfm-api-secret-key")
-
-(emms-lastfm-scrobbler-enable)
-@end lisp
-
-
 @node Streaming Audio
 @chapter Streaming Audio
 
@@ -2407,9 +2249,6 @@ default, you are free to remove any or all of them and add your
 own.@footnote{If you enjoy a particular streaming audio station on the
 Web and think that it belongs in the default list, please send us a
 link and we will gladly add it!}
-
-If you want to play Last.fm streams, invoke the following and use the
-``lastfm'' type when adding a bookmark to a Last.fm stream.
 
 @lisp
 (require 'emms-lastfm)
