@@ -172,7 +172,7 @@ See also `emms-tag-editor-tag-file' and `emms-tag-editor-tag-ogg'.")
              "-w"
              (append args (list (emms-track-name track)))))))
 
-(defun emms-tag-editor-tag-file (track program tags)
+(defun emms-tag-editor-tag-file (track program tags filename)
   "Change TAGS in FILE, using PROGRAM.
 Valid tags are given by `emms-tag-editor-tagfile-functions'."
   (let (args val)
@@ -618,7 +618,7 @@ With prefix argument, bury the tag edit buffer."
             (setq exit
                   (if (functionp (cdr func))
                       (funcall (cdr func) track)
-                    (emms-tag-editor-tag-file track (cadr func) (nth 2 func))))
+                    (emms-tag-editor-tag-file track (cadr func) (nth 2 func) filename)))
             (if (zerop exit)
                 (emms-track-get track 'info-mtime (butlast (current-time)))
               (emms-tag-editor-log
