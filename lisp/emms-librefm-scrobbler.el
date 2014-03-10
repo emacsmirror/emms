@@ -1,4 +1,4 @@
-;;; emms-librefm-client.el --- Last.FM Music API
+;;; emms-librefm-scrobbler.el --- Last.FM Music API
 
 ;; Copyright (C) 2014  Free Software Foundation, Inc.
 
@@ -24,40 +24,40 @@
 
 ;;; Code:
 
-(defvar emms-librefm-client-handshake-url
+(defvar emms-librefm-scrobbler-handshake-url
   "turtle.libre.fm"
   "Endpoint for client handshake.")
 
-(defvar emms-librefm-client-method
+(defvar emms-librefm-scrobbler-method
   "http"
   "Transfer method.")
 
-(defvar emms-librefm-client-username
+(defvar emms-librefm-scrobbler-username
   ""
   "Libre.fm username.")
 
-(defvar emms-librefm-client-password
+(defvar emms-librefm-scrobbler-password
   ""
   "Libre.fm user password.")
 
-(defvar emms-librefm-client-debug
+(defvar emms-librefm-scrobbler-debug
   ""
   "Debugging variable to store communication.")
 
-(defvar emms-librefm-client-session-id
+(defvar emms-librefm-scrobbler-session-id
   ""
   "Session ID for Libre.fm.")
 
-(defvar emms-librefm-client-now-playing-url
+(defvar emms-librefm-scrobbler-now-playing-url
   ""
   "URL for getting the track playing.")
 
-(defvar emms-librefm-client-submission-url
+(defvar emms-librefm-scrobbler-submission-url
   ""
   "URL for submissions.")
 
 
-(defun emms-librefm-client-handshake-string (url username password)
+(defun emms-librefm-scrobbler-handshake-string (url username password)
   "Return the client handshake string."
   (when (= 0 (length url))
     (error "bad url"))
@@ -66,7 +66,7 @@
   (when (= 0 (length password))
     (error "bad password"))
   (let ((timestamp (format-time-string "%s")))
-    (concat emms-librefm-client-method
+    (concat emms-librefm-scrobbler-method
 	    "://"
 	    url "/?"
 	    "hs=true" "&"
@@ -77,20 +77,20 @@
 	    "t=" timestamp "&"
 	    "a=" (md5 (concat (md5 password) timestamp)))))
 
-(defun emms-librefm-client-handshake-call (url username password)
+(defun emms-librefm-scrobbler-handshake-call (url username password)
   "Perform client handshake and return a response in a buffer."
   (let ((url-request-method "POST"))
     (let ((response
 	   (url-retrieve-synchronously
-	    (emms-librefm-client-handshake-string
+	    (emms-librefm-scrobbler-handshake-string
 	     url username password))))
-      (setq emms-librefm-client-debug
+      (setq emms-librefm-scrobbler-debug
 	    (with-current-buffer response
 	      (buffer-substring-no-properties (point-min)
 					      (point-max))))
       response)))
 
-(defun emms-librefm-client-handle-handshake-response (resbuf)
+(defun emms-librefm-scrobbler-handle-handshake-response (resbuf)
   "Handle the client handshake server response."
   (when (not (bufferp resbuf))
     (error "response not a buffer"))
@@ -121,21 +121,21 @@
 		  (= 0 (length now-playing-url))
 		  (= 0 (length submission-url)))
 	  (error "couldn't parse FM server response"))
-	(setq emms-librefm-client-session-id      session-id
-	      emms-librefm-client-now-playing-url now-playing-url
-	      emms-librefm-client-submission-url  submission-url)
+	(setq emms-librefm-scrobbler-session-id      session-id
+	      emms-librefm-scrobbler-now-playing-url now-playing-url
+	      emms-librefm-scrobbler-submission-url  submission-url)
 	(message "handshake successful")))))
 
-(defun emms-librefm-client-handshake ()
-  "Perform handshake call and handle response."
-  (emms-librefm-client-handle-handshake-response
-   (emms-librefm-client-handshake-call
-    emms-librefm-client-handshake-url
-    emms-librefm-client-username
-    emms-librefm-client-password)))
+(defun emms-librefm-scrobbler-handshake ()
+  "Perform client handshake call and handle response."
+  (emms-librefm-scrobbler-handle-handshake-response
+   (emms-librefm-scrobbler-handshake-call
+    emms-librefm-scrobbler-handshake-url
+    emms-librefm-scrobbler-username
+    emms-librefm-scrobbler-password)))
 
 
-(provide 'emms-librefm-client)
+(provide 'emms-librefm-scrobbler)
 
 
-;;; emms-librefm-client.el ends here
+;;; emms-librefm-scrobbler.el ends here
