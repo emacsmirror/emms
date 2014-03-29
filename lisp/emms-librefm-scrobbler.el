@@ -61,8 +61,8 @@
   "Time when a track started playing.")
 
 (defvar emms-librefm-scrobbler-display-submissions
-  nil
-  "Whether to display each submission as a message.")
+  t
+  "Whether to display a user message on every submission.")
 
 
 ;;; ------------------------------------------------------------------
