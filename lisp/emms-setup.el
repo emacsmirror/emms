@@ -140,7 +140,8 @@ on the edge."
     (require 'emms-history)
     (require 'emms-i18n)
     (require 'emms-volume)
-    (require 'emms-playlist-limit))
+    (require 'emms-playlist-limit)
+    (require 'emms-librefm-scrobbler))
   ;; setup
   (emms-score 1)
   (emms-playlist-limit 1))
