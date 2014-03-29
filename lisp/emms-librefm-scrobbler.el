@@ -4,7 +4,7 @@
 
 ;; Author: Yoni Rabkin <yrk@gnu.org>
 
-;; Keywords: emms, libre.fm
+;; Keywords: emms, libre.fm, GNU FM
 
 ;; EMMS is free software; you can redistribute it and/or modify it
 ;; under the terms of the GNU General Public License as published by
@@ -45,7 +45,7 @@
   "Debugging variable to store communication.")
 
 (defvar emms-librefm-scrobbler-session-id
-  ""
+  nil
   "Session ID for Libre.fm.")
 
 (defvar emms-librefm-scrobbler-now-playing-url
@@ -259,8 +259,8 @@ seconds or half the length of the track."
 (defun emms-librefm-scrobbler-enable ()
   "Enable the scrobbler and submit played tracks."
   (interactive)
-  (if (not emms-librefm-scrobbler-session-id)
-      (emms-librefm-scrobbler-handshake))
+  (when (not emms-librefm-scrobbler-session-id)
+    (emms-librefm-scrobbler-handshake))
   (add-hook 'emms-player-started-hook
 	    'emms-librefm-scrobbler-start-hook t)
   (add-hook 'emms-player-stopped-hook
@@ -271,6 +271,7 @@ seconds or half the length of the track."
 (defun emms-librefm-scrobbler-disable ()
   "Disable the scrobbler and don't submit played tracks."
   (interactive)
+  (setq emms-librefm-scrobbler-session-id nil)
   (remove-hook 'emms-player-started-hook
 	       'emms-librefm-scrobbler-start-hook)
   (remove-hook 'emms-player-stopped-hook
