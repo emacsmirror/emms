@@ -216,8 +216,8 @@ If we can't find it from local disk, then search it from internet."
                         (file-name-nondirectory name)))))
     (if (and lrc (file-exists-p lrc) (not (string= lrc "")))
         (find-file lrc)
-      (message "lyric file does not exist, search it from internet...")
-      (let ((title (emms-track-get track 'title))
+      (message "lyric file does not exist, search for it online...")
+      (let ((title (emms-track-get track 'info-title))
             (filename (file-name-sans-extension
                        (file-name-nondirectory name)))
             (url ""))
