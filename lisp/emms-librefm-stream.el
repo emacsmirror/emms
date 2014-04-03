@@ -24,24 +24,53 @@
 
 ;;; Code:
 
+(require 'xml)
 (require 'emms-librefm-scrobbler)
 
 (defvar emms-librefm-stream-host-url
   "alpha.libre.fm"
   "URL for the streaming host")
 
+(defvar emms-librefm-stream-host-base-path
+  ""
+  "URL for the streaming host base path")
+
+(defvar emms-librefm-stream-session-id
+  ""
+  "Session ID for radio.")
+
 (defvar emms-librefm-stream-debug
   ""
   "Temporary debug information.")
+
+(defvar emms-librefm-stream-station-name
+  ""
+  "Last station name tuned to.")
+
+
+;;; ------------------------------------------------------------------
+;;; HTTP
+;;; ------------------------------------------------------------------
+
+(defun emms-librefm-stream-assert-http ()
+  "Assert a sane HTTP response from the server.
+
+This function must be called inside the response buffer. Leaves
+point after the HTTP headers."
+  (goto-char (point-min))
+  (when (not (re-search-forward "^.*200 OK$" (point-at-eol) t))
+    (error "bad HTTP server response"))
+  ;; go to the start of the FM response
+  (when (not (re-search-forward "\n\n" (point-max) t))
+    (error "bad FM server response")))
 
 
 ;;; ------------------------------------------------------------------
 ;;; radio handshake
 ;;; ------------------------------------------------------------------
 
-;; http://alpha.libre.fm/radio/handshake.php?version=1.3.0.58&platform=linux&username=USERNAME&passwordmd5=PASSWORDMD5&language=en
-
 (defun emms-librefm-stream-tune-handshake-string ()
+  "Create the tune handshake string."
   (when (not emms-librefm-scrobbler-username)
     (error "null username"))
   (when (not emms-librefm-scrobbler-password)
@@ -57,7 +86,7 @@
     url))
 
 (defun emms-librefm-stream-tune-handshake-call ()
-  ""
+  "Make the tune handshake call."
   (let ((url-request-method "POST"))
     (let ((response
 	   (url-retrieve-synchronously
@@ -68,26 +97,63 @@
 					      (point-max))))
       response)))
 
+(defun emms-librefm-stream-handle-tune-handshake-response (resbuf)
+  "Handle the tune handshake server response."
+  (when (not (bufferp resbuf))
+    (error "response not a buffer"))
+  (with-current-buffer resbuf
+    (emms-librefm-stream-assert-http)
+    (let (radio-session-id
+	  base-url
+	  base-path
+	  (start (point)))
+      
+      (if (re-search-forward "^session=\\(.*\\)$" (point-max) t)
+	  (setq radio-session-id (match-string-no-properties 1))
+	(error "no radio session ID from server"))
+
+      (goto-char start)
+      (if (re-search-forward "^base_url=\\(.*\\)$" (point-max) t)
+	  (setq base-url (match-string-no-properties 1))
+	(error "no base url from server"))
+
+      (goto-char start)
+      (if (re-search-forward "^base_path=\\(.*\\)$" (point-max) t)
+	  (setq base-path (match-string-no-properties 1))
+	(error "no base path from server"))
+
+      (setq emms-librefm-stream-session-id radio-session-id
+	    emms-librefm-stream-host-url base-url
+	    emms-librefm-stream-host-base-path base-path))
+    
+    (message "radio handshake successful")))
+
+(defun emms-librefm-stream-tune-handshake ()
+  "Make and handle the tune handshake."
+  (emms-librefm-stream-handle-tune-handshake-response
+   (emms-librefm-stream-tune-handshake-call)))
+
 
 ;;; ------------------------------------------------------------------
 ;;; tuning
 ;;; ------------------------------------------------------------------
 
 (defun emms-librefm-stream-tune-string (session-id station)
-  ""
+  "Create the tune string."
   (when (not session-id)
     (error "null session id"))
   (when (not station)
     (error "null station"))
   (let ((url (concat "http://"
 		     emms-librefm-stream-host-url
-		     "/radio/adjust.php?"
+		     emms-librefm-stream-host-base-path
+		     "/adjust.php?"
 		     "session=" session-id "&"
 		     "url=" (url-encode-url station))))
     url))
 
 (defun emms-librefm-stream-tune-call (session-id station)
-  ""
+  "Make the tune call."
   (let ((url-request-method "POST"))
     (let ((response
 	   (url-retrieve-synchronously
@@ -104,17 +170,116 @@
   (when (not (bufferp resbuf))
     (error "response not a buffer"))
   (with-current-buffer resbuf
-    (goto-char (point-min))
-    (when (not (re-search-forward "^.*200 OK$" (point-at-eol) t))
-      (error "bad HTTP server response"))
-    ;; go to the start of the FM response
-    (when (not (re-search-forward "\n\n" (point-max) t))
-      (error "bad FM server response"))
+    (emms-librefm-stream-assert-http)
     (let ((status (buffer-substring (point-at-bol)
 				    (point-at-eol))))
-      (cond ((string= status "OK")         'ok)
-	    ((string= status "BADSESSION") 'badsession)
-	    (t (error "unhandled response status: [%s]" status))))))
+      (let (response
+	    url
+	    stationname
+	    (start (point)))
+	
+	(if (re-search-forward "^response=\\(.*\\)$" (point-max) t)
+	    (setq response (match-string-no-properties 1))
+	  (error "no response status code"))
+	(when (not (string= response "OK"))
+	  (error "tune response not OK"))
+
+	(goto-char start)
+	(if (re-search-forward "^url=\\(.*\\)$" (point-max) t)
+	    (setq url (match-string-no-properties 1))
+	  (error "no url from server"))
+
+	(goto-char start)
+	(if (re-search-forward "^stationname=\\(.*\\)$" (point-max) t)
+	    (setq stationname (match-string-no-properties 1))
+	  (error "no stationname from server"))
+
+	(setq emms-librefm-stream-station-name stationname)
+	
+	(message "successfully tuned to: %s" stationname)
+	
+	(emms-librefm-stream-getplaylist)))))
+
+(defun emms-librefm-stream-tune (station)
+  "Make and handle tune call."
+  (emms-librefm-stream-handle-tune-response
+   (emms-librefm-stream-tune-call
+    emms-librefm-stream-session-id
+    station)))
+
+
+;;; ------------------------------------------------------------------
+;;; radio.getPlaylist
+;;; ------------------------------------------------------------------
+
+(defun emms-librefm-stream-getplaylist-string (radio-session-id)
+  "Create the getplaylist string."
+  (when (not radio-session-id)
+    (error "null radio session id"))
+  (let ((url (concat "http://"
+		     emms-librefm-stream-host-url
+		     emms-librefm-stream-host-base-path
+		     "/xspf.php?"
+		     "sk=" radio-session-id "&"
+		     "discovery=0"          "&"
+		     "desktop=1.3.0.58")))
+    url))
+
+(defun emms-librefm-stream-getplaylist-call (session-id)
+  "Make the getplaylist call."
+  (let ((url-request-method "POST"))
+    (let ((response
+	   (url-retrieve-synchronously
+	    (emms-librefm-stream-getplaylist-string session-id))))
+      (setq emms-librefm-stream-debug
+	    (with-current-buffer response
+	      (buffer-substring-no-properties (point-min)
+					      (point-max))))
+      response)))
+
+(defun emms-librefm-stream-handle-getplaylist-response (resbuf)
+  "Handle the getplaylist server response."
+  (when (not (bufferp resbuf))
+    (error "response not a buffer"))
+  (with-current-buffer resbuf
+    (emms-librefm-stream-assert-http)
+    (xml-parse-region (point) (point-max))))
+
+(defun emms-librefm-stream-getplaylist ()
+  "Make and handle radio.getPlaylist."
+  (emms-librefm-stream-handle-getplaylist-response
+   (emms-librefm-stream-getplaylist-call
+    emms-librefm-stream-session-id)))
+
+
+;;; ------------------------------------------------------------------
+;;; Parse XSPF
+;;; ------------------------------------------------------------------
+
+(defun emms-librefm-stream-xspf-tracklist (playlist)
+  "Return the tracklist portion of PLAYLIST or nil."
+  (let ((tree (copy-tree playlist))
+	result)
+    (while (and tree (not result))
+      (let ((this (car tree)))
+	(when (and (listp this)
+		   (eq (car this) 'trackList))
+	  (setq result this)))
+      (setq tree (cdr tree)))
+    result))
+
+
+;;; ------------------------------------------------------------------
+;;; stream
+;;; ------------------------------------------------------------------
+
+(defun emms-librefm-stream (station)
+  "Stream STATION from a GNU FM server."
+  (interactive)
+  (when (not (stringp station))
+    (error "bad argument"))
+  (emms-librefm-stream-tune-handshake)
+  (emms-librefm-stream-tune station))
 
 
 (provide 'emms-librefm-stream)
