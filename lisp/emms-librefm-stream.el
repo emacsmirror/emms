@@ -47,6 +47,10 @@
   ""
   "Last station name tuned to.")
 
+(defvar emms-librefm-stream-emms-tracklist
+  ""
+  "List of tracks for streaming.")
+
 
 ;;; ------------------------------------------------------------------
 ;;; HTTP
@@ -107,7 +111,7 @@ point after the HTTP headers."
 	  base-url
 	  base-path
 	  (start (point)))
-      
+
       (if (re-search-forward "^session=\\(.*\\)$" (point-max) t)
 	  (setq radio-session-id (match-string-no-properties 1))
 	(error "no radio session ID from server"))
@@ -125,7 +129,7 @@ point after the HTTP headers."
       (setq emms-librefm-stream-session-id radio-session-id
 	    emms-librefm-stream-host-url base-url
 	    emms-librefm-stream-host-base-path base-path))
-    
+
     (message "radio handshake successful")))
 
 (defun emms-librefm-stream-tune-handshake ()
@@ -177,7 +181,7 @@ point after the HTTP headers."
 	    url
 	    stationname
 	    (start (point)))
-	
+
 	(if (re-search-forward "^response=\\(.*\\)$" (point-max) t)
 	    (setq response (match-string-no-properties 1))
 	  (error "no response status code"))
@@ -195,10 +199,8 @@ point after the HTTP headers."
 	  (error "no stationname from server"))
 
 	(setq emms-librefm-stream-station-name stationname)
-	
-	(message "successfully tuned to: %s" stationname)
-	
-	(emms-librefm-stream-getplaylist)))))
+
+	(message "successfully tuned to: %s" stationname)))))
 
 (defun emms-librefm-stream-tune (station)
   "Make and handle tune call."
@@ -253,20 +255,60 @@ point after the HTTP headers."
 
 
 ;;; ------------------------------------------------------------------
-;;; Parse XSPF
+;;; XSPF
 ;;; ------------------------------------------------------------------
 
-(defun emms-librefm-stream-xspf-tracklist (playlist)
+(defun emms-librefm-stream-xspf-find (tag data)
   "Return the tracklist portion of PLAYLIST or nil."
-  (let ((tree (copy-tree playlist))
+  (let ((tree (copy-tree data))
 	result)
     (while (and tree (not result))
       (let ((this (car tree)))
 	(when (and (listp this)
-		   (eq (car this) 'trackList))
+		   (eq (car this) tag))
 	  (setq result this)))
       (setq tree (cdr tree)))
     result))
+
+(defun emms-librefm-stream-xspf-tracklist (playlist)
+  "Return the tracklist portion of PLAYLIST or nil."
+  (emms-librefm-stream-xspf-find 'trackList (car playlist)))
+
+(defun emms-librefm-stream-xspf-get (tag track)
+  "Return the data associated with TAG in TRACK."
+  (nth 2 (emms-librefm-stream-xspf-find tag track)))
+
+(defun emms-librefm-stream-xspf-convert-track (track)
+  "Convert TRACK to an Emms track."
+  (let ((location (emms-librefm-stream-xspf-get 'location track))
+	(title    (emms-librefm-stream-xspf-get 'title track))
+	(album    (emms-librefm-stream-xspf-get 'album track))
+	(creator  (emms-librefm-stream-xspf-get 'creator track))
+	(duration (emms-librefm-stream-xspf-get 'duration track))
+	(image    (emms-librefm-stream-xspf-get 'image track)))
+    (let ((emms-track (emms-dictionary '*track*)))
+      (emms-track-set emms-track 'name location)
+      (emms-track-set emms-track 'info-artist creator)
+      (emms-track-set emms-track 'info-title title)
+      (emms-track-set emms-track 'info-album album)
+      (emms-track-set emms-track 'info-playing-time
+		      (/ (parse-integer duration)
+			 1000))
+      (emms-track-set emms-track 'type 'gnufm-streaming)
+      emms-track)))
+
+(defun emms-librefm-stream-xspf-convert-tracklist (tracklist)
+  "Convert TRACKLIST to a list of Emms tracks."
+  (let (tracks)
+    (mapc
+     #'(lambda (e)
+	 (when (and (listp e)
+		    (eq 'track (car e)))
+	   (setq tracks
+		 (append tracks
+			 `(,(emms-librefm-stream-xspf-convert-track e))))))
+     tracklist)
+    tracks))
 
 
 ;;; ------------------------------------------------------------------
@@ -279,7 +321,15 @@ point after the HTTP headers."
   (when (not (stringp station))
     (error "bad argument"))
   (emms-librefm-stream-tune-handshake)
-  (emms-librefm-stream-tune station))
+  (emms-librefm-stream-tune station)
+  (let ((tracklist
+	 (emms-librefm-stream-xspf-tracklist
+	  (emms-librefm-stream-getplaylist))))
+    (when (not tracklist)
+      (setq emms-librefm-stream-emms-tracklist nil)
+      (error "could not find tracklist"))
+    (setq emms-librefm-stream-emms-tracklist
+	  (emms-librefm-stream-xspf-convert-tracklist tracklist))))
 
 
 (provide 'emms-librefm-stream)
