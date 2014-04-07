@@ -141,7 +141,8 @@ on the edge."
     (require 'emms-i18n)
     (require 'emms-volume)
     (require 'emms-playlist-limit)
-    (require 'emms-librefm-scrobbler))
+    (require 'emms-librefm-scrobbler)
+    (require 'emms-librefm-stream))
   ;; setup
   (emms-score 1)
   (emms-playlist-limit 1))
