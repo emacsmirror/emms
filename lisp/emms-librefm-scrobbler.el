@@ -24,6 +24,9 @@
 
 ;;; Code:
 
+(require 'emms-playing-time)
+
+
 (defvar emms-librefm-scrobbler-handshake-url
   "turtle.libre.fm"
   "Endpoint for client handshake.")
