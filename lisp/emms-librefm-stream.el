@@ -25,7 +25,9 @@
 ;;; Code:
 
 (require 'xml)
+(require 'emms-playlist-mode)
 (require 'emms-librefm-scrobbler)
+
 
 (defvar emms-librefm-stream-host-url
   "alpha.libre.fm"
@@ -299,7 +301,7 @@ point after the HTTP headers."
       (emms-track-set emms-track 'info-title title)
       (emms-track-set emms-track 'info-album album)
       (emms-track-set emms-track 'info-playing-time
-		      (/ (parse-integer duration)
+		      (/ (string-to-number duration)
 			 1000))
       (emms-track-set emms-track 'type 'url)
       emms-track)))
@@ -365,7 +367,7 @@ point after the HTTP headers."
 
 (defun emms-librefm-stream (station)
   "Stream STATION from a GNU FM server."
-  (interactive)
+  (interactive "sEnter station URL: ")
   (when (not (stringp station))
     (error "bad argument"))
 
