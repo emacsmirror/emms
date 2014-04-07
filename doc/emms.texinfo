@@ -83,6 +83,7 @@ Modules and Extensions
 * Volume::               Changing the volume.
 * APE / FLAC Commands::  How to play next or previous track in these files.
 * Bookmarks::            Saving a place in a media file.
+* GNU FM::               Connect to music community websites.
 * Extending Emms::       How to define new players and modules.
 
 Copying and license
@@ -1174,6 +1175,79 @@ respectively.
 To clear all of the bookmarks for the current track invoke @kbd{M-x
 emms-bookmarks-clear}.
 
+@node GNU FM
+@chapter GNU FM
+
+@cindex GNU FM
+
+@url{https://www.gnu.org/software/gnufm/, GNU FM} is free software for
+running music community websites. It was created for the music
+community site, @url{http://libre.fm/, Libre.fm}.
+
+Emms can send track information, and stream music from GNU FM servers
+using @file{emms-librefm-scrobbler.el} and
+@file{emms-librefm-stream.el}, respectively.
+
+Emms is configured by default to use @url{http://libre.fm/, Libre.fm},
+but can work with any GNU FM server by configuring the variable
+@var{emms-librefm-scrobbler-handshake-url} to the URL of the GNU FM
+server.
+
+Provide your credentials on the GNU FM server by setting the
+appropriate variables:
+
+@lisp
+(setq emms-librefm-scrobbler-username "USERNAME"
+      emms-librefm-scrobbler-password "PASSWORD")
+@end lisp
+
+
+@menu
+* Uploading Track Information:: How to submit listened track information.
+* GNU FM Streaming:: Streaming music from a GNU FM server.
+@end menu
+
+@node Uploading Track Information
+@section Uploading Track Information
+
+GNU FM servers, such as Libre.fm can optionally store a user's
+listening habits using information sent to the website's server from
+the Emms. By utilizing the records of users' listening habits, the
+website aims to be able to recommend music to users by analyzing their
+musical taste.
+
+Load the feature into Emms with:
+
+@lisp
+(require 'emms-librefm-scrobbler)
+@end lisp
+
+This feature can also be enabled via @xref{Simple Setup}, in the
+`emms-devel' setup level.
+
+Enable uploading the details of the tracks Emms plays to the GNU FM
+server with @kbd{emms-librefm-scrobbler-enable}. The track's details
+will be uploaded to the server when the track's playback ends. You can
+disable this behavior with @kbd{emms-librefm-scrobbler-disable}.
+
+
+@node GNU FM Streaming
+@section GNU FM Streaming
+
+If the GNU FM server provides a streaming music service you can take
+advantage of it by loading:
+
+@lisp
+(require 'emms-librefm-stream)
+@end lisp
+
+This feature can also be enabled via @xref{Simple Setup}, in the
+`emms-devel' setup level.
+
+Then invoke @kbd{emms-librefm-stream} and enter the URL of the station
+you wish to listen to, for example ``librefm://globaltags/Classical''.
+
+
 @node Extending Emms
 @chapter Extending Emms
 
@@ -1949,7 +2023,7 @@ To use this feature invoke:
 
 Note: `(emms-playing-time -1)' will disable emms-playing-time module
 completely, and is not recommended. (since some other emms modules may
-rely on it, such as `emms-lastfm.el')
+rely on it)
 
 Instead, to toggle displaying playing time on mode line, one could call
 `emms-playing-time-enable-display' and
@@ -2249,10 +2323,6 @@ default, you are free to remove any or all of them and add your
 own.@footnote{If you enjoy a particular streaming audio station on the
 Web and think that it belongs in the default list, please send us a
 link and we will gladly add it!}
-
-@lisp
-(require 'emms-lastfm)
-@end lisp
 
 The following is a list of the key-bindings for the emms-streams
 interface:
