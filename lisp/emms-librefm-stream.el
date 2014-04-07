@@ -51,6 +51,13 @@
   ""
   "List of tracks for streaming.")
 
+(defvar emms-librefm-stream-playlist-buffer-name
+  "*Emms GNU FM*"
+  "Name for non-interactive Emms GNU FM buffer.")
+
+(defvar emms-librefm-stream-playlist-buffer nil
+  "Non-interactive Emms GNU FM buffer.")
+
 
 ;;; ------------------------------------------------------------------
 ;;; HTTP
@@ -294,7 +301,7 @@ point after the HTTP headers."
       (emms-track-set emms-track 'info-playing-time
 		      (/ (parse-integer duration)
 			 1000))
-      (emms-track-set emms-track 'type 'gnufm-streaming)
+      (emms-track-set emms-track 'type 'url)
       emms-track)))
 
 (defun emms-librefm-stream-xspf-convert-tracklist (tracklist)
@@ -315,13 +322,16 @@ point after the HTTP headers."
 ;;; stream
 ;;; ------------------------------------------------------------------
 
-(defun emms-librefm-stream (station)
-  "Stream STATION from a GNU FM server."
-  (interactive)
-  (when (not (stringp station))
-    (error "bad argument"))
-  (emms-librefm-stream-tune-handshake)
-  (emms-librefm-stream-tune station)
+(defun emms-librefm-stream-set-librefm-playlist-buffer ()
+  "Setup the GNU FM buffer and make it `emms-playlist-buffer'."
+  (when (not (buffer-live-p emms-librefm-stream-playlist-buffer))
+    (setq emms-librefm-stream-playlist-buffer
+	  (emms-playlist-new
+	   emms-librefm-stream-playlist-buffer-name)))
+  (setq emms-playlist-buffer emms-librefm-stream-playlist-buffer))
+
+(defun emms-librefm-stream-queue ()
+  "Queue streaming tracks."
   (let ((tracklist
 	 (emms-librefm-stream-xspf-tracklist
 	  (emms-librefm-stream-getplaylist))))
@@ -329,7 +339,48 @@ point after the HTTP headers."
       (setq emms-librefm-stream-emms-tracklist nil)
       (error "could not find tracklist"))
     (setq emms-librefm-stream-emms-tracklist
-	  (emms-librefm-stream-xspf-convert-tracklist tracklist))))
+	  (emms-librefm-stream-xspf-convert-tracklist tracklist))
+
+    (emms-librefm-stream-set-librefm-playlist-buffer)
+
+    (with-current-emms-playlist
+      (goto-char (point-max))
+      (save-excursion
+	(mapc
+	 #'(lambda (track)
+	     (emms-playlist-insert-track track))
+	 emms-librefm-stream-emms-tracklist)))))
+
+(defun emms-librefm-stream-queue-loader ()
+  "Queue more streaming music if needed."
+  (with-current-emms-playlist
+    (goto-char (if emms-playlist-mode-selected-overlay
+		   (overlay-start emms-playlist-mode-selected-overlay)
+		 (point-min)))
+    (when (and (eq (current-buffer)
+		   emms-librefm-stream-playlist-buffer)
+	       (not (next-single-property-change (point-at-eol)
+						 'emms-track)))
+      (emms-librefm-stream-queue))))
+
+(defun emms-librefm-stream (station)
+  "Stream STATION from a GNU FM server."
+  (interactive)
+  (when (not (stringp station))
+    (error "bad argument"))
+
+  (add-hook 'emms-player-finished-hook
+	    'emms-librefm-stream-queue-loader)
+  
+  (emms-librefm-stream-tune-handshake)
+  (emms-librefm-stream-tune station)
+
+  (message "tuned to %s, getting playlist..."
+	   emms-librefm-stream-station-name)
+
+  (emms-librefm-stream-queue)
+  (with-current-emms-playlist
+    (emms-playlist-mode-play-current-track)))
 
 
 (provide 'emms-librefm-stream)
