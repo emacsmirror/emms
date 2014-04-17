@@ -17,7 +17,7 @@
 @end direntry
 
 @copying
- @copyright{} 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+ @copyright{} 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2014
    Free Software Foundation, Inc.
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -160,6 +160,8 @@ allows you to define your own in a very simple way.
 The way Emms works is easy to customize with your own code or by using
 `M-x customize'.
 
+
+
 @node Installation
 @chapter Installation
 
@@ -177,6 +179,8 @@ then in your ~/.emacs, you should do:
 @menu
 * Compiling Emms::      Compiling Emms into Byte-Code.
 @end menu
+
+
 
 @node Compiling Emms
 @section Compiling Emms
@@ -205,6 +209,8 @@ the appropriate permissions to do so on your system).
 
 Note that Emms is a light-weight and agile program, you can therefore
 run Emms just fine without byte compiling it.
+
+
 
 @node Simple Setup
 @chapter Simple Setup
@@ -274,6 +280,8 @@ It is also worth noting that you can write your own Emms setup
 functions like the above by looking at the existing function
 definitions in @file{emms-setup.el}.
 
+
+
 @node Configuration
 @chapter Configuration
 
@@ -318,6 +326,8 @@ Another way to change Emms variables is to use the M-x
 * Finding files and speed::     Finding files quickly or portably.
 @end menu
 
+
+
 @node Finding files and speed
 @section Finding files and speed
 
@@ -339,6 +349,8 @@ have GNU/find installed.
 
 The method Emms will use is defined in the customisable variable
 @var{emms-source-file-directory-tree-function}.
+
+
 
 @node Quickstart Guide
 @chapter Quickstart Guide
@@ -409,6 +421,8 @@ Now you can start exploring EMMS. It's probably best to begin with the
 basic commands (@pxref{Basic Commands}), the interactive playlists
 (@pxref{Interactive Playlists}), and the browser (@pxref{The Browser}).
 
+
+
 @node Getting Help
 @chapter Getting Help
 
@@ -424,6 +438,8 @@ If you are familiar with the Gmane service, there is a Gmane newsgroup
 which mirrors this mailing address at gmane.emacs.emms.user.
 
 Emms also has a website at @url{http://www.gnu.org/software/emms/}.
+
+
 
 @node Formats and Freedom
 @chapter Formats and Freedom
@@ -451,6 +467,8 @@ most widely supported lossless audio codec, and the only one that at
 once is non-proprietary, is unencumbered by patents and has the source
 code for a reference implementation freely available. For more
 information about FLAC, go to @url{http://flac.sourceforge.net/}.
+
+
 
 @node Basic Commands
 @chapter Basic Commands
@@ -546,6 +564,8 @@ non-nil, insert the description into the current buffer instead. This
 function uses @var{emms-show-format} to format the current track.
 @end defun
 
+
+
 @node The Core File
 @chapter The Core File
 
@@ -561,6 +581,8 @@ playing music, generating playlists and defining players.
 * Hooks::              Hooks for important Emms functions.
 * Core Functions::     Providing the basic functionality of Emms.
 @end menu
+
+
 
 @node User Variables
 @section User Variables
@@ -590,6 +612,8 @@ Function for describing an Emms track in a user-friendly way.
 A function that compares two tracks, and returns non-nil if the first
 track should be sorted before the second (see also @code{sort}).
 @end defopt
+
+
 
 @node Hooks
 @section Hooks
@@ -629,6 +653,8 @@ actually finishes playing a track.
 Hook run when a player is paused or resumed. Use
 @var{emms-player-paused-p} to find the current state.
 @end defopt
+
+
 
 @node Core Functions
 @section Core Functions
@@ -728,6 +754,8 @@ Seek ten seconds backward.
 For more basic commands defined in the core file see @xref{Basic
 Commands}.
 
+
+
 @node Sources
 @chapter Sources
 
@@ -793,6 +821,8 @@ files) can play.
 Search for @var{regexp} and display the results in a locate buffer
 @end defun
 
+
+
 @node Simple Players
 @chapter Simple Players
 
@@ -821,6 +851,8 @@ the specified @var{params}.
 Sentinel for determining the end of process for the process @var{proc}
 and the sentinel string @var{str}.
 @end defun
+
+
 
 @node Playlists
 @chapter Playlists
@@ -855,6 +887,8 @@ format is specified by @var{emms-source-playlist-default-format}.
 
 The current Emms playlist buffer is stored in the variable
 @var{emms-playlist-buffer}.
+
+
 
 @node Track Information
 @chapter Track Information
@@ -903,6 +937,8 @@ track as argument.
 * Defining Info Methods::    Defining new info methods.
 @end menu
 
+
+
 @node Defining Info Methods
 @section Defining Info Methods
 
@@ -925,6 +961,8 @@ the right time to provide track info.
 @lisp
 (add-to-list 'emms-info-functions 'emms-info-ogginfo)
 @end lisp
+
+
 
 @node Interactive Playlists
 @chapter Interactive Playlists
@@ -1050,6 +1088,8 @@ with the playlist tracks. Text which is not a track is ignored by the
 program and can therefore be used to include titles and annotations
 within the playlist.
 
+
+
 @node Markable Playlists
 @chapter Markable Playlists
 
@@ -1134,6 +1174,8 @@ except it collects result of given function (that's why named with
 `mapcar').
 @end defun
 
+
+
 @node APE / FLAC Commands
 @chapter APE / FLAC Commands
 
@@ -1157,6 +1199,8 @@ Play next track from .cue file
 Play previous track from .cue file
 @end defun
 
+
+
 @node Bookmarks
 @chapter Bookmarks
 
@@ -1174,6 +1218,8 @@ respectively.
 
 To clear all of the bookmarks for the current track invoke @kbd{M-x
 emms-bookmarks-clear}.
+
+
 
 @node GNU FM
 @chapter GNU FM
@@ -1207,6 +1253,8 @@ appropriate variables:
 * GNU FM Streaming:: Streaming music from a GNU FM server.
 @end menu
 
+
+
 @node Uploading Track Information
 @section Uploading Track Information
 
@@ -1231,6 +1279,8 @@ will be uploaded to the server when the track's playback ends. You can
 disable this behavior with @kbd{emms-librefm-scrobbler-disable}.
 
 
+
+
 @node GNU FM Streaming
 @section GNU FM Streaming
 
@@ -1246,6 +1296,8 @@ This feature can also be enabled via @xref{Simple Setup}, in the
 
 Then invoke @kbd{emms-librefm-stream} and enter the URL of the station
 you wish to listen to, for example ``librefm://globaltags/Classical''.
+
+
 
 
 @node Extending Emms
@@ -1264,6 +1316,8 @@ customise it to your needs.
 * More Complex Player::      Example of a complex player using @command{mpg321}.
 @end menu
 
+
+
 @node New Player
 @section New Player
 
@@ -1274,6 +1328,8 @@ The file @file{emms-player-simple.el} defines some easy players to
 start with, but it shouldn't be hard to provide a function for your
 favourite player. We will start with an easy example that shows how
 we can use the @command{play} command under Unix to play our WAV files.
+
+
 
 @node Simple Player for `play'
 @section Simple Player for `play'
@@ -1324,6 +1380,8 @@ has to take one song as argument and stop after playing that
 particular song. For any other concept you will need to customise
 emms a bit more...
 
+
+
 @node More Complex Player
 @section More Complex Player
 
@@ -1368,10 +1426,10 @@ with the filename and set a filter.
 (defun emms-mpg321-remote-start ()
   (unless (get-process ``mpg321-remote'')
     (setq emms-mpg321-remote-process
-	  (start-process "mpg321-remote-process"
-			 "*mpg321*" "mpg321" "-R" "abc"))
+          (start-process "mpg321-remote-process"
+                         "*mpg321*" "mpg321" "-R" "abc"))
   (process-send-string "mpg321-remote-process"
-		       (concat "l " (emms-track-name track)))
+                       (concat "l " (emms-track-name track)))
   (set-process-filter emms-mpg321-remote-process 'emms-mpg321-remote-filter)))
 @end lisp
 @noindent
@@ -1412,6 +1470,8 @@ from @file{emms-player-simple.el}
 Now we have a ready player and we could add commands like
 @command{emms-mpg321-remote-pause} for example.
 
+
+
 @node The Browser
 @chapter The Browser
 
@@ -1439,6 +1499,8 @@ once so that the cache is fully populated.
 * Displaying Covers::     Displaying album covers in the browser interface.
 * Changing Looks::        Changing the tree structure, display format and faces.
 @end menu
+
+
 
 @node Browser Interface
 @section Browser Interface
@@ -1626,6 +1688,8 @@ Lookup the album using Pitchfork.
 Lookup the album using Wikipedia.
 @end table
 
+
+
 @node Filtering Tracks
 @section Filtering Tracks
 
@@ -1695,6 +1759,8 @@ Show all files that are not in the pending directory:
           (emms-browser-filter-only-dir "~/Media/pending") track)))))
 @end lisp
 
+
+
 @node Displaying Covers
 @section Displaying Covers
 
@@ -1722,6 +1788,8 @@ The medium and large images can be set as well.
 
 You can download an example @uref{http://repose.cx/cover_small.jpg,
 `no cover' image}.
+
+
 
 @node Changing Looks
 @section Changing Looks
@@ -1811,6 +1879,8 @@ They are in the format emms-browser-<type>-face, where type is one of
 initial "info-" part. For example, to change the artist face, type M-x
 @command{customize-face} @command{emms-browser-artist-face}.
 
+
+
 @node Sorting Playlists
 @chapter Sorting Playlists
 
@@ -1848,6 +1918,8 @@ Sort playlist by year in ascending order.
 @defun emms-playlist-sort-by-info-note
 Sort playlist by notes in ascending order.
 @end defun
+
+
 
 @node Persistent Playlists
 @chapter Persistent Playlists
@@ -1890,6 +1962,8 @@ start playback afterwards, you can tweak this variable.
 If non-nil emms starts playing the current track after
 `emms-history-load' was invoked.  The default value is nil.
 @end defopt
+
+
 
 @node Editing Tracks
 @chapter Editing Tracks
@@ -1993,6 +2067,8 @@ Rename the file corresponding to track at point or all marked tracks
 according to the value of @code{emms-tag-editor-rename-format}.
 @end defun
 
+
+
 @node Emms Mode Line
 @chapter Emms Mode Line
 
@@ -2036,6 +2112,8 @@ Display playing time on mode line.
 @defun emms-playing-time-disable-display
 Remove playing time from mode line.
 @end defun
+
+
 
 @node Music Player Daemon
 @chapter Music Player Daemon
@@ -2155,6 +2233,8 @@ To activate this, add the following to your .emacs.
 (setq emms-volume-change-function 'emms-volume-mpd-change)
 @end lisp
 
+
+
 @node Lyrics
 @chapter Lyrics
 
@@ -2239,6 +2319,8 @@ Disable displaying Emms lyrics.
 Toggle displaying Emms lyrics.
 @end defun
 
+
+
 @node Volume
 @chapter Volume
 
@@ -2294,6 +2376,8 @@ In this interval you can raise/lower the volume simply by pressing
 value. So instead of pressing @kbd{C-c +} six times to increase volume
 by six steps of @code{emms-volume-change-amount}, you would simply type
 @kbd{C-c + + + + + +}.
+
+
 
 
 @node Streaming Audio
@@ -2382,17 +2466,25 @@ bookmark under point. Note that this will only work if the
 @include gpl.texi
 @include fdl.texi
 
+
+
 @node Concept Index
 @unnumbered Concept Index
 @printindex cp
+
+
 
 @node Function Index
 @unnumbered Function Index
 @printindex fn
 
+
+
 @node Variable Index
 @unnumbered Variable Index
 @printindex vr
+
+
 
 @node Keybinding Index
 @unnumbered Keybinding Index
