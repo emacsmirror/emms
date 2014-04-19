@@ -1,10 +1,21 @@
 News since version 3.0:
 
-  - Drop support for emms-player-gstreamer.
+  - Add GNU FM support.
+  - Added mp4, m4a to the extensions handled by emms-info-libtag.
+  - Play tracks randomly.
+  - Extend MPD player support.
+  - Add pause-resume support for lyrics display.
+  - New implementation of emms-print-metadata.
+  - Support both XEmacs and Emacs to highlight playing lyrics.
+  - Add support for disc-number sorting of FLAC files.
+  - New function to allow custom browser track-formats to display
+    track duration.
+  - Drop support for emms-player-gstreamer, Last.fm.
   - emms-player-mplayer: Remove code for loading movie subtitles
     automatically by emms, since mplayer has an option
     (`sub-fuzziness') controlling that.
-  - Support displaying lyrics in a dedicated buffer, to highlight playing lyric. 
+  - Support displaying lyrics in a dedicated buffer, to highlight playing lyric.
+  - Various bug fixes.
 
 News since version 2.1:
 
