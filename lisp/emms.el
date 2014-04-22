@@ -739,7 +739,7 @@ for that purpose.")
     (with-current-buffer buf
       (emms-playlist-ensure-playlist-buffer))
     (setq emms-playlist-buffer buf)
-    (when (interactive-p)
+    (when (called-interactively-p 'interactive)
       (message "Set current EMMS playlist buffer"))
     buf))
 
@@ -756,7 +756,7 @@ buffer is also selected."
         (funcall emms-playlist-default-major-mode))
       (setq emms-playlist-buffer-p t))
     (add-to-list 'emms-playlist-buffers buf)
-    (when (interactive-p)
+    (when (called-interactively-p 'interactive)
       (switch-to-buffer buf))
     buf))
 
