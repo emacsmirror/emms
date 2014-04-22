@@ -272,11 +272,8 @@ otherwise just remove the special bindings from the stream menu."
   (remove-hook 'emms-pbi-manually-change-song-hook 'emms-pbi-popup-revert)
   (let ((streambuffer (get-buffer emms-stream-buffer-name)))
     (when streambuffer
-      (save-excursion
-	(set-buffer streambuffer)
-	;; (local-unset-key (kbd "q"))
+      (with-current-buffer streambuffer
 	(local-unset-key (kbd "TAB")))))
-        ;; (local-unset-key (kbd "RET")))))
   (when emms-stream-popup-old-conf
     (set-window-configuration emms-stream-popup-old-conf))
   (remove-hook 'emms-stream-play-hook 'emms-stream-popup-revert)
