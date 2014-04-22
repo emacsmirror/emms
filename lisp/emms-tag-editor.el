@@ -226,8 +226,7 @@ This string is suitable for inserting into the tags buffer."
 (defsubst emms-tag-editor-erase-buffer (&optional buf)
   "Erase the buffer BUF, and ensure that it exists."
   (let ((inhibit-read-only t))
-    (save-excursion
-      (set-buffer (get-buffer-create buf))
+    (with-current-buffer (get-buffer-create buf)
       (erase-buffer))))
 
 (defsubst emms-tag-editor-insert-track (track)
@@ -439,8 +438,7 @@ Available tags are:
              (mapc (lambda (tag)
                      (princ (format "\t%s - %S\n" (cdr tag) (car tag))))
                    emms-tag-editor-tags)
-             (save-excursion
-               (set-buffer standard-output)
+             (with-current-buffer standard-output
                (help-mode)))))
        map))
     current-prefix-arg))
