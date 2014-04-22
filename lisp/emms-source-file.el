@@ -39,6 +39,8 @@
 ;;; User Customization
 
 (require 'emms)
+(require 'dired)
+(require 'locate)
 (eval-when-compile
   (condition-case nil
       (require 'locate)
