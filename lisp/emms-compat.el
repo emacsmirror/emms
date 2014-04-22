@@ -79,6 +79,9 @@ EMMS release version number."
       (require 'hl-line)
       (hl-line-mode 1))))
 
+(declare-function hl-line-highlight "" nil)
+
+;; called from emms-lyrics
 (defun emms-line-highlight ()
   "Highlight the current line. You must call
 emms-activate-highlighting-mode beforehand."
