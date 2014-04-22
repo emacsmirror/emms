@@ -105,6 +105,7 @@
 (require 'emms-player-simple)
 (require 'emms-source-playlist)  ; for emms-source-file-parse-playlist
 (require 'tq)
+(require 'emms-cache)
 
 (eval-when-compile
   (condition-case nil
