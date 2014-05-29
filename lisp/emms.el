@@ -539,6 +539,14 @@ Set `emms-completing-read' to determine which function to use.
 See `completing-read' for a description of ARGS."
   (apply emms-completing-read-function args))
 
+(defun emms-display-modes ()
+  "Display the current EMMS play modes."
+  (interactive)
+  (message "repeat playlist: %s, repeat track: %s, random: %s"
+	   (if emms-repeat-playlist "yes" "no")
+	   (if emms-repeat-track "yes" "no")
+	   (if emms-random-playlist "yes" "no")))
+
 
 ;;; Compatibility functions
 
