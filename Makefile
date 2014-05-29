@@ -13,7 +13,7 @@ INFODIR=$(PREFIX)/info
 MAN1DIR=$(PREFIX)/share/man/man1
 SITELISP=$(PREFIX)/share/emacs/site-lisp/emms
 
-INSTALLINFO = /usr/sbin/install-info --info-dir=$(INFODIR)
+INSTALLINFO = /usr/bin/ginstall-info --info-dir=$(INFODIR)
 CHANGELOG_CMD = git log --pretty=medium --no-merges
 
 # The currently released version of EMMS
@@ -42,10 +42,10 @@ install:
 	install -m 644 $(ALLCOMPILED) $(SITELISP)
 	install -m 0644 $(DOCDIR)emms.info $(INFODIR)/emms
 	for p in $(MAN1PAGES) ; do $(GZIP) -9c $$p > $(MAN1DIR)/$$p.gz ; done
-	$(INSTALLINFO) emms.info
+	$(INSTALLINFO) $(DOCDIR)emms.info
 
 remove-info:
-	$(INSTALLINFO) --remove emms.info
+	$(INSTALLINFO) --remove $(DOCDIR)emms.info
 
 ChangeLog:
 	$(CHANGELOG_CMD) > $@
