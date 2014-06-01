@@ -15,7 +15,8 @@ News since version 3.0:
     automatically by emms, since mplayer has an option
     (`sub-fuzziness') controlling that.
   - Support displaying lyrics in a dedicated buffer, to highlight playing lyric.
-  - Various bug fixes, and compilation error cleanup,
+  - Fix make install on Cygwin.
+  - Compilation errors cleanup.
 
 News since version 2.1:
 
