@@ -1,7 +1,7 @@
 This file tries to list the things people have to do before they do a
 release.
 
-1) Increase the version number in emms.el
+1) Increase the version number in emms.el and Makefile
 2) Update NEWS
 3) Run make release
 4) Run make upload
