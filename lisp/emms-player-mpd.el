@@ -131,8 +131,9 @@
 (defcustom emms-player-mpd-music-directory nil
   "The value of 'music_directory' in your MusicPD configuration file.
 
-You need this if your playlists use absolute file names, otherwise
-leave it set to nil."
+Unless your MusicPD is configured to use absolute file names, you must
+set this variable to the value of 'music_directory' in your MusicPD
+config."
   ;; The :format part ensures that entering directories happens on the
   ;; next line, where there is more space to work with
   :type '(choice :format "%{%t%}:\n   %[Value Menu%] %v"

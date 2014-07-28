@@ -2172,9 +2172,9 @@ invoking:
 (add-to-list 'emms-player-list 'emms-player-mpd)
 @end lisp
 
-If you use absolute file names in your m3u playlists (which is most
-likely), make sure you set @var{emms-player-mpd-music-directory} to
-the value of "music_directory" from your MusicPD config.  There are
+Unless your MusicPD is configured to use absolute file names, you must
+set the emms-player-mpd-music-directory variable to the value of
+'music_directory' in your MusicPD config.  There are
 additional options available as well, but the defaults should be
 sufficient for most uses.
 
