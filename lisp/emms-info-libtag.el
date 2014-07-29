@@ -43,18 +43,52 @@
 
 ;; (setq emms-info-functions '(emms-info-libtag))
 
+;; You may have to compile the program from source.
+;; Make sure that you have libtag installed.
+;; In the EMMS source directory do
+;;
+;;    make emms-print-metadata
+;;
+;; and copy src/emms-print-metadata to your PATH.
+
+;; If compilation fails and libtag is installed, you may have to
+;; change the line
+;;
+;;    #include <tag_c.h>
+;;
+;; to the correction location, e.g.
+;;
+;;    #include <taglib/tag_c.h>
+
 ;;; Code:
 
 (require 'emms-info)
 
+(defgroup emms-info-libtag nil
+  "Options for EMMS."
+  :group 'emms-info)
+
 (defvar emms-info-libtag-coding-system 'utf-8)
-(defvar emms-info-libtag-program-name "emms-print-metadata")
+
+(defcustom emms-info-libtag-program-name "emms-print-metadata"
+  "Name of emms-info-libtag program."
+  :type '(string)
+  :group 'emms-info-libtag)
+
+(defcustom emms-info-libtag-known-extensions
+  (regexp-opt '("mp3" "mp4" "m4a" "ogg" "flac" "spx" "wma"))
+  "Regexp of known extensions compatible with `emms-info-libtag-program-name'.
+
+Case is irrelevant."
+  :type '(string)
+  :group 'emms-info-libtag)
 
 (defun emms-info-libtag (track)
   (when (and (eq 'file (emms-track-type track))
-             (string-match 
-              "\\.\\([Mm][Pp][34]\\|[Mm]4[aA]\\|[oO][gG][gG]\\|[fF][lL][aA][cC]\\|[sS][pP][xX]\\)\\'"
-              (emms-track-name track)))
+             (let ((case-fold-search t))
+               (string-match
+                emms-info-libtag-known-extensions
+                (emms-track-name track))))
     (with-temp-buffer
       (when (zerop
              (let ((coding-system-for-read 'utf-8))

@@ -33,7 +33,7 @@ main (int argc, char **argv)
 
   if (argc != 2)
     {
-      fprintf (stderr, "usage: emms-print-metadata file.{mp3,ogg,flac}\n");
+      fprintf (stderr, "usage: emms-print-metadata file.{mp3,ogg,flac}\nother formats may work as well.\n");
       exit (1);
     }
 
