@@ -1273,14 +1273,23 @@ but can work with any GNU FM server by configuring the variable
 @var{emms-librefm-scrobbler-handshake-url} to the URL of the GNU FM
 server.
 
-Provide your credentials on the GNU FM server by setting the
-appropriate variables:
+The recommended way of providing your credentials to the GNU FM server
+is by using an authinfo file.  Add authentication to your auth-info
+file, typically @file{~/.authinfo.gpg}, as:
+@smallexample
+machine libre.fm login USERNAME password PASSWORD
+@end smallexample
+If you are using some other server than libre.fm, change
+``@example{libre.fm}'' to match
+@var{emms-librefm-scrobbler-handshake-url}.
+
+Alternatively, you can save the password in plaintext in your init-file
+by setting these variables:
 
 @lisp
 (setq emms-librefm-scrobbler-username "USERNAME"
       emms-librefm-scrobbler-password "PASSWORD")
 @end lisp
-
 
 @menu
 * Uploading Track Information:: How to submit listened track information.
