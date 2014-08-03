@@ -2174,12 +2174,17 @@ invoking:
 
 Unless your MusicPD is configured to use absolute file names, you must
 set the emms-player-mpd-music-directory variable to the value of
-'music_directory' in your MusicPD config.  There are
+'music_directory' in your MusicPD configuration.  There are
 additional options available as well, but the defaults should be
 sufficient for most uses.
 
+Once you've done the above, run the @kbd{M-x
+emms-cache-set-from-mpd-all} command to fill the Emms cache with the
+contents of your MusicPD database. The music in your MusicPD database
+should then be accessible via the EMMS browser.
+
 You can set @var{emms-player-mpd-sync-playlist} to nil if your master
-EMMS playlist contains only stored playlists.
+Emms playlist contains only stored playlists.
 
 @subheading Commands provided
 
