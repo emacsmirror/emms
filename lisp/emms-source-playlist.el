@@ -174,7 +174,8 @@ See `emms-source-playlist-formats' for a list of supported formats."
   (interactive (list (read-file-name "Playlist file: "
                                      emms-source-file-default-directory
                                      emms-source-file-default-directory
-                                     t)))
+                                     t
+                                     (thing-at-point 'filename))))
   (mapc #'emms-playlist-insert-track
         (with-temp-buffer
           (emms-insert-file-contents file)
@@ -231,7 +232,8 @@ OUT should be the buffer where tracks are stored in the native EMMS format."
   (interactive (list (read-file-name "Playlist file: "
                                      emms-source-file-default-directory
                                      emms-source-file-default-directory
-                                     t)))
+                                     t
+                                     (thing-at-point 'filename))))
   (mapc #'emms-playlist-insert-track
         (with-temp-buffer
           (emms-insert-file-contents file)
@@ -304,7 +306,8 @@ OUT should be the buffer where tracks are stored in m3u format."
   (interactive (list (read-file-name "Playlist file: "
                                      emms-source-file-default-directory
                                      emms-source-file-default-directory
-                                     t)))
+                                     t
+                                     (thing-at-point 'filename))))
   (mapc #'emms-playlist-insert-track
         (with-temp-buffer
           (emms-insert-file-contents file)
@@ -389,7 +392,8 @@ OUT should be the buffer where tracks are stored in pls format."
   (interactive (list (read-file-name "Playlist file: "
                                      emms-source-file-default-directory
                                      emms-source-file-default-directory
-                                     t)))
+                                     t
+                                     (thing-at-point 'filename))))
   (mapc #'emms-playlist-insert-track
         (with-temp-buffer
           (emms-insert-file-contents file)
@@ -437,7 +441,8 @@ See `emms-source-playlist-formats' for a list of supported formats."
   (interactive (list (read-file-name "Playlist file: "
                                      emms-source-file-default-directory
                                      emms-source-file-default-directory
-                                     t)))
+                                     t
+				     (thing-at-point 'filename))))
   (emms-playlist-insert-track
    (emms-track 'playlist (expand-file-name file))))
 
