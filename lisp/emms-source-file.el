@@ -54,7 +54,7 @@
 
 (defcustom emms-source-file-default-directory nil
   "*The default directory to look for media files."
-  :type 'string
+  :type '(choice (const :tag "None" nil) file)
   :group 'emms-source-file)
 
 (defcustom emms-source-file-directory-tree-function
