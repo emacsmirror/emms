@@ -34,7 +34,8 @@
           (emms-player-simple-regexp
            "ogg" "mp3" "wav" "mpg" "mpeg" "wmv" "wma"
            "mov" "avi" "divx" "ogm" "ogv" "asf" "mkv"
-           "rm" "rmvb" "mp4" "flac" "vob" "m4a" "ape"))
+           "rm" "rmvb" "mp4" "flac" "vob" "m4a" "ape"
+	   "flv" "webm"))
   "vlc" "--intf=rc")
 
 (define-emms-simple-player vlc-playlist '(streamlist)
