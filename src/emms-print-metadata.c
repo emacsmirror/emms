@@ -29,6 +29,7 @@ main (int argc, char **argv)
 {
   TagLib_File *file;
   TagLib_Tag *tag;
+  const TagLib_AudioProperties *properties;
 
   if (argc != 2)
     {
@@ -62,7 +63,10 @@ main (int argc, char **argv)
   printf ("info-year=%d\n", taglib_tag_year (tag));
   printf ("info-genre=%s\n", taglib_tag_genre (tag));
   printf ("info-note=%s\n", taglib_tag_comment (tag));
-  printf ("info-playing-time=%d\n", taglib_audioproperties_length (taglib_file_audioproperties (file)));
+
+  properties = taglib_file_audioproperties (file);
+  printf ("info-playing-time=%d\n",
+	  properties ? taglib_audioproperties_length (properties) : 0);
 
   taglib_tag_free_strings ();
   taglib_file_free (file);
