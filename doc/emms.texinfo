@@ -113,6 +113,7 @@ The Core File
 * Core Functions::     Providing the basic functionality of Emms.
 
 Track Information
+* Using TagLib::        TagLib for track information.
 * Defining Info Methods::    Defining new info methods.
 
 Extending Emms
@@ -896,15 +897,18 @@ The current Emms playlist buffer is stored in the variable
 @cindex track information
 @cindex info tags
 
-Emms is distributed with three predefined methods for retrieving info,
-provided by @file{emms-info-mp3info.el}, @file{emms-info-ogginfo.el} and
-@file{emms-cue.el}. The first two packages are front-ends for
+Emms is distributed with multiple predefined methods for retrieving
+info, provided by @file{emms-info-mp3info.el},
+@file{emms-info-ogginfo.el}, @file{emms-cue.el} and
+@file{emms-info-libtag.el}. The first two packages are front-ends for
 command-line tools. Ogg track information is retrieved using the
 @uref{http://directory.fsf.org/audio/ogg/vorbistools.html, ogginfo}
 software. Likewise, mp3 track information is available using
-@uref{http://www.ibiblio.org/mp3info/, mp3info}. While,
-@file{emms-cue.el} retrieves tracks information for ape/flac files by
-parsing a cue sheet file, which is plain text.
+@uref{http://www.ibiblio.org/mp3info/, mp3info}. @file{emms-cue.el}
+retrieves tracks information for ape/flac files by parsing a cue sheet
+file, which is plain text. Finally, @file{emms-info-libtag.el} uses a
+tiny C shim (included in the src/ directory) program to take advantage
+of @uref{http://taglib.github.io/, TagLib}.
 
 Automatic track information retrieval is enabled by default in the
 `emms-standard', `emms-all' and `emms-devel' setup levels provided by
@@ -934,9 +938,39 @@ track as argument.
 @end defopt
 
 @menu
+* Using TagLib::        TagLib for track information.
 * Defining Info Methods::    Defining new info methods.
 @end menu
 
+@node Using TagLib
+@section Using TagLib
+
+@cindex using taglib
+
+The communication with the TagLib library is done via a tiny program
+written in C @file{emms-print-metadata.c}. To compile
+@file{emms-print-metadata} invoke:
+
+@command{make emms-print-metadata}
+
+The resultant binary will be installed when you invoke:
+
+@command{make install} as in @xref{Compiling Emms}.
+
+It is of course also possible to install only the
+@file{emms-print-metadata} binary where your system can find and
+execute it without installing all of Emms via the make command.
+
+Once the binary is available load @code{emms-info-libtag} and make it
+the @emph{only} info function with (note that if you have caching
+enabled you may have to delete the existing cache and repopulate it in
+order to see the TagLib data):
+
+@lisp
+(require 'emms-info-libtag)
+(setq emms-info-functions '(emms-info-libtag))
+@end lisp
+@noindent
 
 
 @node Defining Info Methods
