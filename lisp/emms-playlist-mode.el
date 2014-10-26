@@ -52,6 +52,9 @@
 (defvar emms-playlist-mode-popup-enabled nil
   "True when the playlist was called as a popup window.")
 
+(defvar emms-playlist-mode-kill-whole-line-p t
+  "When true line kills behave like a typical music player.")
+
 (make-variable-buffer-local
  'emms-playlist-mode-selected-overlay)
 
@@ -129,7 +132,7 @@ This is true for every invocation of `emms-playlist-mode-go'."
     (define-key map (kbd "M-p") 'emms-playlist-mode-previous)
     (define-key map (kbd "a") 'emms-playlist-mode-add-contents)
     (define-key map (kbd "b") 'emms-playlist-set-playlist-buffer)
-    (define-key map (kbd "D") 'emms-playlist-mode-kill-entire-track)
+    (define-key map (kbd "D") 'emms-playlist-mode-kill-track)
     (define-key map (kbd "n") 'emms-next)
     (define-key map (kbd "p") 'emms-previous)
     (define-key map (kbd "SPC") 'scroll-up)
@@ -346,7 +349,7 @@ set it as current."
   (and (<= a p)
        (<= p b)))
 
-;; d
+;; D
 (defun emms-playlist-mode-kill-entire-track ()
   "Kill track at point, including newline."
   (interactive)
@@ -354,23 +357,21 @@ set it as current."
     (emms-playlist-mode-kill-track)))
 
 ;; C-k
-;;
-;; Currently this kills as regular GNU/Emacs would and not like a
-;; typical music player would.
 (defun emms-playlist-mode-kill-track ()
   "Kill track at point."
   (interactive)
   (emms-with-inhibit-read-only-t
    (let ((track (emms-playlist-track-at)))
-     (if track
-	 (let ((track-region (emms-property-region (point)
-						   'emms-track)))
-	   (when (and emms-player-playing-p
-		      (emms-playlist-selected-track-at-p))
-	     (emms-stop)
-             (delete-overlay emms-playlist-mode-selected-overlay)
-             (setq emms-playlist-mode-selected-overlay nil))
-	   (kill-line))
+     (when track
+       (let ((track-region (emms-property-region (point)
+						 'emms-track)))
+	 (when (and emms-player-playing-p
+		    (emms-playlist-selected-track-at-p))
+	   (emms-stop)
+	   (delete-overlay emms-playlist-mode-selected-overlay)
+	   (setq emms-playlist-mode-selected-overlay nil))))
+     (let ((kill-whole-line emms-playlist-mode-kill-whole-line-p))
+       (goto-char (point-at-bol))
        (kill-line)))))
 
 ;; C-w

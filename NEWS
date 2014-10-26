@@ -1,3 +1,7 @@
+News since version 4.0:
+
+  - Change the default behavior of C-k in emms-playlist-mode.
+
 News since version 3.0:
 
   - Add GNU FM support.
