@@ -35,7 +35,7 @@
            "ogg" "mp3" "wav" "mpg" "mpeg" "wmv" "wma"
            "mov" "avi" "divx" "ogm" "ogv" "asf" "mkv"
            "rm" "rmvb" "mp4" "flac" "vob" "m4a" "ape"
-	   "flv" "webm"))
+	   "flv" "webm" "aif"))
   "vlc" "--intf=rc")
 
 (define-emms-simple-player vlc-playlist '(streamlist)
