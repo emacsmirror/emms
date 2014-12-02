@@ -5,7 +5,7 @@
 
 ;; Authors: Ulrik Jensen <terryp@daimi.au.dk>
 ;;          Jorgen Schäfer <forcer@forcix.cx>
-;; Keywords: emms, mpg321, ogg123, mplayer
+;; Keywords: emms, mpg321, ogg123
 
 ;; This file is part of EMMS.
 
@@ -35,7 +35,6 @@
 
 ;; emms-player-mpg321
 ;; emms-player-ogg123
-;; emms-player-mplayer
 
 ;;; Code:
 
