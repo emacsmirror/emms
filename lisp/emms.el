@@ -316,9 +316,9 @@ This also disables any read-onliness of the current buffer."
        (emms-playlist-current-clear))
      (let ((emms-source-old-buffer (or emms-source-old-buffer
                                        (current-buffer))))
-      (with-current-buffer emms-playlist-buffer
-        (let ((inhibit-read-only t))
-          ,@body)))))
+       (with-current-buffer emms-playlist-buffer
+	 (let ((inhibit-read-only t))
+	   ,@body)))))
 (put 'with-current-emms-playlist 'lisp-indent-function 0)
 (put 'with-current-emms-playlist 'edebug-form-spec '(body))
 
@@ -357,6 +357,13 @@ Point will not be restored afterward."
             (setq ,donep t)))))))
 (put 'emms-walk-tracks 'lisp-indent-function 0)
 (put 'emms-walk-tracks 'edebug-form-spec '(body))
+
+(defvar emms-player-base-format-list
+  '("ogg" "mp3" "wav" "mpg" "mpeg" "wmv" "wma"
+    "mov" "avi" "divx" "ogm" "ogv" "asf" "mkv"
+    "rm" "rmvb" "mp4" "flac" "vob" "m4a" "ape"
+    "flv" "webm" "aif")
+  "A list of common formats which player definitions can use.")
 
 
 ;;; User Interface

@@ -35,11 +35,8 @@
 
 (define-emms-simple-player mplayer '(file url)
   (concat "\\`\\(http\\|mms\\)://\\|"
-          (emms-player-simple-regexp
-           "ogg" "mp3" "wav" "mpg" "mpeg" "wmv" "wma"
-           "mov" "avi" "divx" "ogm" "ogv" "asf" "mkv"
-           "rm" "rmvb" "mp4" "flac" "vob" "m4a" "ape"
-	   "flv" "webm" "aif"))
+	  (apply #'emms-player-simple-regexp
+		 emms-player-base-format-list))
   "mplayer" "-slave" "-quiet" "-really-quiet")
 
 (define-emms-simple-player mplayer-playlist '(streamlist)

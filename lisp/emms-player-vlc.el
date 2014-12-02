@@ -31,11 +31,8 @@
 ;; in order to accomodate VLC's particular idioms.
 (define-emms-simple-player vlc '(file url)
   (concat "\\`\\(http\\|mms\\)://\\|"
-          (emms-player-simple-regexp
-           "ogg" "mp3" "wav" "mpg" "mpeg" "wmv" "wma"
-           "mov" "avi" "divx" "ogm" "ogv" "asf" "mkv"
-           "rm" "rmvb" "mp4" "flac" "vob" "m4a" "ape"
-	   "flv" "webm" "aif"))
+	  (apply #'emms-player-simple-regexp
+		 emms-player-base-format-list))
   "vlc" "--intf=rc")
 
 (define-emms-simple-player vlc-playlist '(streamlist)
