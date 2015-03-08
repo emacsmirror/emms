@@ -1799,11 +1799,11 @@ Show all files that are not in the pending directory:
 @section Displaying Covers
 
 The browser will attempt to display cover images if they're
-available. By default it looks for images cover_small.jpg,
-cover_med.jpg, etc. Customize @var{emms-browser-covers} to use your
-own covers. Note that you'll probably want to resize your existing
-covers to particular sizes. Suggested sizes are 100x100 for small, and
-200x200 for medium.
+available. By default it looks for images @file{cover_small.jpg},
+@file{cover_med.jpg}, etc. Customize @var{emms-browser-covers} and
+@var{emms-browser-covers-file-extensions} to use your own covers. Note
+that you'll probably want to resize your existing covers to particular
+sizes. Suggested sizes are 100x100 for small, and 200x200 for medium.
 
 Also, Emacs by default will jump around a lot when scrolling a buffer
 with images. In order to prevent that, you can set

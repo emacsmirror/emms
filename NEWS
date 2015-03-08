@@ -1,6 +1,8 @@
 News since version 4.0:
 
   - Change the default behavior of C-k in emms-playlist-mode.
+  - Covers can have several extensions.  See
+    `emms-browser-covers-file-extensions'.
 
 News since version 3.0:
 

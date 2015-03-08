@@ -332,7 +332,7 @@ view with lots of 1-track elements."
   :type 'function)
 
 (defcustom emms-browser-covers
-  '("cover_small.jpg" "cover_med.jpg" "cover_large.jpg")
+  '("cover_small" "cover_med" "cover_large")
   "*Control how cover images are found.
 Can be either a list of small, medium and large images (large
 currently not used), a function which takes a directory and one
@@ -340,6 +340,17 @@ of the symbols `small', `medium' or `large', and should return a
 path to the cover, or nil to turn off cover loading."
   :group 'emms-browser
   :type '(choice list function boolean))
+
+(defcustom emms-browser-covers-file-extensions
+  '("jpg" "jpeg" "png" "gif" "bmp")
+  "*File extensions accepted for `emms-browser-covers'.
+Should be a list of extensions as strings.  Should be set before
+emms-browser is required."
+  :group 'emms-browser
+  :type '(repeat (string :tag "Extension")))
+
+(defconst emms-browser--covers-filename nil
+  "*List of potential cover art names.")
 
 (defcustom emms-browser-default-covers nil
   "*A list of default images to use if a cover isn't found."
@@ -1599,6 +1610,19 @@ included."
 ;; Album covers
 ;; --------------------------------------------------
 
+(defun emms-browser--build-cover-filename ()
+  "Build `emms-browser--covers-filename'.
+
+Based on from `emms-browser-covers' and
+`emms-browser-covers-file-extensions'."
+  (setq emms-browser--covers-filename
+        (mapcar (lambda (cover)
+                  (if (file-name-extension cover)
+                      (list cover)
+                    (mapcar (lambda (ext) (concat cover "." ext))
+                            emms-browser-covers-file-extensions)))
+                emms-browser-covers)))
+
 (defun emms-browser-get-cover-from-album (bdata &optional size)
   (assert (eq (emms-browser-bdata-type bdata) 'info-album))
   (let* ((track1data (emms-browser-bdata-data bdata))
@@ -1608,6 +1632,8 @@ included."
 
 (defun emms-browser-get-cover-from-path (path &optional size)
   "Return a cover filename, if it exists."
+  (unless emms-browser--covers-filename
+    (emms-browser--build-cover-filename))
   (unless size
     (setq size 'medium))
   (let* ((size-idx (cond
@@ -1620,10 +1646,13 @@ included."
             (funcall emms-browser-covers (file-name-directory path) size))
            ((and (listp emms-browser-covers)
                  (nth size-idx emms-browser-covers))
-            (concat (file-name-directory path)
-                    (nth size-idx emms-browser-covers))))))
-    (if (and cover
-             (file-readable-p cover))
+            (car (delq nil
+                       (mapcar (lambda (cover)
+                                 (let ((coverpath
+                                        (concat (file-name-directory path) cover)))
+                                   (and (file-exists-p coverpath) coverpath)))
+                               (nth size-idx emms-browser--covers-filename))))))))
+    (if (and cover (file-readable-p cover))
         cover
       ;; no cover found, use default
       (when emms-browser-default-covers
