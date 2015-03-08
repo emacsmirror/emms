@@ -21,6 +21,11 @@
 ;; Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 ;; MA 02110-1301, USA.
 
+;;; Commentary:
+
+;; To use libre.fm you need to add username and password to
+;; ~/.authinfo.gpg or an equivalent file understood by auth-source.
+;; To enable scrobbling call (emms-librefm-scrobbler-enable).
 
 ;;; Code:
 
