@@ -1280,7 +1280,7 @@ file, typically @file{~/.authinfo.gpg}, as:
 machine libre.fm login USERNAME password PASSWORD
 @end smallexample
 If you are using some other server than libre.fm, change
-``@example{libre.fm}'' to match
+``@samp{libre.fm}'' to match
 @var{emms-librefm-scrobbler-handshake-url}.
 
 Alternatively, you can save the password in plaintext in your init-file

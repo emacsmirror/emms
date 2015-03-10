@@ -30,6 +30,7 @@
 ;;; Code:
 
 (require 'emms-playing-time)
+(require 'auth-source)
 
 
 (defvar emms-librefm-scrobbler-handshake-url
@@ -86,7 +87,6 @@ See also `emms-librefm-scrobbler-username'.")
 TOKEN is :user of :secret."
   ;; TODO: Maybe we should enable :create t here.  But it could be
   ;; kind of annoying as it makes a pop-up when no name is present.
-  (require 'auth-source)
   (plist-get
    (car (auth-source-search :host (list emms-librefm-scrobbler-handshake-url "libre.fm")
                             :user (unless (equal emms-librefm-scrobbler-username "")
