@@ -6,6 +6,8 @@ News since version 4.0:
   - Libre.fm login details can, and should, be stored in authinfo now.
   - Possible to set volume via PulseAudio pactl via
     emms-volume-pulse.el.
+  - emms-lyrics.el now uses eww if present.  Also EMMS tries to fetch
+    non-Chinese lyrics from lyricwiki.org.
 
 News since version 3.0:
 

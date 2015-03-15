@@ -128,6 +128,15 @@ Note: Even if this is set to t, it also depends on
 (defvar emms-lyrics-buffer nil
   "Buffer to show lyrics.")
 
+(defvar emms-lyrics-chinese-url "http://mp3.baidu.com/m?f=ms&rn=10&tn=baidump3lyric&ct=150994944&word=%s&lm=-1"
+  "URL used to find Chinese lyrics.
+Should contain one %s which is replaced with the filename.")
+
+(defvar emms-lyrics-latin-url "http://lyrics.wikia.com/%s%s"
+  "URL used to find Latin lyrics.
+Should contain two %s-expressions.  The first is replaced with
+the artist and second with the title.")
+
 ;;;###autoload
 (defun emms-lyrics-enable ()
   "Enable displaying emms lyrics."
@@ -216,26 +225,32 @@ If we can't find it from local disk, then search it from internet."
                         (file-name-nondirectory name)))))
     (if (and lrc (file-exists-p lrc) (not (string= lrc "")))
         (find-file lrc)
-      (message "lyric file does not exist, search for it online...")
-      (let ((title (emms-track-get track 'info-title))
-            (filename (file-name-sans-extension
-                       (file-name-nondirectory name)))
-            (url ""))
-        (unless title
-          (setq title filename))
-        (cond ((string-match "\\cc" title) ; chinese lyrics
-               ;; Since tag info might be encoded using various coding
-               ;; systems, we'd better fall back on filename.
-               (setq url (format
-                          "http://mp3.baidu.com/m?f=ms&rn=10&tn=baidump3lyric&ct=150994944&word=%s&lm=-1"
-                          (emms-url-quote-plus
-                           (encode-coding-string filename 'gb2312)))))
-              (t                        ; english lyrics
-               (setq url (format "http://search.lyrics.astraweb.com/?word=%s"
-                                 ;;"http://www.lyrics007.com/cgi-bin/s.cgi?q="
-                                 (emms-url-quote-plus title)))))
-        (browse-url url)
-        (message "lyric file does not exist, search it from internet...done")))))
+      (message "Lyric file does not exist on file-system.  Searching online...")
+      (let* ((title (or (emms-track-get track 'info-title)
+                        (file-name-sans-extension
+                         (file-name-nondirectory name))))
+             (artist (when (emms-track-get track 'info-title)
+                       (emms-track-get track 'info-artist)))
+             (url
+              (cond ((string-match "\\cc" title) ; Chinese lyrics.
+                     ;; Since tag info might be encoded using various coding
+                     ;; systems, we'd better fall back on filename.
+                     (format emms-lyrics-chinese-url
+                             (emms-url-quote-plus
+                              (encode-coding-string filename 'gb2312))))
+                    (t ; English lyrics.
+                     (format emms-lyrics-latin-url
+                             (if artist (concat (emms-url-quote-underscore artist) ":") "")
+                             (emms-url-quote-underscore title))))))
+        (if (fboundp 'eww)
+            (let ((readable-hook (when (and (fboundp 'eww-readable)
+                                            (not (memq 'eww-readable eww-after-render-hook)))
+                                   (add-hook 'eww-after-render-hook 'eww-readable))))
+              (eww url)
+              (when readable-hook
+                (remove-hook 'eww-after-render-hook 'eww-readable)))
+          (browse-url url))
+        (message "Lyric file does not exist on file-system.  Searching online...")))))
 
 
 ;;; EMMS Lyrics
