@@ -87,6 +87,8 @@ This should be a positive integer."
 
 (define-key emms-playlist-mode-map (kbd "+") 'emms-volume-raise)
 (define-key emms-playlist-mode-map (kbd "-") 'emms-volume-lower)
+(define-key emms-browser-mode-map (kbd "+") 'emms-volume-raise)
+(define-key emms-browser-mode-map (kbd "-") 'emms-volume-lower)
 
 ;; Code specific to the minor mode.
 (define-minor-mode emms-volume-minor-mode
