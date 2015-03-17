@@ -4,6 +4,8 @@ News since version 4.0:
   - Covers can have several extensions.  See
     `emms-browser-covers-file-extensions'.
   - Libre.fm login details can, and should, be stored in authinfo now.
+  - Possible to set volume via PulseAudio pactl via
+    emms-volume-pulse.el.
 
 News since version 3.0:
 
