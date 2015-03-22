@@ -484,6 +484,8 @@ Called once for each directory."
     (define-key map (kbd "W a p") 'emms-browser-lookup-album-on-pitchfork)
     (define-key map (kbd ">") 'emms-browser-next-filter)
     (define-key map (kbd "<") 'emms-browser-previous-filter)
+    (define-key map (kbd "+") 'emms-volume-raise)
+    (define-key map (kbd "-") 'emms-volume-lower)
     map)
   "Keymap for `emms-browser-mode'.")
 
