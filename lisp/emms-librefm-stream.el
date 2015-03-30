@@ -60,6 +60,9 @@
 (defvar emms-librefm-stream-playlist-buffer nil
   "Non-interactive Emms GNU FM buffer.")
 
+(defvar emms-librefm-stream-connect-method "https://"
+  "Method of connecting to server.")
+
 
 ;;; ------------------------------------------------------------------
 ;;; HTTP
@@ -88,7 +91,7 @@ point after the HTTP headers."
     (error "null username"))
   (when (not emms-librefm-scrobbler-password)
     (error "null password"))
-  (let ((url (concat "http://"
+  (let ((url (concat emms-librefm-stream-connect-method
 		     emms-librefm-stream-host-url
 		     "/radio/handshake.php?"
 		     "version=1.3.0.58" "&"
@@ -157,7 +160,7 @@ point after the HTTP headers."
     (error "null session id"))
   (when (not station)
     (error "null station"))
-  (let ((url (concat "http://"
+  (let ((url (concat emms-librefm-stream-connect-method
 		     emms-librefm-stream-host-url
 		     emms-librefm-stream-host-base-path
 		     "/adjust.php?"
@@ -227,7 +230,7 @@ point after the HTTP headers."
   "Create the getplaylist string."
   (when (not radio-session-id)
     (error "null radio session id"))
-  (let ((url (concat "http://"
+  (let ((url (concat emms-librefm-stream-connect-method
 		     emms-librefm-stream-host-url
 		     emms-librefm-stream-host-base-path
 		     "/xspf.php?"

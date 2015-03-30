@@ -38,7 +38,7 @@
   "Endpoint for client handshake.")
 
 (defvar emms-librefm-scrobbler-method
-  "http"
+  "https"
   "Transfer method.")
 
 (defvar emms-librefm-scrobbler-username nil
