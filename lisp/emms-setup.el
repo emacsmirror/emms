@@ -51,7 +51,8 @@
     emms-player-ogg123
     emms-player-mplayer-playlist
     emms-player-mplayer
-    emms-player-vlc)
+    emms-player-vlc
+    emms-player-vlc-playlist)
   "*Default list of players for emms-setup."
   :group 'emms-setup
   :type 'list)
