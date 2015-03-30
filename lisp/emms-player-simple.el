@@ -183,7 +183,7 @@ PLAYER is the name of the current player."
   (emms-player-simple-regexp "mid")
   "fluidsynth" "-aalsa" "-in" "/media/music/sf/FluidR3-GM.SF2")
 (define-emms-simple-player alsaplayer '(file url)
-  (concat "\\`http://\\|"
+  (concat "\\`http[s]?://\\|"
           (emms-player-simple-regexp "ogg" "mp3" "wav" "flac" "pls" "m3u"))
   "alsaplayer" "--quiet" "--nosave" "\"--interface text\"")
 

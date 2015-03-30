@@ -271,7 +271,7 @@ Files will be relative to the directory of PLAYLIST-FILE, unless
 they have absolute paths."
   (let ((dir (file-name-directory playlist-file)))
     (mapcar (lambda (file)
-              (if (string-match "\\`\\(http\\|mms\\)://" file)
+              (if (string-match "\\`\\(http[s]?\\|mms\\)://" file)
                   (emms-track 'url file)
                 (emms-track 'file (expand-file-name file dir))))
             (emms-source-playlist-m3u-files))))
@@ -343,7 +343,7 @@ Files will be relative to the directory of PLAYLIST-FILE, unless
 they have absolute paths."
   (let ((dir (file-name-directory playlist-file)))
     (mapcar (lambda (file)
-              (if (string-match "\\`\\(http\\|mms\\)://" file)
+              (if (string-match "\\`\\(http[s]?\\|mms\\)://" file)
                   (emms-track 'url file)
 		(if (string-match "\\`file://" file) ;; handle file:// uris 
 		  (let ((file (url-unhex-string (substring file 7))))

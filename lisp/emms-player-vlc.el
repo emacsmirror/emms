@@ -30,13 +30,13 @@
 ;; I use this macro, and later override some of the stuff it defines
 ;; in order to accomodate VLC's particular idioms.
 (define-emms-simple-player vlc '(file url)
-  (concat "\\`\\(http\\|mms\\)://\\|"
+  (concat "\\`\\(http[s]?\\|mms\\)://\\|"
 	  (apply #'emms-player-simple-regexp
 		 emms-player-base-format-list))
   "vlc" "--intf=rc")
 
 (define-emms-simple-player vlc-playlist '(streamlist)
-  "\\`http://"
+  "\\`http[s]?://"
   "vlc" "--intf=rc")
 
 ;; (kludge) By default, VLC does not quit after finishing to play a
