@@ -84,6 +84,11 @@ e.g.,
   (emms-replace-regexp-in-string
    " " "+" (emms-url-quote s (concat safe " "))))
 
+(defun emms-url-quote-underscore (s &optional safe)
+  "Run (emms-url-quote s \" \"), then replace ` ' with `_'."
+  (emms-replace-regexp-in-string
+   " " "_" (emms-url-quote s (concat safe " "))))
+
 (defun emms-http-content-coding ()
   (save-match-data
     (and (boundp 'url-http-content-type)
