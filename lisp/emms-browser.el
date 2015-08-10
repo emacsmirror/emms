@@ -374,7 +374,7 @@ Ues nil for no sorting."
   :type 'function)
 
 (defcustom emms-browser-alpha-sort-function
-  'string<
+  (if (functionp 'string-collate-lessp) 'string-collate-lessp 'string<)
   "*How to sort artists/albums/etc. in the browser.
 Use nil for no sorting."
   :group 'emms-browser
@@ -684,7 +684,16 @@ compilations, etc."
            db)
   (emms-with-inhibit-read-only-t
    (let ((sort-fold-case t))
-     (sort-lines nil (point-min) (point-max)))))
+     (if emms-browser-alpha-sort-function
+         (progn
+           (goto-char (point-min))
+           (sort-subr nil
+                      #'forward-line #'end-of-line
+                      (lambda () (buffer-substring-no-properties
+                             (line-beginning-position) (line-end-position)))
+                      nil
+                      emms-browser-alpha-sort-function))
+       (sort-lines nil (point-min) (point-max))))))
 
 (defun case-fold-string= (a b)
   (eq t (compare-strings a nil nil b nil nil t)))

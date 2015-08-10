@@ -9,6 +9,7 @@ News since version 4.0:
   - emms-lyrics.el now uses eww if present.  Also EMMS tries to fetch
     non-Chinese lyrics from lyricwiki.org.
   - Add HTTPS support where possible.
+  - Sort using locale language in the browser, if possible.
 
 News since version 3.0:
 
