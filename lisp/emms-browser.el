@@ -1313,12 +1313,14 @@ Return the previous point-max before adding."
   "Do we need to seed (random)?")
 
 (defun emms-browser-goto-random ()
+  "Move cursor to random item with the lowest visible level."
   (interactive)
   (when emms-browser-seed-pending
     (random t)
     (setq emms-browser-seed-pending nil))
-  (goto-char (point-min))
-  (forward-line (1- (random (count-lines (point-min) (point-max))))))
+  (while (progn (goto-char (point-min))
+                (forward-line (1- (random (count-lines (point-min) (point-max)))))
+                (emms-browser-subitems-visible))))
 
 (defun emms-browser-view-in-dired (&optional bdata)
   "View the current directory in dired."
