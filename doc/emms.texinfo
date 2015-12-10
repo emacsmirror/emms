@@ -7,9 +7,6 @@
 @c History: The Emms manual was almost entirely rewritten for the
 @c release of Emms version 2.
 
-@c As a rule, modules which are stable enough to be included into the
-@c `emms-all' setup level should be documented. That is, any feature
-@c which is considered stable should be included.
 
 @dircategory Emacs
 @direntry
