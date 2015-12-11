@@ -293,54 +293,21 @@ run Emms just fine without byte compiling it.
 @cindex setting up Emms
 @cindex quick setup
 
-After adding the location of the Emms code to the @var{load-path}
-variable, see @xref{Installation}. We invoke the following using the
-`emms-setup' feature which allows for quick and simple Emms setup.
-
-@lisp
-(require 'emms-setup)
-(emms-standard)
-(emms-default-players)
-@end lisp
-
-After which Emms is set-up and ready to go!
-
-The above will setup Emms with standard features (interactive
-playlists, audio track tag reading etc.) and a default list of players
-(ogg, mp3, mplayer etc.).
-
 The `emms-setup' feature is provided by the file
 @file{emms-setup.el}. It is essentially a collection of shortcuts for
-setting up Emms quickly and simply. Everything you can do with
-`emms-setup' can also be done manually.
+loading different Emms features quickly, but everything you can do
+with `emms-setup' can also be done manually.
 
-We use `emms-setup' by calling one of the setup functions. Each of the
-functions sets up Emms to include a number of features.
+We use `emms-setup' by calling one of the setup functions.
 
 @defun emms-minimalistic
 An Emms setup script.
-Invisible playlists and all the basics for playing media.
-@end defun
-
-@defun emms-standard
-An Emms setup script.
-Everything included in the @code{emms-minimalistic} setup, the Emms
-interactive playlist mode and reading information from tagged
-audio files.
+Playlists and all the basics for playing media, but nothing else.
 @end defun
 
 @defun emms-all
 An Emms setup script.
-Everything included in the @code{emms-standard} setup and adds all the
-stable features which come with the Emms distribution.
-@end defun
-
-@defun emms-devel
-An Emms setup script.
-Everything included in the @code{emms-all} setup and adds all of the
-features which come with the Emms distribution regardless of if they
-are considered stable or not.  Use this if you like living on the
-edge.
+Loads all the stable features which come with the Emms distribution.
 @end defun
 
 `emms-setup' also comes with a convenience function to set a default
@@ -350,9 +317,9 @@ list of media players.
 Set @var{emms-player-list} to @var{emms-setup-default-player-list}.
 @end defun
 
-It is also worth noting that you can write your own Emms setup
-functions like the above by looking at the existing function
-definitions in @file{emms-setup.el}.
+You can of course write your own Emms setup functions like the above
+by looking at the existing function definitions in
+@file{emms-setup.el}.
 
 
 @c -------------------------------------------------------------------
@@ -913,9 +880,8 @@ tiny C shim (included in the src/ directory) program to take advantage
 of @uref{http://taglib.github.io/, TagLib}.
 
 Automatic track information retrieval is enabled by default in the
-`emms-standard', `emms-all' and `emms-devel' setup levels provided by
-@file{emms-setup.el}. For more information about @file{emms-setup.el}
-see @xref{Setup}.
+`emms-all' setup level provided by @file{emms-setup.el}. For more
+information about @file{emms-setup.el} see @xref{Setup}.
 
 If you would like to know how Emms track retreival works and how we
 can define new methods for track retrieval see @xref{Defining Info
@@ -1010,9 +976,9 @@ ability to use playlists without ever looking at then. This visual,
 interactive mode is called the `emms-playlist-mode' and is defined in
 @file{emms-playlist-mode.el}.
 
-The interactive playlist mode is enabled by default in the
-`emms-standard', `emms-all' and `emms-devel' setup levels. For more
-information about Emms setup levels see @xref{Setup}.
+The interactive playlist mode is enabled by default in the `emms-all'
+setup level. For more information about Emms setup levels see
+@xref{Setup}.
 
 @defun emms-playlist-mode-go
 Switch to the current emms-playlist buffer and use emms-playlist-mode.
@@ -2317,8 +2283,8 @@ invoking:
 @end lisp
 
 The Emms interface for streaming audio is enabled by default in the
-`emms-all' and `emms-devel' setup levels. For more information about
-Emms setup levels see @xref{Setup}.
+`emms-all' setup level. For more information about Emms setup levels
+see @xref{Setup}.
 
 Enter the emms-streams interface by invoking @kbd{M-x}
 @command{emms-streams}. The emms-streams interface comes with a
@@ -2488,8 +2454,8 @@ Load the feature into Emms with:
 (require 'emms-librefm-scrobbler)
 @end lisp
 
-This feature can also be enabled via @xref{Setup}, in the
-`emms-devel' setup level.
+This feature can also be enabled via @xref{Setup}, in the `emms-all'
+setup level.
 
 Enable uploading the details of the tracks Emms plays to the GNU FM
 server with @kbd{emms-librefm-scrobbler-enable}. The track's details
@@ -2509,8 +2475,8 @@ advantage of it by loading:
 (require 'emms-librefm-stream)
 @end lisp
 
-This feature can also be enabled via @xref{Setup}, in the
-`emms-devel' setup level.
+This feature can also be enabled via @xref{Setup}, in the `emms-all'
+setup level.
 
 Then invoke @kbd{emms-librefm-stream} and enter the URL of the station
 you wish to listen to, for example ``librefm://globaltags/Classical''.
