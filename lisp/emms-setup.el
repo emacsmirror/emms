@@ -1,6 +1,7 @@
 ;;; emms-setup.el --- Setup script for EMMS
 
-;; Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+;; Copyright (C) 2005, 2006, 2007, 2008, 2009, 2015 Free Software
+;; Foundation, Inc.
 
 ;; Author: Yoni Rabkin <yonirabkin@member.fsf.org>
 ;; Keywords: emms setup multimedia
@@ -68,11 +69,10 @@ Invisible playlists and all the basics for playing media."
   (require 'emms-player-vlc))
 
 ;;;###autoload
-(defun emms-standard ()
+(defun emms-all ()
   "An Emms setup script.
-Everything included in the `emms-minimalistic' setup, the Emms
-interactive playlist mode, reading information from tagged
-audio files, and a metadata cache."
+Everything included in the `emms-minimalistic' setup and adds all
+the stable features which come with the Emms distribution."
   ;; include
   (emms-minimalistic)
   ;; define
@@ -81,27 +81,7 @@ audio files, and a metadata cache."
     (require 'emms-info)
     (require 'emms-info-mp3info)
     (require 'emms-info-ogginfo)
-    (require 'emms-cache))
-  ;; setup
-  (setq emms-playlist-default-major-mode 'emms-playlist-mode)
-  (add-to-list 'emms-track-initialize-functions 'emms-info-initialize-track)
-  (when (executable-find emms-info-mp3info-program-name)
-    (add-to-list 'emms-info-functions 'emms-info-mp3info))
-  (when (executable-find emms-info-ogginfo-program-name)
-    (add-to-list 'emms-info-functions 'emms-info-ogginfo))
-  (setq emms-track-description-function 'emms-info-track-description)
-  (when (fboundp 'emms-cache)           ; work around compiler warning
-    (emms-cache 1)))
-
-;;;###autoload
-(defun emms-all ()
-  "An Emms setup script.
-Everything included in the `emms-standard' setup and adds all the
-stable features which come with the Emms distribution."
-  ;; include
-  (emms-standard)
-  ;; define
-  (eval-and-compile
+    (require 'emms-cache)
     (require 'emms-mode-line)
     (require 'emms-mark)
     (require 'emms-tag-editor)
@@ -115,26 +95,7 @@ stable features which come with the Emms distribution."
     (require 'emms-mode-line-icon)
     (require 'emms-cue)
     (require 'emms-bookmarks)
-    (require 'emms-last-played))
-  ;; setup
-  (emms-mode-line 1)
-  (emms-mode-line-blank)
-  (emms-lyrics 1)
-  (emms-playing-time 1)
-  (add-to-list 'emms-info-functions 'emms-info-cueinfo)
-  (add-hook 'emms-player-started-hook 'emms-last-played-update-current))
-
-;;;###autoload
-(defun emms-devel ()
-  "An Emms setup script.
-Everything included in the `emms-all' setup and adds all the
-features which come with the Emms distribution regardless of if
-they are considered stable or not.  Use this if you like living
-on the edge."
-  ;; include
-  (emms-all)
-  ;; define
-  (eval-and-compile
+    (require 'emms-last-played)
     (require 'emms-metaplaylist-mode)
     (require 'emms-stream-info)
     (require 'emms-score)
@@ -145,14 +106,43 @@ on the edge."
     (require 'emms-librefm-scrobbler)
     (require 'emms-librefm-stream))
   ;; setup
+  (setq emms-playlist-default-major-mode 'emms-playlist-mode)
+  (add-to-list 'emms-track-initialize-functions 'emms-info-initialize-track)
+  (when (executable-find emms-info-mp3info-program-name)
+    (add-to-list 'emms-info-functions 'emms-info-mp3info))
+  (when (executable-find emms-info-ogginfo-program-name)
+    (add-to-list 'emms-info-functions 'emms-info-ogginfo))
+  (setq emms-track-description-function 'emms-info-track-description)
+  (when (fboundp 'emms-cache)           ; work around compiler warning
+    (emms-cache 1))
+  (emms-mode-line 1)
+  (emms-mode-line-blank)
+  (emms-lyrics 1)
+  (emms-playing-time 1)
+  (add-to-list 'emms-info-functions 'emms-info-cueinfo)
+  (add-hook 'emms-player-started-hook 'emms-last-played-update-current)
   (emms-score 1)
   (emms-playlist-limit 1))
+
 
 ;;;###autoload
 (defun emms-default-players ()
   "Set `emms-player-list' to `emms-setup-default-player-list'."
   (setq emms-player-list
 	emms-setup-default-player-list))
+
+
+
+;; These are kept around in order not to break anyone's existing
+;; setup.
+;;;###autoload
+(defun emms-devel ()
+  (emms-all))
+
+;;;###autoload
+(defun emms-standard ()
+  (emms-all))
+
 
 (provide 'emms-setup)
 ;;; emms-setup.el ends here
