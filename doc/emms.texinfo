@@ -221,10 +221,11 @@ emms-add-directory-tree RET ~/Music/ RET}. We do this because then
 Emms will read the tags of all your music files and caches them (this
 is also required for the Emms browser, @xref{The Browser}.)
 
-To switch to the playlist buffer, invoke @kbd{M-x emms-playlist-mode-go}
-or simply @kbd{M-x emms}. You can see that most tracks are displayed
-with their file name, but track by track the filename gets replaced with
-the artist and track name of the file's tag.
+To switch to the playlist buffer, invoke @kbd{M-x
+emms-playlist-mode-go} or simply @kbd{M-x emms}. You may see that some
+tracks are displayed with their file name, but as Emms populates its
+tag cahe, track by track, the filenames get replaced with the artist
+and track name of the file's tag.
 
 Go ahead and navigate to a track and hit @kbd{RET} on it to start
 playback.
