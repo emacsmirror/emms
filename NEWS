@@ -10,6 +10,8 @@ News since version 4.0:
     non-Chinese lyrics from lyricwiki.org.
   - Add HTTPS support where possible.
   - Sort using locale language in the browser, if possible.
+  - emms-setup.el has been simplified.
+  - The Emms manual has been revised to help new users.
 
 News since version 3.0:
 
