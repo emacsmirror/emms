@@ -1272,7 +1272,7 @@ Return the previous point-max before adding."
                 (forward-line (or direction 1)))
       (unless (eq (emms-browser-bdata-type
                    (emms-browser-bdata-at-point)) 'info-title)
-        (setq continue)))))
+        (setq continue nil)))))
 
 (defun emms-browser-prev-non-track ()
   "Jump to the previous non-track element."
