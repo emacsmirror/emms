@@ -38,6 +38,8 @@
 (defvar emms-show-all-kill-buffer-on-quit-p nil
   "If t, kill the show-all buffer when quitting.")
 
+(defvar emms-show-all-track-alist nil
+  "Declare so as to silence the compiler.")
 
 (define-derived-mode emms-show-all-mode text-mode "Emms-Show-All"
   "Major mode for `emms-show-all'
