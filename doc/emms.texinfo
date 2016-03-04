@@ -534,6 +534,12 @@ non-nil, insert the description into the current buffer instead. This
 function uses @var{emms-show-format} to format the current track.
 @end defun
 
+The command @command{emms-show-all} will pop up a window with the
+complete information about the track being
+played. @command{emms-show-all} is provided by
+@file{emms-show-all.el}, which is included in the `emms-all' setup
+level. See @xref{Setup}.
+
 
 @c -------------------------------------------------------------------
 @node The Core File
