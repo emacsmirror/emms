@@ -3,7 +3,8 @@ release.
 
 1) Increase the version number in emms.el and Makefile
 2) Update NEWS
-3) Tag release in VCS.
+3) Tag release in VCS
 4) Run make release
 5) Run make upload
 6) Send announcement email
+7) Update website
