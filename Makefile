@@ -42,7 +42,7 @@ install:
 	test -d $(INFODIR) || install -d $(INFODIR)
 	install -m 644 $(ALLSOURCE) $(SITELISP)
 	install -m 644 $(ALLCOMPILED) $(SITELISP)
-	install -m 0644 $(DOCDIR)emms.info $(INFODIR)/emms
+	install -m 0644 $(DOCDIR)emms.info $(INFODIR)/emms.info
 	for p in $(MAN1PAGES) ; do $(GZIP) -9c $$p > $(MAN1DIR)/$$p.gz ; done
 	if [ -x /usr/bin/ginstall-info ]; then \
 		$(GINSTALLINFO) $(DOCDIR)emms.info; \
