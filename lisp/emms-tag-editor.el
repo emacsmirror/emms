@@ -143,19 +143,25 @@ See also `emms-tag-editor-tag-file' and `emms-tag-editor-tag-ogg'.")
   "Commit changes to an FLAC file according to TRACK."
   (require 'emms-info-metaflac)
   (with-temp-buffer
-    (let (need val)
+    (let ((tags '("artist" "composer" "performer" "title" "album" "tracknumber" "discnumber" "date" "genre" "note"))
+	  need val)
       (mapc (lambda (tag)
               (let ((info-tag (intern (concat "info-" tag))))
                 (when (> (length (setq val (emms-track-get track info-tag))) 0)
                   (insert (upcase tag) "=" val "\n"))))
-            '("artist" "composer" "performer" "title" "album" "tracknumber" "discnumber" "date" "genre" "note"))
+            tags)
       (when (buffer-string)
-        (funcall #'call-process-region (point-min) (point-max)
-                 emms-info-metaflac-program-name nil
-                 (get-buffer-create emms-tag-editor-log-buffer)
-                 nil
-                 "--import-tags-from=-"
-                 (emms-track-name track))))))
+	(apply #'call-process-region (point-min) (point-max)
+	       emms-info-metaflac-program-name nil
+	       (get-buffer-create emms-tag-editor-log-buffer)
+	       nil
+	       (append
+		(mapcar (lambda (tag)
+			  (concat "--remove-tag=" tag))
+			tags)
+		'("--import-tags-from=-")
+		'("--")
+		(list (emms-track-name track))))))))
 
 (defun emms-tag-editor-tag-ogg (track)
   "Commit changes to an OGG file according to TRACK."
