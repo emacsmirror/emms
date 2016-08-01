@@ -341,7 +341,7 @@ changes will only take effect on the tracks in the region."
                             "Query replace regexp in region"
                           "Query replace regexp")
                         t)))
-           (butlast common))))
+           (butlast common 2))))
   (let ((overlay (make-overlay (point-min) (1+ (point-min)))))
     (overlay-put overlay 'face 'match)
     (unwind-protect
