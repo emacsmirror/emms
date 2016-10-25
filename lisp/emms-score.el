@@ -4,7 +4,7 @@
 ;;   2009 Free Software Foundation, Inc.
 
 ;; Authors: Jean-Philippe Theberge <jphiltheberge@videotron.ca>,
-;;          Yoni Rabkin <yonirabkin@member.fsf.org>
+;;          Yoni Rabkin <yrk@gnu.org>
 ;;
 ;; Keywords: emms, mp3, mpeg, multimedia
 

@@ -2,7 +2,7 @@
 
 ;; Copyright (C) 2008, 2009 Free Software Foundation, Inc.
 
-;; Authors: Yoni Rabkin <yonirabkin@member.fsf.org>
+;; Authors: Yoni Rabkin <yrk@gnu.org>
 
 ;; This file is part of EMMS.
 

@@ -5,7 +5,7 @@
 
 ;; Authors: Lucas Bonnet <lucas@rincevent.net>
 ;;          Jose A Ortega Ruiz <jao@gnu.org>
-;;          Yoni Rabkin <yonirabkin@member.fsf.org>
+;;          Yoni Rabkin <yrk@gnu.org>
 ;;          Michael Olson <mwolson@gnu.org>
 
 ;; This file is part of EMMS.
