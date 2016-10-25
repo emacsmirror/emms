@@ -1,5 +1,10 @@
 News since version 4.1:
 
+  - Removed defunct streams.
+  - Various emms-tag-editor bug fixes.
+  - Bug fix: Info file now installs with correct suffix.
+  - Bug fix: `make install' now installs emms-print-metadata.
+
 News since version 4.0:
 
   - Change the default behavior of C-k in emms-playlist-mode.
