@@ -2288,9 +2288,28 @@ invoking:
 (require 'emms-streams)
 @end lisp
 
-The Emms interface for streaming audio is enabled by default in the
-`emms-all' setup level. For more information about Emms setup levels
-see @xref{Setup}.
+Querying the streams for track information is provided by the
+@file{emms-stream-info.el} package and can be loaded with:
+
+@lisp
+(require 'emms-stream-info)
+@end lisp
+
+The Emms interface for streaming audio, and the stream query
+capabilites are enabled by default in the `emms-all' setup level. For
+more information about Emms setup levels see @xref{Setup}.
+
+`emms-stream-info' calls a backend program to query the stream for
+information. The preferred program needs to be specified by setting
+the variable @var{emms-stream-info-backend} either `mplayer' or
+`vlc'. For instance:
+
+@lisp
+(setq emms-stream-info-backend 'vlc)
+@end lisp
+
+Obviously, the corresponding program needs to be installed and
+available for Emms to invoke.
 
 Enter the emms-streams interface by invoking @kbd{M-x}
 @command{emms-streams}. The emms-streams interface comes with a

@@ -44,7 +44,7 @@
 
 ;;; Code:
 
-(defvar emms-stream-info-backend 'mplayer
+(defvar emms-stream-info-backend nil
   "Symbol designating the backend program to use.")
 
 ;; using unhygienic macros for good... or is it evil?
@@ -82,7 +82,7 @@
 	(bitrate "N/A")
 	(nowplaying "N/A"))
     (with-temp-buffer
-      (message "querying stream...")
+      (message "querying stream with %s backend..." emms-stream-info-backend)
       (cond
        ((eq emms-stream-info-backend 'mplayer)
 	(emms-stream-info-mplayer-backend url)
