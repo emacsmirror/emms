@@ -6,5 +6,6 @@ release.
 3) Tag release in VCS, for example with `git tag -a 4.2 -m "4.2"'
 4) Run make release
 5) Run make upload
-6) Send announcement email
+6) Update online manual
 7) Update website
+8) Send announcement email
