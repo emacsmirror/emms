@@ -237,18 +237,18 @@ If we can't find it from local disk, then search it from internet."
                      ;; systems, we'd better fall back on filename.
                      (format emms-lyrics-chinese-url
                              (emms-url-quote-plus
-                              (encode-coding-string filename 'gb2312))))
-                    (t ; English lyrics.
+                              (encode-coding-string name 'gb2312))))
+                    (t ; English lyrics.g
                      (format emms-lyrics-latin-url
                              (if artist (concat (emms-url-quote-underscore artist) ":") "")
                              (emms-url-quote-underscore title))))))
         (if (fboundp 'eww)
-            (let ((readable-hook (when (and (fboundp 'eww-readable)
-                                            (not (memq 'eww-readable eww-after-render-hook)))
-                                   (add-hook 'eww-after-render-hook 'eww-readable))))
-              (eww url)
-              (when readable-hook
-                (remove-hook 'eww-after-render-hook 'eww-readable)))
+            (progn (require 'eww)
+                   (let ((readable-hook (when (fboundp 'eww-readable)
+                                          (add-hook 'eww-after-render-hook 'eww-readable))))
+                     (eww url)
+                     (when readable-hook
+                       (remove-hook 'eww-after-render-hook 'eww-readable))))
           (browse-url url))
         (message "Lyric file does not exist on file-system.  Searching online...")))))
 
