@@ -1165,9 +1165,9 @@ them into another playlist.
 
 emms-mark is also intent to provide a way for user to select tracks
 for other command to operate on them. Currently,
-@file{emms-tag-editor.el} used the emms-mark to edit tags of selected
-tracks. Two function is useful for elisp programer to handle marked
-tracks.
+@file{emms-tag-editor.el} uses the emms-mark to edit the tags of
+selected tracks. Two functions are useful for the elisp programer to
+handle marked tracks.
 
 @defun emms-mark-do-with-marked-track
 This function take a function to perform on all marked tracks. A
