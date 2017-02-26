@@ -302,10 +302,6 @@ return at the end of a request.")
            (when emms-player-mpd-verbose
              (message "Other MusicPD status change: %s, %s" status event))))))
 
-;; Ignore a useless byte-compile warning
-(eval-when-compile
-  (put 'process-kill-without-query 'byte-compile nil))
-
 (defun emms-player-mpd-ensure-process ()
   "Make sure that a MusicPD process is currently active."
   (unless (and emms-player-mpd-process
@@ -322,7 +318,7 @@ return at the end of a request.")
           (tq-create emms-player-mpd-process))
     (if (fboundp 'set-process-query-on-exit-flag)
         (set-process-query-on-exit-flag emms-player-mpd-process nil)
-      (process-kill-without-query emms-player-mpd-process))
+      (set-process-query-on-exit-flag emms-player-mpd-process nil))
     ;; send password
     (when (stringp emms-player-mpd-server-password)
       (tq-enqueue emms-player-mpd-queue
