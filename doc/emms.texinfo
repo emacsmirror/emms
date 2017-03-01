@@ -922,7 +922,7 @@ track as argument.
 @cindex using taglib
 
 The communication with the TagLib library is done via a tiny program
-written in C @file{emms-print-metadata.c}. To compile
+written in C++ @file{emms-print-metadata.cpp}. To compile
 @file{emms-print-metadata} invoke:
 
 @command{make emms-print-metadata}

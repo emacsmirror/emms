@@ -35,8 +35,8 @@ lisp:
 docs:
 	$(MAKE) -C $(DOCDIR)
 
-emms-print-metadata: $(SRCDIR)/emms-print-metadata.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $(SRCDIR)/$@ $< `taglib-config --cflags --libs` -ltag_c
+emms-print-metadata: $(SRCDIR)/emms-print-metadata.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $(SRCDIR)/$@ $< `taglib-config --cflags --libs`
 
 install:
 	test -d $(SITELISP) || mkdir -p $(SITELISP)

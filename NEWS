@@ -1,3 +1,9 @@
+News since version 4.2:
+
+  - New (C++) emms-print-metadata brings more TagLib features.
+  - Compilation warnings gone (excl. cl).
+  - Bug fix: emms-lyrics free variable fix.
+
 News since version 4.1:
 
   - Removed defunct streams.
