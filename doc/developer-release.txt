@@ -1,11 +1,20 @@
 This file tries to list the things people have to do before they do a
 release.
 
-1) Increase the version number in emms.el and Makefile
-2) Update NEWS
-3) Tag release in VCS, for example with `git tag -a 4.2 -m "4.2"'
-4) Run make release
-5) Run make upload
-6) Update online manual
-7) Update website
-8) Send announcement email
+* Increase the version number in emms.el and Makefile
+
+*  Update NEWS
+
+*  Tag release in VCS, for example `git tag -a 4.2 -m "4.2"'
+
+*  Push tag to VCS if needed, for example `git push --tags origin master'
+
+*  Run make release
+
+*  Run make upload
+
+*  Update online manual
+
+*  Update website
+
+*  Send announcement email
