@@ -1753,11 +1753,14 @@ If > album level, most of the track data will not make sense."
             ("t" . ,(emms-track-get track 'info-title))
 	    ("D" . ,(emms-browser-disc-number track))
             ("T" . ,(emms-browser-track-number track))
-            ("d" . ,(emms-browser-track-duration track))
-            ("cS" . ,(emms-browser-get-cover-str path 'small))
-            ("cM" . ,(emms-browser-get-cover-str path 'medium))
-            ("cL" . ,(emms-browser-get-cover-str path 'large))))
-         str)
+            ("d" . ,(emms-browser-track-duration track))))
+	 str)
+    (when (equal type 'info-album)
+      (setq format-choices (append format-choices
+                                   `(("cS" . ,(emms-browser-get-cover-str path 'small))
+                                     ("cM" . ,(emms-browser-get-cover-str path 'medium))
+                                     ("cL" . ,(emms-browser-get-cover-str path 'large))))))
+
 
     (when (functionp format)
       (setq format (funcall format bdata format-choices)))
