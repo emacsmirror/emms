@@ -7,7 +7,7 @@ release.
 
 *  Tag release in VCS, for example `git tag -a 4.2 -m "4.2"'
 
-*  Push tag to VCS if needed, for example `git push --tags origin master'
+*  Push tag to VCS if needed, for example `git push --tags origin "4.2"'
 
 *  Run make release
 
