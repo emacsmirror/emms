@@ -17,4 +17,4 @@ release.
 
 *  Update website
 
-*  Send announcement email
+*  Send announcement email to gnu-info and to the emms mailing list
