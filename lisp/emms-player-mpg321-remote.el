@@ -153,7 +153,8 @@ For example: (list \"-o\" \"alsa\")"
       (cond
        ;; stop notice
        ((and (string= cmd "@P")
-             (string= (cadr data) "0"))
+             (or (string= (cadr data) "0")
+		 (string= (cadr data) "3")))
         (emms-player-mpg321-remote-notify-emms))
        ;; frame notice
        ((string= cmd "@F")
