@@ -61,7 +61,7 @@
 If you have your own functions for changing volume, set this."
   :type '(choice (const :tag "Amixer" emms-volume-amixer-change)
                  (const :tag "MPD" emms-volume-mpd-change)
-                 (const :tag "Pulseaudio" emms-volume-pule-change)
+		 (const :tag "PulseAudio" emms-volume-pulse-change)
                  (function :tag "Lisp function"))
   :group 'emms-volume)
 
