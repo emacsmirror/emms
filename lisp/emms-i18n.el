@@ -46,8 +46,6 @@
 ;;; Code:
 
 (provide 'emms-i18n)
-(eval-when-compile
-  (require 'cl))
 
 ;; TODO: Use defcustom.
 (defvar emms-i18n-never-used-coding-system

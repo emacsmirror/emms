@@ -38,7 +38,6 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'cl))
 (require 'emms-info)
 
 (defvar emms-info-metaflac-version "0.1 $Revision: 1.10 $"

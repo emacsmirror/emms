@@ -39,7 +39,7 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'cl))
+(require 'cl-lib)
 (require 'emms-info)
 (require 'emms-player-simple)
 
@@ -177,7 +177,7 @@ could call `emms-playing-time-enable-display' and
                 0))
            (total-min-only (/ total-playing-time 60))
            (total-sec-only (% total-playing-time 60)))
-      (case emms-playing-time-style
+      (cl-case emms-playing-time-style
         ((bar)                          ; `bar' style
          (if (zerop total-playing-time)
              (setq emms-playing-time-string "[==>........]")

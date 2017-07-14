@@ -36,18 +36,17 @@
 ;;; Code:
 
 (provide 'emms-mark)
+(require 'cl-lib)
 (require 'emms)
 (require 'emms-playlist-mode)
-(eval-when-compile
-  (require 'cl))
 
 ;;{{{  set new description-function
 (defun emms-mark-track-description (track)
   "Return a description of the current track."
-  (assert (not (eq (default-value 'emms-track-description-function)
-                   'emms-mark-track-description))
-          nil (concat "Do not set `emms-track-selection-function' to be"
-                      " emms-mark-track-description."))
+  (cl-assert (not (eq (default-value 'emms-track-description-function)
+		      'emms-mark-track-description))
+	     nil (concat "Do not set `emms-track-selection-function' to be"
+			 " emms-mark-track-description."))
   (concat "  " (funcall (default-value 'emms-track-description-function)
                         track)))
 

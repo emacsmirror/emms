@@ -22,7 +22,7 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'cl))
+(require 'cl-lib)
 (require 'emms-last-played)
 (require 'emms-playlist-mode)
 
@@ -188,10 +188,10 @@ ie. by album name and then by track number."
 (defun emms-playlist-sort-by-list-p (a b)
   (catch 'return
     (dolist (info emms-playlist-sort-list)
-      (case info
+      (cl-case info
         ((name info-artist info-composer info-performer info-title info-album info-genre)
          (when (emms-string< (emms-track-get a info)
-                        (emms-track-get b info))
+                             (emms-track-get b info))
            (throw 'return t)))
         ((info-playing-time)
          (when (< (emms-track-get a info)

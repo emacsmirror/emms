@@ -27,8 +27,6 @@
 
 ;;; Code:
 
-(eval-when-compile
-  (require 'cl))
 (condition-case nil
     (require 'overlay)
   (error nil))

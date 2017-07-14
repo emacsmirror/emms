@@ -36,8 +36,6 @@
 ;;; Code:
 
 (require 'emms)
-(eval-when-compile
-  (require 'cl))
 
 (defgroup emms-history nil
   "Saving and restoring all playlists when closing/restarting

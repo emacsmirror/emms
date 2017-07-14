@@ -286,14 +286,13 @@
 
 ;;; Code:
 
+(require 'cl-lib)
 (require 'emms)
 (require 'emms-cache)
 (require 'emms-source-file)
 (require 'emms-playlist-sort)
 (require 'sort)
 
-(eval-when-compile
-  (require 'cl))
 
 ;; --------------------------------------------------
 ;; Variables and configuration
@@ -1068,7 +1067,7 @@ If DIRECTION is 1, move forward, otherwise move backwards."
       (emms-browser-kill-subitems)
     (if (emms-browser-subitems-exist)
         (emms-browser-show-subitems)
-      (assert (emms-browser-move-up-level))
+      (cl-assert (emms-browser-move-up-level))
       (emms-browser-kill-subitems))))
 
 (defun emms-browser-show-subitems ()
@@ -1637,7 +1636,7 @@ Based on from `emms-browser-covers' and
                 emms-browser-covers)))
 
 (defun emms-browser-get-cover-from-album (bdata &optional size)
-  (assert (eq (emms-browser-bdata-type bdata) 'info-album))
+  (cl-assert (eq (emms-browser-bdata-type bdata) 'info-album))
   (let* ((track1data (emms-browser-bdata-data bdata))
          (track1 (car (emms-browser-bdata-data (car track1data))))
          (path (emms-track-get track1 'name)))

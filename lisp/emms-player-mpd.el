@@ -103,6 +103,7 @@
 
 ;; Adam Sjøgren implemented support for changing the volume.
 
+(require 'cl-lib)
 (require 'emms-player-simple)
 (require 'emms-source-playlist)  ; for emms-source-file-parse-playlist
 (require 'tq)
@@ -150,10 +151,10 @@ or nil if we cannot figure it out."
         (let* ((b (match-end 0))
                (e (string-match "Output plugins:$" out))
                (plugs (split-string (substring out b e) "\n" t))
-               (plugs (mapcan (lambda (x)
-                                (and (string-match " +\\[.*\\] +\\(.+\\)$" x)
-                                     (split-string (match-string 1 x) nil t)))
-                              plugs))
+               (plugs (cl-mapcan (lambda (x)
+                                   (and (string-match " +\\[.*\\] +\\(.+\\)$" x)
+                                        (split-string (match-string 1 x) nil t)))
+                                 plugs))
                (b (and (string-match "Protocols:$" out) (match-end 0)))
                (prots (and b (substring out (+ 2 b) -1)))
                (prots (split-string (or prots "") nil t)))

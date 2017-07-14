@@ -42,7 +42,7 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'cl))
+(require 'cl-lib)
 
 ;; TODO: it would be great if custom could have
 ;; choices based on pactl list short sinks | cut -f1-2
@@ -77,18 +77,18 @@ See full list of devices on your system by running
         (if sink-number-p 'assq 'assoc)
         emms-volume-pulse-sink
         (mapcar (if sink-number-p 'identity 'cdr)
-                (loop while
-                      (string-match
-                       (mapconcat 'identity
-                                  '(".*Sink[ \t]+\\#\\([0-9]\\)"
-                                    ".*Name:[ \t]\\([^\n]+\\)"
-                                    ".*Volume:.*?\\([0-9]+\\)%.*\n?")
-                                  "\n")
-                       output)
-                      collect (list (string-to-number (match-string 1 output))
-                                    (match-string 2 output)
-                                    (match-string 3 output))
-                      do (setq output (replace-match "" nil nil output))))))))))
+                (cl-loop while
+			 (string-match
+			  (mapconcat 'identity
+				     '(".*Sink[ \t]+\\#\\([0-9]\\)"
+				       ".*Name:[ \t]\\([^\n]+\\)"
+				       ".*Volume:.*?\\([0-9]+\\)%.*\n?")
+				     "\n")
+			  output)
+			 collect (list (string-to-number (match-string 1 output))
+				       (match-string 2 output)
+				       (match-string 3 output))
+			 do (setq output (replace-match "" nil nil output))))))))))
 
 
 ;;;###autoload
