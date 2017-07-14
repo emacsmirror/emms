@@ -1,3 +1,9 @@
+News since version 4.3:
+
+  - Move to cl-lib.
+  - Improve emms-volume.
+  - Bug fix: fix mpg321 autoplay.
+
 News since version 4.2:
 
   - Limit network lookups in Browser mode.
