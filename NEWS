@@ -1,5 +1,6 @@
 News since version 4.3:
 
+  - Playlists can now be sorted by mtime.
   - Move to cl-lib.
   - Improve emms-volume.
   - Bug fix: fix mpg321 autoplay.
