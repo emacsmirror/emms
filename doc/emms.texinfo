@@ -1775,34 +1775,61 @@ initial "info-" part. For example, to change the artist face, type M-x
 
 The `emms-playlist-sort' module, defined in the
 @file{emms-playlist-sort.el} package provides functions for sorting
-Emms playlists. `emms-playlist-sort' can be loaded by invoking:
+Emms playlists, as well as keyboard shortcuts for invoking the
+functions in the playlist buffer. Most of the functions will sort in
+reverse order if the command is preceded by a
+prefix. `emms-playlist-sort' can be loaded by invoking:
 
 @lisp
 (require 'emms-playlist-sort)
 @end lisp
 
-@defun emms-playlist-sort-by-name
-Sort playlist by name in ascending order.
-@end defun
-
 @defun emms-playlist-sort-by-info-artist
-Sort playlist by artist in ascending order.
+Sort by artist name.
 @end defun
 
-@defun emms-playlist-sort-by-info-title
-Sort playlist by title in ascending order.
+@defun emms-playlist-sort-by-play-count
+Sort by number of times the track has been played.
 @end defun
 
 @defun emms-playlist-sort-by-info-album
-Sort playlist by album in ascending order.
+Sort by album name.
+@end defun
+
+@defun emms-playlist-sort-by-last-played
+Sort by time the track was played last.
+@end defun
+
+@defun emms-playlist-sort-by-info-title
+Sort by track title.
+@end defun
+
+@defun emms-playlist-sort-by-file-extension
+Sort by filename extension.
+@end defun
+
+@defun emms-playlist-sort-by-info-performer
+Sort by performer name.
 @end defun
 
 @defun emms-playlist-sort-by-info-year
-Sort playlist by year in ascending order.
+Sort by year.
 @end defun
 
 @defun emms-playlist-sort-by-info-note
-Sort playlist by notes in ascending order.
+Sort by track notes.
+@end defun
+
+@defun emms-playlist-sort-by-info-composer
+Sort by composer.
+@end defun
+
+@defun emms-playlist-sort-by-name
+Sort by track name.
+@end defun
+
+@defun emms-playlist-sort-by-file-mtime
+Sort by file mtime.
 @end defun
 
 
