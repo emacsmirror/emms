@@ -1,5 +1,6 @@
 News since version 4.3:
 
+  - emms-source-file-directory-tree-find now follows symlinks.
   - Playlists can now be sorted by mtime.
   - Move to cl-lib.
   - Improve emms-volume.

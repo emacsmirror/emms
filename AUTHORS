@@ -36,8 +36,10 @@ which is to say very simple patches and those with total of 12 lines
 or fewer. We started recording trivial patches this way in June of
 2017, so trivial patches before that date would not appear below.
 
-David Michael	       	 <fedora.dm0@gmail.com>
-tumashu                  <tumashu@163.com>
+David Michael
+tumashu
+Maxim Cournoyer
+
 
 ;; Local variables:
 ;; coding: utf-8

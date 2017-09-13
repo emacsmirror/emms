@@ -228,6 +228,7 @@ may be supplied using `emms-source-file-gnu-find'."
   (with-temp-buffer
     (call-process emms-source-file-gnu-find
                   nil t nil
+		  "-L" ; follow symlinks
                   (expand-file-name dir)
                   "-type" "f"
                   "-iregex" (concat ".*\\(" regex "\\).*"))
