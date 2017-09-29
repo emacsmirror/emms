@@ -738,17 +738,18 @@ for that purpose.")
    (list (let* ((buf-list (mapcar #'(lambda (buf)
                                       (list (buffer-name buf)))
                                   (emms-playlist-buffer-list)))
+                (sorted-buf-list (sort buf-list
+                                       #'(lambda (lbuf rbuf)
+                                           (< (length (car lbuf))
+                                              (length (car rbuf))))))
                 (default (or (and emms-playlist-buffer-p
                                   ;; default to current buffer
                                   (buffer-name))
                              ;; pick shortest buffer name, since it is
                              ;; likely to be a shared prefix
-                             (car (sort buf-list
-                                        #'(lambda (lbuf rbuf)
-                                            (< (length (car lbuf))
-                                               (length (car rbuf)))))))))
+                             (car sorted-buf-list))))
            (emms-completing-read "Playlist buffer to make current: "
-                                 buf-list nil t default))))
+                                 sorted-buf-list nil t default))))
   (let ((buf (if buffer
                  (get-buffer buffer)
                (current-buffer))))
