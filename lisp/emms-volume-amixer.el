@@ -49,6 +49,13 @@ controls, run `amixer controls' in a shell."
                  (string :tag "Something else: "))
   :group 'emms-volume)
 
+(defcustom emms-volume-amixer-card 0
+  "The card number to change volume.
+The card is identified by a number. For a full list run `cat
+/proc/asound/cards' in a shell."
+  :type 'integer
+  :group 'emms-volume)
+
 ;;;###autoload
 (defun emms-volume-amixer-change (amount)
   "Change amixer master volume by AMOUNT."
@@ -56,6 +63,8 @@ controls, run `amixer controls' in a shell."
            (with-temp-buffer
              (when (zerop
                     (call-process "amixer" nil (current-buffer) nil
+				  "-c"
+				  (format "%d" emms-volume-amixer-card)
                                   "sset" emms-volume-amixer-control
                                   (format "%d%%%s" (abs amount)
                                           (if (< amount 0) "-" "+"))))
