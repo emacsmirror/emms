@@ -1,5 +1,6 @@
 News since version 4.3:
 
+  - emms-volume-amixer.el: card id can be customized
   - Bug fix: set-playlist-buffer listing.
   - emms-source-file-directory-tree-find now follows symlinks.
   - Playlists can now be sorted by mtime.
