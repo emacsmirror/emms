@@ -309,10 +309,14 @@ return at the end of a request.")
                (processp emms-player-mpd-process)
                (memq (process-status emms-player-mpd-process) '(run open)))
     (setq emms-player-mpd-process
-          (funcall emms-player-mpd-connect-function "mpd"
-                   nil
-                   emms-player-mpd-server-name
-                   emms-player-mpd-server-port))
+	  (if emms-player-mpd-server-port
+	      (funcall emms-player-mpd-connect-function "mpd"
+		     nil
+		     emms-player-mpd-server-name
+		     emms-player-mpd-server-port)
+	    (make-network-process :name "emms-mpd"
+				:service emms-player-mpd-server-name
+				:family 'local)))
     (set-process-sentinel emms-player-mpd-process
                           'emms-player-mpd-sentinel)
     (setq emms-player-mpd-queue
