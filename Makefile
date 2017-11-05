@@ -20,7 +20,7 @@ INSTALLINFO = /usr/bin/install-info --info-dir=$(INFODIR)
 CHANGELOG_CMD = git log --pretty=medium --no-merges
 
 # The currently released version of EMMS
-VERSION=4.3
+VERSION=4.4
 
 .PHONY: all install lisp docs deb-install clean
 .PRECIOUS: %.elc

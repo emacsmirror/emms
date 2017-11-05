@@ -1,9 +1,11 @@
 This file tries to list the things people have to do before they do a
 release.
 
-* Increase the version number in emms.el and Makefile
+*  Increase the version number in emms.el and Makefile
 
 *  Update NEWS
+
+*  Push version updates to git repo.
 
 *  Tag release in VCS, for example `git tag -a 4.2 -m "4.2"'
 
