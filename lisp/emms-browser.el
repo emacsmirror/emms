@@ -96,16 +96,12 @@
 ;; b 5             emms-browse-by-composer
 ;; b 6             emms-browse-by-performer
 
-;; W a p           emms-browser-lookup-album-on-pitchfork
 ;; W a w           emms-browser-lookup-album-on-wikipedia
 
-;; W A p           emms-browser-lookup-artist-on-pitchfork
 ;; W A w           emms-browser-lookup-artist-on-wikipedia
 
-;; W C p           emms-browser-lookup-composer-on-pitchfork
 ;; W C w           emms-browser-lookup-composer-on-wikipedia
 
-;; W P p           emms-browser-lookup-performer-on-pitchfork
 ;; W P w           emms-browser-lookup-performer-on-wikipedia
 
 ;; Displaying covers
@@ -474,13 +470,9 @@ Called once for each directory."
     (define-key map (kbd "s t") 'emms-browser-search-by-title)
     (define-key map (kbd "s s") 'emms-browser-search-by-names)
     (define-key map (kbd "W A w") 'emms-browser-lookup-artist-on-wikipedia)
-    (define-key map (kbd "W A p") 'emms-browser-lookup-artist-on-pitchfork)
     (define-key map (kbd "W C w") 'emms-browser-lookup-composer-on-wikipedia)
-    (define-key map (kbd "W C p") 'emms-browser-lookup-composer-on-pitchfork)
     (define-key map (kbd "W P w") 'emms-browser-lookup-performer-on-wikipedia)
-    (define-key map (kbd "W P p") 'emms-browser-lookup-performer-on-pitchfork)
     (define-key map (kbd "W a w") 'emms-browser-lookup-album-on-wikipedia)
-    (define-key map (kbd "W a p") 'emms-browser-lookup-album-on-pitchfork)
     (define-key map (kbd ">") 'emms-browser-next-filter)
     (define-key map (kbd "<") 'emms-browser-previous-filter)
     (define-key map (kbd "+") 'emms-volume-raise)
@@ -1380,10 +1372,6 @@ Disabled by default."
   (emms-browser-lookup
    field "http://en.wikipedia.org/wiki/Special:Search?search="))
 
-(defun emms-browser-lookup-pitchfork (field)
-  (emms-browser-lookup
-   field "http://www.pitchforkmedia.com/search/record_reviews/query?query[keywords]="))
-
 (defun emms-browser-lookup-artist-on-wikipedia ()
   (interactive)
   (emms-browser-lookup-wikipedia 'info-artist))
@@ -1400,21 +1388,6 @@ Disabled by default."
   (interactive)
   (emms-browser-lookup-wikipedia 'info-album))
 
-(defun emms-browser-lookup-artist-on-pitchfork ()
-  (interactive)
-  (emms-browser-lookup-pitchfork 'info-artist))
-
-(defun emms-browser-lookup-composer-on-pitchfork ()
-  (interactive)
-  (emms-browser-lookup-pitchfork 'info-composer))
-
-(defun emms-browser-lookup-performer-on-pitchfork ()
-  (interactive)
-  (emms-browser-lookup-pitchfork 'info-performer))
-
-(defun emms-browser-lookup-album-on-pitchfork ()
-  (interactive)
-  (emms-browser-lookup-pitchfork 'info-album))
 
 ;; --------------------------------------------------
 ;; Linked browser and playlist windows
