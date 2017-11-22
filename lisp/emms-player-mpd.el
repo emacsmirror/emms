@@ -870,6 +870,7 @@ Execute CALLBACK with CLOSURE as its first argument when done."
   "Play whatever is in the current MusicPD playlist.
 If ID is specified, play the song at that position in the MusicPD
 playlist."
+  (interactive)
   (if id
       (progn
         (unless (stringp id)
