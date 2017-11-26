@@ -705,6 +705,29 @@ string), a confusing error message would result."
         desc
       (emms-track-simple-description track))))
 
+(defun emms-track-get-year (track)
+  "Get year of TRACK for display.
+There is the separation between the 'release date' and the
+'original date'.  This difference matters e.g. for
+re-releases (anniversaries and such) where the release date is
+more recent than the original release date.  In such cases the
+user probably wants the original release date so this is what we
+show."
+  (or
+   (emms-format-date-to-year (emms-track-get track 'info-date))
+   (emms-format-date-to-year (emms-track-get track 'info-originaldate))
+   (emms-track-get track 'info-year)
+   (emms-track-get track 'info-originalyear)))
+
+(defun emms-format-date-to-year (date)
+  "Try to extract year part from DATE.
+Return nil if the year cannot be extracted."
+  (when date
+    (let ((year (nth 5 (parse-time-string date))))
+      (if year (number-to-string year)
+        (when (string-match "^[ \t]*\\([0-9]\\{4\\}\\)" date)
+          (match-string 1 date))))))
+
 
 ;;; The Playlist
 
