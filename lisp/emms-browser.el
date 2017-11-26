@@ -509,6 +509,7 @@ Called once for each directory."
 ;; General mode setup
 ;; --------------------------------------------------
 
+;;;###autoload
 (defun emms-browser ()
   "Launch or switch to the EMMS Browser."
   (interactive)
@@ -1399,6 +1400,7 @@ Disabled by default."
   :group 'emms-browser
   :type 'boolean)
 
+;;;###autoload
 (defun emms-smart-browse ()
   "Display browser and playlist.
 Toggle between selecting browser, playlist or hiding both. Tries
