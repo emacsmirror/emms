@@ -1600,7 +1600,7 @@ included."
 (defun emms-browser--build-cover-filename ()
   "Build `emms-browser--covers-filename'.
 
-Based on from `emms-browser-covers' and
+Based on from `emms-browser-covers' (when a list) and
 `emms-browser-covers-file-extensions'."
   (setq emms-browser--covers-filename
         (mapcar (lambda (cover)
@@ -1619,8 +1619,6 @@ Based on from `emms-browser-covers' and
 
 (defun emms-browser-get-cover-from-path (path &optional size)
   "Return a cover filename, if it exists."
-  (unless emms-browser--covers-filename
-    (emms-browser--build-cover-filename))
   (unless size
     (setq size 'medium))
   (let* ((size-idx (cond
@@ -1633,6 +1631,8 @@ Based on from `emms-browser-covers' and
             (funcall emms-browser-covers (file-name-directory path) size))
            ((and (listp emms-browser-covers)
                  (nth size-idx emms-browser-covers))
+            (unless emms-browser--covers-filename
+              (emms-browser--build-cover-filename))
             (car (delq nil
                        (mapcar (lambda (cover)
                                  (let ((coverpath
@@ -1996,6 +1996,121 @@ If the track is not of TYPE, return t."
        (not (and (setq last-played
                        (emms-track-get track 'last-played nil))
                  (time-less-p min-date last-played))))))
+
+;; TODO: Add function to clear the cache from thumbnails that have no associated
+;; cover folders.  This is especially useful in case the music library path
+;; changes: currently, all covers will have to be re-cached while the old ones
+;; are left as is, useless.
+
+;; TODO: `emms-browser-expand-all' is slow because of all the covers (about 30
+;; sec fot 1500 covers in my case).  Try to profile & optimize.  It will
+;; probably not be enough and we might need to run emms-browser-expand-all
+;; asynchronously.
+
+
+(defvar emms-browser-thumbnail-directory (expand-file-name "thumbnails" emms-directory)
+  "Directory where to store cover thumbnails.")
+
+(defvar emms-browser-thumbnail-small-size 128
+  "Cover thumbnail will be resized if necessary so that neither width nor height exceed this dimension.")
+(defvar emms-browser-thumbnail-medium-size 256
+  "Cover thumbnail will be resized if necessary so that neither width nor height exceed this dimension.")
+(defvar emms-browser-thumbnail-large-size 1024 ; Emms does not use large covers as of 2017-11-26.
+  "Cover thumbnail will be resized if necessary so that neither width nor height exceed this dimension.")
+
+(defun emms-browser-thumbnail-filter-default (dir)
+  "Select covers containing 'front' or 'cover' in DIR.
+If none was found, fallback on `emms-browser-thumbnail-filter-all'.
+
+See `emms-browser-thumbnail-filter'."
+  (when (file-directory-p dir)
+    (let ((ls (directory-files dir t nil t))
+          (case-fold-search t)
+          covers)
+      (dolist (ext emms-browser-covers-file-extensions)
+        (setq covers (append (seq-filter (lambda (c) (string-match (concat "\\(front\\|cover\\).*\\." ext) c)) ls) covers)))
+      (unless covers
+        (setq covers (emms-browser-thumbnail-filter-all dir)))
+      covers)))
+
+(defun emms-browser-thumbnail-filter-all (dir)
+  "Return the list of all files with `emms-browser-covers-file-extensions' in DIR.
+
+See `emms-browser-thumbnail-filter'."
+  (let (covers)
+    (dolist (ext emms-browser-covers-file-extensions)
+      (setq covers (append (file-expand-wildcards (expand-file-name (concat "*." ext) dir)) covers)))))
+
+(defvar emms-browser-thumbnail-filter 'emms-browser-thumbnail-filter-default
+  "This filter must hold a function that takes a directory argument and returns a list of cover file names.
+The list will be processed by `emms-browser-cache-thumbnail'.
+See also `emms-browser-thumbnail-filter-default'.")
+
+(defvar emms-browser-thumbnail-convert-program (executable-find "convert")
+  "The ImageMagick's `convert' program.")
+
+(defun emms-browser-cache-thumbnail (dir size)
+  "Return cached cover SIZE for album in DIR.
+
+SIZE must be 'small, 'medium or 'large.  It will determine the
+resolution of the cached file.  See the variables
+`emms-browser-thumbnail-SIZE-size'.
+
+If cover is not cached or if cache is out-of-date, re-cache it.
+If both the width and the height of the cover are smaller than
+`emms-browser-thumbnail-SIZE-size', it need not be cached and
+will be used directly.
+
+Emms assumes that you have one album per folder. This function
+will always use the same cover per folder.
+
+`emms-browser-covers' can be `fset' to this function."
+  (if (eq size 'large)
+      ;; 'large is unused for now. Return empty.
+      nil
+    (let (covers
+          cover
+          (cover-width 0) (cover-height 0)
+          (size-value (symbol-value (intern (concat "emms-browser-thumbnail-" (symbol-name size) "-size"))))
+          cache-dest-file)
+      (setq covers (funcall emms-browser-thumbnail-filter dir))
+      (if (not covers)
+          nil
+        ;; Find best quality cover.
+        (let (res)
+          (dolist (c covers)
+            (setq res (image-size (create-image c) t))
+            ;; image-size does not error, it returns (30 . 30) instead.
+            (and (> (car res) 30) (> (cdr res) 30)
+                 (< cover-width (car res)) (< cover-height (cdr res))
+                 (setq cover-width (car res) cover-height (cdr res) cover c))))
+        (if (and (>= size-value cover-width) (>= size-value cover-height))
+            ;; No need to resize and cache.
+            cover
+          (let ((cache-dest (concat emms-browser-thumbnail-directory (file-name-directory cover))))
+            (mkdir cache-dest t)
+            (setq cache-dest-file (concat
+                                   (expand-file-name "cover_" cache-dest)
+                                   (symbol-name size)
+                                   "." (file-name-extension cover))))
+          (and emms-browser-thumbnail-convert-program
+               (or (not (file-exists-p cache-dest-file))
+                   (time-less-p (nth 5 (file-attributes cache-dest-file))
+                                (nth 5 (file-attributes cover)) ))
+               (let (err msg)
+                 ;; An Elisp function would be faster, but Emacs does not seem be be
+                 ;; able to resize image files. It can resize image displays though.
+                 ;; TODO: Add image resizing support to Emacs.
+                 (setq msg (with-output-to-string
+                             (with-current-buffer standard-output
+                               (setq err (call-process (executable-find "convert") nil '(t t) nil
+                                                       "-resize" (format "%sx%s" size-value size-value)
+                                                       cover
+                                                       cache-dest-file)))))
+                 (when (/= err 0)
+                   (warn "%s" msg)
+                   (setq cache-dest-file nil))))
+          cache-dest-file)))))
 
 (provide 'emms-browser)
 ;;; emms-browser.el ends here
