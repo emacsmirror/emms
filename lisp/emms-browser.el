@@ -288,6 +288,7 @@
 (require 'emms-source-file)
 (require 'emms-playlist-sort)
 (require 'sort)
+(require 'seq)
 
 
 ;; --------------------------------------------------
