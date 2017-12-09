@@ -1135,13 +1135,28 @@ Stops at the next line at the same level, or EOF."
 (defun emms-browser-expand-to-level (level)
   "Expand to a depth specified by LEVEL.
 After expanding, jump to the currently marked entry."
-  (goto-char (point-min))
-  (while (not (eq (buffer-end 1) (point)))
-    (if (< (emms-browser-level-at-point) level)
-        (emms-browser-show-subitems))
-    (emms-browser-next-non-track))
-  (emms-browser-pop-mark)
-  (recenter '(4)))
+  (let ((count 1)
+        (total 0)
+        progress-reporter)
+    (goto-char (point-min))
+    (while (not (eq (buffer-end 1) (point)))
+      (when (= (emms-browser-level-at-point) 1)
+        (setq total (1+ total)))
+      (emms-browser-next-non-track))
+    (goto-char (point-min))
+    (setq progress-reporter
+          (make-progress-reporter "Expanding EMMS browser entries..."
+                                  0  total))
+    (while (not (eq (buffer-end 1) (point)))
+      (when (= (emms-browser-level-at-point) 1)
+        (progress-reporter-update progress-reporter count)
+        (setq count (1+ count)))
+      (if (< (emms-browser-level-at-point) level)
+          (emms-browser-show-subitems))
+      (emms-browser-next-non-track))
+    (progress-reporter-done progress-reporter)
+    (emms-browser-pop-mark)
+    (recenter '(4))))
 
 (defun emms-browser-mark-and-collapse ()
   "Save the current top level element, and collapse."
