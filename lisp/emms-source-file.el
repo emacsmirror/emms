@@ -104,8 +104,7 @@ user."
   (interactive (list (read-file-name "Play file: "
                                      emms-source-file-default-directory
                                      emms-source-file-default-directory
-                                     t
-				     (thing-at-point 'filename))))
+                                     t)))
   (if (file-directory-p file)
       (emms-source-directory file)
     (emms-playlist-insert-track
