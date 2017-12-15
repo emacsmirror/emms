@@ -81,6 +81,7 @@ Modules and Extensions
 * Streaming Audio::      Interface to streaming audio.
 * APE / FLAC Commands::  How to play next or previous track in these files.
 * Bookmarks::            Saving a place in a media file.
+* Managing Playlists::   Managing multiple playlists.
 * GNU FM::               Connect to music community websites.
 
 Copying and license
@@ -2458,6 +2459,71 @@ respectively.
 
 To clear all of the bookmarks for the current track invoke @kbd{M-x
 emms-bookmarks-clear}.
+
+
+@c -------------------------------------------------------------------
+@node Managing Playlists
+@chapter Managing Playlists
+
+Emms can have multiple playlists, since a playlist is just another
+buffer with a list of tracks. You can manage multiple playlists using
+`emms-metaplaylist-mode', provided by the file
+@file{emms-metaplaylist-mode}.
+
+Start the playlist manager with @kbd{M-x
+emms-metaplaylist-mode-go}. The playlist manager will list the
+playlists and mark the current one. The following commands are
+available:
+
+@table @kbd
+
+@item RET
+@kindex RET
+@findex emms-metaplaylist-mode-goto-current
+Make the buffer at point the Emms playlist buffer and switch to it.
+
+@item SPC
+@kindex SPC
+@findex emms-metaplaylist-mode-set-active
+Make the buffer at point the Emms playlist buffer (but do not switch
+to it).
+
+@item n
+@kindex n
+@findex next-line
+Move point to the next playlist.
+
+@item p
+@kindex p
+@findex previous-line
+Move point to the previous playlist.
+
+@item g
+@kindex g
+@findex emms-metaplaylist-mode-update
+Update the playlist manager buffer.
+
+@item C
+@kindex C
+@findex emms-metaplaylist-mode-new-buffer
+Create a new Emms playlist buffer.
+
+@item C-k
+@kindex C-k
+@findex emms-metaplaylist-mode-kill-buffer
+Kill the Emms playlist buffer at point.
+
+@item c
+@kindex c
+@findex emms-metaplaylist-mode-center-current
+Move point to the current playlist buffer.
+
+@item q
+@kindex q
+@findex kill-this-buffer
+Kill the playlist manager.
+
+@end table
 
 
 @c -------------------------------------------------------------------
