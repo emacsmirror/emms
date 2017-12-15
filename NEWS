@@ -1,3 +1,8 @@
+News since version 4.4
+
+  - Add dynamic thumbnail caching.
+  - Improve emms-metaplaylist-mode.
+
 News since version 4.3:
 
   - emms-volume-amixer.el: card id can be customized
