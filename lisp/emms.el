@@ -6,6 +6,7 @@
 ;; Author: Jorgen Schäfer <forcer@forcix.cx>
 ;; Keywords: emms, mp3, mpeg, multimedia
 ;; Package-Requires: ((cl-lib "0.5"))
+;; Homepage: http://www.gnu.org/software/emms/
 
 ;; This file is part of EMMS.
 
