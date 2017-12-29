@@ -139,11 +139,11 @@
   (when (not emms-playlist-buffer)
     (error "no current playlist buffer"))
   (goto-char (point-min))
-  (when (not (search-forward-regexp
-	      (or (buffer-name emms-playlist-buffer)
-		  "")
-	      (point-max) t))
-    (goto-char (point-min)))
+  (when (not
+	 (search-forward-regexp (regexp-quote
+				 (buffer-name emms-playlist-buffer))
+				(point-max) t))
+    (error "cannot not find the current playlist buffer"))
   (goto-char (point-at-bol)))
 
 (defun emms-metaplaylist-mode-create ()
