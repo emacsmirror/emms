@@ -295,6 +295,9 @@
 ;; Variables and configuration
 ;; --------------------------------------------------
 
+(defvar emms-browser-mode-hook nil
+  "Emms browser mode hook.")
+
 (defgroup emms-browser nil
   "*The Emacs Multimedia System browser"
   :prefix "emms-browser-"
@@ -553,7 +556,9 @@ example function is `emms-browse-by-artist'."
 
   (setq buffer-read-only t)
   (unless no-update
-    (setq emms-browser-buffer (current-buffer))))
+    (setq emms-browser-buffer (current-buffer)))
+
+  (run-hooks 'emms-browser-mode-hook))
 
 (defun emms-browser-new-buffer ()
   "Create a new browser buffer, and switch to it."
