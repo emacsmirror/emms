@@ -238,7 +238,7 @@ this function collects the result of FUNC."
 ;;}}}
 
 ;;{{{ mode stuff
-(defconst emms-mark-mode-map
+(defvar emms-mark-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map "W" 'emms-mark-copy-marked-tracks)
     (define-key map "K" 'emms-mark-kill-marked-tracks)

@@ -78,7 +78,7 @@
 ;;; Keymap
 ;;; --------------------------------------------------------
 
-(defconst emms-metaplaylist-mode-map
+(defvar emms-metaplaylist-mode-map
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map text-mode-map)
     (define-key map (kbd "n")   'next-line)

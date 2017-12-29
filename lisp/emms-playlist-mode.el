@@ -112,7 +112,7 @@ This is true for every invocation of `emms-playlist-mode-go'."
 ;;; Keys
 ;;; --------------------------------------------------------
 
-(defconst emms-playlist-mode-map
+(defvar emms-playlist-mode-map
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map text-mode-map)
     (define-key map (kbd "C-x C-s") 'emms-playlist-save)

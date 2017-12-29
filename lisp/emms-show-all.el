@@ -45,7 +45,7 @@
   "Major mode for `emms-show-all'
   \\{emms-show-all-mode-map}")
 
-(defconst emms-show-all-mode-map
+(defvar emms-show-all-mode-map
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map text-mode-map)
     (define-key map (kbd "q") 'emms-show-all-mode-bury-buffer)

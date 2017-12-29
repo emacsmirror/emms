@@ -438,7 +438,7 @@ Called once for each directory."
 (defvar emms-browser-current-filter-name nil
   "The name of the current filter in place, if any.")
 
-(defconst emms-browser-mode-map
+(defvar emms-browser-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "q") 'emms-browser-bury-buffer)
     (define-key map (kbd "/") 'emms-isearch-buffer)
@@ -484,7 +484,7 @@ Called once for each directory."
     map)
   "Keymap for `emms-browser-mode'.")
 
-(defconst emms-browser-search-mode-map
+(defvar emms-browser-search-mode-map
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map emms-browser-mode-map)
     (define-key map (kbd "q") 'emms-browser-kill-search)
