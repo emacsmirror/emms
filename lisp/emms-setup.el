@@ -139,10 +139,12 @@ the stable features which come with the Emms distribution."
 ;;;###autoload
 (defun emms-devel ()
   (emms-all))
+(make-obsolete 'emms-devel 'emms-all "4.1")
 
 ;;;###autoload
 (defun emms-standard ()
   (emms-all))
+(make-obsolete 'emms-standard 'emms-all "4.1")
 
 
 (provide 'emms-setup)
