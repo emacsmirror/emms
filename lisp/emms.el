@@ -285,7 +285,7 @@ The modified track is passed as the argument to this function."
   :group 'emms
   :type 'function)
 
-(defcustom emms-directory "~/.emacs.d/emms"
+(defcustom emms-directory (expand-file-name "emms" user-emacs-directory)
   "*Directory variable from which all other emms file variables are derived."
   :group 'emms
   :type 'string)
