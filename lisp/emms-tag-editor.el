@@ -117,7 +117,15 @@ the 'name directly.
 See also `emms-tag-editor-default-parser'.")
 
 (defvar emms-tag-editor-tagfile-functions
-  '(("mp3" "mp3info"
+  '(("mp3" "mid3v2"
+     ((info-artist      . "a")
+      (info-title       . "t")
+      (info-album       . "A")
+      (info-tracknumber . "T")
+      (info-year        . "y")
+      (info-genre       . "g")
+      (info-note        . "c")))
+    ("mp3" "mp3info"
      ((info-artist      . "a")
       (info-title       . "t")
       (info-album       . "l")
@@ -625,7 +633,7 @@ With prefix argument, bury the tag edit buffer."
           (dolist (tag emms-tag-editor-tags)
             (when (setq val (emms-track-get track (car tag)))
             (emms-track-set old (car tag) val)))
-          ;; use mp3info to change tag in mp3 file
+          ;; use external program to change tags in the file
           (when (and (eq (emms-track-get track 'type) 'file)
                      (file-writable-p (emms-track-name track))
                      (setq func (assoc (file-name-extension filename)
