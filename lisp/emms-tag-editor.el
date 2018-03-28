@@ -125,19 +125,11 @@ See also `emms-tag-editor-default-parser'.")
       (info-year        . "y")
       (info-genre       . "g")
       (info-note        . "c")))
-    ("mp3" "mp3info"
-     ((info-artist      . "a")
-      (info-title       . "t")
-      (info-album       . "l")
-      (info-tracknumber . "n")
-      (info-year        . "y")
-      (info-genre       . "g")
-      (info-note        . "c")))
     ("ogg" . emms-tag-editor-tag-ogg)
     ("flac" . emms-tag-editor-tag-flac))
   "An alist used when committing changes to tags in files.
 If the external program sets tags by command line options
-one-by-one such as mp3info, then the list should like:
+one-by-one, then the list should like:
  (EXTENSION PROGRAM COMMAND_LINE_OPTIONS)
 
 Otherwise, a function that accepts a single parameter, the track,
