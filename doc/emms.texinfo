@@ -203,8 +203,9 @@ More detail about setting up Emms can be found in the setup chapter,
 
 Emms tries to display the tags (the name of the song, as opposed to
 the name of the file) of the music you listen to. Emms can use libtag,
-see @xref{Using TagLib}, or a combination of `mp3info' and `ogginfo'
-(make sure that they are installed if you want Emms to use them.)
+see @xref{Using TagLib}, or a combination of other software such as
+`mp3info' and `ogginfo' (make sure that they are installed if you want
+Emms to use them.)
 
 The last thing to do is to tell Emms where your music is; the root
 directory of our music collection. Let's say all your music is in
@@ -874,7 +875,7 @@ The current Emms playlist buffer is stored in the variable
 @cindex info tags
 
 Emms is distributed with multiple predefined methods for retrieving
-info, provided by @file{emms-info-mp3info.el},
+info, provided by modules such as @file{emms-info-mp3info.el},
 @file{emms-info-ogginfo.el}, @file{emms-cue.el} and
 @file{emms-info-libtag.el}. The first two packages are front-ends for
 command-line tools. Ogg track information is retrieved using the
@@ -1899,7 +1900,7 @@ If non-nil emms starts playing the current track after
 
 Using @file{emms-tag-editor.el}, emms can set tag informations of tracks
 and write them back to the file with the help of external programs, such
-as `mp3info', `vorbiscomment'.
+as `mid3v2' and `vorbiscomment'.
 
 Use the keybinding @kbd{E} to edit the tags of track under point in the
 playlist or all marked tracks (@pxref{Markable Playlists} for how to
@@ -1962,9 +1963,6 @@ single charactar is assigned to the tag to make the
 @defvr {Variable} emms-tag-editor-tagfile-functions
 To write tags to track file, an extern program should specified in this
 variable.
-
-If the external program has an interface like `mp3info', you don't have
-to write a function.  Take `mp3' and `ogg' as example.
 @end defvr
 
 @heading Renaming Files
