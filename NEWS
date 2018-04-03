@@ -1,6 +1,6 @@
 News since version 4.4
 
-  - Various code modernizations thanks to Pierre Neidhardt.
+  - Code modernizations thanks to Pierre Neidhardt.
   - Tagging mp3 files v2.x files now works via mid3v2.
   - Add dynamic thumbnail caching.
   - Improve emms-metaplaylist-mode.
