@@ -1,7 +1,7 @@
 ;;; later-do.el --- execute lisp code ... later
 
 ;; Copyright (C) 2004, 2005, 2006, 2007, 2008,
-;;   2009 Free Software Foundation, Inc.
+;;   2009, 2018 Free Software Foundation, Inc.
 
 ;; Author: Jorgen Schaefer <forcer@forcix.cx>
 
@@ -28,7 +28,7 @@
 
 ;;; Code:
 
-(defvar later-do-version "0.2emms2 (2005-09-20)"
+(defvar later-do-version "0.2emms4 (2018-04-07)"
   "Version string of later-do.")
 
 (defgroup later-do nil
@@ -38,6 +38,14 @@
 
 (defcustom later-do-interval 0.5
   "How many seconds to wait between running events."
+  :group 'later-do
+  :type 'number)
+
+(defcustom  later-do-batch 20
+  "How many functions to process before waiting `later-do-interval'.
+The functions are processed from `later-do-list'.  Must be 1 or
+greater.  Too high a value might make Emacs slower while the
+list is being processed."
   :group 'later-do
   :type 'number)
 
@@ -63,14 +71,16 @@ executed in the sequence it was added."
 empty."
   (if (null later-do-list)
       (setq later-do-timer nil)
-    (let ((fun (caar later-do-list))
-          (args (cdar later-do-list)))
-      (setq later-do-list (cdr later-do-list))
+    (let (res)
       (unwind-protect
-          (apply fun args)
-        (setq later-do-timer (run-with-timer later-do-interval
-                                             nil
-                                             'later-do-timer))))))
+          (dotimes (b (min later-do-batch (length later-do-list)) res)
+            (let ((fun (caar later-do-list))
+                  (args (cdar later-do-list)))
+              (setq later-do-list (cdr later-do-list))
+              (setq res (apply fun args)))))
+      (setq later-do-timer (run-with-timer later-do-interval
+                                           nil
+                                           'later-do-timer)))))
 
 (provide 'later-do)
 ;;; later-do.el ends here

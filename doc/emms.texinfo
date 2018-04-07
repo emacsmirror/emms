@@ -909,7 +909,8 @@ annoying for you, set this variable to nil.
 @defopt emms-info-asynchronously
 Non-nil when track information should be loaded asynchronously. This
 requires the feature `later-do' which is provided by the file
-@file{later-do.el}, which should come with Emms.
+@file{later-do.el}, which comes with Emms.  See @var{later-do-batch} for
+performance tweaking.
 @end defopt
 @defopt emms-info-functions
 Functions which add information to tracks.  Each is called with a
