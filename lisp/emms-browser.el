@@ -1256,6 +1256,7 @@ Return the previous point-max before adding."
         (bdata (emms-browser-bdata-at-point)))
     (emms-browser-playlist-insert-bdata
      bdata (emms-browser-bdata-level bdata))
+    (next-line)
     (run-hook-with-args 'emms-browser-tracks-added-hook
                         first-new-track)
     first-new-track))
