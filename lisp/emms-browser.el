@@ -1366,32 +1366,41 @@ Return the playlist buffer point-max before adding."
         (emms-browser-view-in-dired (car (emms-browser-bdata-data bdata))))
     (emms-browser-view-in-dired (emms-browser-bdata-at-point))))
 
-(defun emms-browser-delete-files ()
-  "Delete all files under point.
-Disabled by default."
-  (interactive)
+(defun emms-browser-remove-tracks (&optional delete)
+  "Remove all tracks at point or in region if active.
+Unless DELETE is non-nil or with prefix argument, this only acts on the browser,
+files are untouched.
+If caching is enabled, files are removed from the cache as well.
+When the region is not active, a numeric prefix argument inserts that many
+tracks from point."
+  (interactive "P")
   (let ((tracks (emms-browser-tracks-at-point))
         dirs path)
-    (unless (yes-or-no-p
-             (format "Really permanently delete these %d tracks? "
-                     (length tracks)))
-      (error "Cancelled!"))
-    (message "Deleting files..")
+    (when delete
+      (unless (yes-or-no-p
+               (format "Really permanently delete these %d tracks? "
+                       (length tracks)))
+        (error "Cancelled!"))
+      (message "Deleting files..."))
     (dolist (track tracks)
       (setq path (emms-track-get track 'name))
-      (delete-file path)
+      (when delete
+        (delete-file path))
       (add-to-list 'dirs (file-name-directory path))
       (emms-cache-del path))
     ;; remove empty dirs
-    (dolist (dir dirs)
-      (run-hook-with-args 'emms-browser-delete-files-hook dir tracks)
-      (condition-case nil
-          (delete-directory dir)
-        (error nil)))
+    (when delete
+      (dolist (dir dirs)
+        (run-hook-with-args 'emms-browser-delete-files-hook dir tracks)
+        (condition-case nil
+            (delete-directory dir)
+          (error nil))))
     ;; remove the item from the browser
     (emms-browser-delete-current-node)
-    (message "Deleting files..done")))
+    (when delete
+      (message "Deleting files...done"))))
 
+(defalias 'emms-browser-delete-files 'emms-browser-remove-tracks)
 (put 'emms-browser-delete-files 'disabled t)
 
 (defun emms-browser-clear-playlist ()
