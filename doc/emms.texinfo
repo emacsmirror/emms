@@ -204,8 +204,8 @@ More detail about setting up Emms can be found in the setup chapter,
 Emms tries to display the tags (the name of the song, as opposed to
 the name of the file) of the music you listen to. Emms can use libtag,
 see @xref{Using TagLib}, or a combination of other software such as
-`mp3info' and `ogginfo' (make sure that they are installed if you want
-Emms to use them.)
+`mp3info', `ogginfo' and `opusinfo' (make sure that they are installed
+if you want Emms to use them.)
 
 The last thing to do is to tell Emms where your music is; the root
 directory of our music collection. Let's say all your music is in
@@ -876,11 +876,13 @@ The current Emms playlist buffer is stored in the variable
 
 Emms is distributed with multiple predefined methods for retrieving
 info, provided by modules such as @file{emms-info-mp3info.el},
-@file{emms-info-ogginfo.el}, @file{emms-cue.el} and
-@file{emms-info-libtag.el}. The first two packages are front-ends for
-command-line tools. Ogg track information is retrieved using the
-@uref{http://directory.fsf.org/audio/ogg/vorbistools.html, ogginfo}
-software. Likewise, mp3 track information is available using
+@file{emms-info-ogginfo.el}, @file{emms-info-opusinfo.el},
+@file{emms-cue.el} and @file{emms-info-libtag.el}. The first three
+packages are front-ends for command-line tools. Ogg track information is
+retrieved using the
+@uref{http://directory.fsf.org/audio/ogg/vorbistools.html, ogginfo} and
+the @uref{https://www.opus-codec.org/ opusinfo} software. Likewise, mp3
+track information is available using
 @uref{http://www.ibiblio.org/mp3info/, mp3info}. @file{emms-cue.el}
 retrieves tracks information for ape/flac files by parsing a cue sheet
 file, which is plain text. Finally, @file{emms-info-libtag.el} uses a

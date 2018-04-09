@@ -81,6 +81,7 @@ the stable features which come with the Emms distribution."
     (require 'emms-info)
     (require 'emms-info-mp3info)
     (require 'emms-info-ogginfo)
+    (require 'emms-info-opusinfo)
     (require 'emms-cache)
     (require 'emms-mode-line)
     (require 'emms-mark)
@@ -113,6 +114,8 @@ the stable features which come with the Emms distribution."
     (add-to-list 'emms-info-functions 'emms-info-mp3info))
   (when (executable-find emms-info-ogginfo-program-name)
     (add-to-list 'emms-info-functions 'emms-info-ogginfo))
+  (when (executable-find emms-info-opusinfo-program-name)
+    (add-to-list 'emms-info-functions 'emms-info-opusinfo))
   (setq emms-track-description-function 'emms-info-track-description)
   (when (fboundp 'emms-cache)           ; work around compiler warning
     (emms-cache 1))
