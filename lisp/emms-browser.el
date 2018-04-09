@@ -61,6 +61,7 @@
 ;; C-j             emms-browser-add-tracks-and-play
 ;; RET             emms-browser-add-tracks
 ;; SPC             emms-browser-toggle-subitems
+;; ^               emms-browser-move-up-level
 ;; /               emms-isearch-buffer
 ;; 1               emms-browser-collapse-all
 ;; 2               emms-browser-expand-to-level-2
@@ -454,6 +455,7 @@ Called once for each directory."
     (define-key map (kbd "?") 'describe-mode)
     (define-key map (kbd "C-/") 'emms-playlist-mode-undo)
     (define-key map (kbd "SPC") 'emms-browser-toggle-subitems)
+    (define-key map (kbd "^") 'emms-browser-move-up-level)
     (define-key map (kbd "RET") 'emms-browser-add-tracks)
     (define-key map (kbd "<C-return>") 'emms-browser-add-tracks-and-play)
     (define-key map (kbd "C-j") 'emms-browser-add-tracks-and-play)
@@ -1076,14 +1078,15 @@ Returns point if currently on a an entry more than LEVEL."
   "Move up one level if possible.
 Return true if we were able to move up.
 If DIRECTION is 1, move forward, otherwise move backwards."
+  (interactive "P")
   (let ((moved nil)
         (continue t)
         (current-level (emms-browser-level-at-point)))
     (while (and
             continue
             (zerop (forward-line
-                    (or direction -1))))
-      (when (> current-level (emms-browser-level-at-point))
+                    (or (and (numberp direction) direction) -1))))
+      (when (> current-level (or (emms-browser-level-at-point) 0))
         (setq moved t)
         (setq continue nil)))
     moved))
