@@ -424,6 +424,9 @@ Called once for each directory."
 (defvar emms-browser-buffer-name "*EMMS Browser*"
   "The default buffer name.")
 
+(defvar emms-browser-search-buffer-name "*emms-browser-search*"
+  "The search buffer name.")
+
 (defvar emms-browser-top-level-hash nil
   "The current mapping db, eg. artist -> track.")
 (make-variable-buffer-local 'emms-browser-top-level-hash)
@@ -576,10 +579,12 @@ example function is `emms-browse-by-artist'."
       (emms-browser-create))))
 
 (defun emms-browser-get-buffer ()
-  "Return the current buffer if it exists, or nil."
-  (unless (or (null emms-browser-buffer)
-              (not (buffer-live-p emms-browser-buffer)))
-    emms-browser-buffer))
+  "Return the current buffer if it exists, or nil.
+If a browser search exists, return it."
+  (or (get-buffer emms-browser-search-buffer-name)
+      (unless (or (null emms-browser-buffer)
+                  (not (buffer-live-p emms-browser-buffer)))
+        emms-browser-buffer)))
 
 (defun emms-browser-ensure-browser-buffer ()
   (unless (eq major-mode 'emms-browser-mode)
@@ -1463,7 +1468,13 @@ configuration."
     (if wind
         (progn
           (select-window wind)
-          (emms-browser-bury-buffer))
+          (emms-browser-bury-buffer)
+          ;; After a browser search, the following buffer could be the
+          ;; unfiltered browser, which we want to bury as well.  We don't want
+          ;; to call `emms-browser-hide-display-hook' for this one so we bury it
+          ;; directly.
+          (when (eq major-mode 'emms-browser-mode)
+            (bury-buffer)))
       ;; otherwise bury both
       (bury-buffer)
       (emms-browser-hide-linked-window)))
@@ -1477,7 +1488,7 @@ configuration."
    ((eq major-mode 'emms-browser-mode)
     (car (emms-playlist-buffer-list)))
    ((eq major-mode 'emms-playlist-mode)
-    emms-browser-buffer)))
+    (emms-browser-get-buffer))))
 
 (defun emms-browser-get-linked-window ()
   "Return linked window (eg browser if playlist is selected."
@@ -1558,7 +1569,7 @@ included."
 (defun emms-browser-search-buffer-go ()
   "Create a new search buffer, or clean the existing one."
   (switch-to-buffer
-   (get-buffer-create "*emms-browser-search*"))
+   (get-buffer-create emms-browser-search-buffer-name))
   (emms-browser-mode t)
   (use-local-map emms-browser-search-mode-map)
   (emms-with-inhibit-read-only-t
