@@ -179,5 +179,17 @@ been modified."
       (setq emms-cache-dirty t)))
   (message "Syncing emms track cache...done"))
 
+(defun emms-cache-reset ()
+  "Reset the cache."
+  (interactive)
+  (when (yes-or-no-p "Really reset the cache?")
+    (setq emms-cache-db
+          (make-hash-table
+           :test (if (fboundp 'define-hash-table-test)
+                     'string-hash
+                   'equal)))
+    (setq emms-cache-dirty t)
+    (emms-cache-save)))
+
 (provide 'emms-cache)
 ;;; emms-cache.el ends here
