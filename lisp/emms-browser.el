@@ -1390,28 +1390,47 @@ Return the playlist buffer point-max before adding."
         (emms-browser-view-in-dired (car (emms-browser-bdata-data bdata))))
     (emms-browser-view-in-dired (emms-browser-bdata-at-point))))
 
-(defun emms-browser-remove-tracks (&optional delete)
+(defun emms-browser-remove-tracks (&optional delete start end)
   "Remove all tracks at point or in region if active.
 Unless DELETE is non-nil or with prefix argument, this only acts on the browser,
 files are untouched.
 If caching is enabled, files are removed from the cache as well.
-When the region is not active, a numeric prefix argument inserts that many
-tracks from point."
-  (interactive "P")
-  (let ((tracks (emms-browser-tracks-at-point))
-        dirs path)
+When the region is not active, a numeric prefix argument remove that many
+tracks from point, it does not delete files."
+  (interactive "P\nr")
+  (let ((count (cond
+                ((use-region-p)
+                 (1+ (- (line-number-at-pos end) (line-number-at-pos start))))
+                ((numberp current-prefix-arg)
+                 current-prefix-arg)
+                (t 1)))
+        dirs path tracks)
+    ;; If numeric prefix argument, never delete files.
+    (when (numberp delete) (setq delete nil))
     (when delete
+      (save-mark-and-excursion
+       (when (use-region-p) (goto-char start))
+       (let ((lines (min count (- (line-number-at-pos (point-max)) (line-number-at-pos (point))))))
+         (dotimes (_ lines)
+           ;; TODO: Test this!
+           (setq tracks (append tracks (emms-browser-tracks-at-point)))
+           (forward-line))))
       (unless (yes-or-no-p
-               (format "Really permanently delete these %d tracks? "
-                       (length tracks)))
+               (format "Really permanently delete these %d tracks? " (length tracks)))
         (error "Cancelled!"))
       (message "Deleting files..."))
-    (dolist (track tracks)
-      (setq path (emms-track-get track 'name))
-      (when delete
-        (delete-file path))
-      (add-to-list 'dirs (file-name-directory path))
-      (emms-cache-del path))
+    (when (use-region-p) (goto-char start))
+    (dotimes (_ count)
+      (dolist (track (emms-browser-tracks-at-point))
+        (setq path (emms-track-get track 'name))
+        (when delete
+          (delete-file path))
+        (add-to-list 'dirs (file-name-directory path))
+        (emms-cache-del path))
+      ;; remove the item from the browser
+      (when (emms-browser-tracks-at-point)
+        (emms-browser-delete-current-node)))
+    (deactivate-mark)
     ;; remove empty dirs
     (when delete
       (dolist (dir dirs)
@@ -1419,8 +1438,6 @@ tracks from point."
         (condition-case nil
             (delete-directory dir)
           (error nil))))
-    ;; remove the item from the browser
-    (emms-browser-delete-current-node)
     (when delete
       (message "Deleting files...done"))))
 
