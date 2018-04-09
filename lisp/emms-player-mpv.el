@@ -33,9 +33,10 @@
 ;; To load subtitles automatically,
 ;; put "`sub-auto=fuzzy"` in the mpv's config file.
 ;;
-;; To disable the cover display when playing music, use the following:
-;;   (add-to-list 'emms-player-mpv-parameters "--no-audio-display")
-;; Alternatively you can also add "audio-display=no" to mpv's config file.
+;; To disable/enable the cover display when playing music, modify
+;;   `emms-player-mpv-parameters'. For example: (add-to-list
+;;   'emms-player-mpv-parameters "--no-audio-display") Alternatively
+;;   you can also add "audio-display=no" to mpv's config file.
 ;;
 ;; This file is based on `emms-player-mplayer.el'.  It was originally hosted at
 ;; https://github.com/dochang/emms-player-mpv.
@@ -59,7 +60,7 @@
            "rm" "rmvb" "mp4" "flac" "vob" "m4a" "ape"
            "flv" "webm" "m4b" "m4p" "m4v" "m4r" "3gp"
            "aac"))
-  "mpv" "--quiet" "--really-quiet")
+  "mpv" "--no-audio-display" "--quiet" "--really-quiet")
 
 (defadvice emms-player-mpv-start (around append-arguments activate)
   (unless (file-exists-p emms-player-mpv-input-file)
