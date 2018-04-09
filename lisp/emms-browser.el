@@ -1098,6 +1098,23 @@ If DIRECTION is 1, move forward, otherwise move backwards."
       (cl-assert (emms-browser-move-up-level))
       (emms-browser-kill-subitems))))
 
+(defun emms-browser-toggle-subitems-recursively ()
+  "Recursively toggle all subitems under the current line.
+If there is no more subitems to expand, collapse the current node."
+  (interactive)
+  (let ((current-level (emms-browser-level-at-point))
+        first-expandable-level)
+    (save-excursion
+      (while (or (and (emms-browser-subitems-exist)
+                      (not (emms-browser-subitems-visible))
+                      (or (and (not first-expandable-level)
+                               (setq first-expandable-level (emms-browser-level-at-point)))
+                          (= first-expandable-level (emms-browser-level-at-point)))
+                      (emms-browser-show-subitems))
+                 (emms-browser-find-entry-more-than-level current-level))))
+    (unless first-expandable-level
+      (emms-browser-kill-subitems))))
+
 (defun emms-browser-show-subitems ()
   "Show subitems under the current line."
   (unless (emms-browser-subitems-visible)
