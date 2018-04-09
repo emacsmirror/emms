@@ -2133,7 +2133,7 @@ See `emms-browser-thumbnail-filter'."
 
 See `emms-browser-thumbnail-filter'."
   (let (covers)
-    (dolist (ext emms-browser-covers-file-extensions)
+    (dolist (ext emms-browser-covers-file-extensions covers)
       (setq covers (append (file-expand-wildcards (expand-file-name (concat "*." ext) dir)) covers)))))
 
 (defvar emms-browser-thumbnail-filter 'emms-browser-thumbnail-filter-default
