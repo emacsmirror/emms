@@ -52,6 +52,7 @@
     emms-player-ogg123
     emms-player-mplayer-playlist
     emms-player-mplayer
+    emms-player-mpv
     emms-player-vlc
     emms-player-vlc-playlist)
   "*Default list of players for emms-setup."
@@ -66,6 +67,7 @@ Invisible playlists and all the basics for playing media."
   (require 'emms-source-playlist)
   (require 'emms-player-simple)
   (require 'emms-player-mplayer)
+  (require 'emms-player-mpv)
   (require 'emms-player-vlc))
 
 ;;;###autoload

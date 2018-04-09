@@ -195,8 +195,9 @@ to your @file{.emacs}.
 The function @code{emms-default-players} in the last line sets up the
 list of default players. The list contains lightweight specialized
 players like ogg123 or mpg321 and we-play-everything-players such as
-mplayer, vlc, etc.. To be sure that emms can play all your music you
-should check that your preferred players are installed on the machine.
+mplayer, mpv, vlc, etc.. To be sure that emms can play all your music
+you should check that your preferred players are installed on the
+machine.
 
 More detail about setting up Emms can be found in the setup chapter,
 @xref{Setup}.
@@ -2342,7 +2343,7 @@ more information about Emms setup levels see @xref{Setup}.
 
 `emms-stream-info' calls a backend program to query the stream for
 information. The preferred program needs to be specified by setting
-the variable @var{emms-stream-info-backend} either `mplayer' or
+the variable @var{emms-stream-info-backend} either `mplayer', `mpv' or
 `vlc'. For instance:
 
 @lisp
