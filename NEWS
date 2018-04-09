@@ -1,5 +1,8 @@
 News since version 4.4
 
+  - Add mpv backend support.
+  - Speed up info processing.
+  - Add Opus info support via emms-info-opusinfo.el.
   - Code modernizations thanks to Pierre Neidhardt.
   - Tagging mp3 files v2.x files now works via mid3v2.
   - Add dynamic thumbnail caching.
