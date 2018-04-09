@@ -1726,6 +1726,12 @@ artist->album->track when you switch to the 'singles' filter:
 (add-hook 'emms-browser-filter-changed-hook 'toggle-album-display)
 @end lisp
 
+Furthermore, you can customize
+@var{emms-browser-get-track-field-function} to choose which the metadata
+fields used for the different tree nodes (@code{'info-artist},
+@code{info-year}, etc.).  For instance, you can choose whether to
+organize the tree by artist, album artist or performer.
+
 @subheading Changing Display Format
 
 Format strings govern the way items are displayed in the browser and

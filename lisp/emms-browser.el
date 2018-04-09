@@ -319,7 +319,7 @@ are displayed. It is called with two arguments - track and type."
   :type 'function)
 
 (defcustom emms-browser-get-track-field-function
-  'emms-browser-get-track-field-simple
+  'emms-browser-get-track-field-albumartist
   "*A function to get an element from a track.
 Change this to customize the way data is organized in the
 browser. For example,
@@ -328,7 +328,9 @@ directory name to determine the artist. This means that
 soundtracks, compilations and so on don't populate the artist
 view with lots of 1-track elements."
   :group 'emms-browser
-  :type 'function)
+  :type '(choice (function :tag "Simple" 'emms-browser-get-track-field-simple)
+                 (function :tag "Albumartist-sorting" 'emms-browser-get-track-field-albumartist)
+                 (function :tag "Other")))
 
 (defcustom emms-browser-covers
   '("cover_small" "cover_med" "cover_large")
@@ -645,7 +647,29 @@ compilations, etc."
   (funcall emms-browser-get-track-field-function track type))
 
 (defun emms-browser-get-track-field-simple (track type)
+  "Return TYPE from TRACK without any heuristic.
+This function can be used as
+`emms-browser-get-track-field-function'."
   (emms-track-get track type "misc"))
+
+(defun emms-browser-get-track-field-albumartist (track type)
+  "Return TYPE from TRACK with an albumartist-oriented heuristic.
+For 'info-artist TYPE, use 'info-albumartistsort, 'info-albumartist,
+'info-artistsort.
+For 'info-year TYPE, use 'info-originalyear, 'info-originaldate and
+'info-date symbols."
+  (cond ((eq type 'info-artist)
+         (or (emms-track-get track 'info-albumartistsort)
+             (emms-track-get track 'info-albumartist)
+             (emms-track-get track 'info-artistsort)
+             (emms-track-get track 'info-artist "<unknown artist>")))
+        ((eq type 'info-year)
+         (let ((date (or (emms-track-get track 'info-originaldate)
+                         (emms-track-get track 'info-originalyear)
+                         (emms-track-get track 'info-date)
+                         (emms-track-get track 'info-year "<unknown year>"))))
+           (emms-format-date-to-year date)))
+        (t (emms-track-get track type "misc"))))
 
 (defun emms-browser-get-track-field-use-directory-name (track type)
   (if (eq type 'info-artist)
