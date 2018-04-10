@@ -329,9 +329,8 @@ directory name to determine the artist. This means that
 soundtracks, compilations and so on don't populate the artist
 view with lots of 1-track elements."
   :group 'emms-browser
-  :type '(choice (function :tag "Simple" 'emms-browser-get-track-field-simple)
-                 (function :tag "Albumartist-sorting" 'emms-browser-get-track-field-albumartist)
-                 (function :tag "Other")))
+  :type '(choice (function :tag "Sort by album-artist" emms-browser-get-track-field-albumartist)
+                 (function :tag "Simple" emms-browser-get-track-field-simple)))
 
 (defcustom emms-browser-covers
   '("cover_small" "cover_med" "cover_large")
