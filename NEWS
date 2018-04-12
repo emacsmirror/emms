@@ -9,6 +9,7 @@ News since version 4.4
     get the old behaviour.  Regions and numeric argument are supported.
   - Add emms-cache-reset.
   - Use the "album artist" instead of the "artist" browser node by default.
+  - Bug fix: emms-volume-pulse multi-digit volume numbers.
   - Bug fix: emms-smart-browse "cascading" from a browser search.
   - Bug fix: fix fallback thumbnail filter.
   - Add mpv backend support.
