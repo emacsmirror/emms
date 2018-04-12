@@ -80,7 +80,7 @@ See full list of devices on your system by running
                 (cl-loop while
 			 (string-match
 			  (mapconcat 'identity
-				     '(".*Sink[ \t]+\\#\\([0-9]\\)"
+				     '(".*Sink[ \t]+\\#\\([0-9]+\\)"
 				       ".*Name:[ \t]\\([^\n]+\\)"
 				       ".*Volume:.*?\\([0-9]+\\)%.*\n?")
 				     "\n")
