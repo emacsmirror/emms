@@ -54,12 +54,8 @@
 
 (define-emms-simple-player mpv '(file url streamlist playlist)
   (concat "\\`\\(https?\\|mms\\)://\\|"
-          (emms-player-simple-regexp
-           "ogg" "mp3" "wav" "mpg" "mpeg" "wmv" "wma"
-           "mov" "avi" "divx" "ogm" "ogv" "asf" "mkv"
-           "rm" "rmvb" "mp4" "flac" "vob" "m4a" "ape"
-           "flv" "webm" "m4b" "m4p" "m4v" "m4r" "3gp"
-           "aac"))
+	  (apply #'emms-player-simple-regexp
+		 emms-player-base-format-list))
   "mpv" "--no-audio-display" "--quiet" "--really-quiet")
 
 (defadvice emms-player-mpv-start (around append-arguments activate)
