@@ -660,10 +660,10 @@ For 'info-artist TYPE, use 'info-albumartistsort, 'info-albumartist,
 For 'info-year TYPE, use 'info-originalyear, 'info-originaldate and
 'info-date symbols."
   (cond ((eq type 'info-artist)
-         (or (emms-track-get track 'info-albumartistsort)
-             (emms-track-get track 'info-albumartist)
-             (emms-track-get track 'info-artistsort)
-             (emms-track-get track 'info-artist "<unknown artist>")))
+         (or (emms-track-get track 'info-albumartist)
+             (emms-track-get track 'info-albumartistsort)
+             (emms-track-get track 'info-artist)
+             (emms-track-get track 'info-artistsort "<unknown artist>")))
         ((eq type 'info-year)
          (let ((date (or (emms-track-get track 'info-originaldate)
                          (emms-track-get track 'info-originalyear)
