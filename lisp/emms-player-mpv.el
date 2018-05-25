@@ -339,6 +339,7 @@ MEDIA-ARGS are used instead of --idle, if specified."
 		(setq emms-mpv-proc
 			(make-process :name "emms-mpv"
 				:buffer nil :command argv :noquery t :sentinel 'emms-mpv-proc-sentinel))
+		(when (emms-mpv-ipc-fifo-p) (emms-mpv-proc-playing emms-mpv-proc))
 		(emms-mpv-debug-msg "proc[%s]: start %s" emms-mpv-proc argv)))
 
 (defun emms-mpv-proc-stop ()
