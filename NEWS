@@ -7,7 +7,7 @@ News since version 4.4
 
   - Add Org-style "TAB" binding to cycle through the different levels of expansions.
   - Bind emms-browser-move-up-level to "^".
-	- Make "RET" (emms-add-tracks) add all tracks in region or with numeric argument
+  - Make "RET" (emms-add-tracks) add all tracks in region or with numeric argument
     that many tracks.
   - Supersede emms-browser-delete-files with emms-browser-remove-tracks to
     remove tracks from browser without deleting files.  Use prefix argument to
