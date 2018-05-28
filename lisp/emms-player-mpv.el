@@ -783,10 +783,10 @@ which have following bindings:
 
 
 (defun emms-player-mpv-pause ()
-        (emms-player-mpv-cmd `(set pause yes)))
+  (emms-player-mpv-cmd `(set pause yes)))
 
 (defun emms-player-mpv-resume ()
-        (emms-player-mpv-cmd `(set pause no)))
+  (emms-player-mpv-cmd `(set pause no)))
 
 (defun emms-player-mpv-seek (sec)
   (emms-player-mpv-cmd `(seek ,sec relative)))
