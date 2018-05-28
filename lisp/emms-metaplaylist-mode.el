@@ -136,15 +136,16 @@
 (defun emms-metaplaylist-mode-center-current ()
   "Center on the current playlist buffer"
   (interactive)
-  (when (not emms-playlist-buffer)
-    (error "no current playlist buffer"))
-  (goto-char (point-min))
-  (when (not
-	 (search-forward-regexp (regexp-quote
-				 (buffer-name emms-playlist-buffer))
-				(point-max) t))
-    (error "cannot not find the current playlist buffer"))
-  (goto-char (point-at-bol)))
+  (when (buffer-name emms-playlist-buffer)
+    (let ((p nil))
+      (save-excursion
+	(goto-char (point-min))
+	(setq p (search-forward-regexp (regexp-quote
+					(buffer-name emms-playlist-buffer))
+				       (point-max) t)))
+      (when (not p) (error "cannot not find the current playlist buffer"))
+      (goto-char p)
+      (goto-char (point-at-bol)))))
 
 (defun emms-metaplaylist-mode-create ()
   "Create the meta-playlist buffer."
