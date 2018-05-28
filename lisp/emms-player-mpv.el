@@ -59,6 +59,7 @@
 
 
 (require 'emms)
+(require 'emms-player-simple)
 (require 'json)
 (require 'cl-lib)
 
@@ -71,6 +72,9 @@
 	"*Parameters for mpv player."
 	:type '(cons symbol alist)
 	:group 'emms-player-mpv)
+
+(emms-player-set emms-player-mpv 'regex
+	(apply #'emms-player-simple-regexp emms-player-base-format-list))
 
 (defcustom emms-player-mpv-command-name "mpv"
 	"mpv binary to use. Can be absolute path or just binary name."
