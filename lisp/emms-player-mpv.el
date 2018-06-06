@@ -465,8 +465,7 @@ Sets `emms-player-mpv-ipc-proc' value to resulting process on success."
 writing to a named pipe (fifo) file/node or signal error."
   (setq emms-player-mpv-ipc-proc
         (start-process-shell-command "emms-player-mpv-input-file" nil
-                                     (format "cat > '%s'"
-                                             (replace-regexp-in-string "'" "'\"'\"'" emms-player-mpv-ipc-socket t t))))
+                                     (format "cat > \"%s\"" (shell-quote-argument emms-player-mpv-ipc-socket))))
   (set-process-query-on-exit-flag emms-player-mpv-ipc-proc nil)
   (unless emms-player-mpv-ipc-proc (error (format
                                            "Failed to start cat-pipe to fifo: %s" emms-player-mpv-ipc-socket)))
