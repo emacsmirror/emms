@@ -388,7 +388,6 @@ MEDIA-ARGS are used instead of --idle, if specified."
   (when emms-player-mpv-proc
     (let ((proc emms-player-mpv-proc))
       (emms-player-mpv-debug-msg "proc[%s]: stop" proc)
-      (setq emms-player-mpv-proc nil)
       (if (not (process-live-p proc))
           (delete-process proc)
         (emms-player-mpv-proc-playing nil proc)
@@ -398,7 +397,8 @@ MEDIA-ARGS are used instead of --idle, if specified."
            emms-player-mpv-proc-kill-delay nil
            (lambda (proc)
              (delete-process proc))
-           proc))))))
+           proc))))
+    (setq emms-player-mpv-proc nil)))
 
 
 ;; ----- IPC socket/fifo
