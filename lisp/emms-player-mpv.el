@@ -311,8 +311,7 @@ Error is signaled if mpv binary fails to run."
 which is distinct from 'start-command sent' and 'process is running' states.
 Used to signal emms via `emms-player-started' and `emms-player-stopped' calls."
   (let ((proc (or proc emms-player-mpv-proc)))
-    (if proc (process-get proc 'mpv-playing)
-      nil)))
+    (and proc (process-get proc 'mpv-playing))))
 
 (defun emms-player-mpv-proc-playing (state &optional proc)
   "Set process mpv-playing state flag for `emms-player-mpv-proc-playing-p'."
