@@ -431,7 +431,7 @@ MEDIA-ARGS are used instead of --idle, if specified."
               (goto-char p0)
               (end-of-line)
               (equal (following-char)
-                     #xa))
+                     ?\n))
           (let*
               ((p1 (point))
                (json (buffer-substring p0 p1)))
