@@ -476,7 +476,7 @@ writing to a named pipe (fifo) file/node or signal error."
       (emms-player-mpv-ipc-fifo-cmd cmd emms-player-mpv-ipc-proc))))
 
 (defun emms-player-mpv-ipc-init ()
-  "initialize new mpv ipc socket/file process and associated state."
+  "Initialize new mpv ipc socket/file process and associated state."
   (emms-player-mpv-ipc-stop)
   (emms-player-mpv-debug-msg "ipc: init")
   (if (emms-player-mpv-ipc-fifo-p)
@@ -500,8 +500,8 @@ writing to a named pipe (fifo) file/node or signal error."
     (setq emms-player-mpv-ipc-proc nil)))
 
 (defun emms-player-mpv-ipc ()
-  "Returns open ipc socket/fifo process or nil, (re-)starting mpv/connection if necessary.
-Will return nil when starting async process/connection, and any follow-up
+  "Return open IPC socket/fifo process or nil, (re-)starting mpv/connection if necessary.
+Return nil when starting async process/connection, and any follow-up
 command should be stored to `emms-player-mpv-ipc-connect-command' in this case."
   (unless
       ;; Don't start idle processes for fifo - just ignore all ipc requests there
