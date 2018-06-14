@@ -63,10 +63,9 @@
 (defun emms-show-all-mode-bury-buffer ()
   "Bury, and optionally kill the show buffer."
   (interactive)
-  (bury-buffer emms-show-all-buffer-name)
-  (delete-window)
-  (when emms-show-all-kill-buffer-on-quit-p
-    (kill-buffer emms-show-all-buffer-name)))
+  (quit-restore-window
+   (selected-window)
+   (when emms-show-all-kill-buffer-on-quit-p 'kill)))
 
 (defun emms-show-all-setup-buffer ()
   "Prepare the display buffer."
