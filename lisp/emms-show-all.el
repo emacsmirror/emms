@@ -41,10 +41,6 @@
 (defvar emms-show-all-track-alist nil
   "Declare so as to silence the compiler.")
 
-(define-derived-mode emms-show-all-mode text-mode "Emms-Show-All"
-  "Major mode for `emms-show-all'
-  \\{emms-show-all-mode-map}")
-
 (defvar emms-show-all-mode-map
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map text-mode-map)
@@ -53,6 +49,9 @@
     map)
   "Keymap for `emms-show-all-mode'.")
 
+(define-derived-mode emms-show-all-mode text-mode "Emms-Show-All"
+  "Major mode for `emms-show-all'
+  \\{emms-show-all-mode-map}")
 
 (defun emms-show-all-edit-track ()
   "Edit the track being shown."
