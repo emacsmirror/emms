@@ -127,18 +127,14 @@
   "Run in `emms-playlist-source-inserted-hook'."
   (with-current-emms-playlist
     (emms-playlist-ensure-playlist-buffer)
-    (setq emms-playlist-limit-tracks
-          (emms-with-widened-buffer
-           (emms-playlist-tracks-in-region (point-min) (point-max))))))
+    (setq-local emms-playlist-limit-tracks
+		(emms-with-widened-buffer
+		 (emms-playlist-tracks-in-region (point-min)
+						 (point-max))))))
 
-;; FIXME: When user deletes some tracks, `emms-playlist-limit-tracks'
-;; should be updated.
-;; (defun emms-playlist-limit-clear ()
-;;   "Run in `emms-playlist-cleared-hook'."
-;;   (setq emms-playlist-limit-tracks
-;;         (append emms-playlist-limit-tracks
-;;                 (emms-playlist-tracks-in-region
-;;                  (point-min) (point-max)))))
+;; FIXME: What happens when a user deletes some tracks,
+;; `emms-playlist-limit-tracks' should be updated (a general look
+;; through this code shows that it is preliminary.)
 
 (defun emms-playlist-limit-do (name value)
   "Limit by NAME with VALUE.
