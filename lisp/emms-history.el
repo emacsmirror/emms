@@ -120,6 +120,7 @@ Emacs."
                 (setq buf (current-buffer)))
             (mapc 'emms-playlist-insert-track
                   (nth 2 playlist))
+	    (run-hooks 'emms-playlist-source-inserted-hook)
             (ignore-errors
               (emms-playlist-select (cadr playlist)))))
         (setq emms-playlist-buffer buf)
