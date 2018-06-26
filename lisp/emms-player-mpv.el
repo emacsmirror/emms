@@ -117,7 +117,7 @@ support for various feedback and metadata options from mpv."
   :group 'emms-player-mpv)
 
 (defcustom emms-player-mpv-ipc-socket
-  (expand-file-name (locate-user-emacs-file "emms-player-mpv-ipc.sock"))
+  (concat (file-name-as-directory emms-directory) "mpv-ipc.sock" )
   "Unix IPC socket or FIFO to use with mpv --input-* options,
 depending on `emms-player-mpv-ipc-method' value and/or mpv version."
   :type 'file
