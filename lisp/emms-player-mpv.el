@@ -359,6 +359,8 @@ Signals error if mkfifo exits with non-zero code."
 MEDIA-ARGS are used instead of --idle, if specified."
   (emms-player-mpv-proc-stop)
   (when (emms-player-mpv-ipc-fifo-p)
+    (unless (file-directory-p (file-name-directory emms-player-mpv-ipc-socket))
+      (make-directory (file-name-directory emms-player-mpv-ipc-socket)))
     (emms-player-mpv-proc-init-fifo emms-player-mpv-ipc-socket))
   (let*
       ((argv emms-player-mpv-parameters)
