@@ -237,6 +237,12 @@ to indicate that playback should stop instead of switching to next track.")
   "Delay before issuing `emms-player-stopped' when mpv unexpectedly goes idle.")
 
 
+(defvar emms-player-mpv-ipc-conn-emacs-26-workaround (> emacs-major-version 26)
+  "Non-nil to enable workaround for issue #31901 in emacs 26.0-26.1 and possibly later versions.
+These seem to fail to call sentinel function for unix socket network processes
+that were started with :nowait t, so blocking connections are used there instead.")
+
+
 ;; ----- helpers
 
 (defvar emms-player-mpv-debug nil
@@ -447,17 +453,22 @@ MEDIA-ARGS are used instead of --idle, if specified."
 so it can be rescheduled further until function runs out of DELAYS values.
 Sets `emms-player-mpv-ipc-proc' value to resulting process on success."
   (emms-player-mpv-debug-msg "ipc: connect-delay %s" (car delays))
-  (setq emms-player-mpv-ipc-proc
-        (make-network-process
-         :name "emms-player-mpv-ipc"
-         :family 'local
-         :service emms-player-mpv-ipc-socket
-         :nowait t
-         :coding '(utf-8 . utf-8)
-         :buffer (get-buffer-create emms-player-mpv-ipc-buffer)
-         :noquery t
-         :filter #'emms-player-mpv-ipc-filter
-         :sentinel #'emms-player-mpv-ipc-sentinel))
+  (let ((use-nowait (not emms-player-mpv-ipc-conn-emacs-26-workaround)))
+    (setq emms-player-mpv-ipc-proc
+          (condition-case nil
+              (make-network-process
+               :name "emms-player-mpv-ipc"
+               :family 'local
+               :service emms-player-mpv-ipc-socket
+               :nowait use-nowait
+               :coding '(utf-8 . utf-8)
+               :buffer (get-buffer-create emms-player-mpv-ipc-buffer)
+               :noquery t
+               :filter #'emms-player-mpv-ipc-filter
+               :sentinel #'emms-player-mpv-ipc-sentinel)
+            (file-error nil)))
+    (when (and emms-player-mpv-ipc-proc (not use-nowait))
+      (emms-player-mpv-ipc-sentinel emms-player-mpv-ipc-proc 'open)))
   (when (and (not emms-player-mpv-ipc-proc)
              delays)
     (run-at-time (car delays)
