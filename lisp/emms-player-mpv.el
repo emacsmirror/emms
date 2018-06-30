@@ -117,7 +117,8 @@ support for various feedback and metadata options from mpv."
   :group 'emms-player-mpv)
 
 (defcustom emms-player-mpv-ipc-socket
-  (concat (file-name-as-directory emms-directory) "mpv-ipc.sock" )
+  (concat (file-name-as-directory emms-directory)
+          "mpv-ipc.sock")
   "Unix IPC socket or FIFO to use with mpv --input-* options,
 depending on `emms-player-mpv-ipc-method' value and/or mpv version."
   :type 'file
@@ -358,9 +359,9 @@ Signals error if mkfifo exits with non-zero code."
   "initialize new mpv process as `emms-player-mpv-proc'.
 MEDIA-ARGS are used instead of --idle, if specified."
   (emms-player-mpv-proc-stop)
+  (unless (file-directory-p (file-name-directory emms-player-mpv-ipc-socket))
+    (make-directory (file-name-directory emms-player-mpv-ipc-socket)))
   (when (emms-player-mpv-ipc-fifo-p)
-    (unless (file-directory-p (file-name-directory emms-player-mpv-ipc-socket))
-      (make-directory (file-name-directory emms-player-mpv-ipc-socket)))
     (emms-player-mpv-proc-init-fifo emms-player-mpv-ipc-socket))
   (let*
       ((argv emms-player-mpv-parameters)
