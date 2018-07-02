@@ -237,7 +237,7 @@ to indicate that playback should stop instead of switching to next track.")
   "Delay before issuing `emms-player-stopped' when mpv unexpectedly goes idle.")
 
 
-(defvar emms-player-mpv-ipc-conn-emacs-26-workaround (> emacs-major-version 26)
+(defvar emms-player-mpv-ipc-conn-emacs-26-workaround (>= emacs-major-version 26)
   "Non-nil to enable workaround for issue #31901 in emacs 26.0-26.1 and possibly later versions.
 These seem to fail to call sentinel function for unix socket network processes
 that were started with :nowait t, so blocking connections are used there instead.")
