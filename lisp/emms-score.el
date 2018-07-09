@@ -1,7 +1,7 @@
 ;;; emms-score.el --- Scoring system for mp3player
 
 ;; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008,
-;;   2009 Free Software Foundation, Inc.
+;;   2009, 2018 Free Software Foundation, Inc.
 
 ;; Authors: Jean-Philippe Theberge <jphiltheberge@videotron.ca>,
 ;;          Yoni Rabkin <yrk@gnu.org>
@@ -87,13 +87,13 @@ off otherwise."
   (if (and arg (> arg 0))
       (progn
 	(setq emms-score-enabled-p t)
-        (setq emms-player-next-function 'emms-score-next-noerror)
 	(emms-score-load-hash)
+	(setq emms-ok-track-function 'emms-score-ok-track-function)
         (unless noninteractive
           (add-hook 'kill-emacs-hook 'emms-score-save-hash)))
     (setq emms-score-enabled-p nil)
-    (setq emms-player-next-function 'emms-next-noerror)
     (emms-score-save-hash)
+    (setq emms-ok-track-function 'emms-default-ok-track-function)
     (remove-hook 'kill-emacs-hook 'emms-score-save-hash)))
 
 ;;;###autoload
@@ -209,25 +209,9 @@ The score hash is automatically saved."
   "Return file of track at point in emms-playlist buffer."
   (emms-track-get (emms-playlist-track-at) 'name))
 
-(defun emms-score-next-noerror ()
-  "Run `emms-next-noerror' with score check.
-See also `emms-next-noerror'."
-  (interactive)
-  (when emms-player-playing-p
-    (error "A track is already being played"))
-  (cond (emms-repeat-track
-	 (emms-start))
-	((condition-case nil
-	     (progn
-	       (emms-playlist-current-select-next)
-	       t)
-	   (error nil))
-	 (if (emms-score-check-score
-	      (emms-score-current-selected-track-filename))
-	     (emms-start)
-	   (emms-score-next-noerror)))
-	(t
-	 (message "No next track in playlist"))))
+(defun emms-score-ok-track-function (track)
+  "Decide if to skip or play TRACK."
+  (emms-score-check-score (emms-track-get track 'name)))
 
 (defun emms-score-save-hash ()
   "Save score hash in `emms-score-file'."
