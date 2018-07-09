@@ -1,7 +1,7 @@
 ;;; emms.el --- The Emacs Multimedia System
 
 ;; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008,
-;;   2009 Free Software Foundation, Inc.
+;;   2009, 2018 Free Software Foundation, Inc.
 
 ;; Author: Jorgen Schäfer <forcer@forcix.cx>
 ;; Keywords: emms, mp3, mpeg, multimedia
@@ -94,6 +94,9 @@ are played sequentially."
 track by track normally."
   :group 'emms
   :type 'boolean)
+
+(defvar-local emms-single-track nil
+  "Non-nil, play the current track and then stop.")
 
 (defcustom emms-completing-read-function
   (if (and (boundp 'ido-mode)
@@ -403,6 +406,9 @@ This is a good function to put in `emms-player-next-function'."
     (error "A track is already being played"))
   (cond (emms-repeat-track
 	 (emms-start))
+	(emms-single-track		; buffer local
+	 (emms-stop))
+	;; attempt to play the next track but ignore errors
 	((condition-case nil
              (progn
                (emms-playlist-current-select-next)
@@ -502,6 +508,18 @@ This uses `emms-playlist-uniq-function'."
     (save-excursion
       (funcall emms-playlist-uniq-function))))
 
+(defun emms-toggle-single-track ()
+  "Toggle if Emms plays a single track and stops."
+  (interactive)
+  (with-current-emms-playlist
+    (cond (emms-single-track
+	   (setq emms-single-track nil)
+	   (message "single track mode disabled for %s"
+		    (buffer-name)))
+	  (t (setq emms-single-track t)
+	     (message "single track mode enabled for %s"
+		    (buffer-name))))))
+
 (defun emms-toggle-random-playlist ()
   "Toggle whether emms plays the tracks randomly or sequentially.
 See `emms-random-playlist'."
@@ -551,10 +569,13 @@ See `completing-read' for a description of ARGS."
 (defun emms-display-modes ()
   "Display the current EMMS play modes."
   (interactive)
-  (message "repeat playlist: %s, repeat track: %s, random: %s"
-	   (if emms-repeat-playlist "yes" "no")
-	   (if emms-repeat-track "yes" "no")
-	   (if emms-random-playlist "yes" "no")))
+  (with-current-emms-playlist
+    (message
+     "repeat playlist: %s, repeat track: %s, random: %s, single %s"
+     (if emms-repeat-playlist "yes" "no")
+     (if emms-repeat-track "yes" "no")
+     (if emms-random-playlist "yes" "no")
+     (if emms-single-track "yes" "no"))))
 
 
 ;;; Compatibility functions
