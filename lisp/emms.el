@@ -177,6 +177,11 @@ shouldn't assume that the track has been inserted before."
   :type 'function)
 (make-variable-buffer-local 'emms-playlist-delete-track-function)
 
+(defcustom emms-ok-track-function 'emms-default-ok-track-function
+  "*Function returns true if we shouldn't skip this track."
+  :group 'emms
+  :type 'function)
+
 (defcustom emms-playlist-source-inserted-hook nil
   "*Hook run when a source got inserted into the playlist.
 The buffer is narrowed to the new tracks."
@@ -414,7 +419,10 @@ This is a good function to put in `emms-player-next-function'."
                (emms-playlist-current-select-next)
                t)
            (error nil))
-	 (emms-start))
+	 (if (funcall emms-ok-track-function
+		      (emms-playlist-current-selected-track))
+	     (emms-start)
+	   (emms-next-noerror)))
         (t
 	 (message "No next track in playlist"))))
 
@@ -1248,6 +1256,10 @@ ignore this."
       (if pos
           (emms-playlist-select pos)
         (emms-playlist-first)))))
+
+(defun emms-default-ok-track-function (track)
+  "A function which OKs all tracks for playing by default."
+  t)
 
 ;;; Helper functions
 (defun emms-property-region (pos prop)
