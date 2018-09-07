@@ -143,7 +143,7 @@ This is true for every invocation of `emms-playlist-mode-go'."
     (define-key map (kbd "f") 'emms-show)
     (define-key map (kbd "c") 'emms-playlist-mode-center-current)
     (define-key map (kbd "q") 'emms-playlist-mode-bury-buffer)
-    (define-key map (kbd "k") 'emms-playlist-mode-current-kill)
+    (define-key map (kbd "K") 'emms-playlist-mode-current-kill)
     (define-key map (kbd "?") 'describe-mode)
     (define-key map (kbd "r") 'emms-random)
     (define-key map (kbd "C") 'emms-playlist-mode-clear)
