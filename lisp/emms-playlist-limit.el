@@ -1,8 +1,9 @@
-;;; emms-playlist-limit.el --- Limit playlist by various info
+;;; emms-playlist-limit.el --- Limit playlist by various info -*- lexical-binding: t -*-
 
-;; Copyright (C) 2007, 2008, 2009 William Xu
+;; Copyright (C) 2007, 2008, 2009 William Xu, 2018 Free Software Foundation, Inc.
+;; 
 
-;; Author: William Xu <william.xwl@gmail.com>
+;; Author: William Xu <william.xwl@gmail.com>, Fran Burstall <fran.burstall@gmail.com>
 ;; Keywords: emms, limit
 
 ;; EMMS is free software; you can redistribute it and/or modify
@@ -19,6 +20,33 @@
 ;; along with EMMS; see the file COPYING.  If not, write to the
 ;; Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 ;; Boston, MA 02110-1301, USA.
+
+;;; Commentary:
+
+;;  This code allows you to "limit" the current playlist by creating a
+;;  derived playlist containing only those tracks with a type
+;;  (info-artist and the like) matching a regexp.  The derived
+;;  playlist then becomes current.
+
+;;  Usage:
+;;  ------------------------------------------------------------------
+
+;;  This code is activated by (emms-all).  Otherwise simply do:
+
+;;  (require 'emms-playlist-limit)
+
+;;  Key bindings
+;;  ------------------------------------------------------------------
+
+;;  / /		emms-playlist-limit-to-all
+;;  / a		emms-playlist-limit-to-info-artist
+;;  / b		emms-playlist-limit-to-info-album
+;;  / c		emms-playlist-limit-to-info-composer
+;;  / g		emms-playlist-limit-to-info-genre
+;;  / n		emms-playlist-limit-to-name
+;;  / p		emms-playlist-limit-to-info-performer
+;;  / t		emms-playlist-limit-to-info-title
+;;  / y		emms-playlist-limit-to-info-year
 
 ;;; Code:
 
