@@ -1,6 +1,6 @@
 ;;; emms-setup.el --- Setup script for EMMS
 
-;; Copyright (C) 2005, 2006, 2007, 2008, 2009, 2015 Free Software
+;; Copyright (C) 2005, 2006, 2007, 2008, 2009, 2015, 2018 Free Software
 ;; Foundation, Inc.
 
 ;; Author: Yoni Rabkin <yrk@gnu.org>
@@ -119,7 +119,7 @@ the stable features which come with the Emms distribution."
   (when (executable-find emms-info-opusinfo-program-name)
     (add-to-list 'emms-info-functions 'emms-info-opusinfo))
   (setq emms-track-description-function 'emms-info-track-description)
-  (when (fboundp 'emms-cache)           ; work around compiler warning
+  (when (fboundp 'emms-cache)		; work around compiler warning
     (emms-cache 1))
   (emms-mode-line 1)
   (emms-mode-line-blank)
@@ -127,8 +127,7 @@ the stable features which come with the Emms distribution."
   (emms-playing-time 1)
   (add-to-list 'emms-info-functions 'emms-info-cueinfo)
   (add-hook 'emms-player-started-hook 'emms-last-played-update-current)
-  (emms-score 1)
-  (emms-playlist-limit 1))
+  (emms-score 1))
 
 
 ;;;###autoload
