@@ -1,5 +1,7 @@
 News since version 5.0
 
+  - Improve emms-playlist-limit implementation.
+
   - Rewrite mpv backend to use long-running mpv instances controlled over
     json-rpc protocol for newer versions.
 
