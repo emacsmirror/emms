@@ -75,6 +75,7 @@ Modules and Extensions
 * Persistent Playlists:: Restoring playlists on emacs startup.
 * Editing Tracks::       Editing track information from within Emms.
 * Emms Mode Line::       Emms information on the mode line.
+* Limiting::             Derive a new playlist from the current.
 * Music Player Daemon::  Interface to Music Player Daemon.
 * Lyrics::               Displaying lyrics synchronously.
 * Volume::               Changing the volume.
@@ -2047,6 +2048,75 @@ Display playing time on mode line.
 @defun emms-playing-time-disable-display
 Remove playing time from mode line.
 @end defun
+
+
+@c -------------------------------------------------------------------
+@node Limiting
+@chapter Limiting
+
+@cindex limiting
+@cindex playlist
+
+The package `emms-playlist-limit', provided by
+@file{emms-playlist-limit.el}, allows creating a new playlist derived
+from the current playlist. For instance, it is possible to create a
+new playlist containing only a certain artist or genre from the
+current playlist.
+
+@table @kbd
+@item / n
+@kindex / n
+@findex emms-playlist-limit-to-name
+Create a new playlist buffer and populate it with tracks matching the
+name of the track at point.
+
+@item / a
+@kindex / a
+@findex emms-playlist-limit-to-info-artist
+Create a new playlist buffer and populate it with tracks matching the
+artist info field of the track at point.
+
+@item / c
+@kindex / c
+@findex emms-playlist-limit-to-info-composer
+Create a new playlist buffer and populate it with tracks matching the
+composer info field of the track at point.
+
+@item / p
+@kindex / p
+@findex emms-playlist-limit-to-info-performer
+Create a new playlist buffer and populate it with tracks matching the
+performer info field of the track at point.
+
+@item / t
+@kindex / t
+@findex emms-playlist-limit-to-info-title
+Create a new playlist buffer and populate it with tracks matching the
+title info field of the track at point.
+
+@item / b
+@kindex / b
+@findex emms-playlist-limit-to-info-album
+Create a new playlist buffer and populate it with tracks matching the
+album info field of the track at point.
+
+@item / y
+@kindex / y
+@findex emms-playlist-limit-to-info-year
+Create a new playlist buffer and populate it with tracks matching the
+year info field of the track at point.
+
+@item / g
+@kindex / g
+@findex emms-playlist-limit-to-info-genre
+Create a new playlist buffer and populate it with tracks matching the
+genre info field of the track at point.
+
+@item / /
+@kindex / /
+@findex emms-playlist-limit-to-all
+Switch to the original playlist buffer (if it still exists).
+@end table
 
 
 @c -------------------------------------------------------------------
