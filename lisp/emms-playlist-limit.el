@@ -116,7 +116,7 @@
     (let ((old-buf (current-buffer)))
       (switch-to-buffer emms-playlist-limit-original-playlist)
       (emms-playlist-set-playlist-buffer)
-      (kill-buffer old-buf))))
+      (bury-buffer old-buf))))
 
 (define-key emms-playlist-mode-map (kbd "/ n") 'emms-playlist-limit-to-name)
 (define-key emms-playlist-mode-map (kbd "/ a") 'emms-playlist-limit-to-info-artist)
@@ -157,8 +157,10 @@ usable date when TYPE is 'info-year."
 			   (lambda (track) (let ((field (emms-playlist-limit-track-get track type)))
 					     (and field (string-match regexp field))))
 			   tracks))
-	 (new-playlist (emms-playlist-new bufname)))
+	 (new-playlist (or (get-buffer bufname)
+			   (emms-playlist-new bufname))))
     (with-current-buffer new-playlist
+      (erase-buffer)
       (mapc #'emms-playlist-insert-track filtered-tracks))
     new-playlist))
 
