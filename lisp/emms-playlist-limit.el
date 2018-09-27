@@ -1,9 +1,9 @@
 ;;; emms-playlist-limit.el --- Limit playlist by various info -*- lexical-binding: t -*-
 
-;; Copyright (C) 2007, 2008, 2009 William Xu, 2018 Free Software Foundation, Inc.
-;; 
+;; Copyright (C) 2018 Free Software Foundation, Inc.
 
-;; Author: William Xu <william.xwl@gmail.com>, Fran Burstall <fran.burstall@gmail.com>
+;; Author: William Xu <william.xwl@gmail.com>
+;; Author: Fran Burstall <fran.burstall@gmail.com>
 ;; Keywords: emms, limit
 
 ;; EMMS is free software; you can redistribute it and/or modify
