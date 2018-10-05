@@ -152,7 +152,7 @@ sorts before the second (see `sort')."
   :type 'string
   :group 'emms)
 
-(defcustom emms-playlist-default-major-mode major-mode
+(defcustom emms-playlist-default-major-mode 'emms-playlist-mode
   "*The default major mode for EMMS playlist."
   :type 'function
   :group 'emms)
