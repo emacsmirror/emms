@@ -41,16 +41,16 @@
 ;;  Key bindings
 ;;  ------------------------------------------------------------------
 
-;;  / /		emms-playlist-limit-to-all
-;;  / a		emms-playlist-limit-to-info-artist
-;;  / b		emms-playlist-limit-to-info-album
-;;  / c		emms-playlist-limit-to-info-composer
-;;  / d         emms-playlist-limit-to-description
-;;  / g		emms-playlist-limit-to-info-genre
-;;  / n		emms-playlist-limit-to-name
-;;  / p		emms-playlist-limit-to-info-performer
-;;  / t		emms-playlist-limit-to-info-title
-;;  / y		emms-playlist-limit-to-info-year
+;; / /		emms-playlist-limit-to-all
+;; / a		emms-playlist-limit-to-info-artist
+;; / b		emms-playlist-limit-to-info-album
+;; / c		emms-playlist-limit-to-info-composer
+;; / d		emms-playlist-limit-to-description
+;; / g		emms-playlist-limit-to-info-genre
+;; / n		emms-playlist-limit-to-name
+;; / p		emms-playlist-limit-to-info-performer
+;; / t		emms-playlist-limit-to-info-title
+;; / y		emms-playlist-limit-to-info-year
 
 ;;; Code:
 
