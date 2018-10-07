@@ -1,7 +1,8 @@
 News since version 5.0
 
-  - Improve emms-playlist-limit implementation. Now operates on the
-    current buffer rather than the current playlist.
+  - Improve emms-playlist-limit implementation.  Now operates on the
+    current buffer rather than the current playlist.  Add
+    emms-playlist-limit-to-description.
 
   - Rewrite mpv backend to use long-running mpv instances controlled over
     json-rpc protocol for newer versions.
