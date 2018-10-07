@@ -1,6 +1,6 @@
 ;;; emms-metaplaylist-mode.el --- A major mode for lists of Emms playlists
 
-;; Copyright (C) 2006, 2007, 2008, 2009, 2017 Free Software Foundation, Inc.
+;; Copyright (C) 2006, 2007, 2008, 2009, 2017-2018 Free Software Foundation, Inc.
 
 ;; Author: Yoni Rabkin <yrk@gnu.org>
 
@@ -227,7 +227,9 @@
     (switch-to-buffer mpm-buffer)))
 
 (defun emms-metaplaylist-mode ()
-  "A major mode for Emms playlists."
+  "A major mode for Emms playlists.
+
+\\{emms-metaplaylist-mode-map}"
   ;;  (interactive)
   (kill-all-local-variables)
 
