@@ -2058,59 +2058,86 @@ Remove playing time from mode line.
 @cindex playlist
 
 The package `emms-playlist-limit', provided by
-@file{emms-playlist-limit.el}, allows creating a new playlist derived
-from the current playlist. For instance, it is possible to create a
-new playlist containing only a certain artist or genre from the
-current playlist.
+@file{emms-playlist-limit.el}, allows creating a new
+playlist derived from the playlist in the current
+buffer. For instance, it is possible to create a new
+playlist containing only a certain artist or genre from the
+playlist in the current buffer.
+
+If the playlist in the current buffer is the emms current
+playlist then the derived playlist becomes current.
 
 @table @kbd
-@item / n
-@kindex / n
-@findex emms-playlist-limit-to-name
-Create a new playlist buffer and populate it with tracks matching the
-name of the track at point.
-
 @item / a
 @kindex / a
 @findex emms-playlist-limit-to-info-artist
-Create a new playlist buffer and populate it with tracks matching the
-artist info field of the track at point.
-
-@item / c
-@kindex / c
-@findex emms-playlist-limit-to-info-composer
-Create a new playlist buffer and populate it with tracks matching the
-composer info field of the track at point.
-
-@item / p
-@kindex / p
-@findex emms-playlist-limit-to-info-performer
-Create a new playlist buffer and populate it with tracks matching the
-performer info field of the track at point.
-
-@item / t
-@kindex / t
-@findex emms-playlist-limit-to-info-title
-Create a new playlist buffer and populate it with tracks matching the
-title info field of the track at point.
+Create a new playlist buffer and populate it with tracks
+whose artist info field matches the given regular
+expression (default: the artist info field of the
+track at point).
 
 @item / b
 @kindex / b
 @findex emms-playlist-limit-to-info-album
-Create a new playlist buffer and populate it with tracks matching the
-album info field of the track at point.
+Create a new playlist buffer and populate it with tracks
+whose album info field matches the given regular
+expression (default: the album info field of the
+track at point).
 
-@item / y
-@kindex / y
-@findex emms-playlist-limit-to-info-year
-Create a new playlist buffer and populate it with tracks matching the
-year info field of the track at point.
+@item / c
+@kindex / c
+@findex emms-playlist-limit-to-info-composer
+Create a new playlist buffer and populate it with tracks
+whose composer info field matches the given regular
+expression (default: the composer info field of the
+track at point).
+
+@item / d
+@kindex / d
+@findex emms-playlist-limit-to-description
+Create a new playlist buffer and populate it with tracks
+whose track description matches the given regular
+expression (default: the track description of the
+track at point).
 
 @item / g
 @kindex / g
 @findex emms-playlist-limit-to-info-genre
-Create a new playlist buffer and populate it with tracks matching the
-genre info field of the track at point.
+Create a new playlist buffer and populate it with tracks
+whose genre info field matches the given regular
+expression (default: the genre info field of the
+track at point).
+
+@item / n
+@kindex / n
+@findex emms-playlist-limit-to-name
+Create a new playlist buffer and populate it with tracks
+whose name matches the given regular expression (default:
+the name of the track at point).
+
+@item / p
+@kindex / p
+@findex emms-playlist-limit-to-info-performer
+Create a new playlist buffer and populate it with tracks
+whose performer info field matches the given regular
+expression (default: the performer info field of the
+track at point).
+
+@item / t
+@kindex / t
+@findex emms-playlist-limit-to-info-title
+Create a new playlist buffer and populate it with tracks
+whose title info field matches the given regular
+expression (default: the title info field of the
+track at point).
+
+@item / y
+@kindex / y
+@findex emms-playlist-limit-to-info-year
+Create a new playlist buffer and populate it with tracks
+whose year info field matches the given regular
+expression (default: the year info field of the
+track at point).
 
 @item / /
 @kindex / /
