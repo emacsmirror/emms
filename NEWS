@@ -1,5 +1,7 @@
 News since version 5.0
 
+  - emms-playlist-sort sorts the visible playlist.
+
   - Improve emms-playlist-limit implementation.  Now operates on the
     current buffer rather than the current playlist.  Add
     emms-playlist-limit-to-description.
