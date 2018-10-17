@@ -193,6 +193,9 @@ needed info.")
   (switch-to-buffer emms-stream-buffer-name))
 
 (defun emms-stream-mode ()
+  "Major mode for the EMMS Streams interface.
+
+\\{emms-stream-mode-map}"
   (kill-all-local-variables)
   (buffer-disable-undo)
   (setq major-mode 'emms-stream-mode)
