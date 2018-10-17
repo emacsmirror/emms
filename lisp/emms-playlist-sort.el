@@ -1,6 +1,6 @@
 ;;; emms-playlist-sort.el --- sort emms playlist
 
-;; Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+;; Copyright (C) 2005, 2006, 2007, 2008, 2009, 2018 Free Software Foundation, Inc.
 
 ;; Author: William Xu <william.xwl@gmail.com>
 
@@ -165,7 +165,7 @@ With a prefix argument, oldest first."
 
 (defun emms-playlist-sort (predicate)
   "Sort the playlist buffer by PREDICATE."
-  (with-current-emms-playlist
+  (emms-with-inhibit-read-only-t
     (emms-playlist-ensure-playlist-buffer)
     (let ((current (emms-playlist-selected-track))
           (tracks (nreverse
@@ -174,14 +174,12 @@ With a prefix argument, oldest first."
       (delete-region (point-min) (point-max))
       (run-hooks 'emms-playlist-cleared-hook)
       (mapc 'emms-playlist-insert-track (sort tracks predicate))
-      (let ((pos (text-property-any
-                  (point-min) (point-max) 'emms-track current)))
-        (if pos
+      (let ((pos (when current (text-property-any (point-min) (point-max)
+					       'emms-track current))))
+	(if pos
             (emms-playlist-select pos)
-          (emms-playlist-first))
-        ;; (emms-playlist-mode-center-current)
-        (goto-char (point-min))
-        ))))
+          (emms-playlist-first)))
+      (goto-char (point-min)))))
 
 (defun emms-sort-natural-order-less-p (a b)
   "Sort two tracks by natural order.
