@@ -73,10 +73,10 @@
   `(defun ,(intern (format "emms-playlist-limit-to-%s" attribute)) (regexp)
      ,(format "Switch to a playlist comprising tracks with %s matching REGEXP.
 
-REGEXP defaults to the value of %1$s for the track at point.
+REGEXP defaults to the value of %s for the track at point.
 
 When the current buffer is the current playlist, make the derived playlist
-the current playlist." attribute)
+the current playlist." attribute attribute)
      (interactive
       (list
        (let* ((curr
