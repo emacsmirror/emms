@@ -1,13 +1,16 @@
 News since version 5.0
 
+  - Add `emms-toggle-single-track'.
+  - Fix the way emms-score skips tracks.
+  - Safer key-binding for interactively killing the playlist buffer.
+  - Bug fix: emms-show-all quit now behaves well.
+  - Bug fix: Metalplaylist focus would error without a current buffer.
   - emms-playlist-sort sorts the visible playlist.
-
-  - Improve emms-playlist-limit implementation.  Now operates on the
-    current buffer rather than the current playlist.  Add
+  - Rewrite emms-playlist-limit implementation. Now operates on the
+    current buffer rather than the current playlist. Add
     emms-playlist-limit-to-description.
-
-  - Rewrite mpv backend to use long-running mpv instances controlled over
-    json-rpc protocol for newer versions.
+  - Rewrite mpv backend to use long-running mpv instances controlled
+    over json-rpc protocol for newer versions.
 
 News since version 4.4
 
