@@ -1291,20 +1291,20 @@ Return point. If at level one, return the current point."
 ;; User-visible commands
 ;; --------------------------------------------------
 
-(defun emms-browser-add-tracks (&optional start end)
+(defun emms-browser-add-tracks ()
   "Add all tracks at point or in region if active.
 When the region is not active, a numeric prefix argument inserts that many
 tracks from point.
 Return the playlist buffer point-max before adding."
-  (interactive "r")
+  (interactive)
   (let ((count (cond
                 ((use-region-p)
-                 (1+ (- (line-number-at-pos end) (line-number-at-pos start))))
+                 (1+ (- (line-number-at-pos (region-end)) (line-number-at-pos (region-beginning)))))
                 ((numberp current-prefix-arg)
                  current-prefix-arg)
                 (t 1)))
         (first-new-track (with-current-emms-playlist (point-max))))
-    (when (use-region-p) (goto-char start))
+    (when (use-region-p) (goto-char (region-beginning)))
     (dotimes (_ count first-new-track)
       (let ((bdata (emms-browser-bdata-at-point)))
         (when bdata
