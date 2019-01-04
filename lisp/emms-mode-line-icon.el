@@ -42,13 +42,13 @@ For example, if you want to have something like :
 \[ <icon> Foo - The Foo Song ]
 You should set it to \"[\", and set emms-mode-line-format to \"%s ]\"")
 
-(defvar emms-mode-line-icon-image-cache
-  `(image :type xpm :ascent center :data ,(concat "/* XPM */
+(defun emms-mode-line-icon-generate (color)
+   `(image :type xpm :ascent center :data ,(concat "/* XPM */
 static char *note[] = {
 /* width height num_colors chars_per_pixel */
 \"    10   11        2            1\",
 /* colors */
-\". c " emms-mode-line-icon-color  "\",
+\". c " color  "\",
 \"# c None s None\",
 /* pixels */
 \"###...####\",
@@ -63,11 +63,12 @@ static char *note[] = {
 \"######....\",
 \"#######..#\"};")))
 
-
 (defun emms-mode-line-icon-function ()
   (concat " "
           emms-mode-line-icon-before-format
-          (emms-propertize "NP:" 'display emms-mode-line-icon-image-cache)
+          (emms-propertize "NP:" 'display
+			   (emms-mode-line-icon-generate
+			    emms-mode-line-icon-color))
           (emms-mode-line-playlist-current)))
 
 (setq emms-mode-line-mode-line-function 'emms-mode-line-icon-function)
