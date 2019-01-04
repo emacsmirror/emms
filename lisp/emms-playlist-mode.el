@@ -537,7 +537,7 @@ playlist."
   (interactive)
   (if (or (null emms-playlist-buffer)
 	  (not (buffer-live-p emms-playlist-buffer)))
-      (call-interactively 'emms-add-file))
+      (call-interactively 'emms-add-directory))
   (emms-playlist-mode-go))
 
 (defun emms-playlist-mode-go-popup (&optional window-width)
