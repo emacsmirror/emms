@@ -1,6 +1,6 @@
 ;;; emms-playlist-mode.el --- Playlist mode for Emms.
 
-;; Copyright (C) 2005, 2006, 2007, 2008, 2009  Free Software Foundation, Inc.
+;; Copyright (C) 2005-2019  Free Software Foundation, Inc.
 
 ;; Author: Yoni Rabkin <yrk@gnu.org>
 
@@ -146,7 +146,7 @@ This is true for every invocation of `emms-playlist-mode-go'."
     (define-key map (kbd "K") 'emms-playlist-mode-current-kill)
     (define-key map (kbd "?") 'describe-mode)
     (define-key map (kbd "r") 'emms-random)
-    (define-key map (kbd "C") 'emms-playlist-mode-clear)
+    (define-key map (kbd "C") 'emms-playlist-clear)
     (define-key map (kbd "d") 'emms-playlist-mode-goto-dired-at-point)
     (define-key map (kbd "<mouse-2>") 'emms-playlist-mode-play-current-track)
     (define-key map (kbd "RET") 'emms-playlist-mode-play-smart)
@@ -190,17 +190,6 @@ Otherwise, kill the current EMMS playlist buffer."
            (not (eq (current-buffer) emms-playlist-buffer)))
       (kill-buffer (current-buffer))
     (emms-playlist-current-kill)))
-
-(defun emms-playlist-mode-clear ()
-  "If the current buffer is an EMMS playlist buffer, clear it.
-Otherwise, clear the current EMMS playlist buffer."
-  (interactive)
-  (if (and emms-playlist-buffer-p
-           (not (eq (current-buffer) emms-playlist-buffer)))
-      (let ((inhibit-read-only t))
-        (widen)
-        (delete-region (point-min) (point-max)))
-    (emms-playlist-clear)))
 
 (defun emms-playlist-mode-last ()
   "Move to directly after the last track in the current buffer."
