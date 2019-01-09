@@ -881,8 +881,7 @@ If no current playlist exists, a new one is generated."
       (emms-playlist-clear))))
 
 (defun emms-playlist-clear ()
-  "Clear the current buffer.
-If no playlist exists, a new one is generated."
+  "Clear the current buffer."
   (interactive)
   (emms-playlist-ensure-playlist-buffer)
   (let ((inhibit-read-only t))
