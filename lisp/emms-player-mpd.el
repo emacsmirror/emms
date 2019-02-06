@@ -1138,6 +1138,7 @@ rather than EMMS."
                        ((string= name "title") 'info-title)
                        ((string= name "album") 'info-album)
                        ((string= name "track") 'info-tracknumber)
+                       ((string= name "disc") 'info-discnumber)
                        ((string= name "date") 'info-year)
                        ((string= name "genre") 'info-genre)
                        ((string= name "time")
