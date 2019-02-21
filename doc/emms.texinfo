@@ -1677,6 +1677,14 @@ upon change in the source folder.
 Customize @var{emms-browser-covers-file-extensions} to include or exclude
 specific extensions.
 
+'emms-browser-cache-thumbnail' might be everytime a cover is queried, so
+to help with performance you can also set @var{emms-browser-covers} to
+'emms-browser-cache-thumbnail-async'.  The latter is like the former
+except that it caches queries: every subsequent query will be much
+faster.  The drawback is that it won't see changes made to covers after
+the first query.  To force-refresh the thumbnail cache, you can run
+'emms-browser-clear-cache-hash'.
+
 Also, Emacs by default will jump around a lot when scrolling a buffer
 with images. In order to prevent that, you can set
 @var{scroll-up-aggressively} and @var{scroll-down-aggressively} to the

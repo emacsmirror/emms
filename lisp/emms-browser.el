@@ -2226,5 +2226,29 @@ will always use the same cover per folder.
                    (setq cache-dest-file nil))))
           cache-dest-file)))))
 
+(defvar emms-browser--cache-hash nil
+  "Cache for `emms-browser-cache-thumbnail-async'.")
+
+(defun emms-browser-cache-thumbnail-async (dir size)
+  "Like `emms-browser-cache-thumbnail' but caches queries for faster lookups.
+The drawback is that if changes are made to the covers in DIR
+after `emms-browser-cache-thumbnail-async' queried them, it won't
+be taken into account.  Call `emms-browser-clear-cache-hash' to
+refresh the cache."
+  (unless emms-browser--cache-hash
+    (setq emms-browser--cache-hash (make-hash-table :test 'equal)))
+  (let* ((key (cons dir size))
+         (val (gethash key emms-browser--cache-hash)))
+    (or val
+        (puthash key (emms-browser-cache-thumbnail dir size)
+                 emms-browser--cache-hash))))
+
+(defun emms-browser-clear-cache-hash ()
+  "Resets `emms-browser-cache-thumbnail-async' cache.
+This is useful if there were changes on disk after
+`emms-browser-cache-thumbnail-async' first cached them."
+  (interactive)
+  (clrhash emms-browser--cache-hash))
+
 (provide 'emms-browser)
 ;;; emms-browser.el ends here
