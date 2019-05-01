@@ -1,3 +1,13 @@
+News since version 5.1
+
+  - emms-browser.el: faster thumbnail cache lookups.
+  - emms-player-mpd.el: Parse disc number for mpd tracks.
+  - Make thing-at-point behavior more consistent.
+  - Remove redundant functions in code.
+  - Allow changing the mode-line icon.
+  - Bug fix: emms-player-mode, more consistent behavior.
+  - Bug fix: emms-browser, Don't rely on (interactive "r").
+
 News since version 5.0
 
   - Add `emms-toggle-single-track'.
