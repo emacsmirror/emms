@@ -147,13 +147,19 @@ The default format is specified by `emms-source-playlist-default-format'."
                                      emms-source-file-default-directory
                                      emms-source-file-default-directory
                                      nil)))
-  (with-temp-buffer
-    (emms-source-playlist-unparse format
-                                  (with-current-emms-playlist
-                                    (current-buffer))
-                                  (current-buffer))
-    (let ((backup-inhibited t))
-      (write-file file emms-source-playlist-ask-before-overwrite))))
+  (if (or (eq emms-playlist-buffer (current-buffer))
+	  (and (not (eq emms-playlist-buffer (current-buffer)))
+	       (y-or-n-p
+		(format "Current playlist buffer (%s) is not the one you are visiting (%s). Save anyway?"
+			emms-playlist-buffer (current-buffer)))))
+      (with-temp-buffer
+	(emms-source-playlist-unparse format
+                                      (with-current-emms-playlist
+					(current-buffer))
+                                      (current-buffer))
+	(let ((backup-inhibited t))
+	  (write-file file emms-source-playlist-ask-before-overwrite)))
+    (message "aborting save")))
 
 (defun emms-source-playlist-determine-format (&optional parse-files)
   "Determine the playlist format of the current buffer.
