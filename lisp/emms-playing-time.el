@@ -1,8 +1,8 @@
 ;;; emms-playing-time.el --- Display emms playing time on mode line
 
-;; Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+;; Copyright (C) 2005, 2006, 2007, 2008, 2009, 2019 Free Software Foundation, Inc.
 
-;; Author: William Xu <william.xwl@gmail.com>
+;; Author: William Xu <william.xwl@gmail.com>, Yoni Rabkin (yrk@gnu.org)
 
 ;; This file is part of EMMS.
 
@@ -62,7 +62,9 @@ e.g., display 02:37 instead of 02:37/05:49."
 
 (defcustom emms-playing-time-style 'time
   "Style used for displaying playing time.
-Valid styles are `time' (e.g., 01:30/4:20) and `bar' (e.g., [===>  ])."
+Valid styles are `time' (e.g., 01:30/4:20),
+ `bar' (e.g., [===>  ]),
+and `downtime' (e.g. -03:58)."
   :type 'symbol
   :group 'emms-playing-time)
 
@@ -178,6 +180,16 @@ could call `emms-playing-time-enable-display' and
            (total-min-only (/ total-playing-time 60))
            (total-sec-only (% total-playing-time 60)))
       (cl-case emms-playing-time-style
+	((downtime)			; `downtime' style
+	 (setq emms-playing-time-string
+               (emms-replace-regexp-in-string
+                " " "0"
+                (if (or emms-playing-time-display-short-p
+                        ;; unable to get total playing-time
+                        (eq total-playing-time 0))
+                    (format "%2d:%2d" min sec)
+                  (format "-%2d:%2d"
+                          (- total-min-only min) (- total-sec-only sec))))))
         ((bar)                          ; `bar' style
          (if (zerop total-playing-time)
              (setq emms-playing-time-string "[==>........]")
