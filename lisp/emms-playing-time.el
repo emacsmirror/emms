@@ -189,7 +189,8 @@ could call `emms-playing-time-enable-display' and
                         (eq total-playing-time 0))
                     (format "%2d:%2d" min sec)
                   (format "-%2d:%2d"
-                          (- total-min-only min) (- total-sec-only sec))))))
+			  (/ (- total-playing-time emms-playing-time) 60)
+			  (% (- total-playing-time sec) 60))))))
         ((bar)                          ; `bar' style
          (if (zerop total-playing-time)
              (setq emms-playing-time-string "[==>........]")
