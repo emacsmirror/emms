@@ -3,6 +3,7 @@
 ;; Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 
 ;; Author: Martin Schoenmakers <aiviru@diamond-age.net>
+;;         Bruno Félix Rezende Ribeiro <oitofelix@gnu.org>
 
 ;; This file is part of EMMS.
 
@@ -49,6 +50,8 @@
 (require 'emms)
 (require 'emms-playlist-mode)
 (require 'emms-volume-amixer)
+(require 'emms-volume-pulse)
+(require 'emms-volume-mixerctl)
 
 ;; Customize group
 (defgroup emms-volume nil
@@ -56,7 +59,12 @@
   :group 'emms)
 
 ;; General volume setting related code.
-(defcustom emms-volume-change-function 'emms-volume-amixer-change
+(defcustom emms-volume-change-function
+  (cond
+   ((executable-find "amixer") 'emms-volume-amixer-change)
+   ((executable-find "pactl") 'emms-volume-pulse-change)
+   ((executable-find "mixerctl") emms-volume-mixerctl-change)
+   ((t #'(lambda (amount) (user-error "%s" "No supported mixer found.  Please, define ‘emms-volume-change-function’.")))))
   "*The function to use to change the volume.
 If you have your own functions for changing volume, set this."
   :type '(choice (const :tag "Amixer" emms-volume-amixer-change)

@@ -2422,8 +2422,8 @@ value. So instead of pressing @kbd{C-c +} six times to increase volume
 by six steps of @code{emms-volume-change-amount}, you would simply type
 @kbd{C-c + + + + + +}.
 
-Emms can change volume with amixer, mpd, PulseAudio out of the box, see
-@var{emms-volume-change-function}.
+Emms can change volume with amixer, mpd, PulseAudio and mixerctl out
+of the box, see @var{emms-volume-change-function}.
 
 
 @c -------------------------------------------------------------------

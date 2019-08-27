@@ -1,3 +1,8 @@
+News since version 5.2
+
+  - emms-volume-mixerctl.el: implementation for changing volume using
+    mixerctl.
+
 News since version 5.1
 
   - emms-browser.el: faster thumbnail cache lookups.
