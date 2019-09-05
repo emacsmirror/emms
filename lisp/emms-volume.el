@@ -64,7 +64,7 @@
    ((executable-find "amixer") 'emms-volume-amixer-change)
    ((executable-find "pactl") 'emms-volume-pulse-change)
    ((executable-find "mixerctl") emms-volume-mixerctl-change)
-   ((t #'(lambda (amount) (user-error "%s" "No supported mixer found.  Please, define ‘emms-volume-change-function’.")))))
+   (t #'(lambda (amount) (user-error "%s" "No supported mixer found.  Please, define ‘emms-volume-change-function’."))))
   "*The function to use to change the volume.
 If you have your own functions for changing volume, set this."
   :type '(choice (const :tag "Amixer" emms-volume-amixer-change)
