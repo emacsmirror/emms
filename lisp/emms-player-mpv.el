@@ -237,9 +237,11 @@ to indicate that playback should stop instead of switching to next track.")
   "Delay before issuing `emms-player-stopped' when mpv unexpectedly goes idle.")
 
 
-(defvar emms-player-mpv-ipc-conn-emacs-26-workaround (>= emacs-major-version 26)
-  "Non-nil to enable workaround for issue #31901 in emacs 26.0-26.1 and possibly later versions.
-These seem to fail to call sentinel function for unix socket network processes
+(defvar emms-player-mpv-ipc-conn-emacs-26.1-workaround
+  (and (= emacs-major-version 26)
+       (= emacs-minor-version 1))
+  "Non-nil to enable workaround for issue #31901 in emacs 26.1.
+Emacs 26.1 fails to indicate missing socket file error for unix socket network processes
 that were started with :nowait t, so blocking connections are used there instead.")
 
 
@@ -452,8 +454,12 @@ MEDIA-ARGS are used instead of --idle, if specified."
 (cdr DELAYS) gets passed to next connection attempt,
 so it can be rescheduled further until function runs out of DELAYS values.
 Sets `emms-player-mpv-ipc-proc' value to resulting process on success."
+  ;; Note - emacs handles missing unix socket files in different ways between versions:
+  ;;  emacs <26 returns nil, emacs 26.1 leaves process in a stuck 'open
+  ;;  state (see issue #31901), emacs 26.2+ sets 'file-missing status.
+  ;;  None of these cases call sentinel function, so status must also be checked here.
   (emms-player-mpv-debug-msg "ipc: connect-delay %s" (car delays))
-  (let ((use-nowait (not emms-player-mpv-ipc-conn-emacs-26-workaround)))
+  (let ((use-nowait (not emms-player-mpv-ipc-conn-emacs-26.1-workaround)))
     (setq emms-player-mpv-ipc-proc
           (condition-case nil
               (make-network-process
@@ -467,6 +473,8 @@ Sets `emms-player-mpv-ipc-proc' value to resulting process on success."
                :filter #'emms-player-mpv-ipc-filter
                :sentinel #'emms-player-mpv-ipc-sentinel)
             (file-error nil)))
+    (unless (process-live-p emms-player-mpv-ipc-proc)
+      (setq emms-player-mpv-ipc-proc nil))
     (when (and emms-player-mpv-ipc-proc (not use-nowait))
       (emms-player-mpv-ipc-sentinel emms-player-mpv-ipc-proc 'open)))
   (when (and (not emms-player-mpv-ipc-proc)
@@ -736,8 +744,7 @@ Called before `emms-player-mpv-event-functions' and does same thing as these hoo
 (defun emms-player-mpv-cmd (cmd &optional handler)
   "Send mpv command to process/connection if both are running,
 or otherwise schedule start/connect and set
-`emms-player-mpv-ipc-start-track' for `emms-player-mpv-ipc-sentinel'.
-PROC can be specified to avoid `emms-player-mpv-ipc' call."
+`emms-player-mpv-ipc-start-track' for `emms-player-mpv-ipc-sentinel'."
   (setq emms-player-mpv-ipc-connect-command nil)
   (let ((proc (emms-player-mpv-ipc)))
     (if proc
