@@ -1,7 +1,9 @@
 News since version 5.2
 
-  - emms-volume-mixerctl.el: implementation for changing volume using
-    mixerctl.
+  - emms-volume-mixerctl.el: mixerctl volume control.
+  - emms-playlist-save: improve behavior.
+  - emms-playing-time: add a count-down timer display style.
+  - Try to auto-detect the appropriate volume control.
 
 News since version 5.1
 
