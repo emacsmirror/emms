@@ -84,4 +84,4 @@ release: dist
 	  gpg --detach emms-$(VERSION).tar.gz)
 
 upload:
-	(cd .. && echo "version: 1.2\ndirectory: emms\nfilename: "emms-$(VERSION).tar.gz"\ncomment: version 4.0 of Emms" | gpg --clearsign > emms-$(VERSION).tar.gz.directive.asc && echo open ftp://ftp-upload.gnu.org > upload.lftp ; echo cd /incoming/ftp >> upload.lftp ; echo mput emms-$(VERSION).tar.gz* >> upload.lftp ; echo close >> upload.lftp ; lftp -f upload.lftp ; rm -f upload.lftp)
+	(cd .. && echo "version: 1.2\ndirectory: emms\nfilename: "emms-$(VERSION).tar.gz"\ncomment: new version of Emms" | gpg --clearsign > emms-$(VERSION).tar.gz.directive.asc && echo open ftp://ftp-upload.gnu.org > upload.lftp ; echo cd /incoming/ftp >> upload.lftp ; echo mput emms-$(VERSION).tar.gz* >> upload.lftp ; echo close >> upload.lftp ; lftp -f upload.lftp ; rm -f upload.lftp)
