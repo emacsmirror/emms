@@ -78,6 +78,10 @@ If this is nil, existing playlists will be quietly overwritten."
   :type 'boolean
   :group 'emms)
 
+(defvar emms-source-playlist-native-header-line
+  ";;; This is an EMMS playlist file"
+  "Line which identifies a native emms playlist.")
+
 ;;; General playlist
 
 (defsubst emms-source-playlist-p-sym (format)
@@ -190,17 +194,17 @@ See `emms-source-playlist-formats' for a list of supported formats."
                 (emms-source-playlist-parse format file)
               (error "Not a recognized playlist format"))))))
 
-;;; EMMS native playlists
+;;; Emms native playlists
 
-;; Format:
-;; ;;; This is an EMMS playlist file. Play it with M-x emms-play-playlist
-;; <sexpr>
+;; An Emms native playlist file starts with the contents of
+;; `emms-source-playlist-native-header-line' and is followed by
+;; tracks in sexp format.
 
 (defun emms-source-playlist-native-p ()
   "Return non-nil if the current buffer contains a native EMMS playlist."
   (save-excursion
     (goto-char (point-min))
-    (looking-at "^;;; This is an EMMS playlist file")))
+    (looking-at (concat "^" emms-source-playlist-native-header-line))))
 
 (defun emms-source-playlist-parse-native (file)
   "Parse the native EMMS playlist in the current buffer."
@@ -215,7 +219,7 @@ OUT should be the buffer where tracks are stored in the native EMMS format."
   (with-current-buffer in ;; Don't modify the position
     (save-excursion       ;; in the IN buffer
       (with-current-buffer out
-        (insert ";;; This is an EMMS playlist file."
+        (insert emms-source-playlist-native-header-line
                 " Play it with M-x emms-play-playlist\n")
         (insert "("))
       (let ((firstp t))
