@@ -2433,100 +2433,22 @@ of the box, see @var{emms-volume-change-function}.
 @cindex streaming audio
 @cindex internet radio
 
-Emms provides a friendly interface for managing and playing streaming
-audio in addition to the Emms playlist interface. The interface is
-defined in the @file{emms-streams.el} package and can be loaded by
-invoking:
+Emms is a great way to play streaming audio and internet radio. It is
+possible to add streaming playlists and URLs to any playlist, but Emms
+also comes with a built-in, eclectic list of streaming audio
+stations. @footnote{Emms has no affiliation of any kind with the
+streaming audio stations included, nor is their inclusion an
+endorsement of these stations. Instead, this is a collection of
+stations submitted to the project over the years by people who enjoy
+Emms. We hope you will enjoy them too, and invite you to send in your
+suggestions to add to the list.}
 
-@lisp
-(require 'emms-streams)
-@end lisp
+The @file{emms-streams.el} package provides the command
+@command{emms-streams}.
 
-Querying the streams for track information is provided by the
-@file{emms-stream-info.el} package and can be loaded with:
+Invoking @command{emms-streams} will pull up an Emms playlist buffer
+and populate it with the built-in list of streaming audio sources.
 
-@lisp
-(require 'emms-stream-info)
-@end lisp
-
-The Emms interface for streaming audio, and the stream query
-capabilites are enabled by default in the `emms-all' setup level. For
-more information about Emms setup levels see @xref{Setup}.
-
-`emms-stream-info' calls a backend program to query the stream for
-information. The preferred program needs to be specified by setting
-the variable @var{emms-stream-info-backend} either `mplayer', `mpv' or
-`vlc'. For instance:
-
-@lisp
-(setq emms-stream-info-backend 'vlc)
-@end lisp
-
-Obviously, the corresponding program needs to be installed and
-available for Emms to invoke.
-
-Enter the emms-streams interface by invoking @kbd{M-x}
-@command{emms-streams}. The emms-streams interface comes with a
-built-in, eclectic list of streaming audio channels from throughout the
-Web. Emms can of-course play other streams than the ones listed by
-default, you are free to remove any or all of them and add your
-own.@footnote{If you enjoy a particular streaming audio station on the
-Web and think that it belongs in the default list, please send us a
-link and we will gladly add it!}
-
-The following is a list of the key-bindings for the emms-streams
-interface:
-
-@table @kbd
-@item RET
-@kindex RET (emms-streams)
-@vindex emms-stream-default-action
-Perform the default action when you press RET in the Emms Stream
-interface. Can be either ``add'' or ``play''. The default is ``add'',
-which adds the station under point to the Emms playlist. When
-@var{emms-stream-default-action} is ``play'' then Emms will play the
-streaming audio channel under point.
-@item q
-@kindex q (emms-streams)
-@findex emms-stream-quit
-Quit the emms-streams interface.
-@item a
-@kindex a (emms-streams)
-@findex emms-stream-add-bookmark
-Add a bookmark to a streaming audio URL to the list.
-@item d
-@kindex d (emms-streams)
-@findex emms-stream-delete-bookmark
-Remove a bookmark to a streaming audio URL from the list.
-@item e
-@kindex e (emms-streams)
-@findex emms-stream-edit-bookmark
-Edit the details of the bookmark under point.
-@item h
-@kindex h (emms-streams)
-@findex describe-mode
-Describe the emms-streams mode.
-@item n
-@kindex n (emms-streams)
-@findex emms-stream-next-line
-Move to the next line in the emms-streams buffer (same as C-n).
-@item p
-@kindex p (emms-streams)
-@findex emms-stream-previous-line
-Move to the previous line in the emms-streams buffer (same as C-p).
-@item s
-@kindex s (emms-streams)
-@findex emms-stream-save-bookmarks-file
-Save the bookmarks in the emms-streams interface to disk. The
-bookmarks will be to the location designated in the variable
-@var{emms-stream-bookmarks-file}.
-@item i
-@kindex i (emms-streams)
-@findex emms-stream-info-bookmark
-Return information about the streaming audio at the URL of the
-bookmark under point. Note that this will only work if the
-`emms-stream-info' has already been loaded.
-@end table
 
 @c -------------------------------------------------------------------
 @node APE / FLAC Commands
