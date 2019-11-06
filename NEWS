@@ -1,3 +1,7 @@
+News since version 5.3
+
+  - New and simplified emms-streams.el implementation.
+
 News since version 5.2
 
   - emms-volume-mixerctl.el: mixerctl volume control.
