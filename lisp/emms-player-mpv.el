@@ -210,6 +210,11 @@ Should be fine with both mpv and emacs, and probably never reached anyway.")
 (defvar emms-player-mpv-ipc-req-table nil
   "Auto-initialized hash table of outstanding API req_ids to their handler funcs.")
 
+(defvar emms-player-mpv-ipc-stop-command nil
+  "Internal flag to track when stop command starts/finishes before next loadfile.
+Set to either nil, t or playback start function to call on end-file event after stop command.
+This is a workaround for mpv-0.30+ behavior, when 'stop + loadfile' only runs 'stop'.")
+
 
 (defvar emms-player-mpv-event-connect-hook nil
   "Normal hook run right after establishing new JSON IPC
@@ -646,13 +651,19 @@ Called before `emms-player-mpv-event-functions' and does same thing as these hoo
     ("end-file"
      (when (emms-player-mpv-proc-playing-p)
        (emms-player-mpv-proc-playing nil)
-       (emms-player-stopped)))
+       (emms-player-stopped))
+     (when emms-player-mpv-ipc-stop-command
+       (unless (eq emms-player-mpv-ipc-stop-command t)
+         (funcall emms-player-mpv-ipc-stop-command))
+       (setq emms-player-mpv-ipc-stop-command nil)))
     ("idle"
      ;; Can mean any kind of error before or during playback.
      ;; Example can be access/format error, resulting in start+end without playback-restart.
      (cancel-timer emms-player-mpv-idle-timer)
-     (setq emms-player-mpv-idle-timer
-           (run-at-time emms-player-mpv-idle-delay nil #'emms-player-mpv-event-idle)))
+     (setq
+      emms-player-mpv-idle-timer
+      (run-at-time emms-player-mpv-idle-delay nil #'emms-player-mpv-event-idle)
+      emms-player-mpv-ipc-stop-command nil))
     ("start-file" (cancel-timer emms-player-mpv-idle-timer))))
 
 
@@ -770,6 +781,17 @@ which have following bindings:
   (memq (emms-track-type track)
         '(file url streamlist playlist)))
 
+(defun emms-player-mpv-start-error-handler (mpv-cmd mpv-data mpv-error)
+  "Playback-restart error handler for `emms-player-mpv-cmd',
+to restart/reconnect-to mpv and re-run MPV-CMD,
+if there was any issue when trying to start it initially."
+  (if (eq mpv-error 'connection-error)
+      ;; Reconnect and restart playback if current connection fails (e.g. mpv crash)
+      (emms-player-mpv-cmd-prog
+       (emms-player-mpv-cmd mpv-cmd)
+       (emms-player-mpv-cmd `(set pause no)))
+    (emms-player-mpv-cmd `(set pause no))))
+
 (defun emms-player-mpv-start (track)
   (setq emms-player-mpv-stopped nil)
   (emms-player-mpv-proc-playing nil)
@@ -784,18 +806,20 @@ which have following bindings:
           (emms-player-mpv-proc-init (if track-is-playlist "--playlist" "--")
                                      track-name)
           (emms-player-started emms-player-mpv))
-      (emms-player-mpv-cmd-prog
-       (list (if track-is-playlist 'loadlist 'loadfile)
-             track-name 'replace)
-       (if (eq mpv-error 'connection-error)
-           ;; Reconnect and restart playback if current connection fails (e.g. mpv crash)
-           (emms-player-mpv-cmd-prog
-            (emms-player-mpv-cmd mpv-cmd)
-            (emms-player-mpv-cmd `(set pause no)))
-         (emms-player-mpv-cmd `(set pause no)))))))
+      (let*
+          ((start-cmd (list (if track-is-playlist 'loadlist 'loadfile)
+                            track-name 'replace))
+           (start-func `(lambda ()
+                          (emms-player-mpv-cmd ',start-cmd
+                                               (apply-partially 'emms-player-mpv-start-error-handler ',start-cmd)))))
+        (if emms-player-mpv-ipc-stop-command
+            (setq emms-player-mpv-ipc-stop-command start-func)
+          (funcall start-func))))))
 
 (defun emms-player-mpv-stop ()
-  (setq emms-player-mpv-stopped t)
+  (setq
+   emms-player-mpv-stopped t
+   emms-player-mpv-ipc-stop-command t)
   (emms-player-mpv-proc-playing nil)
   (emms-player-mpv-cmd `(stop))
   (emms-player-stopped))
