@@ -88,11 +88,27 @@ in code."
   :type 'string
   :group 'emms-source-file)
 
+(defcustom emms-source-file-directory-hint-p t
+  "*When non-nil, guess the directory based on a track at point."
+  :type 'boolean
+  :group 'emms-source-file)
+
 ;; The `read-directory-name' function is not available in Emacs 21.
 (defalias 'emms-read-directory-name
   (if (fboundp 'read-directory-name)
       #'read-directory-name
     #'read-file-name))
+
+(defun emms-source-file-directory-hint ()
+  (if (and emms-source-file-directory-hint-p
+	   emms-playlist-buffer-p
+	   (emms-playlist-track-at))
+      (let ((name (emms-track-get (emms-playlist-track-at) 'name))
+	    (type (emms-track-get (emms-playlist-track-at) 'type)))
+	(when (eq type 'file)
+	  (file-name-directory name)))
+    emms-source-file-default-directory))
+
 
 ;;; Sources
 
@@ -102,7 +118,7 @@ in code."
   "An EMMS source for a single file - either FILE, or queried from the
 user."
   (interactive (list (read-file-name "Play file: "
-                                     emms-source-file-default-directory
+				     (emms-source-file-directory-hint)
                                      emms-source-file-default-directory
                                      t)))
   (if (file-directory-p file)
@@ -117,7 +133,7 @@ user."
 from the user."
   (interactive (list
                 (emms-read-directory-name "Play directory: "
-                                          emms-source-file-default-directory
+					  (emms-source-file-directory-hint)
                                           emms-source-file-default-directory
                                           t)))
   (mapc (lambda (file)
@@ -135,7 +151,7 @@ from the user."
 value of `emms-source-file-default-directory'."
   (interactive (list
                 (emms-read-directory-name "Play directory tree: "
-                                          emms-source-file-default-directory
+					  (emms-source-file-directory-hint)
                                           emms-source-file-default-directory
                                           t)))
   (let ((files (emms-source-file-directory-tree (expand-file-name dir)
