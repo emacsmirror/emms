@@ -35,6 +35,8 @@
 ;;; Code:
 
 (require 'emms)
+(require 'emms-source-playlist)
+(require 'emms-playlist-mode)
 
 
 ;;; ------------------------------------------------------------------
