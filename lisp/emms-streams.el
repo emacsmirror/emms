@@ -111,7 +111,7 @@
 	     (metadata "WBCR-LP - Berkshire Community Radio" "http://nyc01.egihosting.com:6232/listen.pls" 1 streamlist))
     (*track* (type . streamlist)
 	     (name . "http://199.244.85.125:8000/wxhq1")
-	     (metadata "WXHX-LP - Newport Radio" "http://199.244.85.125:8000/wxhq1" 1 streamlist))))
+	     (metadata "WXHQ-LP - Newport Radio" "http://199.244.85.125:8000/wxhq1" 1 streamlist))))
 
 (defcustom emms-streams-file (concat (file-name-as-directory emms-directory)
 				     "streams.emms")
