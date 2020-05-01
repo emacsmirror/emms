@@ -1,9 +1,11 @@
 News since version 5.3
 
-  - Use track-at-point as a hint for guessing emms-add directory.
-  - Bug fix: prevent skipping track when switching them during mpv playback.
   - Updated Website launched.
   - New and simplified emms-streams.el implementation.
+  - New streaming radio stations.
+  - Use track-at-point as a hint for guessing emms-add directory.
+  - Bug fix: prevent skipping track when switching them during mpv playback.
+  - Mixerctl now availabe in custom interface.
 
 News since version 5.2
 

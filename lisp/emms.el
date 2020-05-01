@@ -42,7 +42,7 @@
 
 ;;; Code:
 
-(defvar emms-version "5.3"
+(defvar emms-version "5.4"
   "EMMS version string.")
 
 
