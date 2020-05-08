@@ -1,6 +1,6 @@
 ;;; emms-info-tinytag.el --- Info-method for EMMS using tinytag  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2020  Fran Burstall
+;; Copyright (C) 2020  Free Software Foundation, Inc.
 
 ;; Author: Fran Burstall <fran.burstall@gmail.com>
 ;; Keywords: multimedia
@@ -78,8 +78,7 @@ Case is irrelevant."
     (info-playing-time . duration)
     (info-title . title)
     (info-tracknumber . track))
-    "An alist mapping info-* fields to tinytag fields."
-)
+  "An alist mapping info-* fields to tinytag fields.")
 
 (defun emms-info-tinytag (track)
   "Set tags for TRACK using tinytag."
@@ -116,4 +115,5 @@ Case is irrelevant."
 				      (t value)))))))))))
 
 (provide 'emms-info-tinytag)
+
 ;;; emms-info-tinytag.el ends here
