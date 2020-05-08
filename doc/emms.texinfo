@@ -112,7 +112,8 @@ The Core File
 * Core Functions::     Providing the basic functionality of Emms.
 
 Track Information
-* Using TagLib::        TagLib for track information.
+* Using tinytag::            Track information via tinytag.
+* Using TagLib::             TagLib for track information.
 * Defining Info Methods::    Defining new info methods.
 
 Extending Emms
@@ -204,10 +205,9 @@ More detail about setting up Emms can be found in the setup chapter,
 @xref{Setup}.
 
 Emms tries to display the tags (the name of the song, as opposed to
-the name of the file) of the music you listen to. Emms can use libtag,
-see @xref{Using TagLib}, or a combination of other software such as
-`mp3info', `ogginfo' and `opusinfo' (make sure that they are installed
-if you want Emms to use them.)
+the name of the file) of the music you listen to. Emms can use a
+number of pieces of software and libraries as sources for track info,
+see @xref{Track Information} for more.
 
 The last thing to do is to tell Emms where your music is; the root
 directory of our music collection. Let's say all your music is in
@@ -876,20 +876,31 @@ The current Emms playlist buffer is stored in the variable
 @cindex track information
 @cindex info tags
 
-Emms is distributed with multiple predefined methods for retrieving
-info, provided by modules such as @file{emms-info-mp3info.el},
-@file{emms-info-ogginfo.el}, @file{emms-info-opusinfo.el},
-@file{emms-cue.el} and @file{emms-info-libtag.el}. The first three
-packages are front-ends for command-line tools. Ogg track information is
-retrieved using the
-@uref{http://directory.fsf.org/audio/ogg/vorbistools.html, ogginfo} and
-the @uref{https://www.opus-codec.org/ opusinfo} software. Likewise, mp3
-track information is available using
+Without a way to read the embedded track information inside files,
+Emms will only be able to list file names and file
+locations. Therefore Emms is distributed with support for a number of
+pieces of software and libraries which can be used to provide access
+to track metadata such as the artist's name, track name, album title,
+etc.
+
+Emms can use tinytag; a small python utility. See @xref{Using
+tinytag}.
+
+Emms can use the TagLib library installed on a system. See @xref{Using
+TagLib}.
+
+Emms also has multiple predefined methods for retrieving info for
+specific file types, provided by modules such as
+@file{emms-info-mp3info.el}, @file{emms-info-ogginfo.el},
+@file{emms-info-opusinfo.el}, @file{emms-cue.el} and
+@file{emms-info-libtag.el}. The first three packages are front-ends
+for command-line tools. Ogg track information is retrieved using the
+@uref{http://directory.fsf.org/audio/ogg/vorbistools.html, ogginfo}
+and the @uref{https://www.opus-codec.org/ opusinfo}
+software. Likewise, mp3 track information is available using
 @uref{http://www.ibiblio.org/mp3info/, mp3info}. @file{emms-cue.el}
 retrieves tracks information for ape/flac files by parsing a cue sheet
-file, which is plain text. Finally, @file{emms-info-libtag.el} uses a
-tiny C shim (included in the src/ directory) program to take advantage
-of @uref{http://taglib.github.io/, TagLib}.
+file, which is plain text. 
 
 Automatic track information retrieval is enabled by default in the
 `emms-all' setup level provided by @file{emms-setup.el}. For more
@@ -919,18 +930,41 @@ track as argument.
 @end defopt
 
 @menu
+* Using tinytag::            Track information via tinytag.
 * Using TagLib::        TagLib for track information.
 * Defining Info Methods::    Defining new info methods.
 @end menu
+
+
+@node Using tinytag
+@section Using tinytag
+
+@cindex Using tinytag
+
+Make sure that the python program tinytag is installed on your
+system. It is available at @uref{https://pypi.org/project/tinytag/,
+tinytag}.
+
+Configure tinytag as the sole info method (competing and overlapping
+methods can cause confusion) for Emms:
+
+@lisp
+(setq emms-info-functions '(emms-info-tinytag))
+@end lisp
+
 
 @node Using TagLib
 @section Using TagLib
 
 @cindex using taglib
 
+@file{emms-info-libtag.el} uses a tiny C shim (included in the src/
+directory) program to take advantage of
+@uref{http://taglib.github.io/, TagLib}.
+
 The communication with the TagLib library is done via a tiny program
-written in C++ @file{emms-print-metadata.cpp}. To compile
-@file{emms-print-metadata} invoke:
+written in C++ @file{emms-print-metadata.cpp}, which comes with
+Emms. To compile @file{emms-print-metadata} invoke:
 
 @command{make emms-print-metadata}
 
