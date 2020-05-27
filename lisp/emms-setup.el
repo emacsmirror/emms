@@ -84,6 +84,8 @@ the stable features which come with the Emms distribution."
     (require 'emms-info-mp3info)
     (require 'emms-info-ogginfo)
     (require 'emms-info-opusinfo)
+    (require 'emms-info-metaflac)
+    (require 'emms-info-tinytag)
     (require 'emms-cache)
     (require 'emms-mode-line)
     (require 'emms-mark)
