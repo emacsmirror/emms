@@ -34,6 +34,7 @@ lisp:
 
 docs:
 	$(MAKE) -C $(DOCDIR)
+	for file in $(DOCDIR)*.info; do install-info $$file dir; done
 
 emms-print-metadata: $(SRCDIR)/emms-print-metadata.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $(SRCDIR)/$@ $< `taglib-config --cflags --libs`
