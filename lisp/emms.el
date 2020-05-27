@@ -3,10 +3,12 @@
 ;; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008,
 ;;   2009, 2018 Free Software Foundation, Inc.
 
-;; Author: Jorgen Schäfer <forcer@forcix.cx>
-;; Keywords: emms, mp3, mpeg, multimedia
+;; Author: Jorgen Schäfer <forcer@forcix.cx>, the Emms developers (see AUTHORS file)
+;; Maintainer: Yoni Rabkin <yrk@gnu.org>
+;; Version: 5.4
+;; Keywords: emms, mp3, ogg, flac, music, mpeg, video, multimedia
 ;; Package-Requires: ((cl-lib "0.5"))
-;; Homepage: http://www.gnu.org/software/emms/
+;; url: https://www.gnu.org/software/emms/
 
 ;; This file is part of EMMS.
 
