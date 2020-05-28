@@ -1,7 +1,7 @@
 ;;; emms.el --- The Emacs Multimedia System
 
 ;; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008,
-;;   2009, 2018 Free Software Foundation, Inc.
+;;   2009, 2018, 2020  Free Software Foundation, Inc.
 
 ;; Author: Jorgen Schäfer <forcer@forcix.cx>, the Emms developers (see AUTHORS file)
 ;; Maintainer: Yoni Rabkin <yrk@gnu.org>
@@ -39,8 +39,10 @@
 ;; even know how to find any tracks to consider playing --- for this,
 ;; you need sources.
 
-;; A sample configuration is offered in emms-setup.el, so you might
-;; just want to use that file.
+;; A sample configuration is offered in emms-setup.el, and the
+;; Friendly Manual in the doc/ directory is both detailed, and kept up
+;; to date.
+
 
 ;;; Code:
 
