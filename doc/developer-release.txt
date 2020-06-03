@@ -1,7 +1,7 @@
 This file tries to list the things people have to do before they do a
 release.
 
-*  Increase the version number in emms.el (variable, elpa header), Makefile, and emms-elpa.el
+*  Increase the version number in emms.el (variable, elpa header), Makefile
 
 *  Update NEWS
 

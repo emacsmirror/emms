@@ -1,11 +1,14 @@
 GZIP=gzip
 MAN1PAGES=emms-print-metadata.1
 DOCDIR=doc/
-LISPDIR=lisp
 SRCDIR=src
+SITEFLAG=--no-site-file
+EMACS=emacs
 
-ALLSOURCE=$(wildcard $(LISPDIR)/*.el)
-ALLCOMPILED=$(wildcard $(LISPDIR)/*.elc)
+ALLSOURCE=$(wildcard *.el)
+SOURCE=$(filter-out $(SPECIAL),$(ALLSOURCE))
+TARGET=$(patsubst %.el,%.elc,$(SOURCE))
+ALLCOMPILED=$(wildcard *.elc)
 
 DESTDIR=
 PREFIX=$(DESTDIR)/usr/local
@@ -20,17 +23,25 @@ INSTALLINFO = /usr/bin/install-info --info-dir=$(INFODIR)
 CHANGELOG_CMD = git log --pretty=medium --no-merges
 
 # The currently released version of EMMS
-VERSION=5.4
+VERSION=5.41
 
-.PHONY: all install lisp docs deb-install clean
+.PHONY: all install docs clean
 .PRECIOUS: %.elc
-all: lisp docs
+all: emms-auto.el $(TARGET) docs
 
-autoloads:
-	$(MAKE) -C $(LISPDIR) emms-auto.el
+emms-auto.el: emms-auto.in $(SOURCE)
+	cp emms-auto.in emms-auto.el
+	-rm -f emms-auto.elc
+	@$(EMACS) -q $(SITEFLAG) -batch \
+		-l emms-maint.el \
+		-l emms-auto.el \
+		-f emms-generate-autoloads \
+		$(shell pwd)/emms-auto.el .
 
-lisp:
-	$(MAKE) -C $(LISPDIR)
+%.elc: %.el
+	@$(EMACS) -q $(SITEFLAG) -batch \
+		-l emms-maint.el \
+		-f batch-byte-compile $<
 
 docs:
 	$(MAKE) -C $(DOCDIR)
@@ -70,13 +81,13 @@ ChangeLog:
 
 clean:
 	-rm -f *~ $(DOCDIR)emms.info $(DOCDIR)emms.html $(SRCDIR)/emms-print-metadata
-	$(MAKE) -C $(LISPDIR) clean
+	-rm -f *~ *.elc emms-auto.el
 
-dist: clean autoloads
+dist: clean emms-auto.el
 	git archive --format=tar --prefix=emms-$(VERSION)/ HEAD | \
 	  (cd .. && tar xf -)
 	rm -f ../emms-$(VERSION)/.gitignore
-	cp lisp/emms-auto.el ../emms-$(VERSION)/lisp
+	cp emms-auto.el ../emms-$(VERSION)
 	$(CHANGELOG_CMD) > ../emms-$(VERSION)/ChangeLog
 
 release: dist
