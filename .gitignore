@@ -6,4 +6,5 @@
 /src/emms-print-metadata
 /doc/emms.info
 /doc/emms.html
-/lisp/emms-auto.el
+/emms-autoloads.el
+/emms-pkg.el
