@@ -46,6 +46,7 @@ emms-auto.el: emms-auto.in $(SOURCE)
 docs:
 	$(MAKE) -C $(DOCDIR)
 	for file in $(DOCDIR)*.info; do install-info $$file dir; done
+	cp $(DOCDIR)emms.info $(CURDIR)/
 
 emms-print-metadata: $(SRCDIR)/emms-print-metadata.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $(SRCDIR)/$@ $< `taglib-config --cflags --libs`
@@ -82,6 +83,7 @@ ChangeLog:
 clean:
 	-rm -f *~ $(DOCDIR)emms.info $(DOCDIR)emms.html $(SRCDIR)/emms-print-metadata
 	-rm -f *~ *.elc emms-auto.el
+	-rm -f emms.info
 
 dist: clean emms-auto.el
 	git archive --format=tar --prefix=emms-$(VERSION)/ HEAD | \
