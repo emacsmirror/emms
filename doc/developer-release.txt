@@ -1,11 +1,12 @@
-This file tries to list the things people have to do before they do a
-release.
+This is an explanation of how to make a release for Emms. Emms is
+currently distributed in three different ways: via the Git repo on
+Savannah, as a tarball from GNU, and via GNU ELPA.
 
 *  Increase the version number in emms.el (variable, elpa header), Makefile
 
 *  Update NEWS
 
-*  Push version updates to git repo.
+*  Push version updates to git repo
 
 *  Tag release in VCS, for example `git tag -a 4.2 -m "4.2"'
 
@@ -18,5 +19,7 @@ release.
 *  Update online manual
 
 *  Update website
+
+*  Push to GNU ELPA: push to the Savannah "elpa" branch, and from there "git push elpa elpa:refs/heads/externals/emms"
 
 *  Send announcement email to gnu-info and to the emms mailing list
