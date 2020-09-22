@@ -29,7 +29,7 @@
 ;; does not differentiate between file or uri tracks.
 
 ;; Because cache lookups are much faster than disk access, this works
-;; much better with a later-do-interval of something like 0.001.  Also
+;; much better with a emms-later-do-interval of something like 0.001.  Also
 ;; consider using synchronous mode, as it's quite fast now.
 
 ;; This code is activated by (emms-standard) and above.

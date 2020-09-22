@@ -44,7 +44,7 @@
 ;;; Code:
 
 (require 'emms)
-(require 'later-do)
+(require 'emms-later-do)
 
 (defgroup emms-info nil
   "*Track information. ID3, OGG, etc."
@@ -59,7 +59,7 @@ too annoying for you, set this variable to nil."
 
 (defcustom emms-info-asynchronously t
   "*Non-nil when track information should be loaded asynchronously.
-This requires `later-do', which should come with EMMS."
+This requires `emms-later-do', which should come with EMMS."
   :type 'boolean
   :group 'emms-info)
 
@@ -85,7 +85,7 @@ This is a suitable value for `emms-track-initialize-functions'."
   (if (not emms-info-asynchronously)
       (emms-info-really-initialize-track track)
     (setq emms-info-asynchronous-tracks (1+ emms-info-asynchronous-tracks))
-    (later-do 'emms-info-really-initialize-track track)))
+    (emms-later-do 'emms-info-really-initialize-track track)))
 
 (defun emms-info-really-initialize-track (track)
   "Really initialize TRACK.

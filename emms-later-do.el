@@ -1,4 +1,4 @@
-;;; later-do.el --- execute lisp code ... later
+;;; emms-later-do.el --- execute lisp code ... later
 
 ;; Copyright (C) 2004, 2005, 2006, 2007, 2008,
 ;;   2009, 2018 Free Software Foundation, Inc.
@@ -26,61 +26,64 @@
 ;; possible to work while elisp does some longer calculations, if you
 ;; can convert those calculations into a sequence of function calls.
 
+;; 2020-09-22: Name changed from later-do to emms-later-do in order to
+;; avoid polluting the namespace.
+
 ;;; Code:
 
-(defvar later-do-version "0.2emms4 (2018-04-07)"
-  "Version string of later-do.")
+(defvar emms-later-do-version "0.2emms4 (2018-04-07)"
+  "Version string of emms-later-do.")
 
-(defgroup later-do nil
+(defgroup emms-later-do nil
   "*Running functions ... later!"
-  :prefix "later-do-"
+  :prefix "emms-later-do-"
   :group 'development)
 
-(defcustom later-do-interval 0.5
+(defcustom emms-later-do-interval 0.5
   "How many seconds to wait between running events."
-  :group 'later-do
+  :group 'emms-later-do
   :type 'number)
 
-(defcustom  later-do-batch 20
-  "How many functions to process before waiting `later-do-interval'.
-The functions are processed from `later-do-list'.  Must be 1 or
+(defcustom  emms-later-do-batch 20
+  "How many functions to process before waiting `emms-later-do-interval'.
+The functions are processed from `emms-later-do-list'.  Must be 1 or
 greater.  Too high a value might make Emacs slower while the
 list is being processed."
-  :group 'later-do
+  :group 'emms-later-do
   :type 'number)
 
-(defvar later-do-list nil
+(defvar emms-later-do-list nil
   "A list of functions to be called later on.")
 
-(defvar later-do-timer nil
-  "The timer that later-do uses.")
+(defvar emms-later-do-timer nil
+  "The timer that emms-later-do uses.")
 
-(defun later-do (function &rest args)
+(defun emms-later-do (function &rest args)
   "Apply FUNCTION to ARGS later on.  This is an unspecified
 amount of time after this call, and definitely not while lisp is
-still executing.  Code added using `later-do' is guaranteed to be
+still executing.  Code added using `emms-later-do' is guaranteed to be
 executed in the sequence it was added."
-  (setq later-do-list (nconc later-do-list
+  (setq emms-later-do-list (nconc emms-later-do-list
                               (list (cons function args))))
-  (unless later-do-timer
-    (setq later-do-timer
-          (run-with-timer later-do-interval nil 'later-do-timer))))
+  (unless emms-later-do-timer
+    (setq emms-later-do-timer
+          (run-with-timer emms-later-do-interval nil 'emms-later-do-timer))))
 
-(defun later-do-timer ()
-  "Run the next element in `later-do-list', or do nothing if it's
+(defun emms-later-do-timer ()
+  "Run the next element in `emms-later-do-list', or do nothing if it's
 empty."
-  (if (null later-do-list)
-      (setq later-do-timer nil)
+  (if (null emms-later-do-list)
+      (setq emms-later-do-timer nil)
     (let (res)
       (unwind-protect
-          (dotimes (b (min later-do-batch (length later-do-list)) res)
-            (let ((fun (caar later-do-list))
-                  (args (cdar later-do-list)))
-              (setq later-do-list (cdr later-do-list))
+          (dotimes (b (min emms-later-do-batch (length emms-later-do-list)) res)
+            (let ((fun (caar emms-later-do-list))
+                  (args (cdar emms-later-do-list)))
+              (setq emms-later-do-list (cdr emms-later-do-list))
               (setq res (apply fun args)))))
-      (setq later-do-timer (run-with-timer later-do-interval
+      (setq emms-later-do-timer (run-with-timer emms-later-do-interval
                                            nil
-                                           'later-do-timer)))))
+                                           'emms-later-do-timer)))))
 
-(provide 'later-do)
-;;; later-do.el ends here
+(provide 'emms-later-do)
+;;; emms-later-do.el ends here
