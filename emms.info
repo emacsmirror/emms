@@ -97,6 +97,7 @@ The Core File
 
 Track Information
 * Using tinytag::            Track information via tinytag.
+* Using exiftool::           Track information via exiftool.
 * Using TagLib::             TagLib for track information.
 * Defining Info Methods::    Defining new info methods.
 
@@ -739,20 +740,25 @@ is distributed with support for a number of pieces of software and
 libraries which can be used to provide access to track metadata such as
 the artist's name, track name, album title, etc.
 
-   Emms can use tinytag; a small python utility.  See *Note Using
-tinytag::.
+   Emms can use a number of different ways to populate the playlist with
+track information.  These methods require the installation some
+additional software, free software of course, that Emms can then call to
+read the metadata from the files.
 
-   Emms can use the TagLib library installed on a system.  See *Note
-Using TagLib::.
+   * Tinytag, a small python utility.  See *Note Using tinytag::.
 
-   Emms also has multiple predefined methods for retrieving info for
-specific file types, provided by modules such as 'emms-info-mp3info.el',
-'emms-info-ogginfo.el', 'emms-info-opusinfo.el', 'emms-cue.el' and
-'emms-info-libtag.el'.  The first three packages are front-ends for
-command-line tools.  Ogg track information is retrieved using the
-ogginfo (http://directory.fsf.org/audio/ogg/vorbistools.html) and the
-<https://www.opus-codec.org/ opusinfo> software.  Likewise, mp3 track
-information is available using mp3info
+   * Exiftool, written in perl.  See *Note Using exiftool::.
+
+   * The TagLib library can be used by compiling a small piece of "shim"
+     software.  See *Note Using TagLib::.
+
+   You can also use a combination of format-specific tools if needed,
+such as 'emms-info-mp3info.el', 'emms-info-ogginfo.el',
+'emms-info-opusinfo.el', and 'emms-cue.el'.  These three packages are
+front-ends for command-line tools.  Ogg track information is retrieved
+using the ogginfo (http://directory.fsf.org/audio/ogg/vorbistools.html)
+and the <https://www.opus-codec.org/ opusinfo> software.  Likewise, mp3
+track information is available using mp3info
 (http://www.ibiblio.org/mp3info/).  'emms-cue.el' retrieves tracks
 information for ape/flac files by parsing a cue sheet file, which is
 plain text.
@@ -784,11 +790,12 @@ Methods::.
 * Menu:
 
 * Using tinytag::            Track information via tinytag.
+* Using exiftool::           Track information via exiftool.
 * Using TagLib::        TagLib for track information.
 * Defining Info Methods::    Defining new info methods.
 
 
-File: emms.info,  Node: Using tinytag,  Next: Using TagLib,  Up: Track Information
+File: emms.info,  Node: Using tinytag,  Next: Using exiftool,  Up: Track Information
 
 13.1 Using tinytag
 ==================
@@ -802,9 +809,22 @@ methods can cause confusion) for Emms:
      (setq emms-info-functions '(emms-info-tinytag))
 
 
-File: emms.info,  Node: Using TagLib,  Next: Defining Info Methods,  Prev: Using tinytag,  Up: Track Information
+File: emms.info,  Node: Using exiftool,  Next: Using TagLib,  Prev: Using tinytag,  Up: Track Information
 
-13.2 Using TagLib
+13.2 Using exiftool
+===================
+
+Make sure that the perl program exiftool is installed on your system.
+It is available at <https://exiftool.org/>.
+
+   Then set exiftool as the sole info method with:
+
+     (setq emms-info-functions '(emms-info-exiftool))
+
+
+File: emms.info,  Node: Using TagLib,  Next: Defining Info Methods,  Prev: Using exiftool,  Up: Track Information
+
+13.3 Using TagLib
 =================
 
 'emms-info-libtag.el' uses a tiny C shim (included in the src/
@@ -836,7 +856,7 @@ TagLib data):
 
 File: emms.info,  Node: Defining Info Methods,  Prev: Using TagLib,  Up: Track Information
 
-13.3 Defining Info Methods
+13.4 Defining Info Methods
 ==========================
 
 An info method essentially consists of a function which given an Emms
@@ -3398,6 +3418,7 @@ Concept Index
 * track information:                     Track Information.     (line 6)
 * track order:                           Sorting Playlists.     (line 6)
 * user variables:                        User Variables.        (line 6)
+* Using exiftool:                        Using exiftool.        (line 6)
 * using taglib:                          Using TagLib.          (line 6)
 * Using tinytag:                         Using tinytag.         (line 6)
 * volume:                                Volume.                (line 6)
@@ -3640,9 +3661,9 @@ Variable Index
 
 * emms-history-file:                     Persistent Playlists. (line 14)
 * emms-history-start-playing:            Persistent Playlists. (line 33)
-* emms-info-asynchronously:              Track Information.    (line 45)
-* emms-info-auto-update:                 Track Information.    (line 41)
-* emms-info-functions:                   Track Information.    (line 50)
+* emms-info-asynchronously:              Track Information.    (line 50)
+* emms-info-auto-update:                 Track Information.    (line 46)
+* emms-info-functions:                   Track Information.    (line 55)
 * emms-lyrics-coding-system:             Lyrics.               (line 36)
 * emms-lyrics-dir:                       Lyrics.               (line 27)
 * emms-lyrics-display-format:            Lyrics.               (line 32)
@@ -3732,59 +3753,60 @@ Keybinding Index
 
 Tag Table:
 Node: Top689
-Node: Introduction4369
-Node: Quickstart Guide5944
-Node: Installation8694
-Node: Compiling Emms9107
-Node: Setup9795
-Node: Configuration10781
-Node: Finding files and speed12192
-Node: Getting Help13038
-Node: Formats and Freedom13616
-Node: Basic Commands14821
-Node: The Core File18202
-Node: User Variables18636
-Node: Hooks19612
-Node: Core Functions21038
-Node: Sources24038
-Node: Simple Players26171
-Node: Playlists27265
-Node: Track Information28546
-Node: Using tinytag31112
-Node: Using TagLib31539
-Node: Defining Info Methods32647
-Node: Interactive Playlists33429
-Node: Markable Playlists36471
-Node: Extending Emms38942
-Node: New Player39378
-Node: Simple Player for `play'39767
-Node: More Complex Player41495
-Node: The Browser44502
-Node: Browser Interface45478
-Node: Filtering Tracks47892
-Node: Displaying Covers49670
-Node: Changing Looks51684
-Node: Sorting Playlists54662
-Node: Persistent Playlists56131
-Node: Editing Tracks57290
-Node: Emms Mode Line60964
-Node: Limiting62132
-Node: Music Player Daemon64471
-Node: Lyrics67984
-Node: Volume70032
-Node: Streaming Audio71820
-Ref: Streaming Audio-Footnote-172412
-Node: APE / FLAC Commands72763
-Node: Bookmarks73470
-Node: Managing Playlists74181
-Node: GNU FM75204
-Node: Uploading Track Information76558
-Node: GNU FM Streaming77440
-Node: Copying77940
-Node: The GNU FDL115457
-Node: Concept Index137845
-Node: Function Index142703
-Node: Variable Index158395
-Node: Keybinding Index160738
+Node: Introduction4430
+Node: Quickstart Guide6005
+Node: Installation8755
+Node: Compiling Emms9168
+Node: Setup9856
+Node: Configuration10842
+Node: Finding files and speed12253
+Node: Getting Help13099
+Node: Formats and Freedom13677
+Node: Basic Commands14882
+Node: The Core File18263
+Node: User Variables18697
+Node: Hooks19673
+Node: Core Functions21099
+Node: Sources24099
+Node: Simple Players26232
+Node: Playlists27326
+Node: Track Information28607
+Node: Using tinytag31494
+Node: Using exiftool31923
+Node: Using TagLib32295
+Node: Defining Info Methods33404
+Node: Interactive Playlists34186
+Node: Markable Playlists37228
+Node: Extending Emms39699
+Node: New Player40135
+Node: Simple Player for `play'40524
+Node: More Complex Player42252
+Node: The Browser45259
+Node: Browser Interface46235
+Node: Filtering Tracks48649
+Node: Displaying Covers50427
+Node: Changing Looks52441
+Node: Sorting Playlists55419
+Node: Persistent Playlists56888
+Node: Editing Tracks58047
+Node: Emms Mode Line61721
+Node: Limiting62889
+Node: Music Player Daemon65228
+Node: Lyrics68741
+Node: Volume70789
+Node: Streaming Audio72577
+Ref: Streaming Audio-Footnote-173169
+Node: APE / FLAC Commands73520
+Node: Bookmarks74227
+Node: Managing Playlists74938
+Node: GNU FM75961
+Node: Uploading Track Information77315
+Node: GNU FM Streaming78197
+Node: Copying78697
+Node: The GNU FDL116214
+Node: Concept Index138602
+Node: Function Index143533
+Node: Variable Index159225
+Node: Keybinding Index161568
 
 End Tag Table

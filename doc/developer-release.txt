@@ -16,6 +16,8 @@ Savannah, as a tarball from GNU, and via GNU ELPA.
 
 *  Run make upload
 
+*  Update copy of emms.info in root directory
+
 *  Update online manual
 
 *  Update website

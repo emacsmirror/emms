@@ -113,6 +113,7 @@ The Core File
 
 Track Information
 * Using tinytag::            Track information via tinytag.
+* Using exiftool::           Track information via exiftool.
 * Using TagLib::             TagLib for track information.
 * Defining Info Methods::    Defining new info methods.
 
@@ -883,24 +884,37 @@ pieces of software and libraries which can be used to provide access
 to track metadata such as the artist's name, track name, album title,
 etc.
 
-Emms can use tinytag; a small python utility. See @xref{Using
-tinytag}.
+Emms can use a number of different ways to populate the playlist with
+track information. These methods require the installation some
+additional software, free software of course, that Emms can then call
+to read the metadata from the files.
 
-Emms can use the TagLib library installed on a system. See @xref{Using
-TagLib}.
+@itemize @bullet
 
-Emms also has multiple predefined methods for retrieving info for
-specific file types, provided by modules such as
-@file{emms-info-mp3info.el}, @file{emms-info-ogginfo.el},
-@file{emms-info-opusinfo.el}, @file{emms-cue.el} and
-@file{emms-info-libtag.el}. The first three packages are front-ends
-for command-line tools. Ogg track information is retrieved using the
+@item
+Tinytag, a small python utility. See @xref{Using tinytag}.
+
+@item
+Exiftool, written in perl. See @xref{Using exiftool}.
+
+@item
+The TagLib library can be used by compiling a small piece of ``shim''
+software. See @xref{Using TagLib}.
+
+@end itemize
+
+
+You can also use a combination of format-specific tools if needed,
+such as @file{emms-info-mp3info.el}, @file{emms-info-ogginfo.el},
+@file{emms-info-opusinfo.el}, and @file{emms-cue.el}. These three
+packages are front-ends for command-line tools. Ogg track information
+is retrieved using the
 @uref{http://directory.fsf.org/audio/ogg/vorbistools.html, ogginfo}
 and the @uref{https://www.opus-codec.org/ opusinfo}
 software. Likewise, mp3 track information is available using
 @uref{http://www.ibiblio.org/mp3info/, mp3info}. @file{emms-cue.el}
 retrieves tracks information for ape/flac files by parsing a cue sheet
-file, which is plain text. 
+file, which is plain text.
 
 Automatic track information retrieval is enabled by default in the
 `emms-all' setup level provided by @file{emms-setup.el}. For more
@@ -931,6 +945,7 @@ track as argument.
 
 @menu
 * Using tinytag::            Track information via tinytag.
+* Using exiftool::           Track information via exiftool.
 * Using TagLib::        TagLib for track information.
 * Defining Info Methods::    Defining new info methods.
 @end menu
@@ -950,6 +965,21 @@ methods can cause confusion) for Emms:
 
 @lisp
 (setq emms-info-functions '(emms-info-tinytag))
+@end lisp
+
+
+@node Using exiftool
+@section Using exiftool
+
+@cindex Using exiftool
+
+Make sure that the perl program exiftool is installed on your
+system. It is available at @uref{https://exiftool.org/}.
+
+Then set exiftool as the sole info method with:
+
+@lisp
+(setq emms-info-functions '(emms-info-exiftool))
 @end lisp
 
 
