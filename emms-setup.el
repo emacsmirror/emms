@@ -85,6 +85,7 @@ the stable features which come with the Emms distribution."
     (require 'emms-info-opusinfo)
     (require 'emms-info-metaflac)
     (require 'emms-info-tinytag)
+    (require 'emms-info-exiftool)
     (require 'emms-cache)
     (require 'emms-mode-line)
     (require 'emms-mark)
