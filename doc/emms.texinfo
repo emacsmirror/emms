@@ -15,7 +15,7 @@
 
 @copying
  @copyright{} 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2014,
-   2015, 2016  Free Software Foundation, Inc.
+   2015, 2016, 2020  Free Software Foundation, Inc.
 @quotation
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.1 or
@@ -132,11 +132,9 @@ Extending Emms
 
 @cindex introduction
 
-Emms is the Emacs Multi-Media System. It tries to be a clean and small
-application to play multimedia files from Emacs using external
-players. Many of its ideas are derived from
-@uref{http://www.nongnu.org/mp3player, MpthreePlayer}, but it tries to
-be more general and more clean.
+Emms is the Emacs Multi-Media System. Emms organizes playlists, allows
+browsing through track and album metadata, and plays files by calling
+external players.
 
 This manual tries to be the definitive source of information about
 Emms, an online version of the manual is available at:
@@ -229,7 +227,7 @@ is also required for the Emms browser, @xref{The Browser}.)
 To switch to the playlist buffer, invoke @kbd{M-x
 emms-playlist-mode-go} or simply @kbd{M-x emms}. You may see that some
 tracks are displayed with their file name, but as Emms populates its
-tag cahe, track by track, the filenames get replaced with the artist
+tag cache, track by track, the filenames get replaced with the artist
 and track name of the file's tag.
 
 Go ahead and navigate to a track and hit @kbd{RET} on it to start
@@ -246,9 +244,12 @@ basic commands (@pxref{Basic Commands}), the interactive playlists
 
 @cindex installation
 
-You need to put all the .el files of emms in a directory in your
-load-path. For example, if you put all those files into ~/elisp/emms/,
-then in your ~/.emacs, you should do:
+Emms is available via GNU ELPA, which takes care of all of the
+following steps automatically.
+
+If you are installing Emms manually, you need to put all the .el files
+of emms in a directory in your load-path. For example, if you put all
+those files into ~/elisp/emms/, then in your ~/.emacs, you should add:
 
 @lisp
 (add-to-list 'load-path "~/elisp/emms/lisp/")
@@ -810,7 +811,7 @@ Search for @var{regexp} and display the results in a locate buffer
 @cindex players, simple
 
 @defmac define-emms-simple-player name types regex command &rest args
-Define a simple player with the use of `emms-define-player'.
+Define a simple player.
 @var{name} is used to construct the name of the function like
 emms-player-@var{name}. @var{types} is a list of track types
 understood by this player. @var{regex} must be a regexp that matches
