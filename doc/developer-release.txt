@@ -18,9 +18,9 @@ Savannah, as a tarball from GNU, and via GNU ELPA.
 
 *  Update copy of emms.info in root directory
 
-*  Update online manual
+*  Update online manual (cvs commit -m "update manual" manual/index.html)
 
-*  Update website
+*  Update website (cvs commit -m "update website" index.html)
 
 *  Push to GNU ELPA: push to the Savannah "elpa" branch, and from there "git push elpa elpa:refs/heads/externals/emms"
 
