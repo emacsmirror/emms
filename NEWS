@@ -2,6 +2,9 @@ News since version 5.4
 
   - Emms is now available via the GNU ELPA repository.
   - New info method: tinytag.
+  - New info method: exiftool.
+  - emms-volume.el: Fix missing quote in emms-volume-change-function.
+  - namespace cleanup (emms-later-do.el).
 
 News since version 5.3
 
