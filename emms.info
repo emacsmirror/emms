@@ -1,7 +1,7 @@
 This is emms.info, produced by makeinfo version 6.1 from emms.texinfo.
 
-(C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2014, 2015, 2016
-Free Software Foundation, Inc.
+(C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2014, 2015, 2016,
+2020 Free Software Foundation, Inc.
      Permission is granted to copy, distribute and/or modify this
      document under the terms of the GNU Free Documentation License,
      Version 1.1 or any later version published by the Free Software
@@ -21,8 +21,8 @@ Emms Manual
 
 This is the Manual for the Emacs Multimedia System.
 
-   (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2014, 2015, 2016
-Free Software Foundation, Inc.
+   (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2014, 2015, 2016,
+2020 Free Software Foundation, Inc.
      Permission is granted to copy, distribute and/or modify this
      document under the terms of the GNU Free Documentation License,
      Version 1.1 or any later version published by the Free Software
@@ -112,11 +112,9 @@ File: emms.info,  Node: Introduction,  Next: Quickstart Guide,  Up: Top
 1 Introduction
 **************
 
-Emms is the Emacs Multi-Media System.  It tries to be a clean and small
-application to play multimedia files from Emacs using external players.
-Many of its ideas are derived from MpthreePlayer
-(http://www.nongnu.org/mp3player), but it tries to be more general and
-more clean.
+Emms is the Emacs Multi-Media System.  Emms organizes playlists, allows
+browsing through track and album metadata, and plays files by calling
+external players.
 
    This manual tries to be the definitive source of information about
 Emms, an online version of the manual is available at:
@@ -203,8 +201,9 @@ required for the Emms browser, *Note The Browser::.)
 
    To switch to the playlist buffer, invoke 'M-x emms-playlist-mode-go'
 or simply 'M-x emms'.  You may see that some tracks are displayed with
-their file name, but as Emms populates its tag cahe, track by track, the
-filenames get replaced with the artist and track name of the file's tag.
+their file name, but as Emms populates its tag cache, track by track,
+the filenames get replaced with the artist and track name of the file's
+tag.
 
    Go ahead and navigate to a track and hit 'RET' on it to start
 playback.
@@ -219,9 +218,13 @@ File: emms.info,  Node: Installation,  Next: Setup,  Prev: Quickstart Guide,  Up
 3 Installation
 **************
 
-You need to put all the .el files of emms in a directory in your
-load-path.  For example, if you put all those files into ~/elisp/emms/,
-then in your ~/.emacs, you should do:
+Emms is available via GNU ELPA, which takes care of all of the following
+steps automatically.
+
+   If you are installing Emms manually, you need to put all the .el
+files of emms in a directory in your load-path.  For example, if you put
+all those files into ~/elisp/emms/, then in your ~/.emacs, you should
+add:
 
      (add-to-list 'load-path "~/elisp/emms/lisp/")
 
@@ -678,12 +681,12 @@ File: emms.info,  Node: Simple Players,  Next: Playlists,  Prev: Sources,  Up: T
 *****************
 
  -- Macro: define-emms-simple-player name types regex command &rest args
-     Define a simple player with the use of 'emms-define-player'.  NAME
-     is used to construct the name of the function like
-     emms-player-NAME.  TYPES is a list of track types understood by
-     this player.  REGEX must be a regexp that matches the filenames the
-     player can play.  COMMAND specifies the command line argument to
-     call the player and ARGS are the command line arguments.
+     Define a simple player.  NAME is used to construct the name of the
+     function like emms-player-NAME.  TYPES is a list of track types
+     understood by this player.  REGEX must be a regexp that matches the
+     filenames the player can play.  COMMAND specifies the command line
+     argument to call the player and ARGS are the command line
+     arguments.
 
    For a discussion on how to define new players see *Note New Player::.
 
@@ -3752,61 +3755,61 @@ Keybinding Index
 
 
 Tag Table:
-Node: Top689
-Node: Introduction4430
-Node: Quickstart Guide6005
-Node: Installation8755
-Node: Compiling Emms9168
-Node: Setup9856
-Node: Configuration10842
-Node: Finding files and speed12253
-Node: Getting Help13099
-Node: Formats and Freedom13677
-Node: Basic Commands14882
-Node: The Core File18263
-Node: User Variables18697
-Node: Hooks19673
-Node: Core Functions21099
-Node: Sources24099
-Node: Simple Players26232
-Node: Playlists27326
-Node: Track Information28607
-Node: Using tinytag31494
-Node: Using exiftool31923
-Node: Using TagLib32295
-Node: Defining Info Methods33404
-Node: Interactive Playlists34186
-Node: Markable Playlists37228
-Node: Extending Emms39699
-Node: New Player40135
-Node: Simple Player for `play'40524
-Node: More Complex Player42252
-Node: The Browser45259
-Node: Browser Interface46235
-Node: Filtering Tracks48649
-Node: Displaying Covers50427
-Node: Changing Looks52441
-Node: Sorting Playlists55419
-Node: Persistent Playlists56888
-Node: Editing Tracks58047
-Node: Emms Mode Line61721
-Node: Limiting62889
-Node: Music Player Daemon65228
-Node: Lyrics68741
-Node: Volume70789
-Node: Streaming Audio72577
-Ref: Streaming Audio-Footnote-173169
-Node: APE / FLAC Commands73520
-Node: Bookmarks74227
-Node: Managing Playlists74938
-Node: GNU FM75961
-Node: Uploading Track Information77315
-Node: GNU FM Streaming78197
-Node: Copying78697
-Node: The GNU FDL116214
-Node: Concept Index138602
-Node: Function Index143533
-Node: Variable Index159225
-Node: Keybinding Index161568
+Node: Top695
+Node: Introduction4442
+Node: Quickstart Guide5901
+Node: Installation8652
+Node: Compiling Emms9201
+Node: Setup9889
+Node: Configuration10875
+Node: Finding files and speed12286
+Node: Getting Help13132
+Node: Formats and Freedom13710
+Node: Basic Commands14915
+Node: The Core File18296
+Node: User Variables18730
+Node: Hooks19706
+Node: Core Functions21132
+Node: Sources24132
+Node: Simple Players26265
+Node: Playlists27322
+Node: Track Information28603
+Node: Using tinytag31490
+Node: Using exiftool31919
+Node: Using TagLib32291
+Node: Defining Info Methods33400
+Node: Interactive Playlists34182
+Node: Markable Playlists37224
+Node: Extending Emms39695
+Node: New Player40131
+Node: Simple Player for `play'40520
+Node: More Complex Player42248
+Node: The Browser45255
+Node: Browser Interface46231
+Node: Filtering Tracks48645
+Node: Displaying Covers50423
+Node: Changing Looks52437
+Node: Sorting Playlists55415
+Node: Persistent Playlists56884
+Node: Editing Tracks58043
+Node: Emms Mode Line61717
+Node: Limiting62885
+Node: Music Player Daemon65224
+Node: Lyrics68737
+Node: Volume70785
+Node: Streaming Audio72573
+Ref: Streaming Audio-Footnote-173165
+Node: APE / FLAC Commands73516
+Node: Bookmarks74223
+Node: Managing Playlists74934
+Node: GNU FM75957
+Node: Uploading Track Information77311
+Node: GNU FM Streaming78193
+Node: Copying78693
+Node: The GNU FDL116210
+Node: Concept Index138598
+Node: Function Index143529
+Node: Variable Index159221
+Node: Keybinding Index161564
 
 End Tag Table
