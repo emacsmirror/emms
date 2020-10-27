@@ -22,6 +22,10 @@ Savannah, as a tarball from GNU, and via GNU ELPA.
 
 *  Update website (cvs commit -m "update website" index.html)
 
-*  Push to GNU ELPA: push to the Savannah "elpa" branch, and from there "git push elpa elpa:refs/heads/externals/emms"
+*  Push to GNU ELPA:
+
+       - merge master into the Savannah "elpa" branch and push to Savannah
+
+       - from the "elpa" branch in Savannah push to elpa.git: "git push elpa elpa:refs/heads/externals/emms"
 
 *  Send announcement email to gnu-info and to the emms mailing list
