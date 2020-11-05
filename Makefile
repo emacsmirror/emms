@@ -83,7 +83,6 @@ ChangeLog:
 clean:
 	-rm -f *~ $(DOCDIR)emms.info $(DOCDIR)emms.html $(SRCDIR)/emms-print-metadata
 	-rm -f *~ *.elc emms-auto.el
-	-rm -f emms.info
 
 dist: clean emms-auto.el
 	git archive --format=tar --prefix=emms-$(VERSION)/ HEAD | \
