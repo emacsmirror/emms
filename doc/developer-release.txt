@@ -2,30 +2,30 @@ This is an explanation of how to make a release for Emms. Emms is
 currently distributed in three different ways: via the Git repo on
 Savannah, as a tarball from GNU, and via GNU ELPA.
 
-*  Increase the version number in emms.el (variable, elpa header), Makefile
+* Increase the version number in emms.el (variable, elpa header), Makefile
 
-*  Update NEWS
+* Update NEWS
 
-*  Push version updates to git repo
+* Push version updates to git repo
 
-*  Tag release in VCS, for example `git tag -a 4.2 -m "4.2"'
+* Tag release in VCS, for example `git tag -a 4.2 -m "4.2"'
 
-*  Push tag to VCS if needed, for example `git push --tags origin "4.2"'
+* Push tag to VCS if needed, for example `git push --tags origin "4.2"'
 
-*  Run make release
+* Run make release
 
-*  Run make upload
+* Run make upload
 
-*  Update copy of emms.info in root directory
+* Update copy of emms.info in root directory
 
-*  Update online manual (cvs commit -m "update manual" manual/index.html)
+* Update online manual (cvs commit -m "update manual" manual/index.html)
 
-*  Update website (cvs commit -m "update website" index.html)
+* Update website (cvs commit -m "update website" index.html)
 
-*  Push to GNU ELPA:
+* Push to GNU ELPA:
 
-       - merge master into the Savannah "elpa" branch and push to Savannah
+      - merge master into the Savannah "elpa" branch and push to Savannah
 
-       - from the "elpa" branch in Savannah push to elpa.git: "git push elpa elpa:refs/heads/externals/emms"
+      - from the "elpa" branch in Savannah push to elpa.git: "git push elpa elpa:/externals/emms"
 
-*  Send announcement email to gnu-info and to the emms mailing list
+* Send announcement email to the emms mailing list
