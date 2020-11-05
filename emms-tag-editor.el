@@ -186,9 +186,13 @@ See also `emms-tag-editor-tag-file' and `emms-tag-editor-tag-ogg'.")
 Valid tags are given by `emms-tag-editor-tagfile-functions'."
   (let (args val)
     (mapc (lambda (tag)
+            (unless (or (string-prefix-p "-" (cdr tag))
+                        (string-prefix-p "+" (cdr tag))
+                        (string-prefix-p "/" (cdr tag)))
+              (error "Command arguments need prefix in `emms-tag-editor-tagfile-functions'."))
             (setq val (emms-track-get track (car tag)))
             (if (and val (stringp val))
-                (setq args (append (list (concat "-" (cdr tag)) val) args))))
+                (setq args (append (list (cdr tag) val) args))))
           tags)
     (apply 'call-process program
            nil (get-buffer-create emms-tag-editor-log-buffer) nil
