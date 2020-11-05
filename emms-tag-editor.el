@@ -40,6 +40,7 @@
 
 (defvar emms-tag-editor-tags
   '((info-artist      . "a")
+    (info-albumartist . "A")
     (info-composer    . "C")
     (info-performer   . "p")
     (info-title       . "t")
@@ -85,7 +86,7 @@ is the format template.  The format specification is like:
  m     --     Track description
  f     --     Track name
  a     --     Track info-artist
- c     --     Track info-composer
+ C     --     Track info-composer
  p     --     Track info-performer
  t     --     Track info-title
  l     --     Track info-album
@@ -118,13 +119,17 @@ See also `emms-tag-editor-default-parser'.")
 
 (defvar emms-tag-editor-tagfile-functions
   '(("mp3" "mid3v2"
-     ((info-artist      . "a")
-      (info-title       . "t")
-      (info-album       . "A")
-      (info-tracknumber . "T")
-      (info-year        . "y")
-      (info-genre       . "g")
-      (info-note        . "c")))
+     ((info-artist      . "-a")
+      (info-title       . "-t")
+      (info-album       . "-A")
+      (info-tracknumber . "-T")
+      (info-year        . "-y")
+      (info-genre       . "-g")
+      (info-note        . "-c")
+      (info-albumartist . "--TPE2")
+      (info-composer    . "--TCOM")
+      (info-performer   . "--TOPE")
+      (info-date        . "--TDAT")))
     ("ogg" . emms-tag-editor-tag-ogg)
     ("flac" . emms-tag-editor-tag-flac))
   "An alist used when committing changes to tags in files.
@@ -316,8 +321,7 @@ changes will only take effect on the tracks in the region."
       (if (and mark-active transient-mark-mode)
           (narrow-to-region (region-beginning) (region-end)))
       (goto-char (point-min))
-      (while (re-search-forward (concat "^" (regexp-quote tag)) nil t)
-        (skip-chars-forward " \t=")
+      (while (re-search-forward (concat "^" (regexp-quote tag) "[ \t]+=[ \t]+") nil t)
         (delete-region (point) (line-end-position))
         (insert value)))))
 
@@ -608,6 +612,10 @@ With prefix argument, bury the tag edit buffer."
                                        (emms-track-get track 'newname))))
             (setq filename (emms-track-get track 'newname))
             (ignore-errors
+              ;; if `emms-tag-editor-rename-format' is like "%a/%l/%t",
+              ;; we may need to create directory first.
+              (let ((dir (file-name-directory filename)))
+                (when dir (make-directory dir t)))
               ;; Ignore errors so that renaming multiple files doesn't stop
               ;; because of one that fails.  In that case it's probably
               ;; old-file = newfile which causes the problem.
