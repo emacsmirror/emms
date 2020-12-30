@@ -23,7 +23,7 @@ INSTALLINFO = /usr/bin/install-info --info-dir=$(INFODIR)
 CHANGELOG_CMD = git log --pretty=medium --no-merges
 
 # The currently released version of EMMS
-VERSION=6.00
+VERSION=6.03
 
 .PHONY: all install docs clean
 .PRECIOUS: %.elc
