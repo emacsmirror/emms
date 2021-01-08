@@ -437,8 +437,22 @@ the @xref{The Browser}, persistent playlist via
   (emms-librefm-scrobbler-enable)
 @end lisp
 
+...
 
+@lisp
+  (setq-default
+   emms-source-file-default-directory "/mnt/db/mediaCore/sound_music/"
 
+   emms-source-playlist-default-format 'm3u
+   emms-playlist-mode-center-when-go t
+   emms-playlist-default-major-mode 'emms-playlist-mode
+
+   emms-player-list '(emms-player-mpv)
+   emms-player-mpv-environment '("PULSE_PROP_media.role=music")
+   emms-player-mpv-parameters '("--quiet" "--really-quiet" "--no-audio-display" "--force-window=no" "--vo=null")
+
+   emms-show-format "NP: %s")
+@end lisp
 
 
 @c -------------------------------------------------------------------
