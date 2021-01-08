@@ -372,6 +372,7 @@ Another way to change Emms variables is to use the M-x
 
 @menu
 * Finding files and speed::     Finding files quickly or portably.
+* Setup Examples::              Examples of ways to setup Emms.
 @end menu
 
 
@@ -397,6 +398,47 @@ have GNU/find installed.
 
 The method Emms will use is defined in the customisable variable
 @var{emms-source-file-directory-tree-function}.
+
+
+@node Setup Examples
+@section Setup Examples
+
+@cindex example
+@cindex configuration
+
+What follow are samples from real-world Emms configurations which show
+the variety and breadth of modifications people make to the default
+Emms setup.
+
+This excerpt includes dbus integration, defining a "recent" filter for
+the @xref{The Browser}, persistent playlist via
+@file{emms-history.el}, and enabling sending track information with
+@file{emms-librefm-stream.el}:
+
+@lisp
+  ;; notifications
+  (require 'emms-dbus)
+  (emms-dbus-enable)
+  ;; covers
+  (setq emms-browser-covers #'emms-browser-cache-thumbnail-async)
+  (setq emms-browser-thumbnail-small-size 64)
+  (setq emms-browser-thumbnail-medium-size 128)
+  ;; filters
+  (emms-browser-make-filter "all" #'ignore)
+  (emms-browser-make-filter "recent"
+     (lambda (track) (< 30
+        (time-to-number-of-days
+  (time-subtract (current-time)
+        (emms-info-track-file-mtime track))))))
+  (emms-browser-set-filter (assoc "all" emms-browser-filters))
+  ;; history
+  (emms-history-load)
+  ;; libre-fm
+  (emms-librefm-scrobbler-enable)
+@end lisp
+
+
+
 
 
 @c -------------------------------------------------------------------
