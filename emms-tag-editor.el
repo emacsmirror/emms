@@ -38,6 +38,11 @@
 (require 'emms-mark)
 (require 'format-spec)
 
+(defcustom emms-tag-editor-tag-ogg-program "vorbiscomment"
+  "*The name/path of the ogg editor program."
+  :type 'string
+  :group 'emms-tag-editor)
+
 (defvar emms-tag-editor-tags
   '((info-artist      . "a")
     (info-albumartist . "A")
@@ -175,7 +180,7 @@ See also `emms-tag-editor-tag-file' and `emms-tag-editor-tag-ogg'.")
                 (setq args (append (list "-t" (concat (upcase tag) "=" val)) args)))))
           '("artist" "composer" "performer" "title" "album" "tracknumber" "date" "genre" "note"))
     (when args
-      (apply #'call-process "vorbiscomment" nil
+      (apply #'call-process emms-tag-editor-tag-ogg-program nil
              (get-buffer-create emms-tag-editor-log-buffer)
              nil
              "-w"
