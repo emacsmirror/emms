@@ -382,7 +382,7 @@ Another way to change Emms variables is to use the M-x
 @cindex speed
 
 Emms needs to traverse directories in order to find playable
-media. The default method Emms uses to achive this is
+media. The default method Emms uses to achieve this is
 @code{emms-source-file-directory-tree-internal} as defined in
 @file{emms-source-file.el}.  The above method is written portably and
 will always work, but might be too slow if we want to load several
@@ -921,7 +921,7 @@ Automatic track information retrieval is enabled by default in the
 `emms-all' setup level provided by @file{emms-setup.el}. For more
 information about @file{emms-setup.el} see @xref{Setup}.
 
-If you would like to know how Emms track retreival works and how we
+If you would like to know how Emms track retrieval works and how we
 can define new methods for track retrieval see @xref{Defining Info
 Methods}.
 
@@ -1238,7 +1238,7 @@ them into another playlist.
 emms-mark is also intent to provide a way for user to select tracks
 for other command to operate on them. Currently,
 @file{emms-tag-editor.el} uses the emms-mark to edit the tags of
-selected tracks. Two functions are useful for the elisp programer to
+selected tracks. Two functions are useful for the elisp programmer to
 handle marked tracks.
 
 @defun emms-mark-do-with-marked-track
@@ -1991,7 +1991,7 @@ playlist or all marked tracks (@pxref{Markable Playlists} for how to
 mark tracks).  The track's tag informations are listed in a special
 buffer `*Emms-TAGS*' in text format.  Field names are marked in bold
 face and are not editable.  Any tag information is placed behind an
-equal sign and is changable.  A special field `name' is the track's file
+equal sign and is changeable.  A special field `name' is the track's file
 name.  If any change is made in this field, the track's file will be
 renamed to the new name.  When you finished editing the tag infos use
 @kbd{C-c C-c} (which calls @code{emms-tag-editor-submit-and-exit}) to
@@ -2040,7 +2040,7 @@ This variable determine how to insert track fields to
 `emms-tag-editor-edit-buffer'.  Emms tag info editable fields is usually
 determined by the extension of track name.  The variable
 `emms-tag-editor-tags' contains all tags that emms track may have.  A
-single charactar is assigned to the tag to make the
+single character is assigned to the tag to make the
 `emms-tag-editor-formats' easier to generate.
 @end defvr
 
@@ -2084,7 +2084,7 @@ according to the value of @code{emms-tag-editor-rename-format}.
 @cindex mode line
 @cindex display emms information
 
-We can display information about the currenty playing track on the
+We can display information about the currently playing track on the
 Emacs mode line using the package `emms-mode-line' which is provided
 by the file @file{emms-mode-line.el}.
 
@@ -2519,10 +2519,10 @@ and populate it with the built-in list of streaming audio sources.
 @node APE / FLAC Commands
 @chapter APE / FLAC Commands
 
-Often, a single APE or FLAC file contains a complete ablum.  We can still
-play next or previous track in the ablum with the help of
+Often, a single APE or FLAC file contains a complete album.  We can still
+play next or previous track in the album with the help of
 @file{emms-cue.el} package, provided there is a corresponding cue sheet
-file.  This package also defines @code{emms-info-cueinfo} for retreiving
+file.  This package also defines @code{emms-info-cueinfo} for retrieving
 the track information for APE / FLAC itself.
 
 To load @file{emms-cue.el}:
