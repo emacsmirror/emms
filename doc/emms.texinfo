@@ -143,22 +143,22 @@ Emms, an online version of the manual is available at:
 The basic functionality of Emms consists of three parts: The core, the
 sources, and the players.
 
-The core resides in @file{emms.el}, and provides a simple playlist and the
-basic functionality to use all the other features of Emms. It provides
-the common user commands and interfaces for other parts. It thinks in
-tracks, where a track is the combination of a type and a name - e.g.
-the track type 'file has a name that is the file name. Other track
-types are possible.
+The core resides in @file{emms.el}, provides a simple playlist, and
+the basic functionality to use all the other features of Emms. It
+provides the common user commands and interfaces for other parts. It
+thinks in tracks, where a track is the combination of a type and a
+name - e.g.  the track type 'file has a name that is the file
+name. Other track types are possible.
 
 To get to tracks, the core needs sources. The file @file{emms-source-file.el}
 provides simple sources to interact with the file system.
 
 When Emms finally has the sources in the playlist, it needs a player
-to play them. @file{emms-player-simple.el} defines a few useful players, and
-allows you to define your own in a very simple way.
+to play them. @file{emms-player-simple.el} defines a few useful
+players and provides a straightforward way of providing your own.
 
-The Emms core comes with many additional features to extend its
-functionality.
+The Emms comes with many additional features to extend the
+functionality beyond the core.
 
 The way Emms works is easy to customize with your own code or by using
 `M-x customize' or by changing the variables directly.
@@ -172,7 +172,8 @@ This chapter demonstrates how to setup Emms so that you can start
 listening to your music without having to read all of the
 documentation first. This is the tl;dr version of the manual.
 
-The first thing you have to do is telling Emacs where Emms is
+The first thing you do is to load Emms via GNU ELPA. But if you are
+installing manually, then start by telling Emacs where Emms is
 located. Let's say you have it in @file{~/elisp/emms/}. So add this
 line to your @file{.emacs}:
 
@@ -185,7 +186,7 @@ installation chapter, @xref{Installation}.
 
 You'll then want to load Emms into Emacs. To achieve this you invoke
 the @code{emms-all} setup function by adding the following three lines
-to your @file{.emacs}.
+to your Emacs initialization file.
 
 @lisp
 (require 'emms-setup)
@@ -208,16 +209,16 @@ the name of the file) of the music you listen to. Emms can use a
 number of pieces of software and libraries as sources for track info,
 see @xref{Track Information} for more.
 
-The last thing to do is to tell Emms where your music is; the root
+The last thing to do is to tell Emms where is your music; the root
 directory of our music collection. Let's say all your music is in
-@file{~/Music} or in subdirectories thereof.
+@file{~/Music} or in subdirectories thereof:
 
 @lisp
 (setq emms-source-file-default-directory "~/Music/")
 @end lisp
 
-OK, now we've set up Emms. Reload your @file{.emacs} or restart Emacs to
-let the changes have an effect.
+OK, now we've set up Emms. Reload your Emacs initialization file or
+restart Emacs to let the changes have an effect.
 
 Now we will add all our music to a playlist by invoking @kbd{M-x
 emms-add-directory-tree RET ~/Music/ RET}. We do this because then
@@ -226,9 +227,9 @@ is also required for the Emms browser, @xref{The Browser}.)
 
 To switch to the playlist buffer, invoke @kbd{M-x
 emms-playlist-mode-go} or simply @kbd{M-x emms}. You may see that some
-tracks are displayed with their file name, but as Emms populates its
-tag cache, track by track, the filenames get replaced with the artist
-and track name of the file's tag.
+tracks are displayed with their file name, but as Emms asynchronously
+populates its tag cache, track by track, the filenames get replaced
+with the artist and track name of the file's tag.
 
 Go ahead and navigate to a track and hit @kbd{RET} on it to start
 playback.
@@ -371,6 +372,7 @@ Another way to change Emms variables is to use the M-x
 
 @menu
 * Finding files and speed::     Finding files quickly or portably.
+* Setup Examples::              Examples of ways to setup Emms.
 @end menu
 
 
@@ -396,6 +398,63 @@ have GNU/find installed.
 
 The method Emms will use is defined in the customisable variable
 @var{emms-source-file-directory-tree-function}.
+
+
+@node Setup Examples
+@section Setup Examples
+
+@cindex example
+@cindex configuration
+
+What follow are samples from real-world Emms configurations which show
+some of the variety and breadth of modifications people make to the
+default Emms setup.
+
+The following excerpt includes dbus integration, defining a "recent"
+filter for the @xref{The Browser}, persistent playlist via
+@file{emms-history.el}, and enabling sending track information with
+@file{emms-librefm-stream.el}:
+
+@lisp
+  ;; notifications
+  (require 'emms-dbus)
+  (emms-dbus-enable)
+  ;; covers
+  (setq emms-browser-covers #'emms-browser-cache-thumbnail-async)
+  (setq emms-browser-thumbnail-small-size 64)
+  (setq emms-browser-thumbnail-medium-size 128)
+  ;; filters
+  (emms-browser-make-filter "all" #'ignore)
+  (emms-browser-make-filter "recent"
+     (lambda (track) (< 30
+        (time-to-number-of-days
+  (time-subtract (current-time)
+        (emms-info-track-file-mtime track))))))
+  (emms-browser-set-filter (assoc "all" emms-browser-filters))
+  ;; history
+  (emms-history-load)
+  ;; libre-fm
+  (emms-librefm-scrobbler-enable)
+@end lisp
+
+
+In the following it is possible to see how some of defaults are set
+regarding saving playlists, playlist interaction, as well as adding
+special arguments to a specific player backend.
+
+@lisp
+  (setq-default
+   emms-source-file-default-directory "/mnt/db/mediaCore/sound_music/"
+
+   emms-source-playlist-default-format 'm3u
+   emms-playlist-mode-center-when-go t
+   emms-playlist-default-major-mode 'emms-playlist-mode
+   emms-show-format "NP: %s"
+
+   emms-player-list '(emms-player-mpv)
+   emms-player-mpv-environment '("PULSE_PROP_media.role=music")
+   emms-player-mpv-parameters '("--quiet" "--really-quiet" "--no-audio-display" "--force-window=no" "--vo=null"))
+@end lisp
 
 
 @c -------------------------------------------------------------------
