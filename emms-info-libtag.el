@@ -74,7 +74,7 @@
   :type '(string))
 
 (defcustom emms-info-libtag-known-extensions
-  (regexp-opt '("mp3" "mp4" "m4a" "ogg" "flac" "spx" "wma"))
+  (regexp-opt '("mp3" "mp4" "m4a" "ogg" "flac" "spx" "wma" "opus"))
   "Regexp of known extensions compatible with `emms-info-libtag-program-name'.
 
 Case is irrelevant."

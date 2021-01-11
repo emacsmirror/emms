@@ -37,6 +37,7 @@
 (require 'emms-info-mp3info)
 (require 'emms-playlist-mode)
 (require 'emms-mark)
+(require 'emms-tracktag)
 (require 'format-spec)
 (require 'subr-x)
 
@@ -138,7 +139,8 @@ See also `emms-tag-editor-default-parser'.")
       (info-performer   . "--TOPE")
       (info-date        . "--TDAT")))
     ("ogg" . emms-tag-editor-tag-ogg)
-    ("flac" . emms-tag-editor-tag-flac))
+    ("flac" . emms-tag-editor-tag-flac)
+    ("opus" . emms-tracktag-file))
   "An alist used when committing changes to tags in files.
 If the external program sets tags by command line options
 one-by-one, then the list should like:
