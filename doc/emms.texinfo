@@ -407,11 +407,11 @@ The method Emms will use is defined in the customisable variable
 @cindex configuration
 
 What follow are samples from real-world Emms configurations which show
-the variety and breadth of modifications people make to the default
-Emms setup.
+some of the variety and breadth of modifications people make to the
+default Emms setup.
 
-This excerpt includes dbus integration, defining a "recent" filter for
-the @xref{The Browser}, persistent playlist via
+The following excerpt includes dbus integration, defining a "recent"
+filter for the @xref{The Browser}, persistent playlist via
 @file{emms-history.el}, and enabling sending track information with
 @file{emms-librefm-stream.el}:
 
@@ -437,7 +437,10 @@ the @xref{The Browser}, persistent playlist via
   (emms-librefm-scrobbler-enable)
 @end lisp
 
-...
+
+In the following it is possible to see how some of defaults are set
+regarding saving playlists, playlist interaction, as well as adding
+special arguments to a specific player backend.
 
 @lisp
   (setq-default
@@ -446,12 +449,11 @@ the @xref{The Browser}, persistent playlist via
    emms-source-playlist-default-format 'm3u
    emms-playlist-mode-center-when-go t
    emms-playlist-default-major-mode 'emms-playlist-mode
+   emms-show-format "NP: %s"
 
    emms-player-list '(emms-player-mpv)
    emms-player-mpv-environment '("PULSE_PROP_media.role=music")
-   emms-player-mpv-parameters '("--quiet" "--really-quiet" "--no-audio-display" "--force-window=no" "--vo=null")
-
-   emms-show-format "NP: %s")
+   emms-player-mpv-parameters '("--quiet" "--really-quiet" "--no-audio-display" "--force-window=no" "--vo=null"))
 @end lisp
 
 
