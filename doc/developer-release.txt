@@ -14,8 +14,6 @@ distributed via Emacs ELPA (https://elpa.gnu.org/).
 
 * Push tag to VCS if needed, for example `git push --tags origin "4.2"'
 
-* Update online manual (cvs commit -m "update manual" manual/index.html)
-
 * Update website (cvs commit -m "update website" index.html)
 
 * Push to GNU ELPA:
