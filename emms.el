@@ -375,7 +375,7 @@ Point will not be restored afterward."
   '("ogg" "mp3" "wav" "mpg" "mpeg" "wmv" "wma"
     "mov" "avi" "divx" "ogm" "ogv" "asf" "mkv"
     "rm" "rmvb" "mp4" "flac" "vob" "m4a" "ape"
-    "flv" "webm" "aif")
+    "flv" "webm" "aif" "opus")
   "A list of common formats which player definitions can use.")
 
 
