@@ -1,8 +1,9 @@
-;;; emms-tag-editor.el --- Edit track tags.
+;;; emms-tag-editor.el --- Edit track tags. -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2021 Free Software Foundation, Inc.
 ;;
-;; Author: Ye Wenbin <wenbinye@163.com>
+;; Original Author: Ye Wenbin <wenbinye@163.com>
+;; Authors: the Emms developers (see AUTHORS file)
 
 ;; This file is part of EMMS.
 
@@ -37,6 +38,7 @@
 (require 'emms-playlist-mode)
 (require 'emms-mark)
 (require 'format-spec)
+(require 'subr-x)
 
 (defcustom emms-tag-editor-tag-ogg-program "vorbiscomment"
   "*The name/path of the ogg editor program."
@@ -787,6 +789,94 @@ Then it's the callers job to apply them afterwards with
       (emms-tag-editor-apply tracks))))
 
 (define-key emms-playlist-mode-map "R" 'emms-tag-editor-rename)
+
+(defvar emms-tag-editor-pipe-config
+  '(("mid3iconv -e gbk <file>"
+     :command "mid3iconv"
+     :arguments ("-e" "gbk" name)))
+  "Config of tag editor pipe.
+
+A pipe is defined like below:
+
+  (\"piper-name\" :command xxx :arguments xxx)
+
+:command is a command string, this command can not change file name.
+:arguments is a list or a function return list, for example:
+
+  (\"--track-name\" name (\"--year\" info-year))
+  (lambda (track) (list (emms-track-name track 'name)))
+
+1. symbols can be 'name or elements of (mapcar 'car emms-tag-editor-tags),
+   which will be replaced to track info before run command.
+2. sublist used to deal with group args, for example, (\"--year\" info-year), when
+   track's info-year is nil, the \"--year\" will be removed too.")
+
+(defun emms-tag-editor-pipe-get (pipe-name key)
+  "Get the pipe value of KEY named PIPE-NAME in `emms-tag-editor-pipe-config'."
+  (let ((config emms-tag-editor-pipe-config))
+    (plist-get (cdr (assoc pipe-name config)) key)))
+
+(defun emms-tag-editor-pipe ()
+  "Select and run pipe command to track at point or all marked tracks."
+  (interactive)
+  (let* ((pipe-name (completing-read "Please choise pipe: " emms-tag-editor-pipe-config)))
+    (when pipe-name
+      (if (emms-mark-has-markedp)
+          (emms-tag-editor-marked-track-pipe pipe-name)
+        (emms-tag-editor-track-pipe
+         (emms-tag-editor-track-at) pipe-name)))))
+
+(defun emms-tag-editor-track-pipe (track pipe-name)
+  "Run command of pipe nameed PIPE-NAME to TRACK."
+  (if (eq (emms-track-get track 'type) 'file)
+      (let* ((coding-system-for-read 'utf-8)
+             (track-name (emms-track-name track))
+             (command (emms-tag-editor-pipe-get pipe-name :command))
+             (arguments (emms-tag-editor-pipe-get pipe-name :arguments)))
+        (when (functionp arguments)
+          (setq arguments (funcall arguments track)))
+        (setq arguments
+              (when (listp arguments)
+                (mapcar
+                 #'(lambda (x)
+                     (cond ((symbolp x)
+                            (emms-track-get track x))
+                           ((listp x)
+                            (let ((list (mapcar
+                                         #'(lambda (y)
+                                             (if (symbolp y)
+                                                 (emms-track-get track y)
+                                               y))
+                                         x)))
+                              (if (member nil list)
+                                  (list nil)
+                                list)))
+                           (t x)))
+                 arguments)))
+        (setq arguments
+              (flatten-tree
+               (remove (list nil) arguments)))
+        (if (and command (listp arguments))
+            (if (member nil arguments)
+                (message "Warn: skip run %S" (string-join `(,command ,@(remove nil arguments)) " "))
+              (if (zerop (apply #'call-process
+                                command nil nil nil arguments))
+                  (progn
+                    (message "Run command: %S" (string-join `(,command ,@arguments) " "))
+                    (run-hook-with-args 'emms-info-functions track))
+                (message "Fail to run command: %S" (string-join `(,command ,@arguments) " "))))
+          (message "No command or arguments are found.")))
+    (message "Only support files.")))
+
+(defun emms-tag-editor-marked-track-pipe (pipe-name)
+  "Run command of pipe named PIPE-NAME to marked tracks."
+  (let ((tracks (emms-mark-mapcar-marked-track
+                 'emms-tag-editor-track-at t)))
+    (if (null tracks)
+        (message "No track marked!")
+      (dolist (track tracks)
+        (emms-tag-editor-track-pipe track pipe-name)))))
+
 
 (provide 'emms-tag-editor)
 ;;; Emms-tag-editor.el ends here
