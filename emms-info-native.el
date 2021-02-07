@@ -1,6 +1,6 @@
 ;;; emms-info-native.el --- Native Emacs Lisp info method for EMMS
 
-;; Copyright (C) 2020 Free Software Foundation, Inc.
+;; Copyright (C) 2020-2021 Free Software Foundation, Inc.
 
 ;; Author: Petteri Hintsanen <petterih@iki.fi>
 
@@ -46,12 +46,19 @@
 ;;   extesion ‘.flac’.  Based on xiph.org’s FLAC format specification,
 ;;   see URL ‘https://xiph.org/flac/format.html’.
 ;;
+;; - MP3: MP3 files with extension ‘.mp3’ and id3v2 tags.  All id3v2
+;;   revisions should work, but many features like CRC and
+;;   unsynchronization are not supported.  Based on id3v2 Informal
+;;   Standards, see URL ‘https://id3.org’.
+;;
 ;; Format detection is based solely on filename extension, which is
 ;; matched case-insensitively.
 
 ;;; Code:
 
 (require 'bindat)
+(require 'cl-lib)
+(require 'emms-info)
 
 (defconst emms-info-native--max-peek-size (* 512 1024)
   "Maximum buffer size for metadata decoding.
@@ -143,25 +150,23 @@ different streams will be mixed together without an error."
       stream)))
 
 (defun emms-info-native--ogg-decode-comments (filename stream-type)
-  "Decode comment header from Ogg file FILENAME.
+  "Decode comments from Ogg file FILENAME.
 The file is assumed to contain a single stream of type
 STREAM-TYPE, which must either ‘vorbis’ or ‘opus’.
 
-Return a list of comments.  Depending on STREAM-TYPE, its
-elements are either of type
-‘emms-info-native--vorbis-comment-header-bindat-spec’ or
-‘emms-info-native--opus-comment-header-bindat-spec’."
-  (let ((packets (emms-info-native--decode-ogg filename 2))
-        stream)
-    (setq stream
-          (cond ((eq stream-type 'vorbis)
-                 (bindat-unpack emms-info-native--vorbis-headers-bindat-spec
-                                packets))
-                ((eq stream-type 'opus)
-                 (bindat-unpack emms-info-native--opus-headers-bindat-spec
-                                packets))
-                (t (error "Unknown stream type %s" stream-type))))
-    (bindat-get-field stream 'comment-header 'user-comment)))
+Return comments in a list of (FIELD . VALUE) cons cells.  See
+‘emms-info-native--split-vorbis-comment’ for details."
+  (let* ((packets (emms-info-native--decode-ogg filename 2))
+         (headers (cond ((eq stream-type 'vorbis)
+                         (bindat-unpack emms-info-native--vorbis-headers-bindat-spec
+                                        packets))
+                        ((eq stream-type 'opus)
+                         (bindat-unpack emms-info-native--opus-headers-bindat-spec
+                                        packets))
+                        (t (error "Unknown stream type %s" stream-type)))))
+    (emms-info-native--extract-vorbis-comments (bindat-get-field headers
+                                                                 'comment-header
+                                                                 'user-comments))))
 
 ;;;; Vorbis code
 
@@ -236,12 +241,12 @@ the data is assumed to be valid.")
     (eval (when (> last emms-info-native--max-vorbis-vendor-length)
             (error "Vorbis vendor length %s is too long" last)))
     (vendor-string vec (vendor-length))
-    (user-comment-list-length u32r)
+    (user-comments-list-length u32r)
     (eval (when (> last emms-info-native--max-num-vorbis-comments)
             (error "Vorbis user comment list length %s is too long" last)))
-    (user-comment repeat
-                  (user-comment-list-length)
-                  (struct emms-info-native--vorbis-comment-field-bindat-spec))
+    (user-comments repeat
+                   (user-comments-list-length)
+                   (struct emms-info-native--vorbis-comment-field-bindat-spec))
     (framing-bit u8)
     (eval (unless (= last 1))
           (error "Vorbis framing bit mismatch: expected 1, got %s" last)))
@@ -266,6 +271,49 @@ This field is used in Opus and FLAC comment structures as well.")
 They are always an identification header followed by a comment
 header.")
 
+(defconst emms-info-native--accepted-vorbis-fields
+  '("album"
+    "albumartist"
+    "albumartistsort"
+    "albumsort"
+    "artist"
+    "artistsort"
+    "composer"
+    "composersort"
+    "date"
+    "discnumber"
+    "genre"
+    "label"
+    "originaldate"
+    "originalyear"
+    "performer"
+    "title"
+    "titlesort"
+    "tracknumber"
+    "year")
+  "Emms info fields that are extracted from Vorbis comments.")
+
+(defun emms-info-native--extract-vorbis-comments (user-comments)
+  "Return a decoded list of comments from USER-COMMENTS.
+USER-COMMENTS should be a list of Vorbis comments according to
+‘user-comments’ field in
+‘emms-info-native--vorbis-comment-header-bindat-spec’,
+‘emms-info-native--opus-comment-header-bindat-spec’ and
+‘emms-info-native--flac-comment-block-bindat-spec’.
+
+Return comments in a list of (FIELD . VALUE) cons cells.  Only
+FIELDs that are listed in
+‘emms-info-native--accepted-vorbis-fields’ are returned."
+  (let (comments)
+    (dolist (user-comment user-comments)
+      (let* ((comment (cdr (assoc 'user-comment user-comment)))
+             (pair (emms-info-native--split-vorbis-comment comment)))
+        (push pair comments)))
+    (seq-filter (lambda (elt)
+                  (member (car elt)
+                          emms-info-native--accepted-vorbis-fields))
+                comments)))
+
 (defun emms-info-native--split-vorbis-comment (comment)
   "Split Vorbis comment to a field-value pair.
 Vorbis comments are of form ‘FIELD=VALUE’.  FIELD is a
@@ -273,14 +321,14 @@ case-insensitive field name with a restricted set of ASCII
 characters.  VALUE is an arbitrary UTF-8 encoded octet stream.
 
 Return a cons cell (FIELD . VALUE), where FIELD is converted to
-upper case and VALUE is the decoded value."
+lower case and VALUE is the decoded value."
   (let ((comment-string (decode-coding-string (mapconcat
                                                #'byte-to-string
                                                comment
                                                "")
                                               'utf-8)))
     (when (string-match "^\\(.+?\\)=\\(.+?\\)$" comment-string)
-      (cons (upcase (match-string 1 comment-string))
+      (cons (downcase (match-string 1 comment-string))
             (match-string 2 comment-string)))))
 
 ;;;; Opus code
@@ -329,12 +377,12 @@ assumed to be valid.")
     (eval (when (> last emms-info-native--max-vorbis-vendor-length)
             (error "Opus vendor length %s is too long" last)))
     (vendor-string vec (vendor-length))
-    (user-comment-list-length u32r)
+    (user-comments-list-length u32r)
     (eval (when (> last emms-info-native--max-num-vorbis-comments)
             (error "Opus user comment list length %s is too long" last)))
-    (user-comment repeat
-                  (user-comment-list-length)
-                  (struct emms-info-native--vorbis-comment-field-bindat-spec)))
+    (user-comments repeat
+                   (user-comments-list-length)
+                   (struct emms-info-native--vorbis-comment-field-bindat-spec)))
   "Opus comment header specification.
 Framing is verified.  Too long vendor string and comment list
 will also trigger an error.")
@@ -353,17 +401,17 @@ header.")
     (block-length u24))
   "FLAC metadata block header specification.")
 
-(defconst emms-info-native--flac-comment-bindat-spec
+(defconst emms-info-native--flac-comment-block-bindat-spec
   '((vendor-length u32r)
     (eval (when (> last emms-info-native--max-vorbis-vendor-length)
             (error "FLAC vendor length %s is too long" last)))
     (vendor-string vec (vendor-length))
-    (user-comment-list-length u32r)
+    (user-comments-list-length u32r)
     (eval (when (> last emms-info-native--max-num-vorbis-comments)
             (error "FLAC user comment list length %s is too long" last)))
-    (user-comment repeat
-                  (user-comment-list-length)
-                  (struct emms-info-native--vorbis-comment-field-bindat-spec)))
+    (user-comments repeat
+                   (user-comments-list-length)
+                   (struct emms-info-native--vorbis-comment-field-bindat-spec)))
   "FLAC Vorbis comment block specification.
 Too long vendor string and comment list will trigger an error.")
 
@@ -436,55 +484,226 @@ encountered."
 
 (defun emms-info-native--flac-decode-comments (filename)
   "Read and decode comments from FLAC file FILENAME.
-Return a list of comments.  See
-‘emms-info-native--vorbis-comment-field-bindat-spec’ for comment
-structure."
-  (bindat-get-field (bindat-unpack emms-info-native--flac-comment-bindat-spec
-                                   (emms-info-native--flac-decode-comment-block filename))
-                    'user-comment))
+Return comments in a list of (FIELD . VALUE) cons cells.  Only
+FIELDs that are listed in
+‘emms-info-native--accepted-vorbis-fields’ are returned."
+  (let* ((comment-block (bindat-unpack emms-info-native--flac-comment-block-bindat-spec
+                                       (emms-info-native--flac-decode-comment-block filename)))
+         (user-comments (bindat-get-field comment-block
+                                          'user-comments)))
+    (emms-info-native--extract-vorbis-comments user-comments)))
+
+;;;; id3v2 (MP3) code
+
+(defconst emms-info-native--id3v2-magic-array
+  [#x49 #x44 #x33]
+  "id3v2 header magic pattern ‘ID3’.")
+
+(defconst emms-info-native--id3v2-header-bindat-spec
+  '((file-identifier vec 3)
+    (eval (unless (equal last emms-info-native--id3v2-magic-array)
+            (error "id3v2 framing mismatch: expected ‘%s’, got ‘%s’"
+                   emms-info-native--id3v2-magic-array
+                   last)))
+    (version u8)
+    (revision u8)
+    (flags bits 1)
+    (size-bytes vec 4)
+    (size eval (emms-info-native--checked-id3v2-size last)))
+  "id3v2 header specification.")
+
+(defconst emms-info-native--id3v2-frame-bindat-spec
+  '((id str 4)
+    (size-bytes vec 4)
+    (size eval (emms-info-native--checked-id3v2-size last))
+    (flags bits 2)
+    (payload vec (size)))
+  "id3v2 frame specification.")
+
+(defconst emms-info-native--id3v2-frame-to-info
+  '(("TP1"  . "artist")
+    ("TPE1" . "artist")
+    ("TCM"  . "composer")
+    ("TCOM" . "composer")
+    ("TIT2" . "title")
+    ("TT2"  . "title")
+    ("TALB" . "album")
+    ("TAL"  . "album")
+    ("TRCK" . "tracknumber")
+    ("TRK"  . "tracknumber")
+    ("TPOS" . "discnumber")
+    ("TPA"  . "discnumber")
+    ("TYER" . "year")
+    ("TYE"  . "year")
+    ("TORY" . "originalyear")
+    ("TOR"  . "originalyear"))
+  "Mapping from id3v2 frame identifiers to info fields.")
+
+(defconst emms-info-native--id3v2-text-encodings
+  '((0 . latin-1)
+    (1 . utf-16)
+    (2 . uft-16be)
+    (3 . utf-8))
+  "id3v2 text encodings.")
+
+(defun emms-info-native--checked-id3v2-size (bytes)
+  "Calculate id3v2 element size from BYTES and check its validity.
+Return the size.  Signal an error if the size exceeds
+‘emms-info-native--max-peek-size’."
+  (let ((size (emms-info-native--decode-id3v2-size bytes)))
+    (when (or (= size 0)
+              (> size emms-info-native--max-peek-size))
+      (error "id3v2 tag/header/frame size %s is invalid" bytes))
+    size))
+
+(defun emms-info-native--decode-id3v2-size (bytes)
+  "Decode id3v2 element size from BYTES.
+BYTES are interpreted as 7-bit bytes, MSB first.  Return the
+size."
+  (apply '+ (seq-map-indexed (lambda (elt idx)
+                               (* (expt 2 (* 7 idx)) elt))
+                             (reverse bytes))))
+
+(defun emms-info-native--decode-id3v2 (filename)
+  "Read and decode id3v2 metadata from FILENAME.
+Return metadata in a list of (FIELD . VALUE) cons cells.  See
+‘emms-info-native--decode-id3v2-text-frame’ for details."
+  (let* ((header (emms-info-native--decode-id3v2-header filename))
+         (tag-size (bindat-get-field header 'size))
+         (offset 10))
+    (when (> tag-size emms-info-native--max-peek-size)
+      (error "id3v2 tag size %s is too large" size))
+    (when (memq 7 (bindat-get-field header 'flags))
+      (error "id3v2 unsynchronisation scheme is not supported"))
+    (when (memq 6 (bindat-get-field header 'flags))
+      ;; Skip the extended header.
+      (cl-incf offset
+               (emms-info-native--decode-id3v2-ext-header-size filename)))
+    (emms-info-native--decode-id3v2-frames filename
+                                           offset
+                                           (+ tag-size 10))))
+
+(defun emms-info-native--decode-id3v2-header (filename)
+  "Read and decode id3v2 header from FILENAME."
+  (with-temp-buffer
+    (set-buffer-multibyte nil)
+    (insert-file-contents-literally filename nil 0 10)
+    (bindat-unpack emms-info-native--id3v2-header-bindat-spec
+                   (buffer-string))))
+
+(defun emms-info-native--decode-id3v2-ext-header-size (filename)
+  "Read and decode id3v2 extended header size from FILENAME.
+Return the size.  Signal an error if the size exceeds
+‘emms-info-native--max-peek-size’."
+  (with-temp-buffer
+    (set-buffer-multibyte nil)
+    (insert-file-contents-literally filename nil 10 14)
+    (emms-info-native--checked-id3v2-size (buffer-string))))
+
+(defun emms-info-native--decode-id3v2-frames (filename begin end)
+  "Read and decode id3v2 text frames from FILENAME.
+BEGIN should be the offset of first byte after id3v2 header and
+extended header (if any), and END should be the offset after the
+complete id3v2 tag.
+
+Return metadata in a list of (FIELD . VALUE) cons cells.  See
+‘emms-info-native--decode-id3v2-text-frame’ for details."
+  (with-temp-buffer
+    (set-buffer-multibyte nil)
+    (insert-file-contents-literally filename nil begin end)
+    (let (comments
+          (offset 0))
+      (condition-case nil
+          (while (< offset end)
+            (let* ((frame (bindat-unpack emms-info-native--id3v2-frame-bindat-spec
+                                         (buffer-string)
+                                         offset))
+                   (comment (emms-info-native--decode-id3v2-text-frame
+                             frame)))
+              (when comment (push comment comments))
+              (cl-incf offset (+ (bindat-get-field frame 'size)
+                                 10))))
+        (error nil))
+      comments)))
+
+(defun emms-info-native--decode-id3v2-text-frame (frame)
+  "Identify and decode id3v2 text frame FRAME.
+If FRAME’s identifier matches a key in
+‘emms-info-native--id3v2-frame-to-info’, return a cons cell
+(FIELD . VALUE), where FIELD is the corresponding info field
+identifier and VALUE is the decoded text.  Otherwise return nil."
+  (let ((info-id (emms-info-native--id3v2-frame-info-id frame))
+        (payload (bindat-get-field frame 'payload)))
+    (when info-id
+      (cons info-id
+            (emms-info-native--decode-id3v2-string payload)))))
+
+(defun emms-info-native--id3v2-frame-info-id (frame)
+  "Return the emms-info identifier for FRAME.
+If there is no such identifier, return nil."
+  (cdr (assoc (bindat-get-field frame 'id)
+              emms-info-native--id3v2-frame-to-info)))
+
+(defun emms-info-native--decode-id3v2-string (bytes)
+  "Decode id3v2 text information.
+Return the text in BYTES as string."
+  (let ((encoding (emms-info-native--id3v2-text-encoding bytes))
+        (string (mapconcat #'byte-to-string (seq-rest bytes) "")))
+    ;; Discard the null terminator.
+    (substring (decode-coding-string string encoding) 0 -1)))
+
+(defun emms-info-native--id3v2-text-encoding (bytes)
+  "Return the encoding for text information BYTES."
+  (cdr (assoc (seq-first bytes)
+              emms-info-native--id3v2-text-encodings)))
 
 ;;;; EMMS code
+
+(defun emms-info-native (track)
+  "Set info fields for TRACK.
+Supports Ogg Vorbis/Opus, FLAC, and MP3 files.
+
+Return t if TRACK was updated, nil otherwise."
+  (let* ((filename (emms-track-name track))
+         (info-fields (emms-info-native--decode-info-fields filename))
+         update-flag)
+    (dolist (field info-fields)
+      (let ((name (intern (concat "info-" (car field))))
+            (value (cdr field)))
+        (setq update-flag (or update-flag name))
+        (emms-track-set track
+                        name
+                        (if (eq name 'info-playing-time)
+                            (string-to-number value)
+                          value))))
+    update-flag))
+
+(defun emms-info-native--decode-info-fields (filename)
+  "Decode info fields from FILENAME.
+Return a list of (FIELD . VALUE) cons cells, where FIELD is an
+info field and VALUE is the corresponding info value.  Both are
+strings."
+  (let ((stream-type (emms-info-native--find-stream-type filename)))
+    (cond ((or (eq stream-type 'vorbis) (eq stream-type 'opus))
+           (emms-info-native--ogg-decode-comments filename stream-type))
+          ((eq stream-type 'flac)
+           (emms-info-native--flac-decode-comments filename))
+          ((eq stream-type 'mp3)
+           (emms-info-native--decode-id3v2 filename))
+          (t nil))))
 
 (defun emms-info-native--find-stream-type (filename)
   "Deduce the stream type from FILENAME.
 This is a naive implementation that relies solely on filename
 extension.
 
-Return one of symbols ‘vorbis’, ‘opus’, or ‘flac’."
+Return one of symbols ‘vorbis’, ‘opus’, ‘flac’, or ‘mp3’."
   (let ((case-fold-search t))
     (cond ((string-match ".ogg$" filename) 'vorbis)
           ((string-match ".opus$" filename) 'opus)
           ((string-match ".flac$" filename) 'flac)
+          ((string-match ".mp3$" filename) 'mp3)
           (t nil))))
-
-(defun emms-info-native (track)
-  "Set info fields for TRACK.
-Supports Ogg Vorbis/Opus and FLAC files.
-
-Return t if TRACK was updated, nil otherwise."
-  (let* ((filename (emms-track-name track))
-         (stream-type (emms-info-native--find-stream-type filename))
-         (comments)
-         update-flag)
-    (setq comments
-          (cond ((or (eq stream-type 'vorbis) (eq stream-type 'opus))
-                 (emms-info-native--ogg-decode-comments filename stream-type))
-                ((eq stream-type 'flac)
-                 (emms-info-native--flac-decode-comments filename))
-                (t nil)))
-    (dolist (comment comments)
-      (let ((pair (emms-info-native--split-vorbis-comment
-                   (cdr (assoc 'user-comment comment)))))
-        (when pair
-          (let ((name (intern-soft (concat "info-" (downcase (car pair)))))
-                (value (cdr pair)))
-            (setq update-flag (or update-flag name))
-            (emms-track-set track
-                            name
-                            (if (eq name 'info-playing-time)
-                                (string-to-number value)
-                              value))))))
-    update-flag))
 
 (provide 'emms-info-native)
 
