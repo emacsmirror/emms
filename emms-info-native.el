@@ -371,13 +371,13 @@ lower case and VALUE is the decoded value."
 
 (defconst emms-info-native--opus-identification-header-bindat-spec
   '((opus-head vec 8)
-    (eval (when (not (equal last emms-info-native--opus-head-magic-array))
+    (eval (unless (equal last emms-info-native--opus-head-magic-array)
             (error "Opus framing mismatch: expected ‘%s’, got ‘%s’"
                    emms-info-native--opus-head-magic-array
                    last)))
     (opus-version u8)
-    (eval (when (not (< last 16))
-            (error "Opus version mismatch: expected less than 16, got %s"
+    (eval (unless (< last 16)
+            (error "Opus version mismatch: expected < 16, got %s"
                    last)))
     (channel-count u8)
     (pre-skip u16r)
@@ -385,13 +385,11 @@ lower case and VALUE is the decoded value."
     (output-gain u16r)
     (channel-mapping-family u8)
     (eval (> last 0) (struct opus-channel-mapping-table)))
-  "Opus identification header specification.
-Framing and version data are verified, otherwise the data is
-assumed to be valid.")
+  "Opus identification header specification.")
 
 (defconst emms-info-native--opus-comment-header-bindat-spec
   '((opus-tags vec 8)
-    (eval (when (not (equal last emms-info-native--opus-tags-magic-array))
+    (eval (unless (equal last emms-info-native--opus-tags-magic-array)
             (error "Opus framing mismatch: expected ‘%s’, got ‘%s’"
                    emms-info-native--opus-tags-magic-array
                    last)))
@@ -401,13 +399,12 @@ assumed to be valid.")
     (vendor-string vec (vendor-length))
     (user-comments-list-length u32r)
     (eval (when (> last emms-info-native--max-num-vorbis-comments)
-            (error "Opus user comment list length %s is too long" last)))
+            (error "Opus user comment list length %s is too long"
+                   last)))
     (user-comments repeat
                    (user-comments-list-length)
                    (struct emms-info-native--vorbis-comment-field-bindat-spec)))
-  "Opus comment header specification.
-Framing is verified.  Too long vendor string and comment list
-will also trigger an error.")
+  "Opus comment header specification.")
 
 (defconst emms-info-native--opus-headers-bindat-spec
   '((identification-header struct emms-info-native--opus-identification-header-bindat-spec)
