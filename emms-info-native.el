@@ -228,17 +228,18 @@ their comments have almost the same format as Vorbis.")
 
 (defconst emms-info-native--vorbis-identification-header-bindat-spec
   '((packet-type u8)
-    (eval (when (not (= last 1))
-            (error "Vorbis identification header type mismatch: expected 1, got %s"
+    (eval (unless (= last 1)
+            (error "Vorbis header type mismatch: expected 1, got %s"
                    last)))
     (vorbis vec 6)
-    (eval (when (not (equal last emms-info-native--vorbis-magic-array))
+    (eval (unless (equal last emms-info-native--vorbis-magic-array)
             (error "Vorbis framing mismatch: expected ‘%s’, got ‘%s’"
                    emms-info-native--vorbis-magic-array
                    last)))
     (vorbis-version u32r)
-    (eval (when (not (= last 0))
-            (error "Vorbis version mismatch: expected 0, got %s" last)))
+    (eval (unless (= last 0)
+            (error "Vorbis version mismatch: expected 0, got %s"
+                   last)))
     (audio-channels u8)
     (audio-sample-rate u32r)
     (bitrate-maximum u32r)
@@ -247,18 +248,17 @@ their comments have almost the same format as Vorbis.")
     (blocksize u8)
     (framing-flag u8)
     (eval (unless (= last 1))
-          (error "Vorbis framing bit mismatch: expected 1, got %s" last)))
-  "Vorbis identification header specification.
-Identification, framing and version data are verified, otherwise
-the data is assumed to be valid.")
+          (error "Vorbis framing bit mismatch: expected 1, got %s"
+                 last)))
+  "Vorbis identification header specification.")
 
 (defconst emms-info-native--vorbis-comment-header-bindat-spec
   '((packet-type u8)
-    (eval (when (not (= last 3))
-            (error "Vorbis comment header type mismatch: expected 3, got %s"
+    (eval (unless (= last 3)
+            (error "Vorbis header type mismatch: expected 3, got %s"
                    last)))
     (vorbis vec 6)
-    (eval (when (not (equal last emms-info-native--vorbis-magic-array))
+    (eval (unless (equal last emms-info-native--vorbis-magic-array)
             (error "Vorbis framing mismatch: expected ‘%s’, got ‘%s’"
                    emms-info-native--vorbis-magic-array
                    last)))
@@ -268,26 +268,23 @@ the data is assumed to be valid.")
     (vendor-string vec (vendor-length))
     (user-comments-list-length u32r)
     (eval (when (> last emms-info-native--max-num-vorbis-comments)
-            (error "Vorbis user comment list length %s is too long" last)))
+            (error "Vorbis user comment list length %s is too long"
+                   last)))
     (user-comments repeat
                    (user-comments-list-length)
                    (struct emms-info-native--vorbis-comment-field-bindat-spec))
     (framing-bit u8)
     (eval (unless (= last 1))
-          (error "Vorbis framing bit mismatch: expected 1, got %s" last)))
-  "Vorbis comment header specification.
-Header type and framing data are verified.  Too long vendor
-string and comment list will also trigger an error.")
+          (error "Vorbis framing bit mismatch: expected 1, got %s"
+                 last)))
+  "Vorbis comment header specification.")
 
 (defconst emms-info-native--vorbis-comment-field-bindat-spec
   '((length u32r)
     (eval (when (> last emms-info-native--max-vorbis-comment-size)
             (error "Vorbis comment length %s is too long" last)))
     (user-comment vec (length)))
-  "Vorbis comment field specification.
-Too long comment will trigger an error.
-
-This field is used in Opus and FLAC comment structures as well.")
+  "Vorbis comment field specification.")
 
 (defconst emms-info-native--vorbis-headers-bindat-spec
   '((identification-header struct emms-info-native--vorbis-identification-header-bindat-spec)
@@ -350,7 +347,7 @@ lower case and VALUE is the decoded value."
   (let ((comment-string (decode-coding-string (mapconcat
                                                #'byte-to-string
                                                comment
-                                               "")
+                                               nil)
                                               'utf-8)))
     (when (string-match "^\\(.+?\\)=\\(.+?\\)$" comment-string)
       (cons (downcase (match-string 1 comment-string))
