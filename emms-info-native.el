@@ -63,10 +63,10 @@
 (defconst emms-info-native--max-peek-size (* 512 1024)
   "Maximum buffer size for metadata decoding.
 Functions called by ‘emms-info-native’ read certain amounts of
-data into a temporary buffer while attempting to read metadata
-information.  This variable controls the maximum size of that
-buffer: if more than ‘emms-info-native--max-peek-size’ bytes are
-needed, an error is signaled.
+data into a temporary buffer while decoding metadata.  This
+variable controls the maximum size of that buffer: if more than
+‘emms-info-native--max-peek-size’ bytes are needed, an error is
+signaled.
 
 Technically metadata blocks can have almost arbitrary lengths,
 but in practice processing must be constrained to prevent memory
@@ -79,18 +79,17 @@ exhaustion in case of garbled or malicious inputs.")
   "Ogg format magic capture pattern ‘OggS’.")
 
 (defconst emms-info-native--ogg-page-size 65307
-  "Maximum size for a single Ogg container page.
-Ogg files are read in chunks of this size during decoding.")
+  "Maximum size for a single Ogg container page.")
 
 (defconst emms-info-native--ogg-page-bindat-spec
   '((capture-pattern vec 4)
-    (eval (when (not (equal last emms-info-native--ogg-magic-array))
+    (eval (unless (equal last emms-info-native--ogg-magic-array)
             (error "Ogg framing mismatch: expected ‘%s’, got ‘%s’"
                    emms-info-native--ogg-magic-array
                    last)))
     (stream-structure-version u8)
-    (eval (when (not (= last 0))
-            (error ("Ogg stream structure version mismatch: expected 0, got %s")
+    (eval (unless (= last 0)
+            (error ("Ogg version mismatch: expected 0, got %s")
                    last)))
     (header-type-flag u8)
     (granule-position vec 8)
@@ -100,12 +99,25 @@ Ogg files are read in chunks of this size during decoding.")
     (page-segments u8)
     (segment-table vec (page-segments))
     (payload vec (eval (seq-reduce #'+ last 0))))
-  "Ogg page structure specification.
-Framing and stream structure versions are verified, otherwise the
-data is assumed to be valid.")
+  "Ogg page structure specification.")
 
-(defun emms-info-native--decode-ogg (filename packets)
-  "Decode at least PACKETS number of packets from Ogg file FILENAME.
+(defun emms-info-native--decode-ogg-comments (filename stream-type)
+  "Read and decode comments from Ogg file FILENAME.
+The file is assumed to contain a single stream of type
+STREAM-TYPE, which must either ‘vorbis’ or ‘opus’.
+
+Return comments in a list of (FIELD . VALUE) cons cells.  See
+‘emms-info-native--split-vorbis-comment’ for details."
+  (let* ((packets (emms-info-native--decode-ogg-packets filename 2))
+         (headers (emms-info-native--decode-ogg-headers packets
+                                                        stream-type))
+         (comments (bindat-get-field headers
+                                     'comment-header
+                                     'user-comments)))
+    (emms-info-native--extract-vorbis-comments comments)))
+
+(defun emms-info-native--decode-ogg-packets (filename packets)
+  "Read and decode packets from Ogg file FILENAME.
 Read in data from the start of FILENAME, remove Ogg packet
 frames, and concatenate payloads until at least PACKETS number of
 packets have been decoded.  Return the decoded packets in a
@@ -119,54 +131,67 @@ Only elementary streams are supported, that is, FILENAME should
 contain only a single logical stream.  Note that this assumption
 is not verified: with non-elementary streams packets from
 different streams will be mixed together without an error."
+  (let ((num-packets 0)
+        (offset 0)
+        (stream (vector)))
+    (while (< num-packets packets)
+      (let ((page (emms-info-native--decode-ogg-page filename
+                                                     offset)))
+        (cl-incf num-packets (or (plist-get page :num-packets) 0))
+        (cl-incf offset (plist-get page :num-bytes))
+        (setq stream (vconcat stream (plist-get page :stream)))
+        (when (> (length stream) emms-info-native--max-peek-size)
+          (error "Ogg payload is too large"))))
+    stream))
+
+(defun emms-info-native--decode-ogg-page (filename offset)
+  "Read and decode a single Ogg page from FILENAME.
+Starting reading data from byte offset OFFSET.
+
+Return a plist (:num-packets N :num-bytes B :stream S), where N
+is the number of packets in the page, B is the size of the page
+in bytes, and S is the unframed logical bitstream in a vector.
+Note that N can be zero."
   (with-temp-buffer
     (set-buffer-multibyte nil)
-    (let ((npackets 0)
-          (offset 0)
-          (stream (vector))
-          page)
-      (while (< npackets packets)
-        (insert-file-contents-literally filename
-                                        nil
-                                        offset
-                                        (+ offset
-                                           emms-info-native--ogg-page-size)
-                                        t)
-        (setq page
-              (bindat-unpack emms-info-native--ogg-page-bindat-spec
-                             (buffer-string)))
-        (setq offset
-              (+ offset
-                 (bindat-length emms-info-native--ogg-page-bindat-spec page)))
-        (setq stream (vconcat stream (bindat-get-field page 'payload)))
-        (when (> (length stream) emms-info-native--max-peek-size)
-          (error "Ogg payload is too large"))
-        ;; Look for packet boundaries: every element that is less than 255
-        ;; in the segment table represents a packet boundary.
-        (setq npackets
-              (+ (length (seq-filter (lambda (elt) (< elt 255))
-                                     (bindat-get-field page 'segment-table)))
-                 npackets)))
-      stream)))
+    (insert-file-contents-literally filename
+                                    nil
+                                    offset
+                                    (+ offset
+                                       emms-info-native--ogg-page-size))
+    (let* ((page (bindat-unpack emms-info-native--ogg-page-bindat-spec
+                                (buffer-string)))
+           (num-packets (emms-info-native--num-of-packets page))
+           (num-bytes (bindat-length emms-info-native--ogg-page-bindat-spec
+                                     page))
+           (stream (bindat-get-field page 'payload)))
+      (list :num-packets num-packets
+            :num-bytes num-bytes
+            :stream stream))))
 
-(defun emms-info-native--ogg-decode-comments (filename stream-type)
-  "Decode comments from Ogg file FILENAME.
-The file is assumed to contain a single stream of type
-STREAM-TYPE, which must either ‘vorbis’ or ‘opus’.
+(defun emms-info-native--num-of-packets (page)
+  "Return the number of packets in Ogg page PAGE.
+PAGE must correspond to
+‘emms-info-native--ogg-page-bindat-spec’."
+  ;; Every element that is less than 255 in the segment table
+  ;; represents a packet boundary.
+  (length (seq-filter (lambda (elt) (< elt 255))
+                      (bindat-get-field page 'segment-table))))
 
-Return comments in a list of (FIELD . VALUE) cons cells.  See
-‘emms-info-native--split-vorbis-comment’ for details."
-  (let* ((packets (emms-info-native--decode-ogg filename 2))
-         (headers (cond ((eq stream-type 'vorbis)
-                         (bindat-unpack emms-info-native--vorbis-headers-bindat-spec
-                                        packets))
-                        ((eq stream-type 'opus)
-                         (bindat-unpack emms-info-native--opus-headers-bindat-spec
-                                        packets))
-                        (t (error "Unknown stream type %s" stream-type)))))
-    (emms-info-native--extract-vorbis-comments (bindat-get-field headers
-                                                                 'comment-header
-                                                                 'user-comments))))
+(defun emms-info-native--decode-ogg-headers (packets stream-type)
+  "Decode first two stream headers from PACKETS for STREAM-TYPE.
+STREAM-TYPE must be either ‘vorbis’ or ‘opus’.
+
+Return a structure that corresponds to either
+‘emms-info-native--opus-headers-bindat-spec’ or
+‘emms-info-native--vorbis-headers-bindat-spec’."
+  (cond ((eq stream-type 'vorbis)
+         (bindat-unpack emms-info-native--vorbis-headers-bindat-spec
+                        packets))
+        ((eq stream-type 'opus)
+         (bindat-unpack emms-info-native--opus-headers-bindat-spec
+                        packets))
+        (t (error "Unknown stream type %s" stream-type))))
 
 ;;;; Vorbis code
 
@@ -257,7 +282,7 @@ string and comment list will also trigger an error.")
 (defconst emms-info-native--vorbis-comment-field-bindat-spec
   '((length u32r)
     (eval (when (> last emms-info-native--max-vorbis-comment-size)
-            (error "Vorbis comment is too long, length %s" last)))
+            (error "Vorbis comment length %s is too long" last)))
     (user-comment vec (length)))
   "Vorbis comment field specification.
 Too long comment will trigger an error.
@@ -267,7 +292,7 @@ This field is used in Opus and FLAC comment structures as well.")
 (defconst emms-info-native--vorbis-headers-bindat-spec
   '((identification-header struct emms-info-native--vorbis-identification-header-bindat-spec)
     (comment-header struct emms-info-native--vorbis-comment-header-bindat-spec))
-  "Specification for two first Vorbis header packets.
+  "Specification for first two Vorbis header packets.
 They are always an identification header followed by a comment
 header.")
 
@@ -298,7 +323,7 @@ header.")
 USER-COMMENTS should be a list of Vorbis comments according to
 ‘user-comments’ field in
 ‘emms-info-native--vorbis-comment-header-bindat-spec’,
-‘emms-info-native--opus-comment-header-bindat-spec’ and
+‘emms-info-native--opus-comment-header-bindat-spec’ or
 ‘emms-info-native--flac-comment-block-bindat-spec’.
 
 Return comments in a list of (FIELD . VALUE) cons cells.  Only
@@ -685,7 +710,7 @@ info field and VALUE is the corresponding info value.  Both are
 strings."
   (let ((stream-type (emms-info-native--find-stream-type filename)))
     (cond ((or (eq stream-type 'vorbis) (eq stream-type 'opus))
-           (emms-info-native--ogg-decode-comments filename stream-type))
+           (emms-info-native--decode-ogg-comments filename stream-type))
           ((eq stream-type 'flac)
            (emms-info-native--flac-decode-comments filename))
           ((eq stream-type 'mp3)
