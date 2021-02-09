@@ -34,17 +34,17 @@
 ;; The following file formats are supported:
 ;;
 ;; - Vorbis: Ogg Vorbis I Profile, filename extension ‘.ogg’,
-;;   elemetary streams only.  Based on xiph.org’s Vorbis I
+;;   elementary streams only.  Based on xiph.org’s Vorbis I
 ;;   specification, see URL
 ;;   ‘https://xiph.org/vorbis/doc/Vorbis_I_spec.html’.
 ;;
-;; - Opus: Ogg Opus profile, filename extesion ‘.opus’, elementary
+;; - Opus: Ogg Opus profile, filename extension ‘.opus’, elementary
 ;;   streams only.  Based on RFC 7845, see URL
 ;;   ‘https://tools.ietf.org/html/rfc7845.html’.
 ;;
 ;; - FLAC: FLAC streams in native encapsulation format, filename
-;;   extesion ‘.flac’.  Based on xiph.org’s FLAC format specification,
-;;   see URL ‘https://xiph.org/flac/format.html’.
+;;   extension ‘.flac’.  Based on xiph.org’s FLAC format
+;;   specification, see URL ‘https://xiph.org/flac/format.html’.
 ;;
 ;; - MP3: MP3 files with extension ‘.mp3’ and id3v2 tags.  All id3v2
 ;;   revisions should work, but many features like CRC and
