@@ -1,4 +1,4 @@
-;;; emms-info-native.el --- Native Emacs Lisp info method for EMMS
+;;; emms-info-native.el --- Native Emacs Lisp info method for EMMS -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2020-2021 Free Software Foundation, Inc.
 
