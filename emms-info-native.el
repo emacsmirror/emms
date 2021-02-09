@@ -189,8 +189,9 @@ Return a structure that corresponds to either
          (bindat-unpack emms-info-native--vorbis-headers-bindat-spec
                         packets))
         ((eq stream-type 'opus)
-         (bindat-unpack emms-info-native--opus-headers-bindat-spec
-                        packets))
+         (let (emms-info-native--opus-channel-count)
+           (bindat-unpack emms-info-native--opus-headers-bindat-spec
+                          packets)))
         (t (error "Unknown stream type %s" stream-type))))
 
 ;;;; Vorbis code
@@ -355,6 +356,11 @@ lower case and VALUE is the decoded value."
 
 ;;;; Opus code
 
+(defvar emms-info-native--opus-channel-count 0
+  "Last decoded Opus channel count.
+This is a kludge; it is needed because bindat spec cannot refer
+outside itself.")
+
 (defconst emms-info-native--opus-head-magic-array
   [79 112 117 115 72 101 97 100]
   "Opus identification header magic pattern ‘OpusHead’.")
@@ -366,7 +372,7 @@ lower case and VALUE is the decoded value."
 (defconst emms-info-native--opus-channel-mapping-table
   '((stream-count u8)
     (coupled-count u8)
-    (channel-mapping vec (channel-count)))
+    (channel-mapping vec (eval emms-info-native--opus-channel-count)))
   "Opus channel mapping table specification.")
 
 (defconst emms-info-native--opus-identification-header-bindat-spec
@@ -380,11 +386,14 @@ lower case and VALUE is the decoded value."
             (error "Opus version mismatch: expected < 16, got %s"
                    last)))
     (channel-count u8)
+    (eval (setq emms-info-native--opus-channel-count last))
     (pre-skip u16r)
     (sample-rate u32r)
     (output-gain u16r)
     (channel-mapping-family u8)
-    (eval (> last 0) (struct opus-channel-mapping-table)))
+    (union (channel-mapping-family)
+           (0 nil)
+           (t (struct emms-info-native--opus-channel-mapping-table))))
   "Opus identification header specification.")
 
 (defconst emms-info-native--opus-comment-header-bindat-spec
