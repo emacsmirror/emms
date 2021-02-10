@@ -661,22 +661,17 @@ Return the text in BYTES as string."
 
 (defun emms-info-native (track)
   "Set info fields for TRACK.
-Supports Ogg Vorbis/Opus, FLAC, and MP3 files.
-
-Return t if TRACK was updated, nil otherwise."
+Supports Ogg Vorbis/Opus, FLAC, and MP3 files."
   (let* ((filename (emms-track-name track))
-         (info-fields (emms-info-native--decode-info-fields filename))
-         update-flag)
+         (info-fields (emms-info-native--decode-info-fields filename)))
     (dolist (field info-fields)
       (let ((name (intern (concat "info-" (car field))))
             (value (cdr field)))
-        (setq update-flag (or update-flag name))
         (emms-track-set track
                         name
                         (if (eq name 'info-playing-time)
                             (string-to-number value)
-                          value))))
-    update-flag))
+                          value))))))
 
 (defun emms-info-native--decode-info-fields (filename)
   "Decode info fields from FILENAME.
