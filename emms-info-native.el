@@ -223,9 +223,38 @@ exhaustion in case of garbled or malicious inputs.
 This limit is used with Opus and FLAC streams as well, since
 their comments have almost the same format as Vorbis.")
 
+(defconst emms-info-native--accepted-vorbis-fields
+  '("album"
+    "albumartist"
+    "albumartistsort"
+    "albumsort"
+    "artist"
+    "artistsort"
+    "composer"
+    "composersort"
+    "date"
+    "discnumber"
+    "genre"
+    "label"
+    "originaldate"
+    "originalyear"
+    "performer"
+    "title"
+    "titlesort"
+    "tracknumber"
+    "year")
+  "Emms info fields that are extracted from Vorbis comments.")
+
 (defconst emms-info-native--vorbis-magic-array
   [118 111 114 98 105 115]
   "Header packet magic pattern ‘vorbis’.")
+
+(defconst emms-info-native--vorbis-headers-bindat-spec
+  '((identification-header struct emms-info-native--vorbis-identification-header-bindat-spec)
+    (comment-header struct emms-info-native--vorbis-comment-header-bindat-spec))
+  "Specification for first two Vorbis header packets.
+They are always an identification header followed by a comment
+header.")
 
 (defconst emms-info-native--vorbis-identification-header-bindat-spec
   '((packet-type u8)
@@ -287,35 +316,6 @@ their comments have almost the same format as Vorbis.")
     (user-comment vec (length)))
   "Vorbis comment field specification.")
 
-(defconst emms-info-native--vorbis-headers-bindat-spec
-  '((identification-header struct emms-info-native--vorbis-identification-header-bindat-spec)
-    (comment-header struct emms-info-native--vorbis-comment-header-bindat-spec))
-  "Specification for first two Vorbis header packets.
-They are always an identification header followed by a comment
-header.")
-
-(defconst emms-info-native--accepted-vorbis-fields
-  '("album"
-    "albumartist"
-    "albumartistsort"
-    "albumsort"
-    "artist"
-    "artistsort"
-    "composer"
-    "composersort"
-    "date"
-    "discnumber"
-    "genre"
-    "label"
-    "originaldate"
-    "originalyear"
-    "performer"
-    "title"
-    "titlesort"
-    "tracknumber"
-    "year")
-  "Emms info fields that are extracted from Vorbis comments.")
-
 (defun emms-info-native--extract-vorbis-comments (user-comments)
   "Return a decoded list of comments from USER-COMMENTS.
 USER-COMMENTS should be a list of Vorbis comments according to
@@ -369,11 +369,12 @@ outside itself.")
   [79 112 117 115 84 97 103 115]
   "Opus comment header magic pattern ‘OpusTags’.")
 
-(defconst emms-info-native--opus-channel-mapping-table
-  '((stream-count u8)
-    (coupled-count u8)
-    (channel-mapping vec (eval emms-info-native--opus-channel-count)))
-  "Opus channel mapping table specification.")
+(defconst emms-info-native--opus-headers-bindat-spec
+  '((identification-header struct emms-info-native--opus-identification-header-bindat-spec)
+    (comment-header struct emms-info-native--opus-comment-header-bindat-spec))
+  "Specification for two first Opus header packets.
+They are always an identification header followed by a comment
+header.")
 
 (defconst emms-info-native--opus-identification-header-bindat-spec
   '((opus-head vec 8)
@@ -396,6 +397,12 @@ outside itself.")
            (t (struct emms-info-native--opus-channel-mapping-table))))
   "Opus identification header specification.")
 
+(defconst emms-info-native--opus-channel-mapping-table
+  '((stream-count u8)
+    (coupled-count u8)
+    (channel-mapping vec (eval emms-info-native--opus-channel-count)))
+  "Opus channel mapping table specification.")
+
 (defconst emms-info-native--opus-comment-header-bindat-spec
   '((opus-tags vec 8)
     (eval (unless (equal last emms-info-native--opus-tags-magic-array)
@@ -414,13 +421,6 @@ outside itself.")
                    (user-comments-list-length)
                    (struct emms-info-native--vorbis-comment-field-bindat-spec)))
   "Opus comment header specification.")
-
-(defconst emms-info-native--opus-headers-bindat-spec
-  '((identification-header struct emms-info-native--opus-identification-header-bindat-spec)
-    (comment-header struct emms-info-native--opus-comment-header-bindat-spec))
-  "Specification for two first Opus header packets.
-They are always an identification header followed by a comment
-header.")
 
 ;;;; FLAC code
 
@@ -445,6 +445,20 @@ header.")
                    (user-comments-list-length)
                    (struct emms-info-native--vorbis-comment-field-bindat-spec)))
   "FLAC Vorbis comment block specification.")
+
+(defun emms-info-native--decode-flac-comments (filename)
+  "Read and decode comments from FLAC file FILENAME.
+Return comments in a list of (FIELD . VALUE) cons cells.  Only
+FIELDs that are listed in
+‘emms-info-native--accepted-vorbis-fields’ are returned."
+  (unless (emms-info-native--has-flac-signature filename)
+    (error "Invalid FLAC stream"))
+  (let* ((block (emms-info-native--decode-flac-comment-block
+                 filename))
+         (unpacked (bindat-unpack emms-info-native--flac-comment-block-bindat-spec
+                                  block))
+         (user-comments (bindat-get-field unpacked 'user-comments)))
+    (emms-info-native--extract-vorbis-comments user-comments)))
 
 (defun emms-info-native--has-flac-signature (filename)
   "Check for FLAC stream marker at the beginning of FILENAME.
@@ -482,20 +496,6 @@ Return the comment block data in a vector."
             (setq comment-block (vconcat (buffer-string))))
           (setq offset end)))
       comment-block)))
-
-(defun emms-info-native--decode-flac-comments (filename)
-  "Read and decode comments from FLAC file FILENAME.
-Return comments in a list of (FIELD . VALUE) cons cells.  Only
-FIELDs that are listed in
-‘emms-info-native--accepted-vorbis-fields’ are returned."
-  (unless (emms-info-native--has-flac-signature filename)
-    (error "Invalid FLAC stream"))
-  (let* ((block (emms-info-native--decode-flac-comment-block
-                 filename))
-         (unpacked (bindat-unpack emms-info-native--flac-comment-block-bindat-spec
-                                  block))
-         (user-comments (bindat-get-field unpacked 'user-comments)))
-    (emms-info-native--extract-vorbis-comments user-comments)))
 
 ;;;; id3v2 (MP3) code
 
@@ -550,24 +550,6 @@ FIELDs that are listed in
     (3 . utf-8))
   "id3v2 text encodings.")
 
-(defun emms-info-native--checked-id3v2-size (bytes)
-  "Calculate id3v2 element size from BYTES and check its validity.
-Return the size.  Signal an error if the size exceeds
-‘emms-info-native--max-peek-size’."
-  (let ((size (emms-info-native--decode-id3v2-size bytes)))
-    (when (or (= size 0)
-              (> size emms-info-native--max-peek-size))
-      (error "id3v2 tag/header/frame size %s is invalid" bytes))
-    size))
-
-(defun emms-info-native--decode-id3v2-size (bytes)
-  "Decode id3v2 element size from BYTES.
-BYTES are interpreted as 7-bit bytes, MSB first.  Return the
-size."
-  (apply '+ (seq-map-indexed (lambda (elt idx)
-                               (* (expt 2 (* 7 idx)) elt))
-                             (reverse bytes))))
-
 (defun emms-info-native--decode-id3v2 (filename)
   "Read and decode id3v2 metadata from FILENAME.
 Return metadata in a list of (FIELD . VALUE) cons cells.  See
@@ -604,6 +586,22 @@ Return the size.  Signal an error if the size exceeds
     (insert-file-contents-literally filename nil 10 14)
     (emms-info-native--checked-id3v2-size (buffer-string))))
 
+(defun emms-info-native--checked-id3v2-size (bytes)
+  "Calculate id3v2 element size from BYTES and check its validity.
+Return the size."
+  (let ((size (emms-info-native--decode-id3v2-size bytes)))
+    (when (or (= size 0) (> size emms-info-native--max-peek-size))
+      (error "id3v2 tag/header/frame size %s is invalid" bytes))
+    size))
+
+(defun emms-info-native--decode-id3v2-size (bytes)
+  "Decode id3v2 element size from BYTES.
+BYTES are interpreted as 7-bit bytes, MSB first.  Return the
+size."
+  (apply '+ (seq-map-indexed (lambda (elt idx)
+                               (* (expt 2 (* 7 idx)) elt))
+                             (reverse bytes))))
+
 (defun emms-info-native--decode-id3v2-frames (filename begin end)
   "Read and decode id3v2 text frames from FILENAME.
 BEGIN should be the offset of first byte after id3v2 header and
@@ -625,8 +623,7 @@ Return metadata in a list of (FIELD . VALUE) cons cells.  See
                    (comment (emms-info-native--decode-id3v2-text-frame
                              frame)))
               (when comment (push comment comments))
-              (cl-incf offset (+ (bindat-get-field frame 'size)
-                                 10))))
+              (cl-incf offset (+ (bindat-get-field frame 'size) 10))))
         (error nil))
       comments)))
 
@@ -639,8 +636,7 @@ identifier and VALUE is the decoded text.  Otherwise return nil."
   (let ((info-id (emms-info-native--id3v2-frame-info-id frame))
         (payload (bindat-get-field frame 'payload)))
     (when info-id
-      (cons info-id
-            (emms-info-native--decode-id3v2-string payload)))))
+      (cons info-id (emms-info-native--decode-id3v2-string payload)))))
 
 (defun emms-info-native--id3v2-frame-info-id (frame)
   "Return the emms-info identifier for FRAME.
