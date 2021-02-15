@@ -42,14 +42,14 @@
 ;;   streams only.  Based on RFC 7845, see URL
 ;;   ‘https://tools.ietf.org/html/rfc7845.html’.
 ;;
-;; - FLAC: FLAC streams in native encapsulation format, filename
-;;   extension ‘.flac’.  Based on xiph.org’s FLAC format
-;;   specification, see URL ‘https://xiph.org/flac/format.html’.
+;; - FLAC streams in native encapsulation format, filename extension
+;;   ‘.flac’.  Based on xiph.org’s FLAC format specification, see URL
+;;   ‘https://xiph.org/flac/format.html’.
 ;;
-;; - MP3: MP3 files with extension ‘.mp3’ and id3v2 tags.  All id3v2
-;;   revisions should work, but many features like CRC and
-;;   unsynchronization are not supported.  Based on id3v2 Informal
-;;   Standards, see URL ‘https://id3.org’.
+;; - MP3 files with extension ‘.mp3’ and id3v2 tags.  All id3v2
+;;   versions should work, but many features like CRC, compression and
+;;   encryption are not supported.  Based on id3v2 Informal Standards,
+;;   see URL ‘https://id3.org’.
 ;;
 ;; Format detection is based solely on filename extension, which is
 ;; matched case-insensitively.
@@ -60,7 +60,7 @@
 (require 'cl-lib)
 (require 'emms-info)
 
-(defconst emms-info-native--max-peek-size (* 512 1024)
+(defconst emms-info-native--max-peek-size (* 2048 1024)
   "Maximum buffer size for metadata decoding.
 Functions called by ‘emms-info-native’ read certain amounts of
 data into a temporary buffer while decoding metadata.  This
@@ -499,6 +499,11 @@ Return the comment block data in a vector."
 
 ;;;; id3v2 (MP3) code
 
+(defvar emms-info-native--id3v2-version 0
+  "Last decoded id3v2 version.
+This is a kludge; it is needed because bindat spec cannot refer
+outside itself.")
+
 (defconst emms-info-native--id3v2-magic-array
   [#x49 #x44 #x33]
   "id3v2 header magic pattern ‘ID3’.")
@@ -510,23 +515,25 @@ Return the comment block data in a vector."
                    emms-info-native--id3v2-magic-array
                    last)))
     (version u8)
+    (eval (setq emms-info-native--id3v2-version last))
     (revision u8)
     (flags bits 1)
     (size-bytes vec 4)
-    (size eval (emms-info-native--checked-id3v2-size last)))
+    (size eval (emms-info-native--checked-id3v2-size 'tag last)))
   "id3v2 header specification.")
 
 (defconst emms-info-native--id3v2-frame-bindat-spec
-  '((id str 4)
-    (size-bytes vec 4)
-    (size eval (emms-info-native--checked-id3v2-size last))
-    (flags bits 2)
+  '((id str (eval (if (= emms-info-native--id3v2-version 2) 3 4)))
+    (size-bytes vec (eval (if (= emms-info-native--id3v2-version 2) 3 4)))
+    (size eval (emms-info-native--checked-id3v2-size 'frame last))
+    (flags bits (eval (if (= emms-info-native--id3v2-version 2) 0 2)))
     (payload vec (size)))
   "id3v2 frame specification.")
 
 (defconst emms-info-native--id3v2-frame-to-info
   '(("TP1"  . "artist")
     ("TPE1" . "artist")
+    ("TPE2" . "albumartist")
     ("TCM"  . "composer")
     ("TCOM" . "composer")
     ("TIT2" . "title")
@@ -554,20 +561,19 @@ Return the comment block data in a vector."
   "Read and decode id3v2 metadata from FILENAME.
 Return metadata in a list of (FIELD . VALUE) cons cells.  See
 ‘emms-info-native--decode-id3v2-text-frame’ for details."
-  (let* ((header (emms-info-native--decode-id3v2-header filename))
+  (let* (emms-info-native--id3v2-version
+         (header (emms-info-native--decode-id3v2-header filename))
          (tag-size (bindat-get-field header 'size))
+         (unsync (memq 7 (bindat-get-field header 'flags)))
          (offset 10))
-    (when (> tag-size emms-info-native--max-peek-size)
-      (error "id3v2 tag size %s is too large" size))
-    (when (memq 7 (bindat-get-field header 'flags))
-      (error "id3v2 unsynchronisation scheme is not supported"))
     (when (memq 6 (bindat-get-field header 'flags))
       ;; Skip the extended header.
       (cl-incf offset
                (emms-info-native--decode-id3v2-ext-header-size filename)))
     (emms-info-native--decode-id3v2-frames filename
                                            offset
-                                           (+ tag-size 10))))
+                                           (+ tag-size 10)
+                                           unsync)))
 
 (defun emms-info-native--decode-id3v2-header (filename)
   "Read and decode id3v2 header from FILENAME."
@@ -586,46 +592,88 @@ Return the size.  Signal an error if the size exceeds
     (insert-file-contents-literally filename nil 10 14)
     (emms-info-native--checked-id3v2-size (buffer-string))))
 
-(defun emms-info-native--checked-id3v2-size (bytes)
-  "Calculate id3v2 element size from BYTES and check its validity.
+(defun emms-info-native--checked-id3v2-size (elt bytes)
+  "Calculate id3v2 element ELT size from BYTES.
+ELT must be either 'tag or 'frame.  Check the validity of size.
 Return the size."
-  (let ((size (emms-info-native--decode-id3v2-size bytes)))
+  (let (size)
+    (cond ((eq elt 'tag)
+           (setq size (emms-info-native--decode-id3v2-size bytes t)))
+          ((eq elt 'frame)
+           (if (= emms-info-native--id3v2-version 4)
+               (setq size (emms-info-native--decode-id3v2-size bytes t))
+             (setq size (emms-info-native--decode-id3v2-size bytes nil)))))
     (when (or (= size 0) (> size emms-info-native--max-peek-size))
-      (error "id3v2 tag/header/frame size %s is invalid" bytes))
+      (error "id3v2 tag or frame size %s is invalid" size))
     size))
 
-(defun emms-info-native--decode-id3v2-size (bytes)
+(defun emms-info-native--decode-id3v2-size (bytes syncsafe)
   "Decode id3v2 element size from BYTES.
-BYTES are interpreted as 7-bit bytes, MSB first.  Return the
-size."
-  (apply '+ (seq-map-indexed (lambda (elt idx)
-                               (* (expt 2 (* 7 idx)) elt))
-                             (reverse bytes))))
+Depending on SYNCSAFE, BYTES are interpreted as 7- or 8-bit
+bytes, MSB first.
 
-(defun emms-info-native--decode-id3v2-frames (filename begin end)
+Return the decoded size."
+  (let ((num-bits (if syncsafe 7 8)))
+    (apply '+ (seq-map-indexed (lambda (elt idx)
+                                 (* (expt 2 (* num-bits idx)) elt))
+                               (reverse bytes)))))
+
+(defun emms-info-native--decode-id3v2-frames (filename
+                                              begin
+                                              end
+                                              unsync)
   "Read and decode id3v2 text frames from FILENAME.
 BEGIN should be the offset of first byte after id3v2 header and
 extended header (if any), and END should be the offset after the
 complete id3v2 tag.
 
+If UNSYNC is t, the frames are assumed to have gone through
+unsynchronization and decoded as such.
+
 Return metadata in a list of (FIELD . VALUE) cons cells.  See
 ‘emms-info-native--decode-id3v2-text-frame’ for details."
   (with-temp-buffer
     (set-buffer-multibyte nil)
+    (insert (emms-info-native--read-id3v2-frames filename
+                                                 begin
+                                                 end
+                                                 unsync))
+    (emms-info-native--decode-id3v2-text-frames (buffer-string))))
+
+(defun emms-info-native--read-id3v2-frames (filename begin end unsync)
+  "Read id3v2 frames from FILE.
+Start at offset BEGIN and end before offset END.  If UNSYNC is t,
+reverse unsynchronization.
+
+Return the frames."
+  (with-temp-buffer
+    (set-buffer-multibyte nil)
     (insert-file-contents-literally filename nil begin end)
-    (let (comments
-          (offset 0))
-      (condition-case nil
-          (while (< offset end)
-            (let* ((frame (bindat-unpack emms-info-native--id3v2-frame-bindat-spec
-                                         (buffer-string)
-                                         offset))
-                   (comment (emms-info-native--decode-id3v2-text-frame
-                             frame)))
-              (when comment (push comment comments))
-              (cl-incf offset (+ (bindat-get-field frame 'size) 10))))
-        (error nil))
-      comments)))
+    (when unsync
+      (while (re-search-forward (string 255 0) nil t)
+        (replace-match (string 255))))
+    (buffer-string)))
+
+(defun emms-info-native--decode-id3v2-text-frames (frames)
+  "Decode id3v2 text frames from FRAMES.
+
+Return metadata in a list of (FIELD . VALUE) cons cells.  See
+‘emms-info-native--decode-id3v2-text-frame’ for details."
+  (let (comments
+        (offset 0))
+    (condition-case nil
+        (while (< offset (length frames))
+          (let* ((frame (bindat-unpack emms-info-native--id3v2-frame-bindat-spec
+                                       frames
+                                       offset))
+                 (comment (emms-info-native--decode-id3v2-text-frame
+                           frame)))
+            (when comment (push comment comments))
+            (cl-incf offset
+                     (+ (bindat-get-field frame 'size)
+                        (if (= emms-info-native--id3v2-version 2) 6 10)))))
+      (error nil))
+    comments))
 
 (defun emms-info-native--decode-id3v2-text-frame (frame)
   "Identify and decode id3v2 text frame FRAME.
@@ -645,12 +693,16 @@ If there is no such identifier, return nil."
               emms-info-native--id3v2-frame-to-info)))
 
 (defun emms-info-native--decode-id3v2-string (bytes)
-  "Decode id3v2 text information.
-Return the text in BYTES as string."
-  (let ((encoding (emms-info-native--id3v2-text-encoding bytes))
-        (string (mapconcat #'byte-to-string (seq-rest bytes) "")))
-    ;; Discard the null terminator.
-    (substring (decode-coding-string string encoding) 0 -1)))
+  "Decode id3v2 text information from BYTES.
+Remove the terminating null byte, if any.  Return the text as
+string."
+  (let* ((encoding (emms-info-native--id3v2-text-encoding bytes))
+         (string (mapconcat #'byte-to-string (seq-rest bytes) ""))
+         (decoded (decode-coding-string string encoding)))
+    (when (> (length decoded) 0)
+      (if (equal (substring decoded -1) "\0")
+          (substring decoded 0 -1)
+        decoded))))
 
 (defun emms-info-native--id3v2-text-encoding (bytes)
   "Return the encoding for text information BYTES."
