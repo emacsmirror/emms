@@ -519,16 +519,15 @@ outside itself.")
     (revision u8)
     (flags bits 1)
     (size-bytes vec 4)
-    (size eval (emms-info-native--checked-id3v2-size 'tag last)))
+    (size eval (emms-info-native--decode-id3v2-size last t)))
   "id3v2 header specification.")
 
-(defconst emms-info-native--id3v2-frame-bindat-spec
+(defconst emms-info-native--id3v2-frame-header-bindat-spec
   '((id str (eval (if (= emms-info-native--id3v2-version 2) 3 4)))
     (size-bytes vec (eval (if (= emms-info-native--id3v2-version 2) 3 4)))
     (size eval (emms-info-native--checked-id3v2-size 'frame last))
-    (flags bits (eval (if (= emms-info-native--id3v2-version 2) 0 2)))
-    (payload vec (size)))
-  "id3v2 frame specification.")
+    (flags bits (eval (if (= emms-info-native--id3v2-version 2) 0 2))))
+  "id3v2 frame header specification.")
 
 (defconst emms-info-native--id3v2-frame-to-info
   '(("TP1"  . "artist")
@@ -565,8 +564,7 @@ outside itself.")
 
 (defun emms-info-native--decode-id3v2 (filename)
   "Read and decode id3v2 metadata from FILENAME.
-Return metadata in a list of (FIELD . VALUE) cons cells.  See
-‘emms-info-native--decode-id3v2-text-frame’ for details."
+Return metadata in a list of (FIELD . VALUE) cons cells."
   (let* (emms-info-native--id3v2-version
          (header (emms-info-native--decode-id3v2-header filename))
          (tag-size (bindat-get-field header 'size))
@@ -624,10 +622,7 @@ Return the decoded size."
                                  (* (expt 2 (* num-bits idx)) elt))
                                (reverse bytes)))))
 
-(defun emms-info-native--decode-id3v2-frames (filename
-                                              begin
-                                              end
-                                              unsync)
+(defun emms-info-native--decode-id3v2-frames (filename begin end unsync)
   "Read and decode id3v2 text frames from FILENAME.
 BEGIN should be the offset of first byte after id3v2 header and
 extended header (if any), and END should be the offset after the
@@ -636,61 +631,76 @@ complete id3v2 tag.
 If UNSYNC is t, the frames are assumed to have gone through
 unsynchronization and decoded as such.
 
-Return metadata in a list of (FIELD . VALUE) cons cells.  See
-‘emms-info-native--decode-id3v2-text-frame’ for details."
+Return metadata in a list of (FIELD . VALUE) cons cells."
+  (let ((offset begin)
+        comments)
+   (condition-case nil
+        (while (< offset end)
+          (let* ((header (emms-info-native--decode-id3v2-frame-header filename
+                                                                      offset))
+                 (info-id (emms-info-native--id3v2-frame-info-id header))
+                 (decoded-size (bindat-get-field (cdr header) 'size)))
+            (setq offset (car header))  ;advance to frame data begin
+            (if (or unsync info-id)
+                ;; Note that if unsync is t, we have to always read a
+                ;; frame to gets its true size so that we can adjust
+                ;; offset correctly.
+                (let ((data (emms-info-native--read-id3v2-frame-data filename
+                                                                     offset
+                                                                     decoded-size
+                                                                     unsync)))
+                  (setq offset (car data))
+                  (when info-id
+                    (let ((value (emms-info-native--decode-id3v2-string (cdr data))))
+                      (push (cons info-id value) comments))))
+              ;; Skip the frame.
+              (cl-incf offset decoded-size))))
+     (error nil))
+   comments))
+
+(defun emms-info-native--decode-id3v2-frame-header (filename begin)
+  "Read and decode id3v2 frame header from FILENAME.
+Start reading from offset BEGIN.
+
+Return a cons cell (OFFSET . FRAME), where OFFSET is the byte
+offset after the frame header, and FRAME is the decoded frame."
   (with-temp-buffer
     (set-buffer-multibyte nil)
-    (insert (emms-info-native--read-id3v2-frames filename
-                                                 begin
-                                                 end
-                                                 unsync))
-    (emms-info-native--decode-id3v2-text-frames (buffer-string))))
+    (let ((end (+ begin (if (= emms-info-native--id3v2-version 2) 6 10))))
+      (insert-file-contents-literally filename nil begin end)
+      (cons end (bindat-unpack emms-info-native--id3v2-frame-header-bindat-spec
+                               (buffer-string))))))
 
-(defun emms-info-native--read-id3v2-frames (filename begin end unsync)
-  "Read id3v2 frames from FILE.
-Start at offset BEGIN and end before offset END.  If UNSYNC is t,
-reverse unsynchronization.
+(defun emms-info-native--read-id3v2-frame-data (filename
+                                                begin
+                                                num-bytes
+                                                unsync)
+  "Read NUM-BYTES of raw id3v2 frame data from FILENAME.
+Start reading from offset BEGIN.  If UNSYNC is t, all ’FF 00’
+byte combinations are replaced by ’FF’.  Replaced byte pairs are
+counted as one, instead of two, towards NUM-BYTES.
 
-Return the frames."
+Return a cons cell (OFFSET . DATA), where OFFSET is the byte
+offset after NUM-BYTES bytes have been read, and DATA is the raw
+data."
   (with-temp-buffer
     (set-buffer-multibyte nil)
-    (insert-file-contents-literally filename nil begin end)
-    (when unsync
-      (while (re-search-forward (string 255 0) nil t)
-        (replace-match (string 255))))
-    (buffer-string)))
-
-(defun emms-info-native--decode-id3v2-text-frames (frames)
-  "Decode id3v2 text frames from FRAMES.
-
-Return metadata in a list of (FIELD . VALUE) cons cells.  See
-‘emms-info-native--decode-id3v2-text-frame’ for details."
-  (let (comments
-        (offset 0))
-    (condition-case nil
-        (while (< offset (length frames))
-          (let* ((frame (bindat-unpack emms-info-native--id3v2-frame-bindat-spec
-                                       frames
-                                       offset))
-                 (comment (emms-info-native--decode-id3v2-text-frame
-                           frame)))
-            (when comment (push comment comments))
-            (cl-incf offset
-                     (+ (bindat-get-field frame 'size)
-                        (if (= emms-info-native--id3v2-version 2) 6 10)))))
-      (error nil))
-    comments))
-
-(defun emms-info-native--decode-id3v2-text-frame (frame)
-  "Identify and decode id3v2 text frame FRAME.
-If FRAME’s identifier matches a key in
-‘emms-info-native--id3v2-frame-to-info’, return a cons cell
-(FIELD . VALUE), where FIELD is the corresponding info field
-identifier and VALUE is the decoded text.  Otherwise return nil."
-  (let ((info-id (emms-info-native--id3v2-frame-info-id frame))
-        (payload (bindat-get-field frame 'payload)))
-    (when info-id
-      (cons info-id (emms-info-native--decode-id3v2-string payload)))))
+    (if unsync
+        ;; Reverse unsynchronization.
+        (let ((peek-end (+ begin (* 2 num-bytes)))
+              (end num-bytes))
+          (insert-file-contents-literally filename nil begin peek-end)
+          (beginning-of-buffer)
+          (while (and (re-search-forward (string 255 0) nil t)
+                      (< (point) end))
+            (replace-match (string 255))
+            (cl-incf end 1))
+          (delete-region (1+ num-bytes) (point-max))
+          (cons (+ begin end) (buffer-string)))
+      ;; No unsynchronization: read the data as-is.
+      (let ((end (+ begin num-bytes)))
+        (insert-file-contents-literally filename nil begin end)
+        (cons end (buffer-string))))))
 
 (defun emms-info-native--id3v2-frame-info-id (frame)
   "Return the emms-info identifier for FRAME.
