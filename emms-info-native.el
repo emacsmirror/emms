@@ -564,20 +564,26 @@ outside itself.")
 
 (defun emms-info-native--decode-id3v2 (filename)
   "Read and decode id3v2 metadata from FILENAME.
-Return metadata in a list of (FIELD . VALUE) cons cells."
-  (let* (emms-info-native--id3v2-version
-         (header (emms-info-native--decode-id3v2-header filename))
-         (tag-size (bindat-get-field header 'size))
-         (unsync (memq 7 (bindat-get-field header 'flags)))
-         (offset 10))
-    (when (memq 6 (bindat-get-field header 'flags))
-      ;; Skip the extended header.
-      (cl-incf offset
-               (emms-info-native--decode-id3v2-ext-header-size filename)))
-    (emms-info-native--decode-id3v2-frames filename
-                                           offset
-                                           (+ tag-size 10)
-                                           unsync)))
+Return metadata in a list of (FIELD . VALUE) cons cells, or nil
+in case of errors or if there were no known fields in FILENAME.
+
+See ‘emms-info-native--id3v2-frame-to-info’ for recognized
+fields."
+  (condition-case-unless-debug nil
+      (let* (emms-info-native--id3v2-version
+             (header (emms-info-native--decode-id3v2-header filename))
+             (tag-size (bindat-get-field header 'size))
+             (unsync (memq 7 (bindat-get-field header 'flags)))
+             (offset 10))
+        (when (memq 6 (bindat-get-field header 'flags))
+          ;; Skip the extended header.
+          (cl-incf offset
+                   (emms-info-native--decode-id3v2-ext-header-size filename)))
+        (emms-info-native--decode-id3v2-frames filename
+                                               offset
+                                               (+ tag-size 10)
+                                               unsync))
+    (error nil)))
 
 (defun emms-info-native--decode-id3v2-header (filename)
   "Read and decode id3v2 header from FILENAME."
@@ -594,7 +600,7 @@ Return the size.  Signal an error if the size exceeds
   (with-temp-buffer
     (set-buffer-multibyte nil)
     (insert-file-contents-literally filename nil 10 14)
-    (emms-info-native--checked-id3v2-size (buffer-string))))
+    (emms-info-native--checked-id3v2-size 'frame (buffer-string))))
 
 (defun emms-info-native--checked-id3v2-size (elt bytes)
   "Calculate id3v2 element ELT size from BYTES.
@@ -607,7 +613,7 @@ Return the size."
            (if (= emms-info-native--id3v2-version 4)
                (setq size (emms-info-native--decode-id3v2-size bytes t))
              (setq size (emms-info-native--decode-id3v2-size bytes nil)))))
-    (when (or (= size 0) (> size emms-info-native--max-peek-size))
+    (when (> size emms-info-native--max-peek-size)
       (error "id3v2 tag or frame size %s is invalid" size))
     size))
 
@@ -633,30 +639,34 @@ unsynchronization and decoded as such.
 
 Return metadata in a list of (FIELD . VALUE) cons cells."
   (let ((offset begin)
+        (limit (- end (emms-info-native--id3v2-frame-header-size)))
         comments)
-   (condition-case nil
-        (while (< offset end)
-          (let* ((header (emms-info-native--decode-id3v2-frame-header filename
-                                                                      offset))
-                 (info-id (emms-info-native--id3v2-frame-info-id header))
-                 (decoded-size (bindat-get-field (cdr header) 'size)))
-            (setq offset (car header))  ;advance to frame data begin
-            (if (or unsync info-id)
-                ;; Note that if unsync is t, we have to always read a
-                ;; frame to gets its true size so that we can adjust
-                ;; offset correctly.
-                (let ((data (emms-info-native--read-id3v2-frame-data filename
-                                                                     offset
-                                                                     decoded-size
-                                                                     unsync)))
-                  (setq offset (car data))
-                  (when info-id
-                    (let ((value (emms-info-native--decode-id3v2-string (cdr data))))
-                      (push (cons info-id value) comments))))
-              ;; Skip the frame.
-              (cl-incf offset decoded-size))))
-     (error nil))
-   comments))
+    (catch 'eof
+      (while (< offset limit)
+        (let* ((header (emms-info-native--decode-id3v2-frame-header filename
+                                                                    offset))
+               (info-id (emms-info-native--id3v2-frame-info-id header))
+               (decoded-size (bindat-get-field (cdr header) 'size)))
+          (when (= decoded-size 0) (throw 'eof t))
+          (setq offset (car header))  ;advance to frame data begin
+          (if (or unsync info-id)
+              ;; Note that if unsync is t, we have to always read a
+              ;; frame to gets its true size so that we can adjust
+              ;; offset correctly.
+              (let ((data (emms-info-native--read-id3v2-frame-data filename
+                                                                   offset
+                                                                   decoded-size
+                                                                   unsync)))
+                (setq offset (car data))
+                (when info-id
+                  (let ((value (emms-info-native--decode-id3v2-string (cdr data))))
+                    (push (cons info-id value) comments))))
+            ;; Skip the frame.
+            (cl-incf offset decoded-size)))))
+    comments))
+
+(defun emms-info-native--id3v2-frame-header-size ()
+  (if (= emms-info-native--id3v2-version 2) 6 10))
 
 (defun emms-info-native--decode-id3v2-frame-header (filename begin)
   "Read and decode id3v2 frame header from FILENAME.
@@ -666,7 +676,7 @@ Return a cons cell (OFFSET . FRAME), where OFFSET is the byte
 offset after the frame header, and FRAME is the decoded frame."
   (with-temp-buffer
     (set-buffer-multibyte nil)
-    (let ((end (+ begin (if (= emms-info-native--id3v2-version 2) 6 10))))
+    (let ((end (+ begin (emms-info-native--id3v2-frame-header-size))))
       (insert-file-contents-literally filename nil begin end)
       (cons end (bindat-unpack emms-info-native--id3v2-frame-header-bindat-spec
                                (buffer-string))))))
@@ -690,7 +700,7 @@ data."
         (let ((peek-end (+ begin (* 2 num-bytes)))
               (end num-bytes))
           (insert-file-contents-literally filename nil begin peek-end)
-          (beginning-of-buffer)
+          (goto-char (point-min))
           (while (and (re-search-forward (string 255 0) nil t)
                       (< (point) end))
             (replace-match (string 255))
