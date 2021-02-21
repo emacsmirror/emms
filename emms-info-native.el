@@ -728,17 +728,16 @@ If there is no such identifier, return nil."
 
 (defun emms-info-native--decode-id3v2-string (bytes)
   "Decode id3v2 text information from BYTES.
-Remove the terminating null byte, if any, and trim trailing
-whitespace.
+Remove the terminating null byte, if any.
 
 Return the text as string."
   (let* ((encoding (emms-info-native--id3v2-text-encoding bytes))
          (string (mapconcat #'byte-to-string (seq-rest bytes) ""))
          (decoded (decode-coding-string string encoding)))
     (when (> (length decoded) 0)
-      (string-trim-right (if (equal (substring decoded -1) "\0")
-                             (substring decoded 0 -1)
-                           decoded)))))
+      (if (equal (substring decoded -1) "\0")
+          (substring decoded 0 -1)
+        decoded))))
 
 (defun emms-info-native--id3v2-text-encoding (bytes)
   "Return the encoding for text information BYTES."
@@ -754,7 +753,7 @@ Supports Ogg Vorbis/Opus, FLAC, and MP3 files."
          (info-fields (emms-info-native--decode-info-fields filename)))
     (dolist (field info-fields)
       (let ((name (intern (concat "info-" (car field))))
-            (value (cdr field)))
+            (value (string-trim-right (cdr field))))
         (emms-track-set track
                         name
                         (if (eq name 'info-playing-time)
