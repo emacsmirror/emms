@@ -728,15 +728,17 @@ If there is no such identifier, return nil."
 
 (defun emms-info-native--decode-id3v2-string (bytes)
   "Decode id3v2 text information from BYTES.
-Remove the terminating null byte, if any.  Return the text as
-string."
+Remove the terminating null byte, if any, and trim trailing
+whitespace.
+
+Return the text as string."
   (let* ((encoding (emms-info-native--id3v2-text-encoding bytes))
          (string (mapconcat #'byte-to-string (seq-rest bytes) ""))
          (decoded (decode-coding-string string encoding)))
     (when (> (length decoded) 0)
-      (if (equal (substring decoded -1) "\0")
-          (substring decoded 0 -1)
-        decoded))))
+      (string-trim-right (if (equal (substring decoded -1) "\0")
+                             (substring decoded 0 -1)
+                           decoded)))))
 
 (defun emms-info-native--id3v2-text-encoding (bytes)
   "Return the encoding for text information BYTES."
