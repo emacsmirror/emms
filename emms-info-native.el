@@ -25,31 +25,31 @@
 
 ;; This file provides a native emms-info-method for EMMS.  Here
 ;; "native" means a pure Emacs Lisp implementation instead of one
-;; relying on external tools or libraries like ‘emms-info-ogginfo’ or
-;; ‘emms-info-libtag’.
+;; relying on external tools or libraries like `emms-info-ogginfo' or
+;; `emms-info-libtag'.
 ;;
-;; To use this method, add ‘emms-info-native’ to
-;; ‘emms-info-functions’.
+;; To use this method, add `emms-info-native' to
+;; `emms-info-functions'.
 ;;
 ;; The following file formats are supported:
 ;;
-;; - Vorbis: Ogg Vorbis I Profile, filename extension ‘.ogg’,
-;;   elementary streams only.  Based on xiph.org’s Vorbis I
+;; - Vorbis: Ogg Vorbis I Profile, filename extension `.ogg',
+;;   elementary streams only.  Based on xiph.org's Vorbis I
 ;;   specification, see URL
-;;   ‘https://xiph.org/vorbis/doc/Vorbis_I_spec.html’.
+;;   `https://xiph.org/vorbis/doc/Vorbis_I_spec.html'.
 ;;
-;; - Opus: Ogg Opus profile, filename extension ‘.opus’, elementary
+;; - Opus: Ogg Opus profile, filename extension `.opus', elementary
 ;;   streams only.  Based on RFC 7845, see URL
-;;   ‘https://tools.ietf.org/html/rfc7845.html’.
+;;   `https://tools.ietf.org/html/rfc7845.html'.
 ;;
 ;; - FLAC streams in native encapsulation format, filename extension
-;;   ‘.flac’.  Based on xiph.org’s FLAC format specification, see URL
-;;   ‘https://xiph.org/flac/format.html’.
+;;   `.flac'.  Based on xiph.org's FLAC format specification, see URL
+;;   `https://xiph.org/flac/format.html'.
 ;;
-;; - MP3 files with extension ‘.mp3’ and id3v2 tags.  All id3v2
+;; - MP3 files with extension `.mp3' and id3v2 tags.  All id3v2
 ;;   versions should work, but many features like CRC, compression and
 ;;   encryption are not supported.  Based on id3v2 Informal Standards,
-;;   see URL ‘https://id3.org’.
+;;   see URL `https://id3.org'.
 ;;
 ;; Format detection is based solely on filename extension, which is
 ;; matched case-insensitively.
@@ -62,10 +62,10 @@
 
 (defconst emms-info-native--max-peek-size (* 2048 1024)
   "Maximum buffer size for metadata decoding.
-Functions called by ‘emms-info-native’ read certain amounts of
+Functions called by `emms-info-native' read certain amounts of
 data into a temporary buffer while decoding metadata.  This
 variable controls the maximum size of that buffer: if more than
-‘emms-info-native--max-peek-size’ bytes are needed, an error is
+`emms-info-native--max-peek-size' bytes are needed, an error is
 signaled.
 
 Technically metadata blocks can have almost arbitrary lengths,
@@ -76,7 +76,7 @@ exhaustion in case of garbled or malicious inputs.")
 
 (defconst emms-info-native--ogg-magic-array
   [79 103 103 83]
-  "Ogg format magic capture pattern ‘OggS’.")
+  "Ogg format magic capture pattern `OggS'.")
 
 (defconst emms-info-native--ogg-page-size 65307
   "Maximum size for a single Ogg container page.")
@@ -84,7 +84,7 @@ exhaustion in case of garbled or malicious inputs.")
 (defconst emms-info-native--ogg-page-bindat-spec
   '((capture-pattern vec 4)
     (eval (unless (equal last emms-info-native--ogg-magic-array)
-            (error "Ogg framing mismatch: expected ‘%s’, got ‘%s’"
+            (error "Ogg framing mismatch: expected `%s', got `%s'"
                    emms-info-native--ogg-magic-array
                    last)))
     (stream-structure-version u8)
@@ -104,10 +104,10 @@ exhaustion in case of garbled or malicious inputs.")
 (defun emms-info-native--decode-ogg-comments (filename stream-type)
   "Read and decode comments from Ogg file FILENAME.
 The file is assumed to contain a single stream of type
-STREAM-TYPE, which must either ‘vorbis’ or ‘opus’.
+STREAM-TYPE, which must either `vorbis' or `opus'.
 
 Return comments in a list of (FIELD . VALUE) cons cells.  See
-‘emms-info-native--split-vorbis-comment’ for details."
+`emms-info-native--split-vorbis-comment' for details."
   (let* ((packets (emms-info-native--decode-ogg-packets filename 2))
          (headers (emms-info-native--decode-ogg-headers packets
                                                         stream-type))
@@ -123,9 +123,9 @@ frames, and concatenate payloads until at least PACKETS number of
 packets have been decoded.  Return the decoded packets in a
 vector, concatenated.
 
-Data is read in ‘emms-info-native--ogg-page-size’ chunks.  If the
+Data is read in `emms-info-native--ogg-page-size' chunks.  If the
 total length of concatenated packets becomes greater than
-‘emms-info-native--max-peek-size’, an error is signaled.
+`emms-info-native--max-peek-size', an error is signaled.
 
 Only elementary streams are supported, that is, FILENAME should
 contain only a single logical stream.  Note that this assumption
@@ -172,7 +172,7 @@ Note that N can be zero."
 (defun emms-info-native--num-of-packets (page)
   "Return the number of packets in Ogg page PAGE.
 PAGE must correspond to
-‘emms-info-native--ogg-page-bindat-spec’."
+`emms-info-native--ogg-page-bindat-spec'."
   ;; Every element that is less than 255 in the segment table
   ;; represents a packet boundary.
   (length (seq-filter (lambda (elt) (< elt 255))
@@ -180,11 +180,11 @@ PAGE must correspond to
 
 (defun emms-info-native--decode-ogg-headers (packets stream-type)
   "Decode first two stream headers from PACKETS for STREAM-TYPE.
-STREAM-TYPE must be either ‘vorbis’ or ‘opus’.
+STREAM-TYPE must be either `vorbis' or `opus'.
 
 Return a structure that corresponds to either
-‘emms-info-native--opus-headers-bindat-spec’ or
-‘emms-info-native--vorbis-headers-bindat-spec’."
+`emms-info-native--opus-headers-bindat-spec' or
+`emms-info-native--vorbis-headers-bindat-spec'."
   (cond ((eq stream-type 'vorbis)
          (bindat-unpack emms-info-native--vorbis-headers-bindat-spec
                         packets))
@@ -247,7 +247,7 @@ their comments have almost the same format as Vorbis.")
 
 (defconst emms-info-native--vorbis-magic-array
   [118 111 114 98 105 115]
-  "Header packet magic pattern ‘vorbis’.")
+  "Header packet magic pattern `vorbis'.")
 
 (defconst emms-info-native--vorbis-headers-bindat-spec
   '((identification-header struct emms-info-native--vorbis-identification-header-bindat-spec)
@@ -263,7 +263,7 @@ header.")
                    last)))
     (vorbis vec 6)
     (eval (unless (equal last emms-info-native--vorbis-magic-array)
-            (error "Vorbis framing mismatch: expected ‘%s’, got ‘%s’"
+            (error "Vorbis framing mismatch: expected `%s', got `%s'"
                    emms-info-native--vorbis-magic-array
                    last)))
     (vorbis-version u32r)
@@ -289,7 +289,7 @@ header.")
                    last)))
     (vorbis vec 6)
     (eval (unless (equal last emms-info-native--vorbis-magic-array)
-            (error "Vorbis framing mismatch: expected ‘%s’, got ‘%s’"
+            (error "Vorbis framing mismatch: expected `%s', got `%s'"
                    emms-info-native--vorbis-magic-array
                    last)))
     (vendor-length u32r)
@@ -319,14 +319,14 @@ header.")
 (defun emms-info-native--extract-vorbis-comments (user-comments)
   "Return a decoded list of comments from USER-COMMENTS.
 USER-COMMENTS should be a list of Vorbis comments according to
-‘user-comments’ field in
-‘emms-info-native--vorbis-comment-header-bindat-spec’,
-‘emms-info-native--opus-comment-header-bindat-spec’ or
-‘emms-info-native--flac-comment-block-bindat-spec’.
+`user-comments' field in
+`emms-info-native--vorbis-comment-header-bindat-spec',
+`emms-info-native--opus-comment-header-bindat-spec' or
+`emms-info-native--flac-comment-block-bindat-spec'.
 
 Return comments in a list of (FIELD . VALUE) cons cells.  Only
 FIELDs that are listed in
-‘emms-info-native--accepted-vorbis-fields’ are returned."
+`emms-info-native--accepted-vorbis-fields' are returned."
   (let (comments)
     (dolist (user-comment user-comments)
       (let* ((comment (cdr (assoc 'user-comment user-comment)))
@@ -339,7 +339,7 @@ FIELDs that are listed in
 
 (defun emms-info-native--split-vorbis-comment (comment)
   "Split Vorbis comment to a field-value pair.
-Vorbis comments are of form ‘FIELD=VALUE’.  FIELD is a
+Vorbis comments are of form `FIELD=VALUE'.  FIELD is a
 case-insensitive field name with a restricted set of ASCII
 characters.  VALUE is an arbitrary UTF-8 encoded octet stream.
 
@@ -363,11 +363,11 @@ outside itself.")
 
 (defconst emms-info-native--opus-head-magic-array
   [79 112 117 115 72 101 97 100]
-  "Opus identification header magic pattern ‘OpusHead’.")
+  "Opus identification header magic pattern `OpusHead'.")
 
 (defconst emms-info-native--opus-tags-magic-array
   [79 112 117 115 84 97 103 115]
-  "Opus comment header magic pattern ‘OpusTags’.")
+  "Opus comment header magic pattern `OpusTags'.")
 
 (defconst emms-info-native--opus-headers-bindat-spec
   '((identification-header struct emms-info-native--opus-identification-header-bindat-spec)
@@ -379,7 +379,7 @@ header.")
 (defconst emms-info-native--opus-identification-header-bindat-spec
   '((opus-head vec 8)
     (eval (unless (equal last emms-info-native--opus-head-magic-array)
-            (error "Opus framing mismatch: expected ‘%s’, got ‘%s’"
+            (error "Opus framing mismatch: expected `%s', got `%s'"
                    emms-info-native--opus-head-magic-array
                    last)))
     (opus-version u8)
@@ -406,7 +406,7 @@ header.")
 (defconst emms-info-native--opus-comment-header-bindat-spec
   '((opus-tags vec 8)
     (eval (unless (equal last emms-info-native--opus-tags-magic-array)
-            (error "Opus framing mismatch: expected ‘%s’, got ‘%s’"
+            (error "Opus framing mismatch: expected `%s', got `%s'"
                    emms-info-native--opus-tags-magic-array
                    last)))
     (vendor-length u32r)
@@ -450,7 +450,7 @@ header.")
   "Read and decode comments from FLAC file FILENAME.
 Return comments in a list of (FIELD . VALUE) cons cells.  Only
 FIELDs that are listed in
-‘emms-info-native--accepted-vorbis-fields’ are returned."
+`emms-info-native--accepted-vorbis-fields' are returned."
   (unless (emms-info-native--has-flac-signature filename)
     (error "Invalid FLAC stream"))
   (let* ((block (emms-info-native--decode-flac-comment-block
@@ -506,12 +506,12 @@ outside itself.")
 
 (defconst emms-info-native--id3v2-magic-array
   [#x49 #x44 #x33]
-  "id3v2 header magic pattern ‘ID3’.")
+  "id3v2 header magic pattern `ID3'.")
 
 (defconst emms-info-native--id3v2-header-bindat-spec
   '((file-identifier vec 3)
     (eval (unless (equal last emms-info-native--id3v2-magic-array)
-            (error "id3v2 framing mismatch: expected ‘%s’, got ‘%s’"
+            (error "id3v2 framing mismatch: expected `%s', got `%s'"
                    emms-info-native--id3v2-magic-array
                    last)))
     (version u8)
@@ -525,7 +525,7 @@ outside itself.")
 (defconst emms-info-native--id3v2-frame-header-bindat-spec
   '((id str (eval (if (= emms-info-native--id3v2-version 2) 3 4)))
     (eval (unless (emms-info-native--valid-id3v2-frame-id-p last)
-            (error "id3v2 frame id ‘%s’ is invalid" last)))
+            (error "id3v2 frame id `%s' is invalid" last)))
     (size-bytes vec (eval (if (= emms-info-native--id3v2-version 2) 3 4)))
     (size eval (emms-info-native--checked-id3v2-size 'frame last))
     (flags bits (eval (if (= emms-info-native--id3v2-version 2) 0 2))))
@@ -569,7 +569,7 @@ outside itself.")
 Return metadata in a list of (FIELD . VALUE) cons cells, or nil
 in case of errors or if there were no known fields in FILENAME.
 
-See ‘emms-info-native--id3v2-frame-to-info’ for recognized
+See `emms-info-native--id3v2-frame-to-info' for recognized
 fields."
   (condition-case nil
       (let* (emms-info-native--id3v2-version
@@ -694,8 +694,8 @@ offset after the frame header, and FRAME is the decoded frame."
                                                 num-bytes
                                                 unsync)
   "Read NUM-BYTES of raw id3v2 frame data from FILENAME.
-Start reading from offset BEGIN.  If UNSYNC is t, all ’FF 00’
-byte combinations are replaced by ’FF’.  Replaced byte pairs are
+Start reading from offset BEGIN.  If UNSYNC is t, all 'FF 00'
+byte combinations are replaced by 'FF'.  Replaced byte pairs are
 counted as one, instead of two, towards NUM-BYTES.
 
 Return a cons cell (OFFSET . DATA), where OFFSET is the byte
@@ -780,7 +780,7 @@ strings."
 This is a naive implementation that relies solely on filename
 extension.
 
-Return one of symbols ‘vorbis’, ‘opus’, ‘flac’, or ‘mp3’."
+Return one of symbols `vorbis', `opus', `flac', or `mp3'."
   (let ((case-fold-search t))
     (cond ((string-match ".ogg$" filename) 'vorbis)
           ((string-match ".opus$" filename) 'opus)
