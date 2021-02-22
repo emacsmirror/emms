@@ -753,12 +753,13 @@ Supports Ogg Vorbis/Opus, FLAC, and MP3 files."
          (info-fields (emms-info-native--decode-info-fields filename)))
     (dolist (field info-fields)
       (let ((name (intern (concat "info-" (car field))))
-            (value (string-trim-right (cdr field))))
-        (emms-track-set track
-                        name
-                        (if (eq name 'info-playing-time)
-                            (string-to-number value)
-                          value))))))
+            (value (cdr field)))
+        (unless (zerop (length value))
+          (emms-track-set track
+                          name
+                          (if (eq name 'info-playing-time)
+                              (string-to-number value)
+                            (string-trim-right value))))))))
 
 (defun emms-info-native--decode-info-fields (filename)
   "Decode info fields from FILENAME.
