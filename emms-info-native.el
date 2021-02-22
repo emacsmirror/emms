@@ -243,7 +243,7 @@ their comments have almost the same format as Vorbis.")
     "titlesort"
     "tracknumber"
     "year")
-  "Emms info fields that are extracted from Vorbis comments.")
+  "EMMS info fields that are extracted from Vorbis comments.")
 
 (defconst emms-info-native--vorbis-magic-array
   [118 111 114 98 105 115]
@@ -532,30 +532,38 @@ outside itself.")
   "id3v2 frame header specification.")
 
 (defconst emms-info-native--id3v2-frame-to-info
-  '(("TP1"  . "artist")
-    ("TPE1" . "artist")
+  '(("TAL"  . "album")
+    ("TALB" . "album")
     ("TPE2" . "albumartist")
+    ("TSO2" . "albumartistsort")
+    ("TSOA" . "albumsort")
+    ("TP1"  . "artist")
+    ("TPE1" . "artist")
     ("TSOP" . "artistsort")
     ("TCM"  . "composer")
     ("TCOM" . "composer")
+    ("TSOC" . "composersort")
+    ("TDRC" . "date")
+    ("TPA"  . "discnumber")
+    ("TPOS" . "discnumber")
+    ("TCON" . "genre")
+    ("TPUB" . "label")
+    ("TDOR" . "originaldate")
+    ("TOR"  . "originalyear")
+    ("TORY" . "originalyear")
     ("TIT2" . "title")
     ("TT2"  . "title")
     ("TSOT" . "titlesort")
-    ("TALB" . "album")
-    ("TAL"  . "album")
-    ("TSOA" . "albumsort")
-    ("TRCK" . "tracknumber")
     ("TRK"  . "tracknumber")
-    ("TPOS" . "discnumber")
-    ("TPA"  . "discnumber")
-    ("TDRC" . "date")
-    ("TDRL" . "date")
-    ("TYER" . "year")
+    ("TRCK" . "tracknumber")
     ("TYE"  . "year")
-    ("TDOR" . "originaldate")
-    ("TORY" . "originalyear")
-    ("TOR"  . "originalyear"))
-  "Mapping from id3v2 frame identifiers to info fields.")
+    ("TYER" . "year"))
+  "Mapping from id3v2 frame identifiers to EMMS info fields.
+
+Sources:
+
+- URL `https://picard-docs.musicbrainz.org/en/appendices/tag_mapping.html'
+- URL `http://wiki.hydrogenaud.io/index.php?title=Foobar2000:ID3_Tag_Mapping'")
 
 (defconst emms-info-native--id3v2-text-encodings
   '((0 . latin-1)
