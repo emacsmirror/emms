@@ -878,10 +878,11 @@ with key/value-pair.  Extract the key and, if it is a mapped
 element in `emms-info-native--id3v2-frame-to-info', use it as
 INFO-ID.
 
-If INFO-ID is `genre', assume that DATA is either id3v1 genre
-reference \"(XX)\" or plain genre string.  In the former case,
-map XX to a string via `emms-info-native--id3v1-genres'; in the
-latter case use the genre string verbatim.
+If INFO-ID is `genre', assume that DATA is either an integral
+id3v1 genre reference or a plain genre string.  In the former
+case map the reference to a string via
+`emms-info-native--id3v1-genres'; in the latter case use the
+genre string verbatim.
 
 Return a cons cell (INFO-ID . VALUE) where VALUE is the decoded
 string."
@@ -889,7 +890,7 @@ string."
     (let ((str (emms-info-native--decode-id3v2-string data)))
       (cond ((stringp info-id) (cons info-id str))
             ((eq info-id 'genre)
-             (if (string-match "^(\\([0-9]+\\))" str)
+             (if (string-match "^(?\\([0-9]+\\))?" str)
                  (let ((v1-genre (assoc (string-to-number (match-string 1 str))
                                         emms-info-native--id3v1-genres)))
                    (when v1-genre (cons "genre" (cdr v1-genre))))
