@@ -59,6 +59,8 @@
 (require 'bindat)
 (require 'cl-lib)
 (require 'emms-info)
+(require 'seq)
+(require 'subr-x)
 
 (defconst emms-info-native--max-peek-size (* 2048 1024)
   "Maximum buffer size for metadata decoding.
@@ -72,11 +74,240 @@ Technically metadata blocks can have almost arbitrary lengths,
 but in practice processing must be constrained to prevent memory
 exhaustion in case of garbled or malicious inputs.")
 
-;;;; Ogg code
+(defvar emms-info-native--opus-channel-count 0
+  "Last decoded Opus channel count.
+This is a kludge; it is needed because bindat spec cannot refer
+outside itself.")
 
-(defconst emms-info-native--ogg-magic-array
-  [79 103 103 83]
-  "Ogg format magic capture pattern `OggS'.")
+(defvar emms-info-native--id3v2-version 0
+  "Last decoded id3v2 version.
+This is a kludge; it is needed because bindat spec cannot refer
+outside itself.")
+
+;;;; Vorbis code
+
+(defconst emms-info-native--max-num-vorbis-comments 1024
+  "Maximum number of Vorbis comment fields in a stream.
+Technically a single Vorbis stream may have up to 2^32 comments,
+but in practice processing must be constrained to prevent memory
+exhaustion in case of garbled or malicious inputs.
+
+This limit is used with Opus and FLAC streams as well, since
+their comments have almost the same format as Vorbis.")
+
+(defconst emms-info-native--max-vorbis-comment-size (* 64 1024)
+  "Maximum length for a single Vorbis comment field.
+Technically a single Vorbis comment may have a length up to 2^32
+bytes, but in practice processing must be constrained to prevent
+memory exhaustion in case of garbled or malicious inputs.
+
+This limit is used with Opus and FLAC streams as well, since
+their comments have almost the same format as Vorbis.")
+
+(defconst emms-info-native--max-vorbis-vendor-length 1024
+  "Maximum length of Vorbis vendor string.
+Technically a vendor string can be up to 2^32 bytes long, but in
+practice processing must be constrained to prevent memory
+exhaustion in case of garbled or malicious inputs.
+
+This limit is used with Opus and FLAC streams as well, since
+their comments have almost the same format as Vorbis.")
+
+(defconst emms-info-native--accepted-vorbis-fields
+  '("album"
+    "albumartist"
+    "albumartistsort"
+    "albumsort"
+    "artist"
+    "artistsort"
+    "composer"
+    "composersort"
+    "date"
+    "discnumber"
+    "genre"
+    "label"
+    "originaldate"
+    "originalyear"
+    "performer"
+    "title"
+    "titlesort"
+    "tracknumber"
+    "year")
+  "EMMS info fields that are extracted from Vorbis comments.")
+
+(defconst emms-info-native--vorbis-headers-bindat-spec
+  '((identification-header struct emms-info-native--vorbis-identification-header-bindat-spec)
+    (comment-header struct emms-info-native--vorbis-comment-header-bindat-spec))
+  "Specification for first two Vorbis header packets.
+They are always an identification header followed by a comment
+header.")
+
+(defconst emms-info-native--vorbis-identification-header-bindat-spec
+  '((packet-type u8)
+    (eval (unless (= last 1)
+            (error "Vorbis header type mismatch: expected 1, got %s"
+                   last)))
+    (vorbis vec 6)
+    (eval (unless (equal last emms-info-native--vorbis-magic-array)
+            (error "Vorbis framing mismatch: expected `%s', got `%s'"
+                   emms-info-native--vorbis-magic-array
+                   last)))
+    (vorbis-version u32r)
+    (eval (unless (= last 0)
+            (error "Vorbis version mismatch: expected 0, got %s"
+                   last)))
+    (audio-channels u8)
+    (audio-sample-rate u32r)
+    (bitrate-maximum u32r)
+    (bitrate-nominal u32r)
+    (bitrate-minimum u32r)
+    (blocksize u8)
+    (framing-flag u8)
+    (eval (unless (= last 1))
+          (error "Vorbis framing bit mismatch: expected 1, got %s"
+                 last)))
+  "Vorbis identification header specification.")
+
+(defconst emms-info-native--vorbis-magic-array
+  [118 111 114 98 105 115]
+  "Header packet magic pattern `vorbis'.")
+
+(defconst emms-info-native--vorbis-comment-header-bindat-spec
+  '((packet-type u8)
+    (eval (unless (= last 3)
+            (error "Vorbis header type mismatch: expected 3, got %s"
+                   last)))
+    (vorbis vec 6)
+    (eval (unless (equal last emms-info-native--vorbis-magic-array)
+            (error "Vorbis framing mismatch: expected `%s', got `%s'"
+                   emms-info-native--vorbis-magic-array
+                   last)))
+    (vendor-length u32r)
+    (eval (when (> last emms-info-native--max-vorbis-vendor-length)
+            (error "Vorbis vendor length %s is too long" last)))
+    (vendor-string vec (vendor-length))
+    (user-comments-list-length u32r)
+    (eval (when (> last emms-info-native--max-num-vorbis-comments)
+            (error "Vorbis user comment list length %s is too long"
+                   last)))
+    (user-comments repeat
+                   (user-comments-list-length)
+                   (struct emms-info-native--vorbis-comment-field-bindat-spec))
+    (framing-bit u8)
+    (eval (unless (= last 1))
+          (error "Vorbis framing bit mismatch: expected 1, got %s"
+                 last)))
+  "Vorbis comment header specification.")
+
+(defconst emms-info-native--vorbis-comment-field-bindat-spec
+  '((length u32r)
+    (eval (when (> last emms-info-native--max-vorbis-comment-size)
+            (error "Vorbis comment length %s is too long" last)))
+    (user-comment vec (length)))
+  "Vorbis comment field specification.")
+
+(defun emms-info-native--extract-vorbis-comments (user-comments)
+  "Return a decoded list of comments from USER-COMMENTS.
+USER-COMMENTS should be a list of Vorbis comments according to
+`user-comments' field in
+`emms-info-native--vorbis-comment-header-bindat-spec',
+`emms-info-native--opus-comment-header-bindat-spec' or
+`emms-info-native--flac-comment-block-bindat-spec'.
+
+Return comments in a list of (FIELD . VALUE) cons cells.  Only
+FIELDs that are listed in
+`emms-info-native--accepted-vorbis-fields' are returned."
+  (let (comments)
+    (dolist (user-comment user-comments)
+      (let* ((comment (cdr (assoc 'user-comment user-comment)))
+             (pair (emms-info-native--split-vorbis-comment comment)))
+        (push pair comments)))
+    (seq-filter (lambda (elt)
+                  (member (car elt)
+                          emms-info-native--accepted-vorbis-fields))
+                comments)))
+
+(defun emms-info-native--split-vorbis-comment (comment)
+  "Split Vorbis comment to a field-value pair.
+Vorbis comments are of form `FIELD=VALUE'.  FIELD is a
+case-insensitive field name with a restricted set of ASCII
+characters.  VALUE is an arbitrary UTF-8 encoded octet stream.
+
+Return a cons cell (FIELD . VALUE), where FIELD is converted to
+lower case and VALUE is the decoded value."
+  (let ((comment-string (decode-coding-string (mapconcat
+                                               #'byte-to-string
+                                               comment
+                                               nil)
+                                              'utf-8)))
+    (when (string-match "^\\(.+?\\)=\\(.+?\\)$" comment-string)
+      (cons (downcase (match-string 1 comment-string))
+            (match-string 2 comment-string)))))
+
+;;;; Opus code
+
+(defconst emms-info-native--opus-headers-bindat-spec
+  '((identification-header struct emms-info-native--opus-identification-header-bindat-spec)
+    (comment-header struct emms-info-native--opus-comment-header-bindat-spec))
+  "Specification for two first Opus header packets.
+They are always an identification header followed by a comment
+header.")
+
+(defconst emms-info-native--opus-identification-header-bindat-spec
+  '((opus-head vec 8)
+    (eval (unless (equal last emms-info-native--opus-head-magic-array)
+            (error "Opus framing mismatch: expected `%s', got `%s'"
+                   emms-info-native--opus-head-magic-array
+                   last)))
+    (opus-version u8)
+    (eval (unless (< last 16)
+            (error "Opus version mismatch: expected < 16, got %s"
+                   last)))
+    (channel-count u8)
+    (eval (setq emms-info-native--opus-channel-count last))
+    (pre-skip u16r)
+    (sample-rate u32r)
+    (output-gain u16r)
+    (channel-mapping-family u8)
+    (union (channel-mapping-family)
+           (0 nil)
+           (t (struct emms-info-native--opus-channel-mapping-table))))
+  "Opus identification header specification.")
+
+(defconst emms-info-native--opus-head-magic-array
+  [79 112 117 115 72 101 97 100]
+  "Opus identification header magic pattern `OpusHead'.")
+
+(defconst emms-info-native--opus-channel-mapping-table
+  '((stream-count u8)
+    (coupled-count u8)
+    (channel-mapping vec (eval emms-info-native--opus-channel-count)))
+  "Opus channel mapping table specification.")
+
+(defconst emms-info-native--opus-comment-header-bindat-spec
+  '((opus-tags vec 8)
+    (eval (unless (equal last emms-info-native--opus-tags-magic-array)
+            (error "Opus framing mismatch: expected `%s', got `%s'"
+                   emms-info-native--opus-tags-magic-array
+                   last)))
+    (vendor-length u32r)
+    (eval (when (> last emms-info-native--max-vorbis-vendor-length)
+            (error "Opus vendor length %s is too long" last)))
+    (vendor-string vec (vendor-length))
+    (user-comments-list-length u32r)
+    (eval (when (> last emms-info-native--max-num-vorbis-comments)
+            (error "Opus user comment list length %s is too long"
+                   last)))
+    (user-comments repeat
+                   (user-comments-list-length)
+                   (struct emms-info-native--vorbis-comment-field-bindat-spec)))
+  "Opus comment header specification.")
+
+(defconst emms-info-native--opus-tags-magic-array
+  [79 112 117 115 84 97 103 115]
+  "Opus comment header magic pattern `OpusTags'.")
+
+;;;; Ogg code
 
 (defconst emms-info-native--ogg-page-size 65307
   "Maximum size for a single Ogg container page.")
@@ -100,6 +331,10 @@ exhaustion in case of garbled or malicious inputs.")
     (segment-table vec (page-segments))
     (payload vec (eval (seq-reduce #'+ last 0))))
   "Ogg page structure specification.")
+
+(defconst emms-info-native--ogg-magic-array
+  [79 103 103 83]
+  "Ogg format magic capture pattern `OggS'.")
 
 (defun emms-info-native--decode-ogg-comments (filename stream-type)
   "Read and decode comments from Ogg file FILENAME.
@@ -194,234 +429,6 @@ Return a structure that corresponds to either
                           packets)))
         (t (error "Unknown stream type %s" stream-type))))
 
-;;;; Vorbis code
-
-(defconst emms-info-native--max-num-vorbis-comments 1024
-  "Maximum number of Vorbis comment fields in a stream.
-Technically a single Vorbis stream may have up to 2^32 comments,
-but in practice processing must be constrained to prevent memory
-exhaustion in case of garbled or malicious inputs.
-
-This limit is used with Opus and FLAC streams as well, since
-their comments have almost the same format as Vorbis.")
-
-(defconst emms-info-native--max-vorbis-comment-size (* 64 1024)
-  "Maximum length for a single Vorbis comment field.
-Technically a single Vorbis comment may have a length up to 2^32
-bytes, but in practice processing must be constrained to prevent
-memory exhaustion in case of garbled or malicious inputs.
-
-This limit is used with Opus and FLAC streams as well, since
-their comments have almost the same format as Vorbis.")
-
-(defconst emms-info-native--max-vorbis-vendor-length 1024
-  "Maximum length of Vorbis vendor string.
-Technically a vendor string can be up to 2^32 bytes long, but in
-practice processing must be constrained to prevent memory
-exhaustion in case of garbled or malicious inputs.
-
-This limit is used with Opus and FLAC streams as well, since
-their comments have almost the same format as Vorbis.")
-
-(defconst emms-info-native--accepted-vorbis-fields
-  '("album"
-    "albumartist"
-    "albumartistsort"
-    "albumsort"
-    "artist"
-    "artistsort"
-    "composer"
-    "composersort"
-    "date"
-    "discnumber"
-    "genre"
-    "label"
-    "originaldate"
-    "originalyear"
-    "performer"
-    "title"
-    "titlesort"
-    "tracknumber"
-    "year")
-  "EMMS info fields that are extracted from Vorbis comments.")
-
-(defconst emms-info-native--vorbis-magic-array
-  [118 111 114 98 105 115]
-  "Header packet magic pattern `vorbis'.")
-
-(defconst emms-info-native--vorbis-headers-bindat-spec
-  '((identification-header struct emms-info-native--vorbis-identification-header-bindat-spec)
-    (comment-header struct emms-info-native--vorbis-comment-header-bindat-spec))
-  "Specification for first two Vorbis header packets.
-They are always an identification header followed by a comment
-header.")
-
-(defconst emms-info-native--vorbis-identification-header-bindat-spec
-  '((packet-type u8)
-    (eval (unless (= last 1)
-            (error "Vorbis header type mismatch: expected 1, got %s"
-                   last)))
-    (vorbis vec 6)
-    (eval (unless (equal last emms-info-native--vorbis-magic-array)
-            (error "Vorbis framing mismatch: expected `%s', got `%s'"
-                   emms-info-native--vorbis-magic-array
-                   last)))
-    (vorbis-version u32r)
-    (eval (unless (= last 0)
-            (error "Vorbis version mismatch: expected 0, got %s"
-                   last)))
-    (audio-channels u8)
-    (audio-sample-rate u32r)
-    (bitrate-maximum u32r)
-    (bitrate-nominal u32r)
-    (bitrate-minimum u32r)
-    (blocksize u8)
-    (framing-flag u8)
-    (eval (unless (= last 1))
-          (error "Vorbis framing bit mismatch: expected 1, got %s"
-                 last)))
-  "Vorbis identification header specification.")
-
-(defconst emms-info-native--vorbis-comment-header-bindat-spec
-  '((packet-type u8)
-    (eval (unless (= last 3)
-            (error "Vorbis header type mismatch: expected 3, got %s"
-                   last)))
-    (vorbis vec 6)
-    (eval (unless (equal last emms-info-native--vorbis-magic-array)
-            (error "Vorbis framing mismatch: expected `%s', got `%s'"
-                   emms-info-native--vorbis-magic-array
-                   last)))
-    (vendor-length u32r)
-    (eval (when (> last emms-info-native--max-vorbis-vendor-length)
-            (error "Vorbis vendor length %s is too long" last)))
-    (vendor-string vec (vendor-length))
-    (user-comments-list-length u32r)
-    (eval (when (> last emms-info-native--max-num-vorbis-comments)
-            (error "Vorbis user comment list length %s is too long"
-                   last)))
-    (user-comments repeat
-                   (user-comments-list-length)
-                   (struct emms-info-native--vorbis-comment-field-bindat-spec))
-    (framing-bit u8)
-    (eval (unless (= last 1))
-          (error "Vorbis framing bit mismatch: expected 1, got %s"
-                 last)))
-  "Vorbis comment header specification.")
-
-(defconst emms-info-native--vorbis-comment-field-bindat-spec
-  '((length u32r)
-    (eval (when (> last emms-info-native--max-vorbis-comment-size)
-            (error "Vorbis comment length %s is too long" last)))
-    (user-comment vec (length)))
-  "Vorbis comment field specification.")
-
-(defun emms-info-native--extract-vorbis-comments (user-comments)
-  "Return a decoded list of comments from USER-COMMENTS.
-USER-COMMENTS should be a list of Vorbis comments according to
-`user-comments' field in
-`emms-info-native--vorbis-comment-header-bindat-spec',
-`emms-info-native--opus-comment-header-bindat-spec' or
-`emms-info-native--flac-comment-block-bindat-spec'.
-
-Return comments in a list of (FIELD . VALUE) cons cells.  Only
-FIELDs that are listed in
-`emms-info-native--accepted-vorbis-fields' are returned."
-  (let (comments)
-    (dolist (user-comment user-comments)
-      (let* ((comment (cdr (assoc 'user-comment user-comment)))
-             (pair (emms-info-native--split-vorbis-comment comment)))
-        (push pair comments)))
-    (seq-filter (lambda (elt)
-                  (member (car elt)
-                          emms-info-native--accepted-vorbis-fields))
-                comments)))
-
-(defun emms-info-native--split-vorbis-comment (comment)
-  "Split Vorbis comment to a field-value pair.
-Vorbis comments are of form `FIELD=VALUE'.  FIELD is a
-case-insensitive field name with a restricted set of ASCII
-characters.  VALUE is an arbitrary UTF-8 encoded octet stream.
-
-Return a cons cell (FIELD . VALUE), where FIELD is converted to
-lower case and VALUE is the decoded value."
-  (let ((comment-string (decode-coding-string (mapconcat
-                                               #'byte-to-string
-                                               comment
-                                               nil)
-                                              'utf-8)))
-    (when (string-match "^\\(.+?\\)=\\(.+?\\)$" comment-string)
-      (cons (downcase (match-string 1 comment-string))
-            (match-string 2 comment-string)))))
-
-;;;; Opus code
-
-(defvar emms-info-native--opus-channel-count 0
-  "Last decoded Opus channel count.
-This is a kludge; it is needed because bindat spec cannot refer
-outside itself.")
-
-(defconst emms-info-native--opus-head-magic-array
-  [79 112 117 115 72 101 97 100]
-  "Opus identification header magic pattern `OpusHead'.")
-
-(defconst emms-info-native--opus-tags-magic-array
-  [79 112 117 115 84 97 103 115]
-  "Opus comment header magic pattern `OpusTags'.")
-
-(defconst emms-info-native--opus-headers-bindat-spec
-  '((identification-header struct emms-info-native--opus-identification-header-bindat-spec)
-    (comment-header struct emms-info-native--opus-comment-header-bindat-spec))
-  "Specification for two first Opus header packets.
-They are always an identification header followed by a comment
-header.")
-
-(defconst emms-info-native--opus-identification-header-bindat-spec
-  '((opus-head vec 8)
-    (eval (unless (equal last emms-info-native--opus-head-magic-array)
-            (error "Opus framing mismatch: expected `%s', got `%s'"
-                   emms-info-native--opus-head-magic-array
-                   last)))
-    (opus-version u8)
-    (eval (unless (< last 16)
-            (error "Opus version mismatch: expected < 16, got %s"
-                   last)))
-    (channel-count u8)
-    (eval (setq emms-info-native--opus-channel-count last))
-    (pre-skip u16r)
-    (sample-rate u32r)
-    (output-gain u16r)
-    (channel-mapping-family u8)
-    (union (channel-mapping-family)
-           (0 nil)
-           (t (struct emms-info-native--opus-channel-mapping-table))))
-  "Opus identification header specification.")
-
-(defconst emms-info-native--opus-channel-mapping-table
-  '((stream-count u8)
-    (coupled-count u8)
-    (channel-mapping vec (eval emms-info-native--opus-channel-count)))
-  "Opus channel mapping table specification.")
-
-(defconst emms-info-native--opus-comment-header-bindat-spec
-  '((opus-tags vec 8)
-    (eval (unless (equal last emms-info-native--opus-tags-magic-array)
-            (error "Opus framing mismatch: expected `%s', got `%s'"
-                   emms-info-native--opus-tags-magic-array
-                   last)))
-    (vendor-length u32r)
-    (eval (when (> last emms-info-native--max-vorbis-vendor-length)
-            (error "Opus vendor length %s is too long" last)))
-    (vendor-string vec (vendor-length))
-    (user-comments-list-length u32r)
-    (eval (when (> last emms-info-native--max-num-vorbis-comments)
-            (error "Opus user comment list length %s is too long"
-                   last)))
-    (user-comments repeat
-                   (user-comments-list-length)
-                   (struct emms-info-native--vorbis-comment-field-bindat-spec)))
-  "Opus comment header specification.")
-
 ;;;; FLAC code
 
 (defconst emms-info-native--flac-metadata-block-header-bindat-spec
@@ -488,7 +495,7 @@ Return the comment block data in a vector."
                (block-type (logand flags #x7F)))
           (setq last-flag (> (logand flags #x80) 0))
           (when (> block-type 6)
-            (error "FLAC block type error: expected ≤ 6, got %s"
+            (error "FLAC block type error: expected <= 6, got %s"
                    block-type))
           (when (= block-type 4)
             ;; Comment block found, extract it.
@@ -498,15 +505,6 @@ Return the comment block data in a vector."
       comment-block)))
 
 ;;;; id3v2 (MP3) code
-
-(defvar emms-info-native--id3v2-version 0
-  "Last decoded id3v2 version.
-This is a kludge; it is needed because bindat spec cannot refer
-outside itself.")
-
-(defconst emms-info-native--id3v2-magic-array
-  [#x49 #x44 #x33]
-  "id3v2 header magic pattern `ID3'.")
 
 (defconst emms-info-native--id3v2-header-bindat-spec
   '((file-identifier vec 3)
@@ -521,6 +519,10 @@ outside itself.")
     (size-bytes vec 4)
     (size eval (emms-info-native--checked-id3v2-size 'tag last)))
   "id3v2 header specification.")
+
+(defconst emms-info-native--id3v2-magic-array
+  [#x49 #x44 #x33]
+  "id3v2 header magic pattern `ID3'.")
 
 (defconst emms-info-native--id3v2-frame-header-bindat-spec
   '((id str (eval (if (= emms-info-native--id3v2-version 2) 3 4)))
