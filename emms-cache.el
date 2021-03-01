@@ -182,7 +182,7 @@ regardless of whether they have been modified or not."
 (defun emms-cache-reset ()
   "Reset the cache."
   (interactive)
-  (when (yes-or-no-p "Really reset the cache?")
+  (when (yes-or-no-p "Really reset the cache? ")
     (setq emms-cache-db
           (make-hash-table
            :test (if (fboundp 'define-hash-table-test)
