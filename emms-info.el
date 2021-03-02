@@ -1,4 +1,4 @@
-;;; emms-info.el --- Retrieving track information
+;;; emms-info.el --- Retrieving track information  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2005-2020  Free Software Foundation, Inc.
 
@@ -92,8 +92,7 @@ This is a suitable value for `emms-track-initialize-functions'."
 Return t when the track got changed."
   (let ((file-mtime (when emms-info-auto-update
                       (emms-info-track-file-mtime track)))
-        (info-mtime (emms-track-get track 'info-mtime))
-        (name (emms-track-get track 'name)))
+        (info-mtime (emms-track-get track 'info-mtime)))
 
     ;; if the file's been modified or is new
     (when (or (not file-mtime)
