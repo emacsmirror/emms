@@ -1,4 +1,4 @@
-;;; emms-cue.el --- Recognize cue sheet file
+;;; emms-cue.el --- Recognize cue sheet file  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2009 Free Software Foundation, Inc.
 

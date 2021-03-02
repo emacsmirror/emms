@@ -1,4 +1,4 @@
-;;; emms.el --- The Emacs Multimedia System
+;;; emms.el --- The Emacs Multimedia System  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008,
 ;;   2009, 2018, 2020  Free Software Foundation, Inc.
