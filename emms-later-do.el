@@ -1,4 +1,4 @@
-;;; emms-later-do.el --- execute lisp code ... later
+;;; emms-later-do.el --- execute lisp code ... later -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2004, 2005, 2006, 2007, 2008,
 ;;   2009, 2018 Free Software Foundation, Inc.
