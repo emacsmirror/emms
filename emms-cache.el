@@ -111,11 +111,12 @@ This is used to cache over emacs sessions.")
 
 (defun emms-cache-get (type path)
   "Return a cache element for PATH, or nil."
+  (ignore type) ;; implicitly ignored before 2021-03-02
   (gethash path emms-cache-db))
 
-;; Note we ignore TYPE, as it's stored in TRACK
 (defun emms-cache-set (type path track)
   "Set PATH to TRACK in the cache."
+  (ignore type) ;; implicitly ignored before 2021-03-02
   (puthash path track emms-cache-db)
   (emms-cache-dirty))
 
