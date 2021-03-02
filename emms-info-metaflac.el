@@ -1,4 +1,4 @@
-;;; emms-info-metaflac.el --- Info-method for EMMS using metaflac
+;;; emms-info-metaflac.el --- Info-method for EMMS using metaflac  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2006, 2007, 2008, 2009  Free Software Foundation, Inc.
 
