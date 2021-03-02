@@ -1,4 +1,4 @@
-;;; emms-librefm-scrobbler.el --- Libre.FM Scrobbing API
+;;; emms-librefm-scrobbler.el --- Libre.FM Scrobbing API  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2014  Free Software Foundation, Inc.
 
@@ -133,6 +133,7 @@ TOKEN is :user of :secret."
 (defun emms-librefm-scrobbler-handshake-call (url username password)
   "Perform client handshake and return a response in a buffer."
   (let ((url-request-method "POST"))
+    (ignore url-request-method)
     (let ((response
 	   (url-retrieve-synchronously
 	    (emms-librefm-scrobbler-handshake-string
@@ -248,6 +249,9 @@ TOKEN is :user of :secret."
 	   (url-request-data flarb)
 	   (url-request-extra-headers
 	    `(("Content-type" . "application/x-www-form-urlencoded"))))
+      (ignore url-request-extra-headers
+	      url-request-data
+	      url-request-method)
       (url-retrieve emms-librefm-scrobbler-submission-url
 		    #'emms-librefm-scrobbler-async-submission-callback
 		    (list (cons track rating))))))
@@ -255,6 +259,7 @@ TOKEN is :user of :secret."
 (defun emms-librefm-scrobbler-async-submission-callback (status &optional cbargs)
   "Pass response of asynchronous submission call to handler."
   (let ((response (emms-librefm-scrobbler-get-response-status)))
+    (ignore status)
     ;; From the API docs: This indicates that the
     ;; submission request was accepted for processing. It
     ;; does not mean that the submission was valid, but
