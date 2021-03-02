@@ -1261,6 +1261,7 @@ ignore this."
 
 (defun emms-default-ok-track-function (track)
   "A function which OKs all tracks for playing by default."
+  (ignore track) ;; explicit ignore
   t)
 
 ;;; Helper functions
