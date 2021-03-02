@@ -76,7 +76,7 @@ empty."
       (setq emms-later-do-timer nil)
     (let (res)
       (unwind-protect
-          (dotimes (b (min emms-later-do-batch (length emms-later-do-list)) res)
+          (dotimes (_b (min emms-later-do-batch (length emms-later-do-list)) res)
             (let ((fun (caar emms-later-do-list))
                   (args (cdar emms-later-do-list)))
               (setq emms-later-do-list (cdr emms-later-do-list))
