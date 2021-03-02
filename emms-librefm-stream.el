@@ -1,4 +1,4 @@
-;;; emms-librefm-stream.el --- Libre.FM streaming
+;;; emms-librefm-stream.el --- Libre.FM streaming  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2014  Free Software Foundation, Inc.
 
@@ -104,6 +104,7 @@ point after the HTTP headers."
 (defun emms-librefm-stream-tune-handshake-call ()
   "Make the tune handshake call."
   (let ((url-request-method "POST"))
+    (ignore url-request-method)
     (let ((response
 	   (url-retrieve-synchronously
 	    (emms-librefm-stream-tune-handshake-string))))
@@ -171,6 +172,7 @@ point after the HTTP headers."
 (defun emms-librefm-stream-tune-call (session-id station)
   "Make the tune call."
   (let ((url-request-method "POST"))
+    (ignore url-request-method)
     (let ((response
 	   (url-retrieve-synchronously
 	    (emms-librefm-stream-tune-string
@@ -187,32 +189,24 @@ point after the HTTP headers."
     (error "response not a buffer"))
   (with-current-buffer resbuf
     (emms-librefm-stream-assert-http)
-    (let ((status (buffer-substring (point-at-bol)
-				    (point-at-eol))))
-      (let (response
-	    url
-	    stationname
-	    (start (point)))
+    (let (response
+	  stationname
+	  (start (point)))
 
-	(if (re-search-forward "^response=\\(.*\\)$" (point-max) t)
-	    (setq response (match-string-no-properties 1))
-	  (error "no response status code"))
-	(when (not (string= response "OK"))
-	  (error "tune response not OK"))
+      (if (re-search-forward "^response=\\(.*\\)$" (point-max) t)
+	  (setq response (match-string-no-properties 1))
+	(error "no response status code"))
+      (when (not (string= response "OK"))
+	(error "tune response not OK"))
 
-	(goto-char start)
-	(if (re-search-forward "^url=\\(.*\\)$" (point-max) t)
-	    (setq url (match-string-no-properties 1))
-	  (error "no url from server"))
+      (goto-char start)
+      (if (re-search-forward "^stationname=\\(.*\\)$" (point-max) t)
+	  (setq stationname (match-string-no-properties 1))
+	(error "no stationname from server"))
 
-	(goto-char start)
-	(if (re-search-forward "^stationname=\\(.*\\)$" (point-max) t)
-	    (setq stationname (match-string-no-properties 1))
-	  (error "no stationname from server"))
+      (setq emms-librefm-stream-station-name stationname)
 
-	(setq emms-librefm-stream-station-name stationname)
-
-	(message "successfully tuned to: %s" stationname)))))
+      (message "successfully tuned to: %s" stationname))))
 
 (defun emms-librefm-stream-tune (station)
   "Make and handle tune call."
@@ -242,6 +236,7 @@ point after the HTTP headers."
 (defun emms-librefm-stream-getplaylist-call (session-id)
   "Make the getplaylist call."
   (let ((url-request-method "POST"))
+    (ignore url-request-method)
     (let ((response
 	   (url-retrieve-synchronously
 	    (emms-librefm-stream-getplaylist-string session-id))))
@@ -269,7 +264,6 @@ point after the HTTP headers."
 ;;; ------------------------------------------------------------------
 ;;; XSPF
 ;;; ------------------------------------------------------------------
-
 (defun emms-librefm-stream-xspf-find (tag data)
   "Return the tracklist portion of PLAYLIST or nil."
   (let ((tree (copy-tree data))
@@ -296,8 +290,7 @@ point after the HTTP headers."
 	(title    (emms-librefm-stream-xspf-get 'title track))
 	(album    (emms-librefm-stream-xspf-get 'album track))
 	(creator  (emms-librefm-stream-xspf-get 'creator track))
-	(duration (emms-librefm-stream-xspf-get 'duration track))
-	(image    (emms-librefm-stream-xspf-get 'image track)))
+	(duration (emms-librefm-stream-xspf-get 'duration track)))
     (let ((emms-track (emms-dictionary '*track*)))
       (emms-track-set emms-track 'name location)
       (emms-track-set emms-track 'info-artist creator)
