@@ -1,4 +1,4 @@
-;;; emms-info-mp3info.el --- Info-method for EMMS using mp3info
+;;; emms-info-mp3info.el --- Info-method for EMMS using mp3info  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008,
 ;;   2009 Free Software Foundation, Inc.
