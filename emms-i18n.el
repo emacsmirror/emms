@@ -1,4 +1,4 @@
-;;; emms-i18n.el --- functions for handling coding systems
+;;; emms-i18n.el --- functions for handling coding systems  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 
