@@ -1,4 +1,4 @@
-;;; emms-info-ogginfo.el --- Emms information from Ogg Vorbis files.
+;;; emms-info-ogginfo.el --- Emms information from Ogg Vorbis files. -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 

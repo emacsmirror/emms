@@ -1,4 +1,4 @@
-;;; emms-last-played.el --- Support for last-played-time of a track
+;;; emms-last-played.el --- Support for last-played-time of a track -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 

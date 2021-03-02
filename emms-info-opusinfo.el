@@ -1,4 +1,4 @@
-;;; emms-info-opusinfo.el --- Emms information from Ogg Opus files.
+;;; emms-info-opusinfo.el --- Emms information from Ogg Opus files. -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2018 Free Software Foundation, Inc.
 
