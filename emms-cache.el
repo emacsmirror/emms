@@ -1,4 +1,4 @@
-;;; emms-cache.el --- persistence for emms-track
+;;; emms-cache.el --- persistence for emms-track  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2006, 2007, 2008, 2009  Free Software Foundation, Inc.
 
