@@ -1,4 +1,4 @@
-;;; emms-history.el -- save all playlists when exiting emacs
+;;; emms-history.el -- save all playlists when exiting emacs  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 ;;
