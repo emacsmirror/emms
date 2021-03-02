@@ -1,7 +1,7 @@
 This is emms.info, produced by makeinfo version 6.1 from emms.texinfo.
 
 (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2014, 2015, 2016,
-2020 Free Software Foundation, Inc.
+2020, 2021 Free Software Foundation, Inc.
      Permission is granted to copy, distribute and/or modify this
      document under the terms of the GNU Free Documentation License,
      Version 1.1 or any later version published by the Free Software
@@ -22,7 +22,7 @@ Emms Manual
 This is the Manual for the Emacs Multimedia System.
 
    (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2014, 2015, 2016,
-2020 Free Software Foundation, Inc.
+2020, 2021 Free Software Foundation, Inc.
      Permission is granted to copy, distribute and/or modify this
      document under the terms of the GNU Free Documentation License,
      Version 1.1 or any later version published by the Free Software
@@ -3810,62 +3810,62 @@ Keybinding Index
 
 
 Tag Table:
-Node: Top695
-Node: Introduction4442
-Node: Quickstart Guide5910
-Node: Installation8778
-Node: Compiling Emms9327
-Node: Setup10015
-Node: Configuration11001
-Node: Finding files and speed12476
-Node: Setup Examples13345
-Node: Getting Help15278
-Node: Formats and Freedom15856
-Node: Basic Commands17061
-Node: The Core File20442
-Node: User Variables20876
-Node: Hooks21852
-Node: Core Functions23278
-Node: Sources26278
-Node: Simple Players28411
-Node: Playlists29468
-Node: Track Information30749
-Node: Using tinytag33636
-Node: Using exiftool34065
-Node: Using TagLib34437
-Node: Defining Info Methods35546
-Node: Interactive Playlists36328
-Node: Markable Playlists39370
-Node: Extending Emms41841
-Node: New Player42277
-Node: Simple Player for `play'42666
-Node: More Complex Player44394
-Node: The Browser47401
-Node: Browser Interface48377
-Node: Filtering Tracks50791
-Node: Displaying Covers52569
-Node: Changing Looks54583
-Node: Sorting Playlists57561
-Node: Persistent Playlists59030
-Node: Editing Tracks60189
-Node: Emms Mode Line63863
-Node: Limiting65031
-Node: Music Player Daemon67370
-Node: Lyrics70883
-Node: Volume72931
-Node: Streaming Audio74719
-Ref: Streaming Audio-Footnote-175311
-Node: APE / FLAC Commands75662
-Node: Bookmarks76369
-Node: Managing Playlists77080
-Node: GNU FM78103
-Node: Uploading Track Information79457
-Node: GNU FM Streaming80339
-Node: Copying80839
-Node: The GNU FDL118356
-Node: Concept Index140744
-Node: Function Index145821
-Node: Variable Index161513
-Node: Keybinding Index163856
+Node: Top701
+Node: Introduction4454
+Node: Quickstart Guide5922
+Node: Installation8790
+Node: Compiling Emms9339
+Node: Setup10027
+Node: Configuration11013
+Node: Finding files and speed12488
+Node: Setup Examples13357
+Node: Getting Help15290
+Node: Formats and Freedom15868
+Node: Basic Commands17073
+Node: The Core File20454
+Node: User Variables20888
+Node: Hooks21864
+Node: Core Functions23290
+Node: Sources26290
+Node: Simple Players28423
+Node: Playlists29480
+Node: Track Information30761
+Node: Using tinytag33648
+Node: Using exiftool34077
+Node: Using TagLib34449
+Node: Defining Info Methods35558
+Node: Interactive Playlists36340
+Node: Markable Playlists39382
+Node: Extending Emms41853
+Node: New Player42289
+Node: Simple Player for `play'42678
+Node: More Complex Player44406
+Node: The Browser47413
+Node: Browser Interface48389
+Node: Filtering Tracks50803
+Node: Displaying Covers52581
+Node: Changing Looks54595
+Node: Sorting Playlists57573
+Node: Persistent Playlists59042
+Node: Editing Tracks60201
+Node: Emms Mode Line63875
+Node: Limiting65043
+Node: Music Player Daemon67382
+Node: Lyrics70895
+Node: Volume72943
+Node: Streaming Audio74731
+Ref: Streaming Audio-Footnote-175323
+Node: APE / FLAC Commands75674
+Node: Bookmarks76381
+Node: Managing Playlists77092
+Node: GNU FM78115
+Node: Uploading Track Information79469
+Node: GNU FM Streaming80351
+Node: Copying80851
+Node: The GNU FDL118368
+Node: Concept Index140756
+Node: Function Index145833
+Node: Variable Index161525
+Node: Keybinding Index163868
 
 End Tag Table
