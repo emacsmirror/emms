@@ -1,4 +1,4 @@
-;;; emms-playlist-mode.el --- Playlist mode for Emms.
+;;; emms-playlist-mode.el --- Playlist mode for Emms.  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2005-2019  Free Software Foundation, Inc.
 
@@ -354,6 +354,7 @@ set it as current."
      (when track
        (let ((track-region (emms-property-region (point)
 						 'emms-track)))
+	 (ignore track-region)
 	 (when (and emms-player-playing-p
 		    (emms-playlist-selected-track-at-p))
 	   (emms-stop)
@@ -458,8 +459,7 @@ of the saved playlist inside."
 This preserves the current EMMS buffer."
   (interactive)
   (let* ((track (emms-playlist-track-at))
-         (name (emms-track-get track 'name))
-         (type (emms-track-get track 'type)))
+         (name (emms-track-get track 'name)))
     (emms-playlist-select (point))
     (run-hooks 'emms-player-stopped-hook)
     (switch-to-buffer
