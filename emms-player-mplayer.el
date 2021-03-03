@@ -1,4 +1,4 @@
-;;; emms-player-mplayer.el --- mplayer support for EMMS
+;;; emms-player-mplayer.el --- mplayer support for EMMS  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 
