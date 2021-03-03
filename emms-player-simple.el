@@ -1,4 +1,4 @@
-;;; emms-player-simple.el --- A generic simple player.
+;;; emms-player-simple.el --- A generic simple player.  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2003, 2004, 2006, 2007, 2008,
 ;;   2009 Free Software Foundation, Inc.
@@ -129,6 +129,7 @@ PLAYER is the name of the current player."
 
 (defun emms-player-simple-sentinel (proc str)
   "Sentinel for determining the end of process"
+  (ignore str)
   (when (or (eq (process-status proc) 'exit)
             (eq (process-status proc) 'signal))
     (emms-player-stopped)))
