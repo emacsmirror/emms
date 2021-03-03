@@ -1,4 +1,4 @@
-;;; emms-player-mpg321-remote.el --- play files with mpg321 -R
+;;; emms-player-mpg321-remote.el --- play files with mpg321 -R  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2006, 2007, 2008, 2009  Free Software Foundation, Inc.
 
@@ -125,6 +125,7 @@ For example: (list \"-o\" \"alsa\")"
 
 (defun emms-player-mpg321-remote-sentinel (proc str)
   "Sentinel for determining the end of process"
+  (ignore str)
   (when (or (eq (process-status proc) 'exit)
             (eq (process-status proc) 'signal))
     ;; reset
@@ -145,8 +146,10 @@ For example: (list \"-o\" \"alsa\")"
 ;; --------------------------------------------------
 
 (defun emms-player-mpg321-remote-filter (proc str)
+  (ignore proc)
   (let* ((data-lines (split-string str "\n" t))
-         data line cmd)
+         data
+	 cmd)
     (dolist (line data-lines)
       (setq data (split-string line))
       (setq cmd (car data))
@@ -176,6 +179,7 @@ If USER-ACTION, set `emms-player-mpg321-remote-ignore-stop' so that we
 ignore the next message from mpg321."
   (if user-action
       (let ((emms-player-ignore-stop t))
+	(ignore emms-player-ignore-stop)
         ;; so we ignore the next stop message
         (setq emms-player-mpg321-remote-ignore-stop
               (1+ emms-player-mpg321-remote-ignore-stop))
