@@ -1,4 +1,4 @@
-;;; emms-player-mpd.el --- MusicPD support for EMMS
+;;; emms-player-mpd.el --- MusicPD support for EMMS  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2005, 2006, 2007, 2008, 2009, 2014 Free Software Foundation, Inc.
 
@@ -506,7 +506,7 @@ Call CALLBACK with CLOSURE and result when the request is complete.
 If INFO is specified, use that instead of acquiring the necessary
 info from MusicPD."
   (when info
-    (setq callback (lambda (closure id) id)))
+    (setq callback (lambda (closure id) (ignore closure) id)))
   (emms-player-mpd-get-status-part closure callback "playlist" info))
 
 (defun emms-player-mpd-get-volume (closure callback &optional info)
@@ -515,7 +515,7 @@ Call CALLBACK with CLOSURE and result when the request is complete.
 If INFO is specified, use that instead of acquiring the necessary
 info from MusicPD."
   (when info
-    (setq callback (lambda (closure volume) volume)))
+    (setq callback (lambda (closure volume) (ignore closure) volume)))
   (emms-player-mpd-get-status-part closure callback "volume" info))
 
 (defun emms-player-mpd-get-current-song (closure callback &optional info)
@@ -527,7 +527,7 @@ Call CALLBACK with CLOSURE and result when the request is complete.
 If INFO is specified, use that instead of acquiring the necessary
 info from MusicPD."
   (when info
-    (setq callback (lambda (closure id) id)))
+    (setq callback (lambda (closure id) (ignore closure) id)))
   (emms-player-mpd-get-status-part closure callback "song" info))
 
 (defun emms-player-mpd-get-mpd-state (closure callback &optional info)
@@ -538,7 +538,7 @@ Call CALLBACK with CLOSURE and result when the request is complete.
 If INFO is specified, use that instead of acquiring the necessary
 info from MusicPD."
   (when info
-    (setq callback (lambda (closure id) id)))
+    (setq callback (lambda (closure id) (ignore closure) id)))
   (emms-player-mpd-get-status-part closure callback "state" info))
 
 (defun emms-player-mpd-get-playing-time (closure callback &optional info)
@@ -552,6 +552,7 @@ info from MusicPD."
       (emms-player-mpd-get-status-part
        nil
        (lambda (closure time)
+	 (ignore closure)
          (and time
               (string-match "\\`\\([0-9]+\\):" time)
               (string-to-number (match-string 1 time))))
@@ -684,6 +685,7 @@ main EMMS playlist buffer."
   (emms-player-mpd-detect-song-change info))
 
 (defun emms-player-mpd-detect-song-change-1 (closure info)
+  (ignore closure)
   (let ((song (emms-player-mpd-get-current-song nil #'ignore info))
         (state (emms-player-mpd-get-mpd-state nil #'ignore info))
         (time (emms-player-mpd-get-playing-time nil #'ignore info))
@@ -879,6 +881,7 @@ playlist."
          (concat "play " id)
          nil
          (lambda (closure response)
+	   (ignore closure response)
            (setq emms-player-mpd-current-song nil)
            (if emms-player-mpd-check-interval
                (setq emms-player-mpd-status-timer
@@ -890,6 +893,7 @@ playlist."
      "play"
      nil
      (lambda (closure response)
+       (ignore closure response)
        (emms-player-started 'emms-player-mpd)))))
 
 (defun emms-player-mpd-start-and-sync-2 (buffer id)
@@ -913,6 +917,7 @@ playlist."
           (emms-player-mpd-play track-cnt))))))
 
 (defun emms-player-mpd-start-and-sync-1 (closure id)
+  (ignore closure)
   (let ((buf-id (with-current-emms-playlist
                   emms-player-mpd-playlist-id)))
     (if (and (not (buffer-modified-p emms-playlist-buffer))
@@ -934,11 +939,13 @@ This is called if `emms-player-mpd-sync-playlist' is non-nil."
    "clearerror"
    nil
    (lambda (closure response)
+     (ignore closure response)
      (emms-player-mpd-get-playlist-id
       nil
       #'emms-player-mpd-start-and-sync-1))))
 
 (defun emms-player-mpd-connect-1 (closure info)
+  (ignore closure)
   (setq emms-player-mpd-current-song nil)
   (let* ((state (emms-player-mpd-get-mpd-state nil #'ignore info)))
     (unless (string= state "stop")
@@ -1219,6 +1226,7 @@ This is useful to do when you have recently acquired new music."
          (concat "listallinfo " dir)
          nil
          (lambda (closure response)
+	   (ignore closure response)
            (message "Dumping MusicPD data to cache...processing")
            (let ((info (emms-player-mpd-parse-response response)))
              (when (null (car info))
@@ -1256,6 +1264,7 @@ order to prime the cache."
   (emms-player-mpd-send
    (concat "update " (emms-player-mpd-quote-file dir)) nil
    (lambda (closure response)
+     (ignore closure)
      (let ((id (cdr (assoc "updating_db"
                            (emms-player-mpd-get-alist
                             (emms-player-mpd-parse-response response))))))
@@ -1288,6 +1297,7 @@ cache."
   "Wait for a currently running mpd update to finish.
 Afterwards, clear the EMMS cache and call
 `emms-cache-set-from-mpd-all'."
+  (ignore closure)
   (if response
       ;; This is the first call after the update command
       (let ((id (cdr (assoc "updating_db"
@@ -1303,6 +1313,7 @@ Afterwards, clear the EMMS cache and call
     (emms-player-mpd-get-status-part
      nil
      (lambda (closure updating)
+       (ignore closure)
        (if updating
 	   ;; MPD update still in progress, so wait another second
 	   (run-at-time 1 nil 'emms-player-mpd-wait-for-update)
