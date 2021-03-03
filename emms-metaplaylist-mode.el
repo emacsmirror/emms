@@ -1,4 +1,4 @@
-;;; emms-metaplaylist-mode.el --- A major mode for lists of Emms playlists
+;;; emms-metaplaylist-mode.el --- A major mode for lists of Emms playlists  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2006, 2007, 2008, 2009, 2017-2018 Free Software Foundation, Inc.
 

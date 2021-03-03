@@ -1,4 +1,4 @@
-;;; emms-mark.el --- mark track like dired
+;;; emms-mark.el --- mark track like dired  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2006, 2007, 2008, 2009, 2018 Free Software Foundation, Inc.
 ;;
