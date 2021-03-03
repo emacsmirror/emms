@@ -1,4 +1,4 @@
-;;; emms-playlist-sort.el --- sort emms playlist
+;;; emms-playlist-sort.el --- sort emms playlist  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2005, 2006, 2007, 2008, 2009, 2018 Free Software Foundation, Inc.
 

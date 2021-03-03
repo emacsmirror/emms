@@ -1,4 +1,4 @@
-;;; emms-volume-mixerctl.el --- a mode for changing volume using mixerctl
+;;; emms-volume-mixerctl.el --- a mode for changing volume using mixerctl  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2006, 2007, 2008, 2009, 2019 Free Software Foundation, Inc.
 

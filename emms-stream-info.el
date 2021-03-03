@@ -1,4 +1,4 @@
-;;; emms-stream-info.el --- Info from streaming audio
+;;; emms-stream-info.el --- Info from streaming audio  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2004, 2005, 2006, 2007, 2008,
 ;;   2009, 2019 Free Software Foundation, Inc.

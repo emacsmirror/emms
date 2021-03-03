@@ -1,4 +1,4 @@
-;;; emms-volume-amixer.el --- a mode for changing volume using amixer
+;;; emms-volume-amixer.el --- a mode for changing volume using amixer  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 

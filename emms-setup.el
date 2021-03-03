@@ -1,4 +1,4 @@
-;;; emms-setup.el --- Setup script for EMMS
+;;; emms-setup.el --- Setup script for EMMS  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2005-2020 Free Software Foundation, Inc.
 

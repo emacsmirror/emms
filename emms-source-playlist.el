@@ -1,4 +1,4 @@
-;;; emms-source-playlist.el --- EMMS sources from playlist files
+;;; emms-source-playlist.el --- EMMS sources from playlist files  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008,
 ;;   2009 Free Software Foundation, Inc.
@@ -208,6 +208,7 @@ See `emms-source-playlist-formats' for a list of supported formats."
 
 (defun emms-source-playlist-parse-native (file)
   "Parse the native EMMS playlist in the current buffer."
+  (ignore file)
   (save-excursion
     (goto-char (point-min))
     (read (current-buffer))))

@@ -1,4 +1,4 @@
-;;; emms-volume-pulse.el --- a mode for changing volume using PulseAudio pactl
+;;; emms-volume-pulse.el --- a mode for changing volume using PulseAudio pactl  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2015 Free Software Foundation, Inc.
 
@@ -65,7 +65,6 @@ See full list of devices on your system by running
 (defun emms-volume--pulse-get-volume ()
   "Return `emms-volume-pulse-sink' volume."
   (let ((sink-number-p (numberp emms-volume-pulse-sink))
-        (start 0)
         (output
          (shell-command-to-string
           (concat "pactl list sinks" "|"

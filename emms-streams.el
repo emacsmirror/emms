@@ -1,4 +1,4 @@
-;; emms-streams.el -- A collection of online streaming audio
+;; emms-streams.el -- A collection of online streaming audio  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2019  Free Software Foundation, Inc.
 

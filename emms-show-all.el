@@ -1,4 +1,4 @@
-;;; emms-show-all.el --- Detailed track information for Emms.
+;;; emms-show-all.el --- Detailed track information for Emms.  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2016  Free Software Foundation, Inc.
 
