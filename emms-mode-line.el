@@ -1,4 +1,4 @@
-;;; emms-mode-line.el --- Mode-Line and titlebar infos for emms
+;;; emms-mode-line.el --- Mode-Line and titlebar infos for emms  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2004, 2005, 2006, 2007, 2008,
 ;;   2009 Free Software Foundation, Inc.
@@ -117,6 +117,7 @@
 
 Optional TRACK is used to be compatible with
 `emms-track-updated-functions'. It's simply ignored currently."
+  (ignore track)
   (emms-mode-line-alter-mode-line)
   (emms-mode-line-alter-titlebar))
 
