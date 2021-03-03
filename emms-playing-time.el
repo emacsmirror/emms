@@ -1,4 +1,4 @@
-;;; emms-playing-time.el --- Display emms playing time on mode line
+;;; emms-playing-time.el --- Display emms playing time on mode line  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2005, 2006, 2007, 2008, 2009, 2019 Free Software Foundation, Inc.
 
@@ -197,10 +197,10 @@ could call `emms-playing-time-enable-display' and
            (let ((progress "[")
                  ;; percent based on 10
                  (percent (/ (* emms-playing-time 10) total-playing-time)))
-             (dotimes (i percent)
+             (dotimes (_i percent)
                (setq progress (concat progress "=")))
              (setq progress (concat progress ">"))
-             (dotimes (i (- 10 percent))
+             (dotimes (_i (- 10 percent))
                (setq progress (concat progress " ")))
              (setq progress (concat progress "]"))
              (setq emms-playing-time-string progress))))
