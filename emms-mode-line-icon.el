@@ -1,4 +1,4 @@
-;; emms-mode-line-icon.el --- show an icon in the Emacs mode-line
+;; emms-mode-line-icon.el --- show an icon in the Emacs mode-line  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 
