@@ -1,4 +1,4 @@
-;;; emms-player-vlc.el --- vlc support for EMMS
+;;; emms-player-vlc.el --- vlc support for EMMS  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2008, 2009 Free Software Foundation, Inc.
 

@@ -1,4 +1,4 @@
-;;; emms-player-xine.el --- xine support for EMMS
+;;; emms-player-xine.el --- xine support for EMMS  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
 
