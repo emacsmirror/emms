@@ -1441,7 +1441,7 @@ tracks from point, it does not delete files."
         (setq path (emms-track-get track 'name))
         (when delete
           (delete-file path))
-        (add-to-list 'dirs (file-name-directory path))
+        (cl-pushnew (file-name-directory path) dirs)
         (emms-cache-del path))
       ;; remove the item from the browser
       (when (emms-browser-tracks-at-point)
