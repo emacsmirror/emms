@@ -1,4 +1,4 @@
-;;; emms-browser.el --- a track browser supporting covers and filtering
+;;; emms-browser.el --- a track browser supporting covers and filtering  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2006, 2007, 2008, 2009  Free Software Foundation, Inc.
 
@@ -505,6 +505,7 @@ Called once for each directory."
   (if (fboundp 'with-selected-window)
       (defalias 'emms-browser-with-selected-window 'with-selected-window)
     (defmacro emms-browser-with-selected-window (window &rest body)
+      (ignore window)
       ;; this emulates the behavior introduced earlier, though it
       ;; might be best to do something with `window'
       `(save-selected-window ,body)))
@@ -692,7 +693,7 @@ For 'info-year TYPE, use 'info-originalyear, 'info-originaldate and
   (let ((hash (make-hash-table
                :test emms-browser-comparison-test))
         field existing-entry)
-    (maphash (lambda (path track)
+    (maphash (lambda (_path track)
                (unless (run-hook-with-args-until-success
                         'emms-browser-filter-tracks-hook track)
                  (setq field
@@ -792,7 +793,7 @@ For example, if TYPE is 'info-year, return an alist like:
 artist1 -> album1 -> *track* 1.."
   (let* ((next-type (emms-browser-next-mapping-type type))
          (next-level (1+ level))
-         alist name new-db new-tracks)
+         alist name _new-db new-tracks)
     ;; if we're at a leaf, the db data is a list of tracks
     (if (eq type 'info-title)
         tracks
@@ -1143,17 +1144,14 @@ Stops at the next line at the same level, or EOF."
 
 (defun emms-browser-playlist-insert-group (bdata)
   "Insert a group description into the playlist buffer."
-  (let* ((type (emms-browser-bdata-type bdata))
-         (short-type (substring (symbol-name type) 5))
-         (name (emms-browser-format-line bdata 'playlist)))
+  (let ((name (emms-browser-format-line bdata 'playlist)))
     (with-current-emms-playlist
       (goto-char (point-max))
       (insert name "\n"))))
 
 (defun emms-browser-playlist-insert-track (bdata)
   "Insert a track into the playlist buffer."
-  (let ((name (emms-browser-format-line bdata 'playlist))
-        (track (car (emms-browser-bdata-data bdata))))
+  (let ((name (emms-browser-format-line bdata 'playlist)))
     (with-current-emms-playlist
       (goto-char (point-max))
       (insert name "\n"))))
@@ -1161,7 +1159,6 @@ Stops at the next line at the same level, or EOF."
 (defun emms-browser-playlist-insert-bdata (bdata starting-level)
   "Add all tracks in BDATA to the playlist."
   (let ((type (emms-browser-bdata-type bdata))
-        (name (emms-browser-bdata-name bdata))
         (level (emms-browser-bdata-level bdata))
         emms-browser-current-indent)
 
@@ -1533,10 +1530,9 @@ configuration."
                          playlist-window
                        (goto-char start-of-tracks)
                        (recenter '(4)))))))
-  (let (wind buf)
+  (let (wind)
   (cond
    ((eq major-mode 'emms-browser-mode)
-    (setq buf (emms-browser-get-linked-buffer))
     (setq wind (emms-browser-get-linked-window))
     ;; if the playlist window is visible, select it
     (if wind
@@ -1630,7 +1626,7 @@ If string matches any of the fields in a cons pair, it will be
 included."
 
   (let (tracks)
-    (maphash (lambda (k track)
+    (maphash (lambda (_k track)
                (when (emms-browser-matches-p track search-list)
                  (push track tracks)))
              emms-cache-db)
@@ -1967,7 +1963,7 @@ the text that it generates."
         (symbol-value sym)
       emms-browser-default-format)))
 
-(defun emms-browser-track-artist-and-title-format (bdata fmt)
+(defun emms-browser-track-artist-and-title-format (_bdata fmt)
   (concat
    "%i"
    (let ((track (emms-browser-format-elem fmt "T")))
@@ -1983,7 +1979,7 @@ the text that it generates."
 (defvar emms-browser-playlist-info-album-format
   'emms-browser-year-and-album-fmt-med)
 
-(defun emms-browser-year-and-album-fmt (bdata fmt)
+(defun emms-browser-year-and-album-fmt (_bdata fmt)
   (concat
    "%i%cS"
    (let ((year (emms-browser-format-elem fmt "y")))
@@ -1992,7 +1988,7 @@ the text that it generates."
        ""))
    "%n"))
 
-(defun emms-browser-year-and-album-fmt-med (bdata fmt)
+(defun emms-browser-year-and-album-fmt-med (_bdata fmt)
   (concat
    "%i%cM"
    (let ((year (emms-browser-format-elem fmt "y")))
