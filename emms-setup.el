@@ -86,6 +86,7 @@ the stable features which come with the Emms distribution."
     (require 'emms-info-metaflac)
     (require 'emms-info-tinytag)
     (require 'emms-info-exiftool)
+    (require 'emms-info-native)
     (require 'emms-cache)
     (require 'emms-mode-line)
     (require 'emms-mark)
@@ -114,12 +115,7 @@ the stable features which come with the Emms distribution."
   ;; setup
   (setq emms-playlist-default-major-mode 'emms-playlist-mode)
   (add-to-list 'emms-track-initialize-functions 'emms-info-initialize-track)
-  (when (executable-find emms-info-mp3info-program-name)
-    (add-to-list 'emms-info-functions 'emms-info-mp3info))
-  (when (executable-find emms-info-ogginfo-program-name)
-    (add-to-list 'emms-info-functions 'emms-info-ogginfo))
-  (when (executable-find emms-info-opusinfo-program-name)
-    (add-to-list 'emms-info-functions 'emms-info-opusinfo))
+  (setq emms-info-functions '(emms-info-native emms-info-cueinfo))
   (setq emms-track-description-function 'emms-info-track-description)
   (when (fboundp 'emms-cache)		; work around compiler warning
     (emms-cache 1))
@@ -127,7 +123,6 @@ the stable features which come with the Emms distribution."
   (emms-mode-line-blank)
   (emms-lyrics 1)
   (emms-playing-time 1)
-  (add-to-list 'emms-info-functions 'emms-info-cueinfo)
   (add-hook 'emms-player-started-hook 'emms-last-played-update-current)
   (emms-score 1))
 
