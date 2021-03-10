@@ -893,6 +893,12 @@ Finally, some methods work only with a limited set of media file
 formats such as Ogg or MP3, while some methods support a wide variety
 of formats.
 
+Automatic track information retrieval is enabled by default in the
+@code{emms-all} setup level (@pxref{Setup}).  That setup level
+configures Emms to use @code{emms-info-native} and
+@code{emms-info-cueinfo} methods, as they are the only methods that do
+not rely on additional software.
+
 Here is a list of all info methods distributed with Emms and their
 software requirements:
 
@@ -961,11 +967,6 @@ You can also use a combination of format-specific tools if needed:
 In this case both @code{emms-info-mp3info} and
 @code{emms-info-ogginfo} will be called for each track.
 
-Automatic track information retrieval is enabled by default in the
-@code{emms-all} setup level (@pxref{Setup}).  That setup uses only
-@code{emms-info-native}, as it is the only method which does not
-require external software.
-
 There are a number of user variables which control the behavior of
 @code{emms-info}:
 
@@ -999,12 +1000,12 @@ takes precedence.
 @node Metadata Utilities
 @section Metadata Utilities
 
-With the exception of @code{emms-info-native}, Emms info methods
-require external metadata utilities to read metadata from media files.
-If you plan to use a certain info method, make sure you have the
-corresponding utility installed.  All of these utilities are free
-software, and most of them are included in free GNU/Linux
-distributions.
+With the exception of @code{emms-info-native} and
+@code{emms-info-cueinfo}, Emms info methods require external metadata
+utilities to read metadata from media files.  If you plan to use a
+certain info method, make sure you have the corresponding utility
+installed.  All of these utilities are free software, and most of them
+are included in free GNU/Linux distributions.
 
 @subsubheading tinytag
 
@@ -1048,7 +1049,8 @@ popular audio formats.  It is available at
 @url{http://taglib.github.io/}.  Because TagLib is a C++ library
 instead of an executable program, you have to build and install a
 small ``shim'' executable @command{emms-print-metadata} around it.
-Emms will then call this executable to read metadata from media files.
+@code{emms-info-libtag} will then call this executable to read
+metadata from media files.
 
 To compile @command{emms-print-metadata} invoke
 
@@ -1061,12 +1063,13 @@ The resultant binary executable will be installed when you invoke
 
 @command{make install} as in @xref{Compiling Emms}.
 
+@noindent
 It is of course also possible to install only the
 @file{emms-print-metadata} binary where your system can find and
 execute it without installing all of Emms via the make command.
 
 Once @command{emms-print-metadata} is available, it is best to
-configure @code{emms-info-exiftool} as the sole info method for Emms,
+configure @code{emms-info-libtag} as the sole info method for Emms,
 because competing and overlapping methods can cause confusion.  To use
 it, add the following into your Emacs initialization file:
 
@@ -1107,10 +1110,10 @@ add the following into your Emacs initialization file:
 @subsubheading ogginfo
 
 @command{ogginfo} is a small utility for extracting information about
-Ogg Vorbis files.  It is part of Vorbis Tools source distribution
-available at @url{https://github.com/xiph/vorbis-tools}.  The
-corresponding info method is @code{emms-info-ogginfo}.  To use it, add
-the following into your Emacs initialization file:
+Ogg Vorbis and Theora files.  It is part of Vorbis Tools source
+distribution available at @url{https://github.com/xiph/vorbis-tools}.
+The corresponding info method is @code{emms-info-ogginfo}.  To use it,
+add the following into your Emacs initialization file:
 
 @lisp
 (require 'emms-info-ogginfo)
