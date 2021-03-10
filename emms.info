@@ -96,9 +96,7 @@ The Core File
 * Core Functions::     Providing the basic functionality of Emms.
 
 Track Information
-* Using tinytag::            Track information via tinytag.
-* Using exiftool::           Track information via exiftool.
-* Using TagLib::             TagLib for track information.
+* Metadata Utilities:: Supported external metadata utilities.
 * Defining Info Methods::    Defining new info methods.
 
 Extending Emms
@@ -790,146 +788,325 @@ File: emms.info,  Node: Track Information,  Next: Interactive Playlists,  Prev: 
 13 Track Information
 ********************
 
-Without a way to read the embedded track information inside files, Emms
-will only be able to list file names and file locations.  Therefore Emms
-is distributed with support for a number of pieces of software and
-libraries which can be used to provide access to track metadata such as
-the artist's name, track name, album title, etc.
+By default Emms will only list tracks as file names or URLs in playlists
+(*note Playlists::) and the browser (*note The Browser::).  However,
+Emms can be configured to utilize so-called "info methods" to augment
+tracks with metadata information, such as artist name, track name, album
+title, and the like.  We describe these methods and their use in this
+chapter.
 
-   Emms can use a number of different ways to populate the playlist with
-track information.  These methods require the installation some
-additional software, free software of course, that Emms can then call to
-read the metadata from the files.
-
-   * Tinytag, a small python utility.  See *Note Using tinytag::.
-
-   * Exiftool, written in perl.  See *Note Using exiftool::.
-
-   * The TagLib library can be used by compiling a small piece of "shim"
-     software.  See *Note Using TagLib::.
-
-   You can also use a combination of format-specific tools if needed,
-such as 'emms-info-mp3info.el', 'emms-info-ogginfo.el',
-'emms-info-opusinfo.el', and 'emms-cue.el'.  These three packages are
-front-ends for command-line tools.  Ogg track information is retrieved
-using the ogginfo (http://directory.fsf.org/audio/ogg/vorbistools.html)
-and the <https://www.opus-codec.org/ opusinfo> software.  Likewise, mp3
-track information is available using mp3info
-(http://www.ibiblio.org/mp3info/).  'emms-cue.el' retrieves tracks
-information for ape/flac files by parsing a cue sheet file, which is
-plain text.
+   Fundamentally, info methods are Emacs Lisp functions that are called
+for each track to provide information for that track.  Current info
+methods in Emms are restricted to tracks that are files; they do not
+work with stream URLs (*note Streaming Audio::).  Most of the methods
+require installation of some additional software that Emms can then call
+to read metadata from disk (*note Metadata Utilities::).  Finally, some
+methods work only with a limited set of media file formats such as Ogg
+or MP3, while some methods support a wide variety of formats.
 
    Automatic track information retrieval is enabled by default in the
-'emms-all' setup level provided by 'emms-setup.el'.  For more
-information about 'emms-setup.el' see *Note Setup::.
+'emms-all' setup level (*note Setup::).  That setup level configures
+Emms to use 'emms-info-native' and 'emms-info-cueinfo' methods, as they
+are the only methods that do not rely on additional software.
 
-   If you would like to know how Emms track retreival works and how we
-can define new methods for track retrieval see *Note Defining Info
-Methods::.
+   Here is a list of all info methods distributed with Emms and their
+software requirements:
 
-   There are a number of user variables which control the behaviour of
-'emms-info'.
+'emms-info-native'
+     This method is implemented completely in Emacs Lisp and hence does
+     not require any external software.  It supports Ogg Vorbis, Opus,
+     FLAC and MP3 files.
+
+'emms-info-tinytag'
+     This method utilizes a small Python library 'tinytag'.  It supports
+     MP3, Ogg Vorbis, Opus, MP4, M4A, FLAC, WMA and WAV formats.
+
+'emms-info-exiftool'
+     This method calls 'exiftool' utility written in Perl.  It supports
+     dozens of media file formats, far too many to list here.
+
+'emms-info-libtag'
+     This method calls a small "shim" executable 'emms-print-metadata'
+     built around TagLib library.  It supports MP3, Ogg Vorbis, Opus,
+     FLAC, MPC, Speex, WavPack, TrueAudio, WAV, AIFF, MP4 and ASF
+     formats.
+
+'emms-info-metaflac'
+     This method calls 'metaflac' utility.  It works only with FLAC
+     files.
+
+'emms-info-mp3info'
+     This method calls 'mp3info' utility.  It works only with MP3 files
+     that have older id3v1 tags.
+
+'emms-info-ogginfo'
+     This method calls 'ogginfo' utility.  It supports Ogg Vorbis and
+     Theora formats.
+
+'emms-info-opusinfo'
+     This method calls 'opusinfo' utility.  It works only with Opus
+     files.
+
+'emms-info-cueinfo'
+     This is a special method that parses track information from an
+     accompanying cue file for FLAC and APE files (*note APE / FLAC
+     Commands::).  It does not require any additional software.
+
+   To use any of the methods, add the method to 'emms-info-functions'
+list.  For example:
+
+     (require 'emms-info-native)
+     (add-to-list 'emms-info-functions 'emms-info-native)
+
+You can also use a combination of format-specific tools if needed:
+
+     (require 'emms-info-mp3info)
+     (require 'emms-info-ogginfo)
+     (add-to-list 'emms-info-functions 'emms-info-mp3info 'emms-info-ogginfo)
+
+In this case both 'emms-info-mp3info' and 'emms-info-ogginfo' will be
+called for each track.
+
+   There are a number of user variables which control the behavior of
+'emms-info':
 
  -- User Option: emms-info-auto-update
      Non-nil when Emms should update track information if the file
      changes.  This will cause hard drive activity on track loading.  If
      this is too annoying for you, set this variable to nil.
+
  -- User Option: emms-info-asynchronously
      Non-nil when track information should be loaded asynchronously.
      This requires the feature 'later-do' which is provided by the file
-     'later-do.el', which comes with Emms.  See LATER-DO-BATCH for
-     performance tweaking.
+     'later-do.el', which comes with Emms.  See variable
+     'emms-later-do-batch' for performance tweaking.
+
  -- User Option: emms-info-functions
-     Functions which add information to tracks.  Each is called with a
-     track as argument.
+     A list of functions (info methods) which add information to tracks.
+     Each function is called with a track as argument.  If two info
+     methods produce the same information (for example album name), the
+     latter one takes precedence.
 
 * Menu:
 
-* Using tinytag::            Track information via tinytag.
-* Using exiftool::           Track information via exiftool.
-* Using TagLib::        TagLib for track information.
-* Defining Info Methods::    Defining new info methods.
+* Metadata Utilities::       Supported external metadata utilities.
+* Defining Info Methods::    How to define new info methods.
 
 
-File: emms.info,  Node: Using tinytag,  Next: Using exiftool,  Up: Track Information
+File: emms.info,  Node: Metadata Utilities,  Next: Defining Info Methods,  Up: Track Information
 
-13.1 Using tinytag
-==================
+13.1 Metadata Utilities
+=======================
 
-Make sure that the python program tinytag is installed on your system.
-It is available at tinytag (https://pypi.org/project/tinytag/).
+With the exception of 'emms-info-native' and 'emms-info-cueinfo', Emms
+info methods require external metadata utilities to read metadata from
+media files.  If you plan to use a certain info method, make sure you
+have the corresponding utility installed.  All of these utilities are
+free software, and most of them are included in free GNU/Linux
+distributions.
 
-   Configure tinytag as the sole info method (competing and overlapping
-methods can cause confusion) for Emms:
+tinytag
+.......
 
+tinytag is a Python library for reading metadata from music files.  It
+is available at <https://pypi.org/project/tinytag/>.  Naturally a
+working Python interpreter is also required.  The corresponding Emms
+info method is 'emms-info-tinytag'.
+
+   It is best to configure 'emms-info-tinytag' as the sole info method
+for Emms, because competing and overlapping methods can cause confusion.
+To use it, add the following into your Emacs initialization file:
+
+     (require 'emms-info-tinytag)
      (setq emms-info-functions '(emms-info-tinytag))
 
-
-File: emms.info,  Node: Using exiftool,  Next: Using TagLib,  Prev: Using tinytag,  Up: Track Information
+ExifTool
+........
 
-13.2 Using exiftool
-===================
+ExifTool is a platform-independent Perl library and a command-line
+application for reading, writing and editing meta information in a wide
+variety of files.  It is available at <https://exiftool.org/>.
+Naturally a working Perl interpreter is also required.  The
+corresponding Emms info method is 'emms-info-exiftool'.
 
-Make sure that the perl program exiftool is installed on your system.
-It is available at <https://exiftool.org/>.
+   It is best to configure 'emms-info-exiftool' as the sole info method
+for Emms, because competing and overlapping methods can cause confusion.
+To use it, add the following into your Emacs initialization file:
 
-   Then set exiftool as the sole info method with:
-
+     (require 'emms-info-exiftool)
      (setq emms-info-functions '(emms-info-exiftool))
 
-
-File: emms.info,  Node: Using TagLib,  Next: Defining Info Methods,  Prev: Using exiftool,  Up: Track Information
+TagLib
+......
 
-13.3 Using TagLib
-=================
+TagLib is a library for reading and editing metadata of several popular
+audio formats.  It is available at <http://taglib.github.io/>.  Because
+TagLib is a C++ library instead of an executable program, you have to
+build and install a small "shim" executable 'emms-print-metadata' around
+it.  'emms-info-libtag' will then call this executable to read metadata
+from media files.
 
-'emms-info-libtag.el' uses a tiny C shim (included in the src/
-directory) program to take advantage of TagLib
-(http://taglib.github.io/).
-
-   The communication with the TagLib library is done via a tiny program
-written in C++ 'emms-print-metadata.cpp', which comes with Emms.  To
-compile 'emms-print-metadata' invoke:
+   To compile 'emms-print-metadata' invoke
 
    'make emms-print-metadata'
 
-   The resultant binary will be installed when you invoke:
+in Emms directory.  For this to succeed you need to have a working C++
+compiler and TagLib development libraries installed on your system.  The
+resultant binary executable will be installed when you invoke
 
    'make install' as in *Note Compiling Emms::.
 
-   It is of course also possible to install only the
-'emms-print-metadata' binary where your system can find and execute it
-without installing all of Emms via the make command.
+It is of course also possible to install only the 'emms-print-metadata'
+binary where your system can find and execute it without installing all
+of Emms via the make command.
 
-   Once the binary is available load 'emms-info-libtag' and make it the
-_only_ info function with (note that if you have caching enabled you may
-have to delete the existing cache and repopulate it in order to see the
-TagLib data):
+   Once 'emms-print-metadata' is available, it is best to configure
+'emms-info-libtag' as the sole info method for Emms, because competing
+and overlapping methods can cause confusion.  To use it, add the
+following into your Emacs initialization file:
 
      (require 'emms-info-libtag)
      (setq emms-info-functions '(emms-info-libtag))
 
-
-File: emms.info,  Node: Defining Info Methods,  Prev: Using TagLib,  Up: Track Information
+metaflac
+........
 
-13.4 Defining Info Methods
+'metaflac' is the command-line FLAC file metadata editor.  It is
+included in FLAC source distribution available at
+<https://github.com/xiph/flac>.  The corresponding info method is
+'emms-info-metaflac'.  To use it, add the following into your Emacs
+initialization file:
+
+     (require 'emms-info-metaflac)
+     (add-to-list 'emms-info-functions 'emms-info-libtag)
+
+MP3info
+.......
+
+MP3info is a small utility for reading and modifying id3v1 tags from MP3
+files.  Note that more recent id3v2 tags are not supported; for those
+you need to use another info method, for example 'emms-info-native'.
+MP3info is available at <https://ibiblio.org/mp3info/>.
+
+   The corresponding info method is 'emms-info-mp3info'.  To use it, add
+the following into your Emacs initialization file:
+
+     (require 'emms-info-mp3info)
+     (add-to-list 'emms-info-functions 'emms-info-mp3info)
+
+ogginfo
+.......
+
+'ogginfo' is a small utility for extracting information about Ogg Vorbis
+and Theora files.  It is part of Vorbis Tools source distribution
+available at <https://github.com/xiph/vorbis-tools>.  The corresponding
+info method is 'emms-info-ogginfo'.  To use it, add the following into
+your Emacs initialization file:
+
+     (require 'emms-info-ogginfo)
+     (add-to-list 'emms-info-functions 'emms-info-ogginfo)
+
+opusinfo
+........
+
+'opusinfo' is a small utility for extracting information about Opus
+files.  It is part of Opus Tools source distribution available at
+<https://github.com/xiph/opus-tools>.  The corresponding info method is
+'emms-info-opusinfo'.  To use it, add the following into your Emacs
+initialization file:
+
+     (require 'emms-info-opusinfo)
+     (add-to-list 'emms-info-functions 'emms-info-opusinfo)
+
+
+File: emms.info,  Node: Defining Info Methods,  Prev: Metadata Utilities,  Up: Track Information
+
+13.2 Defining Info Methods
 ==========================
 
-An info method essentially consists of a function which given an Emms
-track returns the appropriate info for that track.
+An info method essentially consists of a function which, given an Emms
+track, sets the appropriate "info-symbols" for that track.  Info symbols
+are keys that have an associated value stored in the "metadata cache".
+While info symbols can have arbitrary names, the following symbols are
+recognized by Emms:
+
+'info-album'
+     Album title.
+
+'info-albumsort'
+     Album title for collation.
+
+'info-artist'
+     Artist name.
+
+'info-artistsort'
+     Artist name for collation.
+
+'info-albumartist'
+     Album artist name.
+
+'info-albumartistsort'
+     Album artist name for collation.
+
+'info-composer'
+     Composer name.
+
+'info-composersort'
+     Composer name for collation.
+
+'info-date'
+     Release date.
+
+'info-originaldate'
+     Original release date.
+
+'info-performer'
+     Performer name.
+
+'info-title'
+     Track title.
+
+'info-titlesort'
+     Track title for collation.
+
+'info-tracknumber'
+     Track number.
+
+'info-discnumber'
+     Disc number.
+
+'info-year'
+     Release year.
+
+'info-originalyear'
+     Original release year.
+
+'info-note'
+     Free-form note.
+
+'info-genre'
+     Genre.
+
+'info-label'
+     Record label.
+
+'info-playing-time'
+     Playing time in seconds.
+
+An info method does not need to add all of these symbols into the given
+track.  It can also add other symbols, but those extra symbols won't be
+used by Emms.
 
    We can for example look at the predefined method for retrieving
-information about audio tracks in the Ogg format.
-
-   The function 'emms-info-ogginfo' provided by 'emms-info-ogginfo.el'
-accepts an Emms track as a single argument and returns the appropriate
-information string.
-
-   We then register our info function with Emms by adding it to the
-EMMS-INFO-FUNCTIONS list.  The function will then be called at the right
-time to provide track info.
-
-     (add-to-list 'emms-info-functions 'emms-info-ogginfo)
+information about audio tracks in the Ogg format.  The function
+'emms-info-ogginfo' provided by 'emms-info-ogginfo.el' accepts an Emms
+track TRACK as a single argument.  It uses 'ogginfo' utility to extract
+a list of key-value metadata pairs from the file represented by TRACK.
+Next, it sets the appropriate info symbols for TRACK by calling
+'emms-track-set'.  Info symbols are interned from the extracted keys.
+Those keys can be arbitrary strings, but they typically coincide with
+the keys listed above; for example "album" and "artist" form info
+symbols 'info-album' and 'info-artist'.
 
 
 File: emms.info,  Node: Interactive Playlists,  Next: Markable Playlists,  Prev: Track Information,  Up: Top
@@ -2109,8 +2286,8 @@ File: emms.info,  Node: APE / FLAC Commands,  Next: Bookmarks,  Prev: Streaming 
 27 APE / FLAC Commands
 **********************
 
-Often, a single APE or FLAC file contains a complete ablum.  We can
-still play next or previous track in the ablum with the help of
+Often, a single APE or FLAC file contains a complete album.  We can
+still play next or previous track in the album with the help of
 'emms-cue.el' package, provided there is a corresponding cue sheet file.
 This package also defines 'emms-info-cueinfo' for retreiving the track
 information for APE / FLAC itself.
@@ -3476,9 +3653,6 @@ Concept Index
 * track information:                     Track Information.     (line 6)
 * track order:                           Sorting Playlists.     (line 6)
 * user variables:                        User Variables.        (line 6)
-* Using exiftool:                        Using exiftool.        (line 6)
-* using taglib:                          Using TagLib.          (line 6)
-* Using tinytag:                         Using tinytag.         (line 6)
 * volume:                                Volume.                (line 6)
 * website:                               Getting Help.          (line 6)
 
@@ -3719,9 +3893,9 @@ Variable Index
 
 * emms-history-file:                     Persistent Playlists. (line 14)
 * emms-history-start-playing:            Persistent Playlists. (line 33)
-* emms-info-asynchronously:              Track Information.    (line 50)
-* emms-info-auto-update:                 Track Information.    (line 46)
-* emms-info-functions:                   Track Information.    (line 55)
+* emms-info-asynchronously:              Track Information.    (line 93)
+* emms-info-auto-update:                 Track Information.    (line 88)
+* emms-info-functions:                   Track Information.    (line 99)
 * emms-lyrics-coding-system:             Lyrics.               (line 36)
 * emms-lyrics-dir:                       Lyrics.               (line 27)
 * emms-lyrics-display-format:            Lyrics.               (line 32)
@@ -3811,61 +3985,59 @@ Keybinding Index
 
 Tag Table:
 Node: Top701
-Node: Introduction4454
-Node: Quickstart Guide5922
-Node: Installation8790
-Node: Compiling Emms9339
-Node: Setup10027
-Node: Configuration11013
-Node: Finding files and speed12488
-Node: Setup Examples13357
-Node: Getting Help15290
-Node: Formats and Freedom15868
-Node: Basic Commands17073
-Node: The Core File20454
-Node: User Variables20888
-Node: Hooks21864
-Node: Core Functions23290
-Node: Sources26290
-Node: Simple Players28423
-Node: Playlists29480
-Node: Track Information30761
-Node: Using tinytag33648
-Node: Using exiftool34077
-Node: Using TagLib34449
-Node: Defining Info Methods35558
-Node: Interactive Playlists36340
-Node: Markable Playlists39382
-Node: Extending Emms41853
-Node: New Player42289
-Node: Simple Player for `play'42678
-Node: More Complex Player44406
-Node: The Browser47413
-Node: Browser Interface48389
-Node: Filtering Tracks50803
-Node: Displaying Covers52581
-Node: Changing Looks54595
-Node: Sorting Playlists57573
-Node: Persistent Playlists59042
-Node: Editing Tracks60201
-Node: Emms Mode Line63875
-Node: Limiting65043
-Node: Music Player Daemon67382
-Node: Lyrics70895
-Node: Volume72943
-Node: Streaming Audio74731
-Ref: Streaming Audio-Footnote-175323
-Node: APE / FLAC Commands75674
-Node: Bookmarks76381
-Node: Managing Playlists77092
-Node: GNU FM78115
-Node: Uploading Track Information79469
-Node: GNU FM Streaming80351
-Node: Copying80851
-Node: The GNU FDL118368
-Node: Concept Index140756
-Node: Function Index145833
-Node: Variable Index161525
-Node: Keybinding Index163868
+Node: Introduction4336
+Node: Quickstart Guide5804
+Node: Installation8672
+Node: Compiling Emms9221
+Node: Setup9909
+Node: Configuration10895
+Node: Finding files and speed12370
+Node: Setup Examples13239
+Node: Getting Help15172
+Node: Formats and Freedom15750
+Node: Basic Commands16955
+Node: The Core File20336
+Node: User Variables20770
+Node: Hooks21746
+Node: Core Functions23172
+Node: Sources26172
+Node: Simple Players28305
+Node: Playlists29362
+Node: Track Information30643
+Node: Metadata Utilities35022
+Node: Defining Info Methods39694
+Node: Interactive Playlists41838
+Node: Markable Playlists44880
+Node: Extending Emms47351
+Node: New Player47787
+Node: Simple Player for `play'48176
+Node: More Complex Player49904
+Node: The Browser52911
+Node: Browser Interface53887
+Node: Filtering Tracks56301
+Node: Displaying Covers58079
+Node: Changing Looks60093
+Node: Sorting Playlists63071
+Node: Persistent Playlists64540
+Node: Editing Tracks65699
+Node: Emms Mode Line69373
+Node: Limiting70541
+Node: Music Player Daemon72880
+Node: Lyrics76393
+Node: Volume78441
+Node: Streaming Audio80229
+Ref: Streaming Audio-Footnote-180821
+Node: APE / FLAC Commands81172
+Node: Bookmarks81879
+Node: Managing Playlists82590
+Node: GNU FM83613
+Node: Uploading Track Information84967
+Node: GNU FM Streaming85849
+Node: Copying86349
+Node: The GNU FDL123866
+Node: Concept Index146254
+Node: Function Index151112
+Node: Variable Index166804
+Node: Keybinding Index169147
 
 End Tag Table
