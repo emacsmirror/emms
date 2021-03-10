@@ -896,51 +896,49 @@ of formats.
 Here is a list of all info methods distributed with Emms and their
 software requirements:
 
-@itemize
+@table @code
 
-@item
-@code{emms-info-native} is a method implemented in Emacs Lisp.  This
-is the only method that does not rely on external programs.  It
-supports Ogg Vorbis, Opus, FLAC and MP3 files.
+@item emms-info-native
+This method is implemented completely in Emacs Lisp and hence does not
+require any external software.  It supports Ogg Vorbis, Opus, FLAC and
+MP3 files.
 
-@item
-@code{emms-info-tinytag} is a method that uses a small Python library
-@code{tinytag}.  This method supports MP3, OGG, OPUS, MP4, M4A,
-FLAC, WMA and WAV formats.
+@item emms-info-tinytag
+This method utilizes a small Python library @code{tinytag}.  It
+supports MP3, Ogg Vorbis, Opus, MP4, M4A, FLAC, WMA and WAV formats.
 
-@item
-@code{emms-info-exiftool} is a method that uses @command{exiftool}
-utility written in Perl.  This method supports dozens of media file
-formats.
+@item emms-info-exiftool
+This method calls @command{exiftool} utility written in Perl.  It
+supports dozens of media file formats, far too many to list here.
 
-@item
-@code{emms-info-libtag} is a method that uses a small ``shim''
-executable @command{emms-print-metadata} around TagLib library.  It
+@item emms-info-libtag
+This method calls a small ``shim'' executable
+@command{emms-print-metadata} built around TagLib library.  It
 supports MP3, Ogg Vorbis, Opus, FLAC, MPC, Speex, WavPack, TrueAudio,
 WAV, AIFF, MP4 and ASF formats.
 
-@item
-@code{emms-info-metaflac} is a method that uses @command{metaflac}
-utility.  It works only with FLAC files.
+@item emms-info-metaflac
+This method calls @command{metaflac} utility.  It works only with FLAC
+files.
 
-@item
-@code{emms-info-mp3info} is a method that uses @command{mp3info}
-utility.  It works only with MP3 files that have older id3v1 tags.
+@item emms-info-mp3info
+This method calls @command{mp3info} utility.  It works only with MP3
+files that have older id3v1 tags.
 
-@item
-@code{emms-info-ogginfo} is a method that uses @command{ogginfo}
-utility.  It supports Ogg Vorbis and Theora formats.
+@item emms-info-ogginfo
+This method calls @command{ogginfo} utility.  It supports Ogg Vorbis
+and Theora formats.
 
-@item
-@code{emms-info-opusinfo} is a method that uses @command{opusinfo}
-utility.  It works only with Opus files.
+@item emms-info-opusinfo
+This method calls @command{opusinfo} utility.  It works only with Opus
+files.
 
-@item
-@code{emms-info-cueinfo} is a special info method that parses track
-information from an accompanying cue file for FLAC and APE files.
-@xref{APE / FLAC Commands}.
+@item emms-info-cueinfo
+This is a special method that parses track information from an
+accompanying cue file for FLAC and APE files (@pxref{APE / FLAC
+Commands}).  It does not require any additional software.
 
-@end itemize
+@end table
 
 To use any of the methods, add the method to
 @code{emms-info-functions} list.  For example:
@@ -1143,72 +1141,71 @@ symbols are keys that have an associated value stored in the
 @dfn{metadata cache}.  While info symbols can have arbitrary names,
 the following symbols are recognized by Emms:
 
-@itemize @minus
+@table @code
+@item info-album
+Album title.
 
-@item
-@code{info-album}: Album title.
+@item info-albumsort
+Album title for collation.
 
-@item
-@code{info-albumsort}: Album title for collation.
+@item info-artist
+Artist name.
 
-@item
-@code{info-artist}: Artist name.
+@item info-artistsort
+Artist name for collation.
 
-@item
-@code{info-artistsort}: Artist name for collation.
+@item info-albumartist
+Album artist name.
 
-@item
-@code{info-albumartist}: Album artist name.
+@item info-albumartistsort
+Album artist name for collation.
 
-@item
-@code{info-albumartistsort}: Album artist name for collation.
+@item info-composer
+Composer name.
 
-@item
-@code{info-composer}: Composer name.
+@item info-composersort
+Composer name for collation.
 
-@item
-@code{info-composersort}: Composer name for collation.
+@item info-date
+Release date.
 
-@item
-@code{info-date}: Release date.
+@item info-originaldate
+Original release date.
 
-@item
-@code{info-originaldate}: Original release date.
+@item info-performer
+Performer name.
 
-@item
-@code{info-performer}: Performer name.
+@item info-title
+Track title.
 
-@item
-@code{info-title}: Track title.
+@item info-titlesort
+Track title for collation.
 
-@item
-@code{info-titlesort}: Track title for collation.
+@item info-tracknumber
+Track number.
 
-@item
-@code{info-tracknumber}: Track number.
+@item info-discnumber
+Disc number.
 
-@item
-@code{info-discnumber}: Disc number.
+@item info-year
+Release year.
 
-@item
-@code{info-year} - Release year.
+@item info-originalyear
+Original release year.
 
-@item
-@code{info-originalyear}: Original release year.
+@item info-note
+Free-form note.
 
-@item
-@code{info-note}: Free-form notes.
+@item info-genre
+Genre.
 
-@item
-@code{info-genre}: Genre.
+@item info-label
+Record label.
 
-@item
-@code{info-label}: Record label.
+@item info-playing-time
+Playing time in seconds.
 
-@item
-@code{info-playing-time}: Seconds of playtime.
-
-@end itemize
+@end table
 
 @noindent
 An info method does not need to add all of these symbols into the
