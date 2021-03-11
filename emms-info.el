@@ -75,15 +75,18 @@ Each is called with a track as argument."
 (defvar emms-info-asynchronous-tracks 0
   "Number of tracks we're waiting for to be done.")
 
-(defun emms-info-initialize-track (track)
+(defun emms-info-initialize-track (track &optional force)
   "Initialize TRACK with emms-info information.
+Update TRACK information if it is new or has been modified since
+last update, or if FORCE is non-nil.
+
 This is a suitable value for `emms-track-initialize-functions'."
   (if (not emms-info-asynchronously)
-      (emms-info-really-initialize-track track)
+      (emms-info-really-initialize-track track force)
     (setq emms-info-asynchronous-tracks (1+ emms-info-asynchronous-tracks))
-    (emms-later-do 'emms-info-really-initialize-track track)))
+    (emms-later-do 'emms-info-really-initialize-track track force)))
 
-(defun emms-info-really-initialize-track (track)
+(defun emms-info-really-initialize-track (track &optional force)
   "Really initialize TRACK.
 Return t when the track got changed."
   (let ((file-mtime (when emms-info-auto-update
@@ -93,7 +96,8 @@ Return t when the track got changed."
     ;; if the file's been modified or is new
     (when (or (not file-mtime)
               (not info-mtime)
-              (emms-time-less-p info-mtime file-mtime))
+              (emms-time-less-p info-mtime file-mtime)
+              force)
       (run-hook-with-args 'emms-info-functions track)
       ;; not set by info functions
       (when file-mtime

@@ -155,12 +155,12 @@ This is used to cache over emacs sessions.")
   (load emms-cache-file t nil t)
   (setq emms-cache-dirty nil))
 
-(defun emms-cache-sync ()
+(defun emms-cache-sync (arg)
   "Sync the cache with the data on disc.
 Remove non-existent files, and update data for files which have
-been modified."
-  (interactive)
-  (message "Syncing emms track cache...")
+been modified.  With prefix argument, update data for all files
+regardless of whether they have been modified or not."
+  (interactive "P")
   (let (removed)
     (maphash (lambda (path track)
                (when (eq (emms-track-get track 'type) 'file)
@@ -172,13 +172,12 @@ been modified."
                    (let ((file-mtime (emms-info-track-file-mtime track))
                          (info-mtime (emms-track-get track 'info-mtime)))
                      (when (or (not info-mtime)
-                               (emms-time-less-p
-                                info-mtime file-mtime))
-                       (run-hook-with-args 'emms-info-functions track))))))
+                               (emms-time-less-p info-mtime file-mtime)
+                               arg)
+                       (emms-info-initialize-track track arg))))))
              emms-cache-db)
     (when removed
-      (setq emms-cache-dirty t)))
-  (message "Syncing emms track cache...done"))
+      (setq emms-cache-dirty t))))
 
 (defun emms-cache-reset ()
   "Reset the cache."
