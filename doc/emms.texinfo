@@ -220,8 +220,8 @@ restart Emacs to let the changes have an effect.
 
 Now we will add all our music to a playlist by invoking @kbd{M-x
 emms-add-directory-tree RET ~/Music/ RET}. We do this because then
-Emms will read the tags of all your music files and caches them (this
-is also required for the Emms browser, @xref{The Browser}.)
+Emms will read the tags of all your music files and caches them (the
+cache is also required for the Emms browser, @xref{The Browser}.)
 
 To switch to the playlist buffer, invoke @kbd{M-x
 emms-playlist-mode-go} or simply @kbd{M-x emms}. You may see that some
@@ -945,12 +945,18 @@ methods and their use in this chapter.
 Fundamentally, info methods are Emacs Lisp functions that are called
 for each track to provide information for that track.  Current info
 methods in Emms are restricted to tracks that are files; they do not
-work with stream URLs (@pxref{Streaming Audio}).  Most of the methods
+work with stream URLs (@pxref{Streaming Audio}).  Some of the methods
 require installation of some additional software that Emms can then
 call to read metadata from disk (@pxref{Metadata Utilities}).
 Finally, some methods work only with a limited set of media file
 formats such as Ogg or MP3, while some methods support a wide variety
 of formats.
+
+If caching is enabled (it is by default) then the metadata for each
+track will be stored in the cache for faster retrieval. That means if
+you change info method and want updated tracks, you will have to reset
+the cache @kbd{M-x emms-cache-reset} and then repopulate with @kbd{M-x
+emms-add-directory-tree RET ~/Music/ RET} or similar.
 
 Automatic track information retrieval is enabled by default in the
 @code{emms-all} setup level (@pxref{Setup}).  That setup level
