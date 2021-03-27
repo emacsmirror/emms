@@ -195,8 +195,8 @@ restart Emacs to let the changes have an effect.
 
    Now we will add all our music to a playlist by invoking 'M-x
 emms-add-directory-tree RET ~/Music/ RET'.  We do this because then Emms
-will read the tags of all your music files and caches them (this is also
-required for the Emms browser, *Note The Browser::.)
+will read the tags of all your music files and caches them (the cache is
+also required for the Emms browser, *Note The Browser::.)
 
    To switch to the playlist buffer, invoke 'M-x emms-playlist-mode-go'
 or simply 'M-x emms'.  You may see that some tracks are displayed with
@@ -798,11 +798,17 @@ chapter.
    Fundamentally, info methods are Emacs Lisp functions that are called
 for each track to provide information for that track.  Current info
 methods in Emms are restricted to tracks that are files; they do not
-work with stream URLs (*note Streaming Audio::).  Most of the methods
+work with stream URLs (*note Streaming Audio::).  Some of the methods
 require installation of some additional software that Emms can then call
 to read metadata from disk (*note Metadata Utilities::).  Finally, some
 methods work only with a limited set of media file formats such as Ogg
 or MP3, while some methods support a wide variety of formats.
+
+   If caching is enabled (it is by default) then the metadata for each
+track will be stored in the cache for faster retrieval.  That means if
+you change info method and want updated tracks, you will have to reset
+the cache 'M-x emms-cache-reset' and then repopulate with 'M-x
+emms-add-directory-tree RET ~/Music/ RET' or similar.
 
    Automatic track information retrieval is enabled by default in the
 'emms-all' setup level (*note Setup::).  That setup level configures
@@ -3891,36 +3897,38 @@ Variable Index
  [index ]
 * Menu:
 
-* emms-history-file:                     Persistent Playlists. (line 14)
-* emms-history-start-playing:            Persistent Playlists. (line 33)
-* emms-info-asynchronously:              Track Information.    (line 93)
-* emms-info-auto-update:                 Track Information.    (line 88)
-* emms-info-functions:                   Track Information.    (line 99)
-* emms-lyrics-coding-system:             Lyrics.               (line 36)
-* emms-lyrics-dir:                       Lyrics.               (line 27)
-* emms-lyrics-display-format:            Lyrics.               (line 32)
-* emms-lyrics-display-on-minibuffer:     Lyrics.               (line 21)
-* emms-lyrics-display-on-modeline:       Lyrics.               (line 24)
-* emms-lyrics-scroll-p:                  Lyrics.               (line 39)
-* emms-lyrics-scroll-timer-interval:     Lyrics.               (line 42)
-* emms-player-finished-hook:             Hooks.                (line 23)
-* emms-player-list:                      User Variables.       (line  8)
-* emms-player-paused-hook:               Hooks.                (line 29)
-* emms-player-started-hook:              Hooks.                (line  9)
-* emms-player-stopped-hook:              Hooks.                (line 11)
-* emms-playlist-cleared-hook:            Hooks.                (line 19)
-* emms-playlist-selection-changed-hook:  Hooks.                (line 17)
-* emms-playlist-source-inserted-hook:    Hooks.                (line 14)
-* emms-repeat-playlist:                  User Variables.       (line 15)
-* emms-show-format:                      User Variables.       (line 11)
-* emms-sort-lessp-function:              User Variables.       (line 21)
-* emms-source-file-default-directory:    Sources.              (line 13)
-* emms-tag-editor-formats:               Editing Tracks.       (line 55)
-* emms-tag-editor-rename-format:         Editing Tracks.       (line 73)
-* emms-tag-editor-tagfile-functions:     Editing Tracks.       (line 63)
-* emms-track-description-function:       User Variables.       (line 19)
-* emms-volume-change-amount:             Volume.               (line  9)
-* emms-volume-mode-timeout:              Volume.               (line 42)
+* emms-history-file:                     Persistent Playlists.
+                                                              (line  14)
+* emms-history-start-playing:            Persistent Playlists.
+                                                              (line  33)
+* emms-info-asynchronously:              Track Information.   (line  99)
+* emms-info-auto-update:                 Track Information.   (line  94)
+* emms-info-functions:                   Track Information.   (line 105)
+* emms-lyrics-coding-system:             Lyrics.              (line  36)
+* emms-lyrics-dir:                       Lyrics.              (line  27)
+* emms-lyrics-display-format:            Lyrics.              (line  32)
+* emms-lyrics-display-on-minibuffer:     Lyrics.              (line  21)
+* emms-lyrics-display-on-modeline:       Lyrics.              (line  24)
+* emms-lyrics-scroll-p:                  Lyrics.              (line  39)
+* emms-lyrics-scroll-timer-interval:     Lyrics.              (line  42)
+* emms-player-finished-hook:             Hooks.               (line  23)
+* emms-player-list:                      User Variables.      (line   8)
+* emms-player-paused-hook:               Hooks.               (line  29)
+* emms-player-started-hook:              Hooks.               (line   9)
+* emms-player-stopped-hook:              Hooks.               (line  11)
+* emms-playlist-cleared-hook:            Hooks.               (line  19)
+* emms-playlist-selection-changed-hook:  Hooks.               (line  17)
+* emms-playlist-source-inserted-hook:    Hooks.               (line  14)
+* emms-repeat-playlist:                  User Variables.      (line  15)
+* emms-show-format:                      User Variables.      (line  11)
+* emms-sort-lessp-function:              User Variables.      (line  21)
+* emms-source-file-default-directory:    Sources.             (line  13)
+* emms-tag-editor-formats:               Editing Tracks.      (line  55)
+* emms-tag-editor-rename-format:         Editing Tracks.      (line  73)
+* emms-tag-editor-tagfile-functions:     Editing Tracks.      (line  63)
+* emms-track-description-function:       User Variables.      (line  19)
+* emms-volume-change-amount:             Volume.              (line   9)
+* emms-volume-mode-timeout:              Volume.              (line  42)
 
 
 File: emms.info,  Node: Keybinding Index,  Prev: Variable Index,  Up: Top
@@ -3987,57 +3995,57 @@ Tag Table:
 Node: Top701
 Node: Introduction4336
 Node: Quickstart Guide5804
-Node: Installation8672
-Node: Compiling Emms9221
-Node: Setup9909
-Node: Configuration10895
-Node: Finding files and speed12370
-Node: Setup Examples13239
-Node: Getting Help15172
-Node: Formats and Freedom15750
-Node: Basic Commands16955
-Node: The Core File20336
-Node: User Variables20770
-Node: Hooks21746
-Node: Core Functions23172
-Node: Sources26172
-Node: Simple Players28305
-Node: Playlists29362
-Node: Track Information30643
-Node: Metadata Utilities35022
-Node: Defining Info Methods39694
-Node: Interactive Playlists41838
-Node: Markable Playlists44880
-Node: Extending Emms47351
-Node: New Player47787
-Node: Simple Player for `play'48176
-Node: More Complex Player49904
-Node: The Browser52911
-Node: Browser Interface53887
-Node: Filtering Tracks56301
-Node: Displaying Covers58079
-Node: Changing Looks60093
-Node: Sorting Playlists63071
-Node: Persistent Playlists64540
-Node: Editing Tracks65699
-Node: Emms Mode Line69373
-Node: Limiting70541
-Node: Music Player Daemon72880
-Node: Lyrics76393
-Node: Volume78441
-Node: Streaming Audio80229
-Ref: Streaming Audio-Footnote-180821
-Node: APE / FLAC Commands81172
-Node: Bookmarks81879
-Node: Managing Playlists82590
-Node: GNU FM83613
-Node: Uploading Track Information84967
-Node: GNU FM Streaming85849
-Node: Copying86349
-Node: The GNU FDL123866
-Node: Concept Index146254
-Node: Function Index151112
-Node: Variable Index166804
-Node: Keybinding Index169147
+Node: Installation8677
+Node: Compiling Emms9226
+Node: Setup9914
+Node: Configuration10900
+Node: Finding files and speed12375
+Node: Setup Examples13244
+Node: Getting Help15177
+Node: Formats and Freedom15755
+Node: Basic Commands16960
+Node: The Core File20341
+Node: User Variables20775
+Node: Hooks21751
+Node: Core Functions23177
+Node: Sources26177
+Node: Simple Players28310
+Node: Playlists29367
+Node: Track Information30648
+Node: Metadata Utilities35358
+Node: Defining Info Methods40030
+Node: Interactive Playlists42174
+Node: Markable Playlists45216
+Node: Extending Emms47687
+Node: New Player48123
+Node: Simple Player for `play'48512
+Node: More Complex Player50240
+Node: The Browser53247
+Node: Browser Interface54223
+Node: Filtering Tracks56637
+Node: Displaying Covers58415
+Node: Changing Looks60429
+Node: Sorting Playlists63407
+Node: Persistent Playlists64876
+Node: Editing Tracks66035
+Node: Emms Mode Line69709
+Node: Limiting70877
+Node: Music Player Daemon73216
+Node: Lyrics76729
+Node: Volume78777
+Node: Streaming Audio80565
+Ref: Streaming Audio-Footnote-181157
+Node: APE / FLAC Commands81508
+Node: Bookmarks82215
+Node: Managing Playlists82926
+Node: GNU FM83949
+Node: Uploading Track Information85303
+Node: GNU FM Streaming86185
+Node: Copying86685
+Node: The GNU FDL124202
+Node: Concept Index146590
+Node: Function Index151448
+Node: Variable Index167140
+Node: Keybinding Index169609
 
 End Tag Table
