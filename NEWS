@@ -1,3 +1,10 @@
+News since version 6.3
+
+  - Native reading of file metadata via emms-info-native.
+  - emms-tag-editor: add pipe capability.
+  - Compatibility with lexical scoping.
+  - Improvements to the fine manual.
+
 News since version 6.2
 
   - Updated documentation
