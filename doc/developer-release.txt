@@ -8,13 +8,13 @@ distributed via Emacs ELPA (https://elpa.gnu.org/).
 
 * Update the manual, then copy compiled emms.info to root directory
 
+* Update website (cvs commit -m "update website" index.html)
+
 * Push version updates to VCS
 
 * Tag release in VCS, for example `git tag -a 4.2 -m "4.2"'
 
 * Push tag to VCS if needed, for example `git push --tags origin "4.2"'
-
-* Update website (cvs commit -m "update website" index.html)
 
 * Push to GNU ELPA:
 
