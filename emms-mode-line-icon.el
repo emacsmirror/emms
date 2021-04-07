@@ -33,6 +33,10 @@
 
 (require 'emms-mode-line)
 
+
+(defvar emms-mode-line-icon-enabled-p t
+  "Disable icon display when NIL.")
+
 (defvar emms-mode-line-icon-color "black"
   "Color of the little icon displayed in the mode-line.")
 
@@ -64,12 +68,14 @@ static char *note[] = {
 \"#######..#\"};")))
 
 (defun emms-mode-line-icon-function ()
-  (concat " "
-          emms-mode-line-icon-before-format
-          (emms-propertize "NP:" 'display
-			   (emms-mode-line-icon-generate
-			    emms-mode-line-icon-color))
-          (emms-mode-line-playlist-current)))
+  (if emms-mode-line-icon-enabled-p
+      (concat " "
+              emms-mode-line-icon-before-format
+              (emms-propertize "NP:" 'display
+			       (emms-mode-line-icon-generate
+				emms-mode-line-icon-color))
+              (emms-mode-line-playlist-current))
+    (emms-mode-line-playlist-current)))
 
 (setq emms-mode-line-mode-line-function 'emms-mode-line-icon-function)
 

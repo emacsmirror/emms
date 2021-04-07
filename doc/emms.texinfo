@@ -2355,6 +2355,15 @@ To use this feature invoke:
 (emms-playing-time 1)
 @end lisp
 
+A graphical icon can be displayed in the modeline when Emms is
+playing. This feature is provided by @file{emms-mode-line-icon.el}. To
+enable invoke the following and make sure that
+@var{emms-mode-line-icon-enabled-p} is set to a non-nil value:
+
+@lisp
+(require emms-mode-line-icon)
+@end lisp
+
 Note: `(emms-playing-time -1)' will disable emms-playing-time module
 completely, and is not recommended. (since some other emms modules may
 rely on it)

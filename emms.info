@@ -1957,6 +1957,13 @@ which is provided by the file 'emms-playing-time.el'.
      (require 'emms-playing-time)
      (emms-playing-time 1)
 
+   A graphical icon can be displayed in the modeline when Emms is
+playing.  This feature is provided by 'emms-mode-line-icon.el'.  To
+enable invoke the following and make sure that
+EMMS-MODE-LINE-ICON-ENABLED-P is set to a non-nil value:
+
+     (require emms-mode-line-icon)
+
    Note: '(emms-playing-time -1)' will disable emms-playing-time module
 completely, and is not recommended.  (since some other emms modules may
 rely on it)
@@ -3775,8 +3782,8 @@ Function Index
 * emms-player-start:                     Core Functions.      (line  58)
 * emms-player-stop:                      Core Functions.      (line  60)
 * emms-player-stopped:                   Core Functions.      (line  62)
-* emms-playing-time-disable-display:     Emms Mode Line.      (line  35)
-* emms-playing-time-enable-display:      Emms Mode Line.      (line  32)
+* emms-playing-time-disable-display:     Emms Mode Line.      (line  42)
+* emms-playing-time-enable-display:      Emms Mode Line.      (line  39)
 * emms-playlist-current-selected-track:  Core Functions.      (line  53)
 * emms-playlist-limit-to-all:            Limiting.            (line  61)
 * emms-playlist-limit-to-description:    Limiting.            (line  31)
@@ -4029,23 +4036,23 @@ Node: Sorting Playlists63407
 Node: Persistent Playlists64876
 Node: Editing Tracks66035
 Node: Emms Mode Line69709
-Node: Limiting70877
-Node: Music Player Daemon73216
-Node: Lyrics76729
-Node: Volume78777
-Node: Streaming Audio80565
-Ref: Streaming Audio-Footnote-181157
-Node: APE / FLAC Commands81508
-Node: Bookmarks82215
-Node: Managing Playlists82926
-Node: GNU FM83949
-Node: Uploading Track Information85303
-Node: GNU FM Streaming86185
-Node: Copying86685
-Node: The GNU FDL124202
-Node: Concept Index146590
-Node: Function Index151448
-Node: Variable Index167140
-Node: Keybinding Index169609
+Node: Limiting71152
+Node: Music Player Daemon73491
+Node: Lyrics77004
+Node: Volume79052
+Node: Streaming Audio80840
+Ref: Streaming Audio-Footnote-181432
+Node: APE / FLAC Commands81783
+Node: Bookmarks82490
+Node: Managing Playlists83201
+Node: GNU FM84224
+Node: Uploading Track Information85578
+Node: GNU FM Streaming86460
+Node: Copying86960
+Node: The GNU FDL124477
+Node: Concept Index146865
+Node: Function Index151723
+Node: Variable Index167415
+Node: Keybinding Index169884
 
 End Tag Table
