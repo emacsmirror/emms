@@ -87,19 +87,17 @@ point after the HTTP headers."
 
 (defun emms-librefm-stream-tune-handshake-string ()
   "Create the tune handshake string."
-  (when (not emms-librefm-scrobbler-username)
-    (error "null username"))
-  (when (not emms-librefm-scrobbler-password)
-    (error "null password"))
-  (let ((url (concat emms-librefm-stream-connect-method
-		     emms-librefm-stream-host-url
-		     "/radio/handshake.php?"
-		     "version=1.3.0.58" "&"
-		     "platform=linux" "&"
-		     "username=" (url-encode-url emms-librefm-scrobbler-username) "&"
-		     "passwordmd5=" (md5 emms-librefm-scrobbler-password) "&"
-		     "language=en")))
-    url))
+  (let ((username (emms-librefm-scrobbler--username))
+	(password (emms-librefm-scrobbler--password)))
+    (let ((url (concat emms-librefm-stream-connect-method
+		       emms-librefm-stream-host-url
+		       "/radio/handshake.php?"
+		       "version=1.3.0.58" "&"
+		       "platform=linux" "&"
+		       "username=" (url-encode-url username) "&"
+		       "passwordmd5=" (md5 password) "&"
+		       "language=en")))
+      url)))
 
 (defun emms-librefm-stream-tune-handshake-call ()
   "Make the tune handshake call."
