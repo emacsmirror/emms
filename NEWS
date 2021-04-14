@@ -1,3 +1,8 @@
+News since version 7.0
+
+  - Add authinfo support for libre.fm streaming.
+  - Allow easily disabling the icon in the modeline.
+
 News since version 6.3
 
   - Native reading of file metadata via emms-info-native.
