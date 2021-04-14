@@ -14,7 +14,7 @@ distributed via Emacs ELPA (https://elpa.gnu.org/).
 
 * Tag release in VCS, for example `git tag -a 4.2 -m "4.2"'
 
-* Push tag to VCS if needed, for example `git push --tags origin "4.2"'
+* Push tag to VCS, for example `git push --tags origin "4.2"'
 
 * Push to GNU ELPA:
 
