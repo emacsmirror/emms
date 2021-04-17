@@ -1,6 +1,6 @@
 ;;; emms-browser.el --- a track browser supporting covers and filtering  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2006, 2007, 2008, 2009  Free Software Foundation, Inc.
+;; Copyright (C) 2006-2021  Free Software Foundation, Inc.
 
 ;; Author: Damien Elmes <emacs@repose.cx>
 ;; Keywords: emms, mp3, mpeg, multimedia
@@ -307,117 +307,94 @@
 
 (defcustom emms-browser-default-browse-type
   'info-artist
-  "*The default browsing mode."
-  :group 'emms-browser
-  :type 'function)
-
-(defcustom emms-browser-make-name-function
-  'emms-browser-make-name-standard
-  "*A function to make names for entries and subentries.
-Overriding this function allows you to customise how various elements
-are displayed. It is called with two arguments - track and type."
-  :group 'emms-browser
+  "The default browsing mode."
   :type 'function)
 
 (defcustom emms-browser-get-track-field-function
-  'emms-browser-get-track-field-albumartist
-  "*A function to get an element from a track.
+  #'emms-browser-get-track-field-albumartist
+  "A function to get an element from a track.
 Change this to customize the way data is organized in the
 browser. For example,
 `emms-browser-get-track-field-use-directory-name' uses the
 directory name to determine the artist. This means that
 soundtracks, compilations and so on don't populate the artist
 view with lots of 1-track elements."
-  :group 'emms-browser
   :type '(choice (function :tag "Sort by album-artist" emms-browser-get-track-field-albumartist)
                  (function :tag "Simple" emms-browser-get-track-field-simple)))
 
 (defcustom emms-browser-covers
   '("cover_small" "cover_med" "cover_large")
-  "*Control how cover images are found.
+  "Control how cover images are found.
 Can be either a list of small, medium and large images (large
 currently not used), a function which takes a directory and one
 of the symbols `small', `medium' or `large', and should return a
 path to the cover, or nil to turn off cover loading."
-  :group 'emms-browser
   :type '(choice list function boolean))
 
 (defcustom emms-browser-covers-file-extensions
   '("jpg" "jpeg" "png" "gif" "bmp")
-  "*File extensions accepted for `emms-browser-covers'.
+  "File extensions accepted for `emms-browser-covers'.
 Should be a list of extensions as strings.  Should be set before
 emms-browser is required."
-  :group 'emms-browser
   :type '(repeat (string :tag "Extension")))
 
 (defconst emms-browser--covers-filename nil
   "*List of potential cover art names.")
 
 (defcustom emms-browser-default-covers nil
-  "*A list of default images to use if a cover isn't found."
-  :group 'emms-browser
+  "A list of default images to use if a cover isn't found."
   :type 'list)
 
 (defcustom emms-browser-comparison-test
   (if (fboundp 'define-hash-table-test)
       'case-fold
     'equal)
-  "*A method for comparing entries in the cache.
+  "A method for comparing entries in the cache.
 The default is to compare case-insensitively."
-  :group 'emms-browser
   :type 'symbol)
 
 (defcustom emms-browser-track-sort-function
-  'emms-sort-natural-order-less-p
-  "*How to sort tracks in the browser.
+  #'emms-sort-natural-order-less-p
+  "How to sort tracks in the browser.
 Ues nil for no sorting."
-  :group 'emms-browser
   :type 'function)
 
 (defcustom emms-browser-alpha-sort-function
-  (if (functionp 'string-collate-lessp) 'string-collate-lessp 'string<)
-  "*How to sort artists/albums/etc. in the browser.
+  (if (functionp 'string-collate-lessp) #'string-collate-lessp #'string<)
+  "How to sort artists/albums/etc. in the browser.
 Use nil for no sorting."
-  :group 'emms-browser
   :type 'function)
 
 (defcustom emms-browser-album-sort-function
-  'emms-browser-sort-by-year-or-name
-  "*How to sort artists/albums/etc. in the browser.
+  #'emms-browser-sort-by-year-or-name
+  "How to sort artists/albums/etc. in the browser.
 Use nil for no sorting."
-  :group 'emms-browser
   :type 'function)
 
 (defcustom emms-browser-show-display-hook nil
-  "*Hooks to run when starting or switching to a browser buffer."
-  :group 'emms-browser
+  "Hooks to run when starting or switching to a browser buffer."
   :type 'hook)
 
 (defcustom emms-browser-hide-display-hook nil
-  "*Hooks to run when burying or removing a browser buffer."
-  :group 'emms-browser
+  "Hooks to run when burying or removing a browser buffer."
   :type 'hook)
 
 (defcustom emms-browser-tracks-added-hook nil
-  "*Hooks to run when tracks are added to the playlist."
-  :group 'emms-browser
+  "Hooks to run when tracks are added to the playlist."
   :type 'hook)
 
 (defcustom emms-browser-filter-tracks-hook nil
-  "*Given a track, return t if the track should be ignored."
-  :group 'emms-browser
+  "Given a track, return t if the track should be ignored."
   :type 'hook)
 
 (defcustom emms-browser-filter-changed-hook nil
-  "*Hook run after the filter has changed."
-  :group 'emms-browser
+  "Hook run after the filter has changed."
   :type 'hook)
 
 (defcustom emms-browser-delete-files-hook nil
-  "*Hook run after files have been deleted.
+  "Hook run after files have been deleted.
 This hook can be used to clean up extra files, such as album covers.
 Called once for each directory."
-  :group 'emms-browser
   :type 'hook)
 
 (defvar emms-browser-buffer nil
@@ -1502,7 +1479,6 @@ tracks from point, it does not delete files."
 (defcustom emms-browser-switch-to-playlist-on-add
   nil
   "Whether to switch to to the playlist after adding files."
-  :group 'emms-browser
   :type 'boolean)
 
 ;;;###autoload
@@ -2015,8 +1991,7 @@ the text that it generates."
          (t (:background ,dark-col)))
        ,(concat "Face for "
                 name
-                " in a browser/playlist buffer.")
-       :group 'emms-browser-mode)))
+                " in a browser/playlist buffer."))))
 
 (emms-browser-make-face "year/genre" "#aaaaff" "#444477" 1.5)
 (emms-browser-make-face "artist"     "#aaaaff" "#444477" 1.3)

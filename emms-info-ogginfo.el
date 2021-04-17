@@ -1,6 +1,6 @@
 ;;; emms-info-ogginfo.el --- Emms information from Ogg Vorbis files. -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2021  Free Software Foundation, Inc.
 
 ;; Author: Jorgen Schaefer <forcer@forcix.cx>
 ;;         Yoni Rabkin <yrk@gnu.org>
@@ -34,14 +34,12 @@ program"
   :group 'emms-info)
 
 (defcustom emms-info-ogginfo-coding-system 'utf-8
-  "*Coding system used in the output of ogginfo."
-  :type 'coding-system
-  :group 'emms-info-ogginfo)
+  "Coding system used in the output of ogginfo."
+  :type 'coding-system)
 
 (defcustom emms-info-ogginfo-program-name "ogginfo"
-  "*The name/path of the ogginfo tag program."
-  :type 'string
-  :group 'emms-info-ogginfo)
+  "The name/path of the ogginfo tag program."
+  :type 'string)
 
 (defun emms-info-ogginfo (track)
   "Add track information to TRACK.

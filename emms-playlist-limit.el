@@ -1,6 +1,6 @@
 ;;; emms-playlist-limit.el --- Limit playlist by various info -*- lexical-binding: t -*-
 
-;; Copyright (C) 2018 Free Software Foundation, Inc.
+;; Copyright (C) 2018-2021 Free Software Foundation, Inc.
 
 ;; Author: William Xu <william.xwl@gmail.com>
 ;; Author: Fran Burstall <fran.burstall@gmail.com>
@@ -65,8 +65,7 @@
 
 (defcustom emms-playlist-limit-hook nil
   "Hooks to run after each limit operation."
-  :type 'symbol
-  :group 'emms-playlist-limit)
+  :type 'symbol)
 
 (defmacro define-emms-playlist-limit (attribute)
   "Macro for defining emms playlist limit to ATTRIBUTE function."

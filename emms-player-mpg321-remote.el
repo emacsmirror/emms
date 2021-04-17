@@ -1,6 +1,6 @@
 ;;; emms-player-mpg321-remote.el --- play files with mpg321 -R  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2006, 2007, 2008, 2009  Free Software Foundation, Inc.
+;; Copyright (C) 2006-2021  Free Software Foundation, Inc.
 
 ;; Author: Damien Elmes <emacs@repose.cx>
 ;; Keywords: emms, mp3, mpeg, multimedia
@@ -49,23 +49,20 @@
   :prefix "emms-player-mpg321-remote")
 
 (defcustom emms-player-mpg321-remote-command "mpg321"
-  "*The command name of mpg321."
-  :type  'string
-  :group 'emms-player-mpg321-remote)
+  "The command name of mpg321."
+  :type  'string)
 
 (defcustom emms-player-mpg321-remote-parameters nil
-  "*Extra arguments to pass to mpg321 when using remote mode
+  "Extra arguments to pass to mpg321 when using remote mode
 For example: (list \"-o\" \"alsa\")"
-  :type  '(repeat string)
-  :group 'emms-player-mpg321-remote)
+  :type  '(repeat string))
 
 (defcustom emms-player-mpg321-remote
   (emms-player 'emms-player-mpg321-remote-start-playing
                'emms-player-mpg321-remote-stop-playing
                'emms-player-mpg321-remote-playable-p)
-  "*A player for EMMS."
-  :type '(cons symbol alist)
-  :group 'emms-player-mpg321-remote)
+  "A player for EMMS."
+  :type '(cons symbol alist))
 
 (defvar emms-player-mpg321-remote-initial-args
   (list "--skip-printing-frames=10" "-R" "-")

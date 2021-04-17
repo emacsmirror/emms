@@ -1,6 +1,6 @@
 ;;; emms-lyrics.el --- Display lyrics synchronically  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2013 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2021  Free Software Foundation, Inc.
 
 ;; Author: William Xu <william.xwl@gmail.com>
 ;; Keywords: emms music lyrics
@@ -57,30 +57,25 @@
 
 (defcustom emms-lyrics-display-on-modeline t
   "If non-nil, display lyrics on mode line."
-  :type 'boolean
-  :group 'emms-lyrics)
+  :type 'boolean)
 
 (defcustom emms-lyrics-display-on-minibuffer nil
   "If non-nil, display lyrics on minibuffer."
-  :type 'boolean
-  :group 'emms-lyrics)
+  :type 'boolean)
 
 (defcustom emms-lyrics-display-buffer nil
   "Non-nil will create deciated `emms-lyrics-buffer' to display lyrics."
-  :type 'boolean
-  :group 'emms-lyrics)
+  :type 'boolean)
 
 (defcustom emms-lyrics-dir "~/music/lyrics"
   "Local lyrics repository.
 `emms-lyrics-find-lyric' will look for lyrics in current directory(i.e.,
 same as the music file) and this directory."
-  :type 'string
-  :group 'emms-lyrics)
+  :type 'string)
 
 (defcustom emms-lyrics-display-format " %s "
   "Format for displaying lyrics."
-  :type 'string
-  :group 'emms-lyrics)
+  :type 'string)
 
 (defcustom emms-lyrics-coding-system nil
   "Coding system for reading lyrics files.
@@ -90,31 +85,26 @@ variable to that value; else you'd better leave it to nil, and
 rely on `prefer-coding-system', `file-coding-system-alist' or
 \(info \"(emacs)File Variables\"), sorted by priority
 increasingly."
-  :type 'coding-system
-  :group 'emms-lyrics)
+  :type 'coding-system)
 
 (defcustom emms-lyrics-mode-hook nil
   "Normal hook run after entering Emms Lyric mode."
-  :type 'hook
-  :group 'emms-lyrics)
+  :type 'hook)
 
 (defcustom emms-lyrics-find-lyric-function 'emms-lyrics-find-lyric
   "Function for finding lyric files."
-  :type 'symbol
-  :group 'emms-lyrics)
+  :type 'symbol)
 
 (defcustom emms-lyrics-scroll-p t
   "Non-nil value will enable lyrics scrolling on mode line.
 
 Note: Even if this is set to t, it also depends on
 `emms-lyrics-display-on-modeline' to be t."
-  :type 'boolean
-  :group 'emms-lyrics)
+  :type 'boolean)
 
 (defcustom emms-lyrics-scroll-timer-interval 0.4
   "Interval between scroller timers. The shorter, the faster."
-  :type 'number
-  :group 'emms-lyrics)
+  :type 'number)
 
 
 ;;; User Interfaces

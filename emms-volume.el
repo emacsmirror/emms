@@ -1,6 +1,6 @@
 ;;; emms-volume.el --- Volume functions and a minor mode to adjust volume easily  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2021  Free Software Foundation, Inc.
 
 ;; Author: Martin Schoenmakers <aiviru@diamond-age.net>
 ;;         Bruno Félix Rezende Ribeiro <oitofelix@gnu.org>
@@ -65,22 +65,20 @@
    ((executable-find "pactl") 'emms-volume-pulse-change)
    ((executable-find "mixerctl") 'emms-volume-mixerctl-change)
    (t #'(lambda (_amount) (user-error "%s" "No supported mixer found.  Please, define ‘emms-volume-change-function’."))))
-  "*The function to use to change the volume.
+  "The function to use to change the volume.
 If you have your own functions for changing volume, set this."
   :type '(choice (const :tag "Amixer" emms-volume-amixer-change)
                  (const :tag "MPD" emms-volume-mpd-change)
 		 (const :tag "PulseAudio" emms-volume-pulse-change)
 		 (const :tag "Mixerctl" emms-volume-mixerctl-change)
-                 (function :tag "Lisp function"))
-  :group 'emms-volume)
+                 (function :tag "Lisp function")))
 
 (defcustom emms-volume-change-amount 2
   "The amount to use when raising or lowering the volume using the
 emms-volume interface.
 
 This should be a positive integer."
-  :type 'integer
-  :group 'emms-volume)
+  :type 'integer)
 
 ;;;###autoload
 (defun emms-volume-raise ()

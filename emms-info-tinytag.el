@@ -1,6 +1,6 @@
 ;;; emms-info-tinytag.el --- Info-method for EMMS using tinytag  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2020  Free Software Foundation, Inc.
+;; Copyright (C) 2020-2021  Free Software Foundation, Inc.
 
 ;; Author: Fran Burstall <fran.burstall@gmail.com>
 ;; Keywords: multimedia
@@ -55,16 +55,14 @@
 
 (defcustom emms-info-tinytag-python-name "python"
   "Name of python we use."
-  :type '(string)
-  :group 'emms-info-tinytag)
+  :type '(string))
 
 (defcustom emms-info-tinytag-known-extensions
   (regexp-opt '("mp3" "mp4" "m4a" "m4b" "ogg" "opus" "flac" "wma" "wav"))
   "Regexp of known extensions that `emms-info-tinytag' can handle.
 
 Case is irrelevant."
-  :type '(string)
-  :group 'emms-info-tinytag)
+  :type '(string))
 
 (defvar emms-info-tinytag--info-fields
   '((info-album . album)

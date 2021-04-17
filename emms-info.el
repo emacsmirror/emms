@@ -1,6 +1,6 @@
 ;;; emms-info.el --- Retrieving track information  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2005-2020  Free Software Foundation, Inc.
+;; Copyright (C) 2005-2021  Free Software Foundation, Inc.
 
 ;; Author: Jorgen Schaefer <forcer@forcix.cx>
 
@@ -51,30 +51,26 @@
   :group 'emms)
 
 (defcustom emms-info-auto-update t
-  "*Non-nil when EMMS should update track information if the file changes.
+  "Non-nil when EMMS should update track information if the file changes.
 This will cause hard drive activity on track loading. If this is
 too annoying for you, set this variable to nil."
-  :type 'boolean
-  :group 'emms-info)
+  :type 'boolean)
 
 (defcustom emms-info-asynchronously t
-  "*Non-nil when track information should be loaded asynchronously.
+  "Non-nil when track information should be loaded asynchronously.
 This requires `emms-later-do', which should come with EMMS."
-  :type 'boolean
-  :group 'emms-info)
+  :type 'boolean)
 
 (defcustom emms-info-report-each-num-tracks 200
-  "*Non-zero will report progress information every number of tracks.
+  "Non-zero will report progress information every number of tracks.
 The default is to display a message every 200 tracks.
 This variable is only used when adding tracks asynchronously."
-  :type 'integer
-  :group 'emms-info)
+  :type 'integer)
 
 (defcustom emms-info-functions nil
-  "*Functions which add information to tracks.
+  "Functions which add information to tracks.
 Each is called with a track as argument."
-  :type 'hook
-  :group 'emms-info)
+  :type 'hook)
 
 (defvar emms-info-asynchronous-tracks 0
   "Number of tracks we're waiting for to be done.")

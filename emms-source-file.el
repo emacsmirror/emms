@@ -1,7 +1,6 @@
 ;;; emms-source-file.el --- EMMS sources from the filesystem.  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008,
-;;   2009 Free Software Foundation, Inc.
+;; Copyright (C) 2003-2021  Free Software Foundation, Inc.
 
 ;; Author: Jorgen Schäfer <forcer@forcix.cx>
 ;; Keywords: emms, mp3, mpeg, multimedia
@@ -53,9 +52,8 @@
   :group 'emms-source)
 
 (defcustom emms-source-file-default-directory nil
-  "*The default directory to look for media files."
-  :type '(choice (const :tag "None" nil) file)
-  :group 'emms-source-file)
+  "The default directory to look for media files."
+  :type '(choice (const :tag "None" nil) file))
 
 (defcustom emms-source-file-directory-tree-function
   'emms-source-file-directory-tree-internal
@@ -69,8 +67,7 @@ be slow.
 find, but it's faster."
   :type 'function
   :options '(emms-source-file-directory-tree-internal
-             emms-source-file-directory-tree-find)
-  :group 'emms-source-file)
+             emms-source-file-directory-tree-find))
 
 (defcustom emms-source-file-exclude-regexp
   (concat "\\`\\(#.*#\\|.*,v\\|.*~\\|\\.\\.?\\|\\.#.*\\|,.*\\)\\'\\|"
@@ -80,18 +77,15 @@ find, but it's faster."
 
 You should set case-fold-search to nil before using this regexp
 in code."
-  :type 'regexp
-  :group 'emms-source-file)
+  :type 'regexp)
 
 (defcustom emms-source-file-gnu-find "find"
-  "*The program name for GNU find."
-  :type 'string
-  :group 'emms-source-file)
+  "The program name for GNU find."
+  :type 'string)
 
 (defcustom emms-source-file-directory-hint-p t
-  "*When non-nil, guess the directory based on a track at point."
-  :type 'boolean
-  :group 'emms-source-file)
+  "When non-nil, guess the directory based on a track at point."
+  :type 'boolean)
 
 ;; The `read-directory-name' function is not available in Emacs 21.
 (defalias 'emms-read-directory-name

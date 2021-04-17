@@ -1,7 +1,6 @@
 ;;; emms-info-mp3info.el --- Info-method for EMMS using mp3info  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008,
-;;   2009 Free Software Foundation, Inc.
+;; Copyright (C) 2003-2021  Free Software Foundation, Inc.
 
 ;; Authors: Ulrik Jensen <terryp@daimi.au.dk>
 ;;          Jorgen Schäfer <forcer@forcix.cx>
@@ -50,14 +49,12 @@ external mp3info program"
   :group 'emms-info)
 
 (defcustom emms-info-mp3info-coding-system 'utf-8
-  "*Coding system used in the output of mp3info."
-  :type 'coding-system
-  :group 'emms-info-mp3info)
+  "Coding system used in the output of mp3info."
+  :type 'coding-system)
 
 (defcustom emms-info-mp3info-program-name "mp3info"
-  "*The name/path of the mp3info tag program."
-  :type 'string
-  :group 'emms-info-mp3info)
+  "The name/path of the mp3info tag program."
+  :type 'string)
 
 (defcustom emms-info-mp3find-arguments
   `("-p" ,(concat "info-artist=%a\\n"
@@ -70,8 +67,7 @@ external mp3info program"
                   "info-playing-time=%S\\n"))
   "The argument to pass to `emms-info-mp3info-program-name'.
 This should be a list of info-flag=value lines."
-  :type '(repeat string)
-  :group 'emms-info-mp3info)
+  :type '(repeat string))
 
 (defun emms-info-mp3info (track)
   "Add track information to TRACK.

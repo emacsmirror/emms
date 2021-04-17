@@ -1,7 +1,6 @@
 ;;; emms-player-simple.el --- A generic simple player.  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2003, 2004, 2006, 2007, 2008,
-;;   2009 Free Software Foundation, Inc.
+;; Copyright (C) 2003-2021 Free Software Foundation, Inc.
 
 ;; Authors: Ulrik Jensen <terryp@daimi.au.dk>
 ;;          Jorgen Schäfer <forcer@forcix.cx>
@@ -52,8 +51,8 @@
 NAME is used to contruct the name of the function like
 emms-player-NAME. TYPES is a list of track types understood by
 this player. REGEX must be a regexp that matches the filenames
-the player can play. COMMAND specifies the command line arguement
-to call the player and ARGS are the command line arguements."
+the player can play. COMMAND specifies the command line argument
+to call the player and ARGS are the command line arguments."
   (let ((group (intern (concat "emms-player-" (symbol-name name))))
         (command-name (intern (concat "emms-player-"
                                       (symbol-name name)
@@ -71,17 +70,14 @@ to call the player and ARGS are the command line arguements."
        :group 'emms-player
        :prefix ,(concat "emms-player-" (symbol-name name) "-"))
      (defcustom ,command-name ,command
-       ,(concat "*The command name of " command ".")
-       :type  'string
-       :group ',group)
+       ,(concat "The command name of " command ".")
+       :type  'string)
      (defcustom ,parameters ',args
-       ,(concat "*The arguments to `" (symbol-name command-name) "'.")
-       :type  '(repeat string)
-       :group ',group)
+       ,(concat "The arguments to `" (symbol-name command-name) "'.")
+       :type  '(repeat string))
      (defcustom ,player-name (emms-player ',start ',stop ',playablep)
-       ,(concat "*A player for EMMS.")
-       :type '(cons symbol alist)
-       :group ',group)
+       ,(concat "A player for EMMS.")
+       :type '(cons symbol alist))
      (emms-player-set ,player-name 'regex ,regex)
      (emms-player-set ,player-name 'pause 'emms-player-simple-pause)
      (emms-player-set ,player-name 'resume 'emms-player-simple-resume)

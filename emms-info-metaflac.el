@@ -1,6 +1,6 @@
 ;;; emms-info-metaflac.el --- Info-method for EMMS using metaflac  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2006, 2007, 2008, 2009  Free Software Foundation, Inc.
+;; Copyright (C) 2006-2021  Free Software Foundation, Inc.
 
 ;; Author: Matthew Kennedy <mkennedy@gentoo.org>
 ;; Keywords:
@@ -51,9 +51,8 @@ external metaflac program"
   :group 'emms-info)
 
 (defcustom emms-info-metaflac-program-name "metaflac"
-  "*The name/path of the metaflac program."
-  :type 'string
-  :group 'emms-info-metaflac)
+  "The name/path of the metaflac program."
+  :type 'string)
 
 (defcustom emms-info-metaflac-options
   '("--no-utf8-convert"
@@ -66,8 +65,7 @@ external metaflac program"
     "--show-tag=DISCNUMBER"
     "--show-tag=GENRE")
   "The argument to pass to `emms-info-metaflac-program-name'."
-  :type '(repeat string)
-  :group 'emms-info-metaflac)
+  :type '(repeat string))
 
 (defun emms-info-metaflac (track)
   "Get the FLAC tag of file TRACK, using `emms-info-metaflac-program'

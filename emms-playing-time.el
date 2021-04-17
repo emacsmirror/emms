@@ -1,6 +1,6 @@
 ;;; emms-playing-time.el --- Display emms playing time on mode line  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2005, 2006, 2007, 2008, 2009, 2019 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2021  Free Software Foundation, Inc.
 
 ;; Author: William Xu <william.xwl@gmail.com>, Yoni Rabkin (yrk@gnu.org)
 
@@ -52,21 +52,18 @@
 (defcustom emms-playing-time-display-short-p nil
   "Non-nil will only display elapsed time.
 e.g., display 02:37 instead of 02:37/05:49."
-  :type 'boolean
-  :group 'emms-playing-time)
+  :type 'boolean)
 
 (defcustom emms-playing-time-display-format " %s "
   "Format used for displaying playing time."
-  :type 'string
-  :group 'emms-playing-time)
+  :type 'string)
 
 (defcustom emms-playing-time-style 'time
   "Style used for displaying playing time.
 Valid styles are `time' (e.g., 01:30/4:20),
  `bar' (e.g., [===>  ]),
 and `downtime' (e.g. -03:58)."
-  :type 'symbol
-  :group 'emms-playing-time)
+  :type 'symbol)
 
 
 ;;; Emms Playing Time

@@ -1,6 +1,6 @@
 ;;; emms-info-opusinfo.el --- Emms information from Ogg Opus files. -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2018 Free Software Foundation, Inc.
+;; Copyright (C) 2018-2021 Free Software Foundation, Inc.
 
 ;; Author: Pierre Neidhardt <mail@ambrevar.xyz>
 
@@ -33,14 +33,12 @@ program"
   :group 'emms-info)
 
 (defcustom emms-info-opusinfo-coding-system 'utf-8
-  "*Coding system used in the output of opusinfo."
-  :type 'coding-system
-  :group 'emms-info-opusinfo)
+  "Coding system used in the output of opusinfo."
+  :type 'coding-system)
 
 (defcustom emms-info-opusinfo-program-name "opusinfo"
-  "*The name/path of the opusinfo tag program."
-  :type 'string
-  :group 'emms-info-opusinfo)
+  "The name/path of the opusinfo tag program."
+  :type 'string)
 
 (defun emms-info-opusinfo (track)
   "Add track information to TRACK.

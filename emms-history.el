@@ -1,6 +1,6 @@
 ;;; emms-history.el -- save all playlists when exiting emacs  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2021  Free Software Foundation, Inc.
 ;;
 ;; Author: Ye Wenbin <wenbinye@163.com>
 
@@ -45,19 +45,16 @@ Emacs."
 
 (defcustom emms-history-file (concat (file-name-as-directory emms-directory) "history")
   "The file to save playlists in."
-  :type   'string
-  :group  'emms-history)
+  :type   'string)
 
 (defcustom emms-history-start-playing nil
   "If non-nil emms starts playing the current track after
 `emms-history-load' was invoked."
-  :type   'boolean
-  :group  'emms-history)
+  :type   'boolean)
 
 (defcustom emms-history-file-coding-system 'utf-8
   "Coding system used for saving `emms-history-file'."
-  :type 'coding-system
-  :group 'emms-history)
+  :type 'coding-system)
 
 (defun emms-history-save ()
   "Save all playlists that are open in this Emacs session."

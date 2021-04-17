@@ -1,7 +1,6 @@
 ;;; emms-mode-line.el --- Mode-Line and titlebar infos for emms  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2004, 2005, 2006, 2007, 2008,
-;;   2009 Free Software Foundation, Inc.
+;; Copyright (C) 2004-2021  Free Software Foundation, Inc.
 
 ;; Author: Mario Domgörgen <kanaldrache@gmx.de>
 ;; Keywords: multimedia
@@ -41,13 +40,11 @@
 
 (defcustom emms-mode-line-mode-line-function 'emms-mode-line-playlist-current
   "Function for showing infos in mode-line or nil if don't want to."
-  :type '(choice (const :tag "Don't show info on mode-line" nil) function)
-  :group 'emms-mode-line)
+  :type '(choice (const :tag "Don't show info on mode-line" nil) function))
 
 (defcustom emms-mode-line-titlebar-function nil
   "Function for showing infos in titlebar or nil if you don't want to."
-  :type '(choice (const :tag "Don't show info on titlebar" nil) function)
-  :group 'emms-mode-line)
+  :type '(choice (const :tag "Don't show info on titlebar" nil) function))
 
 (defcustom emms-mode-line-format " [ %s ] "
   "String used for displaying the current track in mode-line and titlebar."

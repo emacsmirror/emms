@@ -1,24 +1,23 @@
-;;; emms-later-do.el --- execute lisp code ... later -*- lexical-binding: t; -*-
+;;; emms-later-do.el --- Execute Lisp code ... later -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2004, 2005, 2006, 2007, 2008,
-;;   2009, 2018 Free Software Foundation, Inc.
+;; Copyright (C) 2004-2021  Free Software Foundation, Inc.
 
 ;; Author: Jorgen Schaefer <forcer@forcix.cx>
 
-;;; This program is free software; you can redistribute it and/or
-;;; modify it under the terms of the GNU General Public License
-;;; as published by the Free Software Foundation; either version 3
-;;; of the License, or (at your option) any later version.
+;; This program is free software; you can redistribute it and/or
+;; modify it under the terms of the GNU General Public License
+;; as published by the Free Software Foundation; either version 3
+;; of the License, or (at your option) any later version.
 
-;;; This program is distributed in the hope that it will be useful,
-;;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;;; GNU General Public License for more details.
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
 
-;;; You should have received a copy of the GNU General Public License
-;;; along with this program; if not, write to the Free Software
-;;; Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-;;; 02110-1301 USA
+;; You should have received a copy of the GNU General Public License
+;; along with this program; if not, write to the Free Software
+;; Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+;; 02110-1301 USA
 
 ;;; Commentary
 
@@ -41,7 +40,6 @@
 
 (defcustom emms-later-do-interval 0.5
   "How many seconds to wait between running events."
-  :group 'emms-later-do
   :type 'number)
 
 (defcustom  emms-later-do-batch 20
@@ -49,7 +47,6 @@
 The functions are processed from `emms-later-do-list'.  Must be 1 or
 greater.  Too high a value might make Emacs slower while the
 list is being processed."
-  :group 'emms-later-do
   :type 'number)
 
 (defvar emms-later-do-list nil

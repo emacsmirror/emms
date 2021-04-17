@@ -1,6 +1,6 @@
 ;;; emms-playlist-sort.el --- sort emms playlist  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2005, 2006, 2007, 2008, 2009, 2018 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2021  Free Software Foundation, Inc.
 
 ;; Author: William Xu <william.xwl@gmail.com>
 
@@ -38,14 +38,12 @@
 Currently it understands the following fields: name info-artist
 imfo-composer info-performer info-title info-album info-genre
 info-playing-time info-tracknumber info-discnumber."
-  :type 'symbol
-  :group 'emms-playlist-sort)
+  :type 'symbol)
 
 (defcustom emms-playlist-sort-prefix "S"
   "Prefix key sequence for `emms-playlist-sort-map'.
 Remember to call `emms-playlist-sort-map-setup' if you modify it."
-  :type 'string
-  :group 'emms-playlist-sort)
+  :type 'string)
 
 
 ;;; User Interfaces

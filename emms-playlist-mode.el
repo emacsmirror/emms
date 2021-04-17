@@ -1,6 +1,6 @@
 ;;; emms-playlist-mode.el --- Playlist mode for Emms.  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2005-2019  Free Software Foundation, Inc.
+;; Copyright (C) 2005-2021  Free Software Foundation, Inc.
 
 ;; Author: Yoni Rabkin <yrk@gnu.org>
 
@@ -22,11 +22,11 @@
 
 ;;; Commentary:
 ;;;
-;;; This is a method of displaying and manipulating the different Emms
-;;; playlist buffers.
-;;;
-;;; Emms developer's motto: "When forcer says (require 'jump) we say
-;;; (funcall #'jump height)"
+;; This is a method of displaying and manipulating the different Emms
+;; playlist buffers.
+;;
+;; Emms developer's motto: "When forcer says (require 'jump) we say
+;; (funcall #'jump height)"
 
 ;;; Code:
 
@@ -64,23 +64,20 @@
   :group 'emms)
 
 (defcustom emms-playlist-mode-open-playlists nil
-  "*Determine whether to open playlists in a new EMMS buffer on RET.
+  "Determine whether to open playlists in a new EMMS buffer on RET.
 This is useful if you have a master playlist buffer that is
 composed of other playlists."
-  :type 'boolean
-  :group 'emms-playlist-mode)
+  :type 'boolean)
 
 (defcustom emms-playlist-mode-window-width 25
-  "*Determine the width of the Emms popup window.
+  "Determine the width of the Emms popup window.
 The value should a positive integer."
-  :type 'integer
-  :group 'emms-playlist-mode)
+  :type 'integer)
 
 (defcustom emms-playlist-mode-center-when-go nil
-  "*Determine whether to center on the currently selected track.
+  "Determine whether to center on the currently selected track.
 This is true for every invocation of `emms-playlist-mode-go'."
-  :type 'boolean
-  :group 'emms-playlist-mode)
+  :type 'boolean)
 
 ;;; --------------------------------------------------------
 ;;; Faces
@@ -94,8 +91,7 @@ This is true for every invocation of `emms-playlist-mode-go'."
     (((type tty) (class mono))
      (:inverse-video t))
     (t (:background "Blue")))
-  "Face for the tracks in a playlist buffer."
-  :group 'emms-playlist-mode)
+  "Face for the tracks in a playlist buffer.")
 
 (defface emms-playlist-selected-face
   '((((class color) (background dark))
@@ -105,8 +101,7 @@ This is true for every invocation of `emms-playlist-mode-go'."
     (((type tty) (class mono))
      (:inverse-video t))
     (t (:background "blue3")))
-  "Face for highlighting the selected track."
-  :group 'emms-playlist-mode)
+  "Face for highlighting the selected track.")
 
 ;;; --------------------------------------------------------
 ;;; Keys
