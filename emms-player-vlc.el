@@ -1,6 +1,6 @@
 ;;; emms-player-vlc.el --- vlc support for EMMS  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+;; Copyright (C) 2008-2021  Free Software Foundation, Inc.
 
 ;; Authors: Yoni Rabkin <yrk@gnu.org>
 
@@ -52,8 +52,8 @@
                         (append emms-player-vlc-parameters
                                 (list (emms-track-name (ad-get-arg 0)))
                                 '("vlc://quit")))))
-    ;; add a sentinel for signaling termination
-    (set-process-sentinel process 'emms-player-simple-sentinel))
+    ;; Add a sentinel for signaling termination.
+    (set-process-sentinel process #'emms-player-simple-sentinel))
   (emms-player-started emms-player-vlc))
 
 (defun emms-player-vlc-pause ()

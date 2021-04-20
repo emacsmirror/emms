@@ -58,9 +58,9 @@ For example: (list \"-o\" \"alsa\")"
   :type  '(repeat string))
 
 (defcustom emms-player-mpg321-remote
-  (emms-player 'emms-player-mpg321-remote-start-playing
-               'emms-player-mpg321-remote-stop-playing
-               'emms-player-mpg321-remote-playable-p)
+  (emms-player #'emms-player-mpg321-remote-start-playing
+               #'emms-player-mpg321-remote-stop-playing
+               #'emms-player-mpg321-remote-playable-p)
   "A player for EMMS."
   :type '(cons symbol alist))
 
@@ -93,14 +93,14 @@ For example: (list \"-o\" \"alsa\")"
 
 (defun emms-player-mpg321-remote-start-process ()
   "Start a new remote process, and return the process."
-  (let ((process (apply 'start-process
+  (let ((process (apply #'start-process
                         emms-player-mpg321-remote-process-name
                         nil
                         emms-player-mpg321-remote-command
                         (append emms-player-mpg321-remote-initial-args
                                 emms-player-mpg321-remote-parameters))))
-    (set-process-sentinel process 'emms-player-mpg321-remote-sentinel)
-    (set-process-filter process 'emms-player-mpg321-remote-filter)
+    (set-process-sentinel process #'emms-player-mpg321-remote-sentinel)
+    (set-process-filter process #'emms-player-mpg321-remote-filter)
     process))
 
 (defun emms-player-mpg321-remote-stop ()

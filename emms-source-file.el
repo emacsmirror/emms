@@ -199,7 +199,7 @@ This function uses `emms-source-file-directory-tree-function'."
   (let ((pl (sort (funcall emms-source-file-directory-tree-function
                            dir
                            regex)
-                  'string<)))
+                  #'string<)))
     (message "Building playlist...done")
     pl))
 

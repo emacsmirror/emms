@@ -1,6 +1,6 @@
 ;;; emms-player-mpv.el --- mpv support for EMMS  -*- lexical-binding: t; -*-
 ;;
-;; Copyright (C) 2018 Free Software Foundation, Inc.
+;; Copyright (C) 2018-2021 Free Software Foundation, Inc.
 
 ;; Authors: Mike Kazantsev <mk.fraggod@gmail.com>
 
@@ -277,7 +277,7 @@ Strips whitespace from start/end of TPL-OR-MSG and strings in TPL-VALUES."
       (setq tpl-or-msg (replace-regexp-in-string "%" "%%" tpl-or-msg t t)))
     (let ((ts (float-time)))
       (unless emms-player-mpv-debug-ts-offset (setq emms-player-mpv-debug-ts-offset ts))
-      (apply 'message
+      (apply #'message
              (concat "emms-player-mpv %.1f " tpl-or-msg)
              (- ts emms-player-mpv-debug-ts-offset)
              tpl-values))))
@@ -816,7 +816,7 @@ if there was any issue when trying to start it initially."
                             track-name 'replace))
            (start-func `(lambda ()
                           (emms-player-mpv-cmd ',start-cmd
-                                               (apply-partially 'emms-player-mpv-start-error-handler ',start-cmd)))))
+                                               (apply-partially #'emms-player-mpv-start-error-handler ',start-cmd)))))
         (if emms-player-mpv-ipc-stop-command
             (setq emms-player-mpv-ipc-stop-command start-func)
           (funcall start-func))))))

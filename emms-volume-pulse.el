@@ -1,6 +1,6 @@
 ;;; emms-volume-pulse.el --- a mode for changing volume using PulseAudio pactl  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2015 Free Software Foundation, Inc.
+;; Copyright (C) 2015-2021 Free Software Foundation, Inc.
 
 ;; Author: Rasmus Pank Roulund <emacs@pank.eu>
 
@@ -73,12 +73,12 @@ See full list of devices on your system by running
      (car
       (reverse
        (funcall
-        (if sink-number-p 'assq 'assoc)
+        (if sink-number-p #'assq #'assoc)
         emms-volume-pulse-sink
         (mapcar (if sink-number-p 'identity 'cdr)
                 (cl-loop while
 			 (string-match
-			  (mapconcat 'identity
+			  (mapconcat #'identity
 				     '(".*Sink[ \t]+\\#\\([0-9]+\\)"
 				       ".*Name:[ \t]\\([^\n]+\\)"
 				       ".*Volume:.*?\\([0-9]+\\)%.*\n?")

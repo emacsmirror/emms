@@ -1,6 +1,6 @@
 ;;; emms-mark.el --- mark track like dired  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2006, 2007, 2008, 2009, 2018 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2021  Free Software Foundation, Inc.
 ;;
 ;; Author: Ye Wenbin <wenbinye@163.com>
 
@@ -240,18 +240,18 @@ this function collects the result of FUNC."
 ;;{{{ mode stuff
 (defvar emms-mark-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map "W" 'emms-mark-copy-marked-tracks)
-    (define-key map "K" 'emms-mark-kill-marked-tracks)
-    (define-key map "D" 'emms-mark-delete-marked-tracks)
-    (define-key map "m" 'emms-mark-forward)
-    (define-key map "u" 'emms-mark-unmark-forward)
-    (define-key map "U" 'emms-mark-unmark-all)
-    (define-key map "t" 'emms-mark-toggle)
-    (define-key map "%m" 'emms-mark-regexp)
+    (define-key map "W" #'emms-mark-copy-marked-tracks)
+    (define-key map "K" #'emms-mark-kill-marked-tracks)
+    (define-key map "D" #'emms-mark-delete-marked-tracks)
+    (define-key map "m" #'emms-mark-forward)
+    (define-key map "u" #'emms-mark-unmark-forward)
+    (define-key map "U" #'emms-mark-unmark-all)
+    (define-key map "t" #'emms-mark-toggle)
+    (define-key map "%m" #'emms-mark-regexp)
     map)
   "Keymap for `emms-mark-mode'.")
 
-(defun emms-mark-mode ()
+(defun emms-mark-mode ()                ;FIXME: Use `define-derived-mode'.
   "An EMMS major mode that allows tracks to be marked like dired.
 \\{emms-mark-mode-map}"
   (interactive)
@@ -272,7 +272,7 @@ this function collects the result of FUNC."
 
     ;; show a blank space at beginning of each line
     (set (make-local-variable 'emms-track-description-function)
-         'emms-mark-track-description)
+         #'emms-mark-track-description)
     (emms-mark-update-descriptions)))
 
 (defun emms-mark-mode-disable ()

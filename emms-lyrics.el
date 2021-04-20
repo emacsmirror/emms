@@ -235,10 +235,11 @@ If we can't find it from local disk, then search it from internet."
         (if (fboundp 'eww)
             (progn (require 'eww)
                    (let ((readable-hook (when (fboundp 'eww-readable)
-                                          (add-hook 'eww-after-render-hook 'eww-readable))))
+                                          (add-hook 'eww-after-render-hook #'eww-readable)
+                                          #'eww-readable)))
                      (eww url)
                      (when readable-hook
-                       (remove-hook 'eww-after-render-hook 'eww-readable))))
+                       (remove-hook 'eww-after-render-hook readable-hook))))
           (browse-url url))
         (message "Lyric file does not exist on file-system.  Searching online...")))))
 
@@ -422,7 +423,7 @@ job."
                         (list
                          (run-at-time (format "%d sec" time)
                                       nil
-                                      'emms-lyrics-display-handler
+                                      #'emms-lyrics-display-handler
                                       lyric
                                       next-lyric
                                       line
@@ -512,7 +513,7 @@ NEXT-LYRIC."
                       (list
                        (run-at-time time
                                     nil
-                                    'emms-lyrics-display
+                                    #'emms-lyrics-display
                                     (if (>= (length lyric) pos)
                                         (substring scrolled-lyric pos)
                                       (throw 'return t))
@@ -525,9 +526,9 @@ NEXT-LYRIC."
 
 (defvar emms-lyrics-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map "p" 'emms-lyrics-previous-line)
-    (define-key map "n" 'emms-lyrics-next-line)
-    (define-key map "i" 'emms-lyrics-insert-time)
+    (define-key map "p" #'emms-lyrics-previous-line)
+    (define-key map "n" #'emms-lyrics-next-line)
+    (define-key map "i" #'emms-lyrics-insert-time)
     map)
   "Keymap for `emms-lyrics-mode'.")
 

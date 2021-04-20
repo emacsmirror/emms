@@ -1,6 +1,6 @@
 ;; emms-mode-line-icon.el --- show an icon in the Emacs mode-line  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2021  Free Software Foundation, Inc.
 
 ;; Version: 1.1
 ;; Keywords: emms
@@ -77,7 +77,7 @@ static char *note[] = {
               (emms-mode-line-playlist-current))
     (emms-mode-line-playlist-current)))
 
-(setq emms-mode-line-mode-line-function 'emms-mode-line-icon-function)
+(setq emms-mode-line-mode-line-function #'emms-mode-line-icon-function)
 
 ;; This is needed for text properties to work in the mode line.
 (put 'emms-mode-line-string 'risky-local-variable t)

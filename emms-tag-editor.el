@@ -80,7 +80,7 @@
           "\n\n"))
 
 (defvar emms-tag-editor-formats
-  (let* ((tags (mapcar 'car emms-tag-editor-tags))
+  (let* ((tags (mapcar #'car emms-tag-editor-tags))
          (default (emms-tag-editor-make-format (remove 'info-date tags))))
     `(("mp3" . ,default)
       ("ogg" . ,(emms-tag-editor-make-format (remove 'info-year tags)))
@@ -201,7 +201,7 @@ Valid tags are given by `emms-tag-editor-tagfile-functions'."
             (if (and val (stringp val))
                 (setq args (append (list (cdr tag) val) args))))
           tags)
-    (apply 'call-process program
+    (apply #'call-process program
            nil (get-buffer-create emms-tag-editor-log-buffer) nil
            (nconc args (list filename)))))
 
@@ -222,12 +222,12 @@ This string is suitable for inserting into the tags buffer."
         (funcall format track)
       (format-spec
        format
-       (apply 'format-spec-make
+       (apply #'format-spec-make
               ?m (emms-propertize (emms-track-force-description track)
                                   'face 'emms-playlist-track-face
                                   'emms-track (copy-sequence track))
               ?f (emms-track-name track)
-              (apply 'append
+              (apply #'append
                      (mapcar (lambda (tag)
                                (list (string-to-char (cdr tag))
                                      (or (emms-track-get track (car tag)) "")))
@@ -265,7 +265,7 @@ This string is suitable for inserting into the tags buffer."
     (emms-tag-editor-erase-buffer emms-tag-editor-log-buffer)
     (emms-tag-editor-erase-buffer emms-tag-editor-edit-buffer)
     (set-buffer (get-buffer emms-tag-editor-edit-buffer))
-    (mapc 'emms-tag-editor-insert-track tracks)
+    (mapc #'emms-tag-editor-insert-track tracks)
     (emms-tag-editor-mode)
     (pop-to-buffer (current-buffer))
     (goto-char (point-min))
@@ -295,19 +295,19 @@ This string is suitable for inserting into the tags buffer."
 
 (defvar emms-tag-editor-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map [tab] 'emms-tag-editor-next-field)
-    (define-key map [backtab] 'emms-tag-editor-prev-field)
-    (define-key map "\C-c\C-n" 'emms-tag-editor-next-track)
-    (define-key map "\C-c\C-p" 'emms-tag-editor-prev-track)
-    (define-key map "\C-c\C-c" 'emms-tag-editor-submit-and-exit)
-    (define-key map "\C-c\C-s" 'emms-tag-editor-submit)
-    (define-key map "\C-x\C-s" 'emms-tag-editor-submit)
-    (define-key map "\C-c\C-r" 'emms-tag-editor-set-all)
-    (define-key map "\C-c\C-a" 'emms-tag-editor-replace-in-tag)
-    (define-key map "\C-c\C-t" 'emms-tag-editor-transpose-tag)
+    (define-key map [tab] #'emms-tag-editor-next-field)
+    (define-key map [backtab] #'emms-tag-editor-prev-field)
+    (define-key map "\C-c\C-n" #'emms-tag-editor-next-track)
+    (define-key map "\C-c\C-p" #'emms-tag-editor-prev-track)
+    (define-key map "\C-c\C-c" #'emms-tag-editor-submit-and-exit)
+    (define-key map "\C-c\C-s" #'emms-tag-editor-submit)
+    (define-key map "\C-x\C-s" #'emms-tag-editor-submit)
+    (define-key map "\C-c\C-r" #'emms-tag-editor-set-all)
+    (define-key map "\C-c\C-a" #'emms-tag-editor-replace-in-tag)
+    (define-key map "\C-c\C-t" #'emms-tag-editor-transpose-tag)
     map)
   "Keymap for `emms-tag-editor-mode'.")
-(define-key emms-playlist-mode-map "E" 'emms-tag-editor-edit)
+(define-key emms-playlist-mode-map "E" #'emms-tag-editor-edit)
 
 (define-derived-mode emms-tag-editor-mode text-mode "Tag-Edit"
   "Major mode to edit track tags.
@@ -725,7 +725,7 @@ With prefix argument, bury the tag edit buffer."
 (defun emms-tag-editor-log (&rest args)
   (with-current-buffer (get-buffer-create emms-tag-editor-log-buffer)
     (goto-char (point-max))
-    (insert (apply 'format args) "\n")))
+    (insert (apply #'format args) "\n")))
 
 ;;
 ;; Renaming files according their tags
@@ -762,8 +762,8 @@ Then it's the callers job to apply them afterwards with
                         path
                         (format-spec
                          emms-tag-editor-rename-format
-                         (apply 'format-spec-make
-                                (apply 'append
+                         (apply #'format-spec-make
+                                (apply #'append
                                        (mapcar
                                         (lambda (tag)
                                           (list (string-to-char (cdr tag))
@@ -788,7 +788,7 @@ Then it's the callers job to apply them afterwards with
         (emms-tag-editor-rename-track track t))
       (emms-tag-editor-apply tracks))))
 
-(define-key emms-playlist-mode-map "R" 'emms-tag-editor-rename)
+(define-key emms-playlist-mode-map "R" #'emms-tag-editor-rename)
 
 (defvar emms-tag-editor-pipe-config
   '(("mid3iconv -e gbk <file>"

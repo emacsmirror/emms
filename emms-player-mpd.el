@@ -73,11 +73,11 @@
 
 ;; To get track info from MusicPD, do the following.
 ;;
-;;   (add-to-list 'emms-info-functions 'emms-info-mpd)
+;;   (add-to-list 'emms-info-functions #'emms-info-mpd)
 
 ;; To change the volume using MusicPD, do the following.
 ;;
-;;   (setq emms-volume-change-function 'emms-volume-mpd-change)
+;;   (setq emms-volume-change-function #'emms-volume-mpd-change)
 
 ;; Add 'emms-player-mpd to the top of `emms-player-list'.
 ;;
@@ -122,9 +122,9 @@
   :group 'emms-player
   :prefix "emms-player-mpd-")
 
-(defcustom emms-player-mpd (emms-player 'emms-player-mpd-start
-                                        'emms-player-mpd-stop
-                                        'emms-player-mpd-playable-p)
+(defcustom emms-player-mpd (emms-player #'emms-player-mpd-start
+                                        #'emms-player-mpd-stop
+                                        #'emms-player-mpd-playable-p)
   "Parameters for the MusicPD player."
   :type '(cons symbol alist))
 
@@ -308,7 +308,7 @@ return at the end of a request.")
 				:service emms-player-mpd-server-name
 				:family 'local)))
     (set-process-sentinel emms-player-mpd-process
-                          'emms-player-mpd-sentinel)
+                          #'emms-player-mpd-sentinel)
     (setq emms-player-mpd-queue
           (tq-create emms-player-mpd-process))
     (if (fboundp 'set-process-query-on-exit-flag)
@@ -876,7 +876,7 @@ playlist."
            (if emms-player-mpd-check-interval
                (setq emms-player-mpd-status-timer
                      (run-at-time t emms-player-mpd-check-interval
-                                  'emms-player-mpd-detect-song-change))
+                                  #'emms-player-mpd-detect-song-change))
              (emms-player-mpd-detect-song-change)))))
     ;; we only want to play one track, so don't start the timer
     (emms-player-mpd-send
@@ -947,7 +947,7 @@ This is called if `emms-player-mpd-sync-playlist' is non-nil."
       (when emms-player-mpd-check-interval
         (setq emms-player-mpd-status-timer
               (run-at-time t emms-player-mpd-check-interval
-                           'emms-player-mpd-detect-song-change))))))
+                           #'emms-player-mpd-detect-song-change))))))
 
 ;;;###autoload
 (defun emms-player-mpd-connect ()
@@ -1297,7 +1297,7 @@ Afterwards, clear the EMMS cache and call
 	    (progn
 	      (message "Updating DB with ID %s.  Waiting for the update to finish..." id)
 	      (setq emms-player-mpd-waiting-for-update-timer
-		    (run-at-time 1 nil 'emms-player-mpd-wait-for-update)))
+		    (run-at-time 1 nil #'emms-player-mpd-wait-for-update)))
 	  (message "Could not update the DB")))
     ;; Otherwise, check if update is still in progress
     (emms-player-mpd-get-status-part
@@ -1306,7 +1306,7 @@ Afterwards, clear the EMMS cache and call
        (ignore closure)
        (if updating
 	   ;; MPD update still in progress, so wait another second
-	   (run-at-time 1 nil 'emms-player-mpd-wait-for-update)
+	   (run-at-time 1 nil #'emms-player-mpd-wait-for-update)
 	 ;; MPD update finished
 	 (setq  emms-player-mpd-waiting-for-update-timer nil)
 	 (message "MPD update finished.")

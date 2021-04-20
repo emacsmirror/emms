@@ -75,7 +75,7 @@ to call the player and ARGS are the command line arguments."
      (defcustom ,parameters ',args
        ,(concat "The arguments to `" (symbol-name command-name) "'.")
        :type  '(repeat string))
-     (defcustom ,player-name (emms-player ',start ',stop ',playablep)
+     (defcustom ,player-name (emms-player #',start #',stop #',playablep)
        ,(concat "A player for EMMS.")
        :type '(cons symbol alist))
      (emms-player-set ,player-name 'regex ,regex)
@@ -113,14 +113,14 @@ to call the player and ARGS are the command line arguments."
   "Starts a process playing FILENAME using the specified CMDNAME with
 the specified PARAMS.
 PLAYER is the name of the current player."
-  (let ((process (apply 'start-process
+  (let ((process (apply #'start-process
                         emms-player-simple-process-name
                         nil
                         cmdname
                         ;; splice in params here
                         (append params (list filename)))))
     ;; add a sentinel for signaling termination
-    (set-process-sentinel process 'emms-player-simple-sentinel))
+    (set-process-sentinel process #'emms-player-simple-sentinel))
   (emms-player-started player))
 
 (defun emms-player-simple-sentinel (proc str)

@@ -38,7 +38,7 @@
   :prefix "emms-mode-line-"
   :group 'emms)
 
-(defcustom emms-mode-line-mode-line-function 'emms-mode-line-playlist-current
+(defcustom emms-mode-line-mode-line-function #'emms-mode-line-playlist-current
   "Function for showing infos in mode-line or nil if don't want to."
   :type '(choice (const :tag "Don't show info on mode-line" nil) function))
 
@@ -69,10 +69,10 @@
   (if (and arg (> arg 0))
       (progn
         (setq emms-mode-line-active-p t)
-  	(add-hook 'emms-track-updated-functions 'emms-mode-line-alter)
-	(add-hook 'emms-player-finished-hook 'emms-mode-line-blank)
-	(add-hook 'emms-player-stopped-hook 'emms-mode-line-blank)
-	(add-hook 'emms-player-started-hook 'emms-mode-line-alter)
+  	(add-hook 'emms-track-updated-functions #'emms-mode-line-alter)
+	(add-hook 'emms-player-finished-hook #'emms-mode-line-blank)
+	(add-hook 'emms-player-stopped-hook #'emms-mode-line-blank)
+	(add-hook 'emms-player-started-hook #'emms-mode-line-alter)
 	(when (and emms-mode-line-mode-line-function
 		   (not (member 'emms-mode-line-string global-mode-string)))
 	  (setq global-mode-string
@@ -80,10 +80,10 @@
 			'(emms-mode-line-string))))
 	(when emms-player-playing-p (emms-mode-line-alter)))
     (setq emms-mode-line-active-p nil)
-    (remove-hook 'emms-track-updated-functions 'emms-mode-line-alter)
-    (remove-hook 'emms-player-finished-hook 'emms-mode-line-blank)
-    (remove-hook 'emms-player-stopped-hook 'emms-mode-line-blank)
-    (remove-hook 'emms-player-started-hook 'emms-mode-line-alter)
+    (remove-hook 'emms-track-updated-functions #'emms-mode-line-alter)
+    (remove-hook 'emms-player-finished-hook #'emms-mode-line-blank)
+    (remove-hook 'emms-player-stopped-hook #'emms-mode-line-blank)
+    (remove-hook 'emms-player-started-hook #'emms-mode-line-alter)
     (emms-mode-line-restore-titlebar)
     (emms-mode-line-restore-mode-line)))
 

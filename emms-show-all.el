@@ -1,6 +1,6 @@
 ;;; emms-show-all.el --- Detailed track information for Emms.  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2016  Free Software Foundation, Inc.
+;; Copyright (C) 2016-2021  Free Software Foundation, Inc.
 
 ;; Author: Yoni Rabkin <yrk@gnu.org>
 
@@ -21,10 +21,10 @@
 ;; Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
-;;;
-;;; Shows all of the available information Emms can provide on the
-;;; currently playing track. Based on an idea suggested on the
-;;; emms-help mailing list by Ivan Truskov.
+;;
+;; Shows all of the available information Emms can provide on the
+;; currently playing track. Based on an idea suggested on the
+;; emms-help mailing list by Ivan Truskov.
 
 ;;; Code:
 
@@ -44,8 +44,8 @@
 (defvar emms-show-all-mode-map
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map text-mode-map)
-    (define-key map (kbd "q") 'emms-show-all-mode-bury-buffer)
-    (define-key map (kbd "E") 'emms-show-all-edit-track)
+    (define-key map (kbd "q") #'emms-show-all-mode-bury-buffer)
+    (define-key map (kbd "E") #'emms-show-all-edit-track)
     map)
   "Keymap for `emms-show-all-mode'.")
 

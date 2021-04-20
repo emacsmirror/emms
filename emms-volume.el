@@ -92,8 +92,8 @@ This should be a positive integer."
   (interactive)
   (funcall emms-volume-change-function (- emms-volume-change-amount)))
 
-(define-key emms-playlist-mode-map (kbd "+") 'emms-volume-raise)
-(define-key emms-playlist-mode-map (kbd "-") 'emms-volume-lower)
+(define-key emms-playlist-mode-map (kbd "+") #'emms-volume-raise)
+(define-key emms-playlist-mode-map (kbd "-") #'emms-volume-lower)
 
 ;; Code specific to the minor mode.
 (define-minor-mode emms-volume-minor-mode
@@ -135,7 +135,7 @@ This should be a positive integer."
     (emms-volume-mode-disable-timer))
   (setq emms-volume-mode-timer (run-at-time emms-volume-mode-timeout
                                             nil
-                                            'emms-volume-mode-timer-timeout)))
+                                            #'emms-volume-mode-timer-timeout)))
 
 (defun emms-volume-mode-timer-timeout ()
   "Function to disable `emms-volume-minor-mode' at timeout."

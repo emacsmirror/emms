@@ -1,7 +1,6 @@
 ;;; emms.el --- The Emacs Multimedia System  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008,
-;;   2009, 2018, 2020  Free Software Foundation, Inc.
+;; Copyright (C) 2003-2021  Free Software Foundation, Inc.
 
 ;; Author: Jorgen Schäfer <forcer@forcix.cx>, the Emms developers (see AUTHORS file)
 ;; Maintainer: Yoni Rabkin <yrk@gnu.org>
@@ -537,9 +536,9 @@ See `emms-random-playlist'."
   (interactive)
   (setq emms-random-playlist (not emms-random-playlist))
   (if emms-random-playlist
-      (progn (setq emms-player-next-function 'emms-random)
+      (progn (setq emms-player-next-function #'emms-random)
              (message "Will play the tracks randomly."))
-    (setq emms-player-next-function 'emms-next-noerror)
+    (setq emms-player-next-function #'emms-next-noerror)
     (message "Will play the tracks sequentially.")))
 
 (defun emms-toggle-repeat-playlist ()
@@ -1117,7 +1116,7 @@ This uses `emms-playlist-update-track-function'."
   "Insert tracks from SOURCE in the current playlist.
 This is supplying ARGS as arguments to the source."
   (with-current-emms-playlist
-    (apply 'emms-playlist-insert-source source args)))
+    (apply #'emms-playlist-insert-source source args)))
 
 (defun emms-playlist-tracks-in-region (beg end)
   "Return all tracks between BEG and END."
@@ -1213,7 +1212,7 @@ ignore this."
     (delete-region (point-min)
                    (point-max))
     (run-hooks 'emms-playlist-cleared-hook)
-    (mapc 'emms-playlist-insert-track
+    (mapc #'emms-playlist-insert-track
           (sort tracks emms-sort-lessp-function))
     (let ((pos (text-property-any (point-min)
                                   (point-max)
@@ -1249,7 +1248,7 @@ ignore this."
                                                 (point-max))))
     (delete-region (point-min) (point-max))
     (run-hooks 'emms-playlist-cleared-hook)
-    (mapc 'emms-playlist-insert-track
+    (mapc #'emms-playlist-insert-track
           (nreverse
            (emms-uniq-list tracks 'emms-track-name)))
     (let ((pos (text-property-any (point-min)
@@ -1357,7 +1356,7 @@ See emms-source-file.el for some examples."
   "Play the tracks of SOURCE, after first clearing the EMMS playlist."
   (emms-stop)
   (emms-playlist-current-clear)
-  (apply 'emms-playlist-current-insert-source source args)
+  (apply #'emms-playlist-current-insert-source source args)
   (emms-playlist-current-select-first)
   (emms-start))
 
@@ -1366,7 +1365,7 @@ See emms-source-file.el for some examples."
   (with-current-emms-playlist
     (save-excursion
       (goto-char (point-max))
-      (apply 'emms-playlist-current-insert-source source args))
+      (apply #'emms-playlist-current-insert-source source args))
     (when (or (not emms-playlist-selected-marker)
               (not (marker-position emms-playlist-selected-marker)))
       (emms-playlist-select-first))))
@@ -1375,7 +1374,7 @@ See emms-source-file.el for some examples."
   "Insert the tracks from SOURCE in the current buffer."
   (if (not emms-playlist-buffer-p)
       (error "Not in an EMMS playlist buffer")
-    (apply 'emms-playlist-insert-source source args)))
+    (apply #'emms-playlist-insert-source source args)))
 
 ;;; User-defined playlists
 ;;; FIXME: Shuffle is bogus here! (because of narrowing)

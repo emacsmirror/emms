@@ -1,7 +1,6 @@
 ;;; emms-score.el --- Scoring system for mp3player  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008,
-;;   2009, 2018 Free Software Foundation, Inc.
+;; Copyright (C) 2003-2021  Free Software Foundation, Inc.
 
 ;; Authors: Jean-Philippe Theberge <jphiltheberge@videotron.ca>,
 ;;          Yoni Rabkin <yrk@gnu.org>
@@ -88,13 +87,13 @@ off otherwise."
       (progn
 	(setq emms-score-enabled-p t)
 	(emms-score-load-hash)
-	(setq emms-ok-track-function 'emms-score-ok-track-function)
+	(setq emms-ok-track-function #'emms-score-ok-track-function)
         (unless noninteractive
-          (add-hook 'kill-emacs-hook 'emms-score-save-hash)))
+          (add-hook 'kill-emacs-hook #'emms-score-save-hash)))
     (setq emms-score-enabled-p nil)
     (emms-score-save-hash)
-    (setq emms-ok-track-function 'emms-default-ok-track-function)
-    (remove-hook 'kill-emacs-hook 'emms-score-save-hash)))
+    (setq emms-ok-track-function #'emms-default-ok-track-function)
+    (remove-hook 'kill-emacs-hook #'emms-score-save-hash)))
 
 ;;;###autoload
 (defun emms-score-enable ()

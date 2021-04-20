@@ -96,7 +96,7 @@ to nil, use the Emacs variables to build the startup args."
 First element is the executable path."
   (or (and jack-use-jack-rc
 	   (catch 'rc-found
-	     (let ((files (mapcar 'expand-file-name jack-rc)))
+	     (let ((files (mapcar #'expand-file-name jack-rc)))
 	       (while files
 		 (if (file-exists-p (car files))
 		     (with-temp-buffer
@@ -146,7 +146,7 @@ is given in jackd command-line."
 	      mode-line-format (copy-tree mode-line-format))
 	(setcar (nthcdr 16 mode-line-format)
 		`(:eval (format "load:%.2f" jack-load)))
-	(add-hook 'kill-buffer-hook 'jack-kill nil t)
+	(add-hook 'kill-buffer-hook #'jack-kill nil t)
 	(current-buffer))))
 
 (defvar jack-xruns nil)
@@ -180,7 +180,7 @@ is given in jackd command-line."
   (interactive)
   (if (jack-running-p) (error "JACK already running")
     (setq jack-process
-	  (apply 'start-process "jack" (jack-output-buffer)
+	  (apply #'start-process "jack" (jack-output-buffer)
 		 (jack-maybe-rtlimits (jack-args))))
     (set-process-filter jack-process #'jack-filter)
     (run-hooks 'jack-started-hook)
@@ -253,7 +253,7 @@ is given in jackd command-line."
 
 (defun jack-unique-port-name (strings)
   (let ((start "")
-	(maxlen (apply 'min (mapcar #'length strings))))
+	(maxlen (apply #'min (mapcar #'length strings))))
     (while (and (< (length start) maxlen)
 		(catch 'not-ok
 		  (let ((nextchar (substring (car strings) (length start) (1+ (length start)))))
@@ -270,7 +270,8 @@ is given in jackd command-line."
 		   (emms-remove-if-not predicate (jack-ports program))
 		 (jack-ports program))))
     (if (< (length ports) 2) (caar ports)
-      (completing-read prompt ports nil t (jack-unique-port-name (mapcar 'car ports))))))
+      (completing-read prompt ports nil t
+                       (jack-unique-port-name (mapcar #'car ports))))))
 
 (defun jack-connect (from-program from-port to-program to-port)
   "Connect FROM-PROGRAM's output port FROM-PORT to TO-PROGRAM's input port
