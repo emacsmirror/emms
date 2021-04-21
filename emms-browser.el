@@ -1489,12 +1489,12 @@ Toggle between selecting browser, playlist or hiding both. Tries
 to behave sanely if the user has manually changed the window
 configuration."
   (interactive)
-  (add-to-list 'emms-browser-show-display-hook
-               'emms-browser-display-playlist)
-  (add-to-list 'emms-browser-hide-display-hook
-               'emms-browser-hide-linked-window)
+  (add-hook 'emms-browser-show-display-hook
+            #'emms-browser-display-playlist)
+  (add-hook 'emms-browser-hide-display-hook
+            #'emms-browser-hide-linked-window)
   ;; switch to the playlist window when adding tracks?
-  (add-to-list 'emms-browser-tracks-added-hook
+  (add-hook 'emms-browser-tracks-added-hook
                (lambda (start-of-tracks) (interactive)
                  (let (playlist-window)
                    (when emms-browser-switch-to-playlist-on-add

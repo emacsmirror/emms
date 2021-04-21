@@ -34,7 +34,7 @@
 ;; To activate this method for getting info, use something like:
 
 ;; (require 'emms-info-metaflac)
-;; (add-to-list 'emms-info-methods-list 'emms-info-metaflac)
+;; (add-hook 'emms-info-methods-list 'emms-info-metaflac)
 
 ;;; Code:
 

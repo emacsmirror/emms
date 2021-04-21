@@ -33,7 +33,7 @@
 ;; To activate this method for getting info, use something like:
 
 ;; (require 'emms-info-libtag)
-;; (add-to-list 'emms-info-functions 'emms-info-libtag)
+;; (add-hook 'emms-info-functions 'emms-info-libtag)
 
 ;; Note that you should remove emms-info-mp3info and emms-info-ogginfo
 ;; from the emms-info-functions list if you want to avoid
