@@ -170,13 +170,14 @@ If the remote process is not running, launch it."
     (emms-player-mpg321-remote-start-process))
   (emms-player-mpg321-remote-play-track track))
 
+(defvar emms-player-ignore-stop)
+
 (defun emms-player-mpg321-remote-notify-emms (&optional user-action)
   "Tell emms that the current song has finished.
 If USER-ACTION, set `emms-player-mpg321-remote-ignore-stop' so that we
 ignore the next message from mpg321."
   (if user-action
       (let ((emms-player-ignore-stop t))
-	(ignore emms-player-ignore-stop)
         ;; so we ignore the next stop message
         (setq emms-player-mpg321-remote-ignore-stop
               (1+ emms-player-mpg321-remote-ignore-stop))

@@ -2058,30 +2058,31 @@ This does not refresh the current buffer."
   (interactive)
   (emms-browser-next-filter t))
 
-(defun emms-browser-filter-only-dir (path)
-  "Generate a function which checks if a track is in path.
-If the track is not in path, return t."
-  `(lambda (track)
-     (not (string-match ,(concat "^" (expand-file-name path))
-                        (emms-track-get track 'name)))))
+(defun emms-browser-filter-only-dir (dirname)
+  "Generate a function which checks if a track is in DIRNAME.
+If the track is not in DIRNAME, return t."
+  (let ((re (concat "^" (expand-file-name dirname))))
+    (lambda (track)
+      (not (string-match re (emms-track-get track 'name))))))
 
 (defun emms-browser-filter-only-type (type)
   "Generate a function which checks a track's type.
 If the track is not of TYPE, return t."
-  `(lambda (track)
-     (not (eq (quote ,type) (emms-track-get track 'type)))))
+  (lambda (track)
+    (not (eq type (emms-track-get track 'type)))))
 
 ;; seconds in a day (* 60 60 24) = 86400
 (defun emms-browser-filter-only-recent (days)
   "Show only tracks played within the last number of DAYS."
-  `(lambda (track)
-     (let ((min-date (time-subtract
-                      (current-time)
-                      (seconds-to-time (* ,days 86400))))
-           last-played)
-       (not (and (setq last-played
-                       (emms-track-get track 'last-played nil))
-                 (time-less-p min-date last-played))))))
+  (lambda (track)
+    (let ((min-date (time-subtract
+                     (current-time)
+                     (seconds-to-time (* days 86400))))
+          last-played)
+      (not (and (setq last-played
+                      (emms-track-get track 'last-played nil))
+                (time-less-p min-date last-played))))))
+
 
 ;; TODO: Add function to clear the cache from thumbnails that have no associated
 ;; cover folders.  This is especially useful in case the music library path

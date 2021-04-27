@@ -105,7 +105,7 @@ This is used to cache over emacs sessions.")
       (emms-cache-disable)
     (emms-cache-enable)))
 
-(defsubst emms-cache-dirty (&rest ignored)
+(defsubst emms-cache-dirty (&rest _ignored)
   "Mark the cache as dirty."
   (setq emms-cache-dirty t))
 

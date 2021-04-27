@@ -1,6 +1,6 @@
 ;;; emms-last-played.el --- Support for last-played-time of a track -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2021  Free Software Foundation, Inc.
 
 ;; Author: Lucas Bonnet <lucas@rincevent.net>
 ;; Keywords: emms, mp3, mpeg, multimedia
@@ -99,7 +99,7 @@ If non-existent, it is set to 1."
        (* (- (string-to-number days) 1) 3600 24))))
 
 (defun emms-last-played-format-date (messy-date)
-  "Format the messy-date according to emms-last-played-format-alist.
+  "Format the messy-date according to `emms-last-played-format-alist'.
 Returns \"  ?  \" if there's bad input or if an other error occurs.
 Input should look like this: \"Sun, 14 Oct 2001 13:34:39 +0200\"."
   (condition-case ()
@@ -109,14 +109,14 @@ Input should look like this: \"Sun, 14 Oct 2001 13:34:39 +0200\"."
 	     (my-format "%b %d '%y"))
 	(let* ((difference (- now messy-date))
 	       (templist emms-last-played-format-alist)
-	       (top (eval (caar templist))))
+	       (top (eval (caar templist) t)))
 	  (while (if (numberp top) (< top difference) (not top))
 	    (progn
 	      (setq templist (cdr templist))
-	      (setq top (eval (caar templist)))))
+	      (setq top (eval (caar templist) t))))
 	  (if (stringp (cdr (car templist)))
 	      (setq my-format (cdr (car templist)))))
-	(format-time-string (eval my-format) (seconds-to-time messy-date)))
+	(format-time-string (eval my-format t) (seconds-to-time messy-date)))
     (error "Never.")))
 
 (provide 'emms-last-played)
