@@ -118,10 +118,10 @@ the stable features which come with the Emms distribution."
   (setq emms-track-description-function #'emms-info-track-description)
   (when (fboundp 'emms-cache)		; work around compiler warning
     (emms-cache 1))
-  (emms-mode-line 1)
+  (emms-mode-line-mode 1)
   (emms-mode-line-blank)
   (emms-lyrics 1)
-  (emms-playing-time 1)
+  (emms-playing-time-mode 1)
   (add-hook 'emms-player-started-hook #'emms-last-played-update-current)
   (emms-score 1))
 

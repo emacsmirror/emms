@@ -56,19 +56,23 @@
   (format emms-mode-line-format (emms-track-description
 				 (emms-playlist-current-selected-track))))
 
-(defvar emms-mode-line-active-p nil
-  "If non-nil, emms mode line is active.")
+(define-obsolete-variable-alias 'emms-mode-line-active-p
+  'emms-mode-line-mode "Apr 2021")
 (defvar emms-mode-line-string "")
 
 (defvar emms-mode-line-initial-titlebar frame-title-format)
 
 (defun emms-mode-line (arg)
+  (declare (obsolete emms-mode-line-mode "Apr 2021"))
+  (emms-mode-line-mode (if (and arg (> arg 0)) 1 -1)))
+
+;;;###autoload
+(define-minor-mode emms-mode-line-mode
   "Turn on `emms-mode-line' if ARG is positive, off otherwise."
-  (interactive "p")
+  :global t
   (or global-mode-string (setq global-mode-string '("")))
-  (if (and arg (> arg 0))
+  (if emms-mode-line-mode
       (progn
-        (setq emms-mode-line-active-p t)
   	(add-hook 'emms-track-updated-functions #'emms-mode-line-alter)
 	(add-hook 'emms-player-finished-hook #'emms-mode-line-blank)
 	(add-hook 'emms-player-stopped-hook #'emms-mode-line-blank)
@@ -79,7 +83,6 @@
 		(append global-mode-string
 			'(emms-mode-line-string))))
 	(when emms-player-playing-p (emms-mode-line-alter)))
-    (setq emms-mode-line-active-p nil)
     (remove-hook 'emms-track-updated-functions #'emms-mode-line-alter)
     (remove-hook 'emms-player-finished-hook #'emms-mode-line-blank)
     (remove-hook 'emms-player-stopped-hook #'emms-mode-line-blank)
@@ -91,23 +94,21 @@
 (defun emms-mode-line-enable ()
   "Turn on `emms-mode-line'."
   (interactive)
-  (emms-mode-line 1)
-  (message "emms mode line enabled"))
+  (declare (obsolete emms-mode-line-mode "Apr 2021"))
+  (emms-mode-line-mode 1))
 
 ;;;###autoload
 (defun emms-mode-line-disable ()
   "Turn off `emms-mode-line'."
   (interactive)
-  (emms-mode-line -1)
-  (message "emms mode line disabled"))
+  (emms-mode-line-mode -1))
 
 ;;;###autoload
 (defun emms-mode-line-toggle ()
   "Toggle `emms-mode-line'."
   (interactive)
-  (if emms-mode-line-active-p
-      (emms-mode-line-disable)
-    (emms-mode-line-enable)))
+  (declare (obsolete emms-mode-line-mode "Apr 2021"))
+  (emms-mode-line-mode 'toggle))
 
 (defun emms-mode-line-alter (&optional track)
   "Alter mode-line/titlebar.
