@@ -482,19 +482,20 @@ Called once for each directory."
 ;; --------------------------------------------------
 
 (eval-and-compile
-  (if (fboundp 'with-selected-window)
-      (defalias 'emms-browser-with-selected-window 'with-selected-window)
+  (if (fboundp 'with-selected-window)   ;Emacs-22
+      (defalias 'emms-browser-with-selected-window #'with-selected-window)
     (defmacro emms-browser-with-selected-window (window &rest body)
       (ignore window)
       ;; this emulates the behavior introduced earlier, though it
       ;; might be best to do something with `window'
       `(save-selected-window ,body)))
   (put 'emms-browser-with-selected-window 'lisp-indent-function 1)
-  (put 'emms-browser-with-selected-window 'edebug-form-spec '(form body))
+  (put 'emms-browser-with-selected-window 'edebug-form-spec '(form body)))
 
-  (if (fboundp 'run-mode-hooks)
-      (defalias 'emms-browser-run-mode-hooks 'run-mode-hooks)
-    (defalias 'emms-browser-run-mode-hooks 'run-hooks)))
+(defalias 'emms-browser-run-mode-hooks
+  (if (fboundp 'run-mode-hooks)         ;Emacs-22
+      #'run-mode-hooks
+    #'run-hooks))
 
 ;; --------------------------------------------------
 ;; General mode setup
@@ -534,7 +535,7 @@ example function is `emms-browse-by-artist'."
 (defun emms-browser-mode (&optional no-update)
   "A major mode for the Emms browser.
 \\{emms-browser-mode-map}"
-      ;; create a new buffer
+  ;; create a new buffer
   (interactive)
 
   (use-local-map emms-browser-mode-map)
@@ -592,10 +593,10 @@ If a browser search exists, return it."
   "Create an interactive function emms-browse-by-NAME."
   (let ((funname (intern (concat "emms-browse-by-" name)))
         (funcdesc (concat "Browse by " name ".")))
-  `(defun ,funname ()
-     ,funcdesc
-     (interactive)
-     (emms-browse-by ,type))))
+    `(defun ,funname ()
+       ,funcdesc
+       (interactive)
+       (emms-browse-by ,type))))
 
 (defun emms-browse-by (type)
   "Render a top level buffer based on TYPE."
@@ -699,7 +700,7 @@ For 'info-year TYPE, use 'info-originalyear, 'info-originaldate and
            (sort-subr nil
                       #'forward-line #'end-of-line
                       (lambda () (buffer-substring-no-properties
-                             (line-beginning-position) (line-end-position)))
+				  (line-beginning-position) (line-end-position)))
                       nil
                       emms-browser-alpha-sort-function))
        (sort-lines nil (point-min) (point-max))))))
@@ -796,14 +797,14 @@ artist1 -> album1 -> *track* 1.."
   (let ((key (car entry))
         (track (cadr entry))
         artist title) ;; only the first track
-  (cond
-   ((eq type 'info-title)
-    (setq artist (emms-track-get track 'info-artist))
-    (setq title (emms-track-get track 'info-title))
-    (if (not (and artist title))
-        key
-      (concat artist " - " title)))
-   (t key))))
+    (cond
+     ((eq type 'info-title)
+      (setq artist (emms-track-get track 'info-artist))
+      (setq title (emms-track-get track 'info-title))
+      (if (not (and artist title))
+          key
+	(concat artist " - " title)))
+     (t key))))
 
 (defun emms-browser-track-number (track)
   "Return a string representation of a track number.
@@ -863,7 +864,7 @@ Items with no metadata for TYPE will be placed in 'misc'"
     (dolist (track tracks)
       (setq key (emms-browser-get-track-field track type))
       (when (eq type 'info-title)
-          ;; try and make every track unique
+        ;; try and make every track unique
         (setq tracknum (emms-browser-track-number track))
         (if (string= tracknum "")
             (setq key (file-name-nondirectory
@@ -915,6 +916,7 @@ TYPE is the metadata to make the alist by - eg. if it's
 This sorting predicate will compare the cadr of each entry.
 SORT-FUNC should be a playlist sorting predicate like
 `emms-playlist-sort-by-natural-order'."
+  (declare (debug t))
   `(lambda (a b)
      (funcall ,sort-func (cadr a) (cadr b))))
 
@@ -923,6 +925,7 @@ SORT-FUNC should be a playlist sorting predicate like
 This sorting predicate will compare the car of each entry.
 SORT-FUNC should be a playlist sorting predicate like
 `emms-playlist-sort-by-natural-order'."
+  (declare (debug t))
   `(lambda (a b)
      (funcall ,sort-func (car a) (car b))))
 
@@ -931,7 +934,7 @@ SORT-FUNC should be a playlist sorting predicate like
 Uses `emms-browser-track-sort-function'."
   (if emms-browser-track-sort-function
       (sort alist (emms-browser-sort-cadr
-                  emms-browser-track-sort-function))
+                   emms-browser-track-sort-function))
     alist))
 
 (defun emms-browser-sort-by-name (alist)
@@ -939,7 +942,7 @@ Uses `emms-browser-track-sort-function'."
 Uses `emms-browser-alpha-sort-function'."
   (if emms-browser-alpha-sort-function
       (sort alist (emms-browser-sort-car
-                  emms-browser-alpha-sort-function))
+                   emms-browser-alpha-sort-function))
     alist))
 
 (defun emms-browser-sort-by-year-or-name (alist)
@@ -1405,12 +1408,12 @@ tracks from point, it does not delete files."
     (when (numberp delete) (setq delete nil))
     (when delete
       (save-mark-and-excursion
-       (when (use-region-p) (goto-char start))
-       (let ((lines (min count (- (line-number-at-pos (point-max)) (line-number-at-pos (point))))))
-         (dotimes (_ lines)
-           ;; TODO: Test this!
-           (setq tracks (append tracks (emms-browser-tracks-at-point)))
-           (forward-line))))
+	(when (use-region-p) (goto-char start))
+	(let ((lines (min count (- (line-number-at-pos (point-max)) (line-number-at-pos (point))))))
+          (dotimes (_ lines)
+            ;; TODO: Test this!
+            (setq tracks (append tracks (emms-browser-tracks-at-point)))
+            (forward-line))))
       (unless (yes-or-no-p
                (format "Really permanently delete these %d tracks? " (length tracks)))
         (error "Cancelled!"))
@@ -1497,47 +1500,47 @@ configuration."
             #'emms-browser-hide-linked-window)
   ;; switch to the playlist window when adding tracks?
   (add-hook 'emms-browser-tracks-added-hook
-               (lambda (start-of-tracks) (interactive)
-                 (let (playlist-window)
-                   (when emms-browser-switch-to-playlist-on-add
-                     (emms-smart-browse))
-                   ;; center on the first added track/group name
-                   (when
-                       (setq playlist-window
-                             (emms-browser-get-linked-window))
-                     (emms-browser-with-selected-window
-                         playlist-window
-                       (goto-char start-of-tracks)
-                       (recenter '(4)))))))
+            (lambda (start-of-tracks) (interactive)
+              (let (playlist-window)
+                (when emms-browser-switch-to-playlist-on-add
+                  (emms-smart-browse))
+                ;; center on the first added track/group name
+                (when
+                    (setq playlist-window
+                          (emms-browser-get-linked-window))
+                  (emms-browser-with-selected-window
+                      playlist-window
+                    (goto-char start-of-tracks)
+                    (recenter '(4)))))))
   (let (wind)
-  (cond
-   ((eq major-mode 'emms-browser-mode)
-    (setq wind (emms-browser-get-linked-window))
-    ;; if the playlist window is visible, select it
-    (if wind
-        (select-window wind)
-      ;; otherwise display and select it
-      (select-window (emms-browser-display-playlist))))
-   ((eq major-mode 'emms-playlist-mode)
-    (setq wind (emms-browser-get-linked-window))
-    ;; if the playlist window is selected, and the browser is visible,
-    ;; hide both
-    (if wind
-        (progn
+    (cond
+     ((eq major-mode 'emms-browser-mode)
+      (setq wind (emms-browser-get-linked-window))
+      ;; if the playlist window is visible, select it
+      (if wind
           (select-window wind)
-          (emms-browser-bury-buffer)
-          ;; After a browser search, the following buffer could be the
-          ;; unfiltered browser, which we want to bury as well.  We don't want
-          ;; to call `emms-browser-hide-display-hook' for this one so we bury it
-          ;; directly.
-          (when (eq major-mode 'emms-browser-mode)
-            (bury-buffer)))
-      ;; otherwise bury both
-      (bury-buffer)
-      (emms-browser-hide-linked-window)))
-   (t
-    ;; show both
-    (emms-browser)))))
+	;; otherwise display and select it
+	(select-window (emms-browser-display-playlist))))
+     ((eq major-mode 'emms-playlist-mode)
+      (setq wind (emms-browser-get-linked-window))
+      ;; if the playlist window is selected, and the browser is visible,
+      ;; hide both
+      (if wind
+          (progn
+            (select-window wind)
+            (emms-browser-bury-buffer)
+            ;; After a browser search, the following buffer could be the
+            ;; unfiltered browser, which we want to bury as well.  We don't want
+            ;; to call `emms-browser-hide-display-hook' for this one so we bury it
+            ;; directly.
+            (when (eq major-mode 'emms-browser-mode)
+              (bury-buffer)))
+	;; otherwise bury both
+	(bury-buffer)
+	(emms-browser-hide-linked-window)))
+     (t
+      ;; show both
+      (emms-browser)))))
 
 (defun emms-browser-get-linked-buffer ()
   "Return linked buffer (eg browser if playlist is selected."
@@ -1867,11 +1870,11 @@ If > album level, most of the track data will not make sense."
          (name (cond
                 ((or (eq type 'info-year)
                      (eq type 'info-genre)) "year/genre")
-                 ((eq type 'info-artist) "artist")
-                 ((eq type 'info-composer) "composer")
-                 ((eq type 'info-performer) "performer")
-                 ((eq type 'info-album) "album")
-                 ((eq type 'info-title) "track"))))
+                ((eq type 'info-artist) "artist")
+                ((eq type 'info-composer) "composer")
+                ((eq type 'info-performer) "performer")
+                ((eq type 'info-album) "album")
+                ((eq type 'info-title) "track"))))
     (intern
      (concat "emms-browser-" name "-face"))))
 
@@ -2015,11 +2018,11 @@ the text that it generates."
 This:
  - defines an interactive function M-x emms-browser-show-NAME.
  - defines a variable emms-browser-filter-NAME of (name . func).
- - adds the filter to emms-browser-filters."
+ - adds the filter to `emms-browser-filters'."
   (let ((funcnam (intern (concat "emms-browser-show-" name)))
         (var  (intern (concat "emms-browser-filter-" name)))
         (desc (concat "Filter the cache using rule '"
-                       name "'")))
+                      name "'")))
     `(progn
        (defvar ,var nil ,desc)
        (setq ,var (cons ,name ,func))
@@ -2046,7 +2049,7 @@ This does not refresh the current buffer."
   "Redisplay with the next filter."
   (interactive)
   (let* ((list (if reverse
-                  (reverse emms-browser-filters)
+                   (reverse emms-browser-filters)
                  emms-browser-filters))
          (key emms-browser-current-filter-name)
          (next (cadr (member (assoc key list) list))))

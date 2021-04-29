@@ -581,7 +581,7 @@ WINDOW-WIDTH should be a positive integer."
   (setq buffer-undo-list nil))
 
 ;;;###autoload
-(defun emms-playlist-mode ()
+(defun emms-playlist-mode ()            ;FIXME: Use `define-derived-mode'.
   "A major mode for Emms playlists.
 \\{emms-playlist-mode-map}"
   (interactive)

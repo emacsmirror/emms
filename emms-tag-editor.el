@@ -295,6 +295,7 @@ This string is suitable for inserting into the tags buffer."
 
 (defvar emms-tag-editor-mode-map
   (let ((map (make-sparse-keymap)))
+    ;; FIXME: Bind to "\t" rather than [tab] so it works in ttys as well.
     (define-key map [tab] #'emms-tag-editor-next-field)
     (define-key map [backtab] #'emms-tag-editor-prev-field)
     (define-key map "\C-c\C-n" #'emms-tag-editor-next-track)

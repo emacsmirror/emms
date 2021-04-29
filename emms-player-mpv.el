@@ -181,7 +181,8 @@ if it refuses to exit cleanly on `emms-player-mpv-proc-stop'.")
 
 
 (defvar emms-player-mpv-ipc-proc nil
-  "Unix socket process that communicates with running `emms-player-mpv-proc' instance.")
+  "Process that communicates with running `emms-player-mpv-proc' instance.
+Connected via a Unix socket.")
 
 (defvar emms-player-mpv-ipc-buffer " *emms-player-mpv-ipc*"
   "Buffer to associate with `emms-player-mpv-ipc-proc' socket/pipe process.")
@@ -193,33 +194,40 @@ if it refuses to exit cleanly on `emms-player-mpv-proc-stop'.")
   "List of delays before initiating socket connection for new mpv process.")
 
 (defvar emms-player-mpv-ipc-connect-command nil
-  "JSON command for `emms-player-mpv-ipc-sentinel' to run as soon as it connects to mpv.
-I.e. last command that either initiated connection or was used while connecting to mpv.
+  "JSON command for `emms-player-mpv-ipc-sentinel' to run when it connects to mpv.
+I.e. last command that either initiated connection or was used while
+connecting to mpv.
 Set by `emms-player-mpv-start' and such,
 cleared once it gets sent by `emms-player-mpv-ipc-sentinel'.")
 
 (defvar emms-player-mpv-ipc-id 1
-  "Auto-incremented value sent in JSON requests for request_id and observe_property id's.
-Use `emms-player-mpv-ipc-id-get' to get and increment this value, instead of using it directly.
-Wraps-around upon reaching `emms-player-mpv-ipc-id-max' (unlikely to ever happen).")
+  "Auto-incremented counter for unique JSON request identifiers.
+Use for for `request_id' and `observe_property' identifiers.
+Use `emms-player-mpv-ipc-id-get' to get and increment this value,
+instead of using it directly.
+Wraps-around upon reaching `emms-player-mpv-ipc-id-max'
+\(unlikely to ever happen).")
 
 (defvar emms-player-mpv-ipc-id-max (expt 2 30)
   "Max value for `emms-player-mpv-ipc-id' to wrap around after.
-Should be fine with both mpv and emacs, and probably never reached anyway.")
+Should be fine with both mpv and Emacs, and probably never reached anyway.")
 
 (defvar emms-player-mpv-ipc-req-table nil
   "Auto-initialized hash table of outstanding API req_ids to their handler funcs.")
 
 (defvar emms-player-mpv-ipc-stop-command nil
   "Internal flag to track when stop command starts/finishes before next loadfile.
-Set to either nil, t or playback start function to call on end-file event after stop command.
-This is a workaround for mpv-0.30+ behavior, where 'stop + loadfile' only runs 'stop'.")
+Set to either nil, t or the playback start function to call on end-file event
+after stop command.
+This is a workaround for mpv-0.30+ behavior, where 'stop + loadfile' only
+runs 'stop'.")
 
 
 (defvar emms-player-mpv-event-connect-hook nil
-  "Normal hook run right after establishing new JSON IPC
-connection to mpv instance and before `emms-player-mpv-ipc-connect-command'	if any.
-Best place to send any observe_property, request_log_messages, enable_event commands.
+  "Normal hook run right after establishing new JSON IPC connection to mpv. 
+Run before `emms-player-mpv-ipc-connect-command', if any.
+Best place to send any `observe_property', `request_log_messages',
+`enable_event' commands.
 Use `emms-player-mpv-ipc-id-get' to get unique id values for these.
 See also `emms-player-mpv-event-functions'.")
 
@@ -246,8 +254,9 @@ to indicate that playback should stop instead of switching to next track.")
   (and (= emacs-major-version 26)
        (= emacs-minor-version 1))
   "Non-nil to enable workaround for issue #31901 in emacs 26.1.
-Emacs 26.1 fails to indicate missing socket file error for unix socket network processes
-that were started with :nowait t, so blocking connections are used there instead.")
+Emacs 26.1 fails to indicate missing socket file error for unix socket
+network processes that were started with :nowait t, so blocking connections
+are used there instead.")
 
 
 ;; ----- helpers

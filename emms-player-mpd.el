@@ -311,9 +311,7 @@ return at the end of a request.")
                           #'emms-player-mpd-sentinel)
     (setq emms-player-mpd-queue
           (tq-create emms-player-mpd-process))
-    (if (fboundp 'set-process-query-on-exit-flag)
-        (set-process-query-on-exit-flag emms-player-mpd-process nil)
-      (set-process-query-on-exit-flag emms-player-mpd-process nil))
+    (set-process-query-on-exit-flag emms-player-mpd-process nil)
     ;; send password
     (when (stringp emms-player-mpd-server-password)
       (tq-enqueue emms-player-mpd-queue
