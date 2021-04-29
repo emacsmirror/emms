@@ -43,14 +43,15 @@
 ;; track, so the player sentinel has no way of telling that the next
 ;; track should be played. Therefore I redefine this low-level
 ;; function and add a "quit" track which is invisible to Emms.
-(defadvice emms-player-vlc-start (around quit-vlc-after-finish activate)
-  (let ((process (apply 'start-process
+(advice-add 'emms-player-vlc-start :override #'emms--vlc-quit-after-finish)
+(defun emms--vlc-quit-after-finish (track &rest _)
+  (let ((process (apply #'start-process
                         emms-player-simple-process-name
                         nil
                         emms-player-vlc-command-name
                         ;; splice in params here
                         (append emms-player-vlc-parameters
-                                (list (emms-track-name (ad-get-arg 0)))
+                                (list (emms-track-name track))
                                 '("vlc://quit")))))
     ;; Add a sentinel for signaling termination.
     (set-process-sentinel process #'emms-player-simple-sentinel))

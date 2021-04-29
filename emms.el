@@ -7,7 +7,7 @@
 ;; Version: 7.1
 ;; Keywords: emms, mp3, ogg, flac, music, mpeg, video, multimedia
 ;; Package-Type: multi
-;; Package-Requires: ((cl-lib "0.5") (seq))
+;; Package-Requires: ((cl-lib "0.5") (nadvice "0.3") (seq))
 ;; url: https://www.gnu.org/software/emms/
 
 ;; This file is part of EMMS.

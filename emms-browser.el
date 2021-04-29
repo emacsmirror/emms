@@ -190,10 +190,12 @@
 ;; artist->track instead of artist->album->track when you switch to
 ;; the 'singles' filter.
 
-;; (defadvice emms-browser-next-mapping-type
-;;                                 (after no-album (current-mapping))
-;;   (when (eq ad-return-value 'info-album)
-;;     (setq ad-return-value 'info-title)))
+;; (advice-add 'emms-browser-next-mapping-type :around #'my-emms--types)
+;; (defun my-emms--types (orig-fun &rest args)
+;;   (let ((type (apply orig-fun args)))
+;;     (if (eq type 'info-album)
+;;         'info-title)
+;;       type)))
 
 ;; (defun toggle-album-display ()
 ;;   (if (string= emms-browser-current-filter-name "singles")
