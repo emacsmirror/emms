@@ -10,16 +10,18 @@ distributed via Emacs ELPA (https://elpa.gnu.org/).
 
 * Update website (cvs commit -m "update website" index.html)
 
-* Push version updates to VCS
-
 * Tag release in VCS, for example `git tag -a 4.2 -m "4.2"'
 
 * Push tag to VCS, for example `git push --tags origin "4.2"'
 
-* Push to GNU ELPA:
+* Push version updates to VCS
 
-      - merge master into the Savannah "elpa" branch and push to Savannah
+* If automatic syncronization is enabled then we are done. Otherwise:
 
-      - from the "elpa" branch in Savannah push to elpa.git: "git push elpa elpa:externals/emms"
+    * Push to GNU ELPA:
+
+          - merge master into the Savannah "elpa" branch and push to Savannah
+
+          - from the "elpa" branch in Savannah push to elpa.git: "git push elpa elpa:externals/emms"
 
 * Send announcement email to the emms mailing list
