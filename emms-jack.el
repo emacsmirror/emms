@@ -1,4 +1,4 @@
-;;; jack.el --- Jack Audio Connection Kit support  -*- lexical-binding: t; -*-
+;;; emms-jack.el --- Jack Audio Connection Kit support  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2005-2021  Free Software Foundation, Inc.
 
@@ -43,37 +43,37 @@
 
 (require 'emms-compat)
 
-(defgroup jack ()
+(defgroup emms-jack ()
   "Jack Audio Connection Kit"
   :group 'processes)
 
-(defcustom jack-rc '("~/.jackdrc" "/etc/jackd.conf")
+(defcustom emms-jack-rc '("~/.jackdrc" "/etc/jackd.conf")
   "JACK run control paths."
   :type 'repeat)
 
-(defcustom jack-use-jack-rc t
+(defcustom emms-jack-use-jack-rc t
   "If non-nil, try to retrieve jack startup arguments from run control files
 listed in `jack-rc'.  If no rc file is found or this variable is set
 to nil, use the Emacs variables to build the startup args."
   :type 'boolean)
 
-(defcustom jack-program (executable-find "jackd")
+(defcustom emms-jack-program (executable-find "jackd")
   "JACK executable path."
   :type 'file)
 
-(defcustom jack-sample-rate 44100
+(defcustom emms-jack-sample-rate 44100
   "Default sampling rate for JACK."
   :type 'integer)
 
-(defcustom jack-period-size 128
+(defcustom emms-jack-period-size 128
   "Period size to use when launching new JACK process."
   :type 'integer)
 
-(defcustom jack-alsa-device nil
+(defcustom emms-jack-alsa-device nil
   "ALSA soundcard to use."
   :type '(choice (const :tag "Ask" nil) string))
 
-(defun jack-read-alsa-device ()
+(defun emms-jack-read-alsa-device ()
   "Read an ALSA device name using the minibuffer."
   (let (cards)
     (with-temp-buffer
@@ -84,19 +84,19 @@ to nil, use the Emacs variables to build the startup args."
 	(forward-line 1)))
     (concat "hw:" (cdr (assoc (completing-read "Card: " cards nil t) cards)))))
 
-(defun jack-alsa-device ()
-  (or jack-alsa-device (jack-read-alsa-device)))
+(defun emms-jack-alsa-device ()
+  (or emms-jack-alsa-device (emms-jack-read-alsa-device)))
 
-(defcustom jack-output-buffer-name "*JACK output*"
+(defcustom emms-jack-output-buffer-name "*JACK output*"
   "Output buffer name."
   :type 'string)
 
-(defun jack-args ()
+(defun emms-jack-args ()
   "Return a list of startup arguments to use.
 First element is the executable path."
-  (or (and jack-use-jack-rc
+  (or (and emms-jack-use-jack-rc
 	   (catch 'rc-found
-	     (let ((files (mapcar #'expand-file-name jack-rc)))
+	     (let ((files (mapcar #'expand-file-name emms-jack-rc)))
 	       (while files
 		 (if (file-exists-p (car files))
 		     (with-temp-buffer
@@ -106,100 +106,100 @@ First element is the executable path."
 				(split-string (buffer-string) "[\n \t]+")))))
 		 (setq files (cdr files))))
 	     nil))
-      (list jack-program
+      (list emms-jack-program
 	    "-v"
 	    "-R"
 	    "-dalsa"
-	    (format "-d%s" (jack-alsa-device))
-	    (format "-r%d" jack-sample-rate)
-	    (format "-p%d" jack-period-size))))
+	    (format "-d%s" (emms-jack-alsa-device))
+	    (format "-r%d" emms-jack-sample-rate)
+	    (format "-p%d" emms-jack-period-size))))
 
-(defcustom jack-set-rtlimits t
+(defcustom emms-jack-set-rtlimits t
   "Use set_rtlimits (if available) to gain realtime priorities if -R
 is given in jackd command-line."
   :type 'boolean)
 
-(defcustom jack-set-rtlimits-program (executable-find "set_rtlimits")
+(defcustom emms-jack-set-rtlimits-program (executable-find "set_rtlimits")
   "Path to set_rtlimits."
   :type 'file)
 
-(defun jack-maybe-rtlimits (args)
-  (if (and jack-set-rtlimits
+(defun emms-jack-maybe-rtlimits (args)
+  (if (and emms-jack-set-rtlimits
 	   (or (member "-R" args) (member "--realtime" args))
-	   (file-exists-p jack-set-rtlimits-program))
-      (append (list jack-set-rtlimits-program "-r") args)
+	   (file-exists-p emms-jack-set-rtlimits-program))
+      (append (list emms-jack-set-rtlimits-program "-r") args)
     args))
 
-(defvar jack-process nil)
+(defvar emms-jack-process nil)
 
-(defvar jack-load 0)
+(defvar emms-jack-load 0)
 
-(defvar jack-max-usecs 0)
+(defvar emms-jack-max-usecs 0)
 
-(defvar jack-spare 0)
+(defvar emms-jack-spare 0)
 
-(defun jack-output-buffer ()
-  (or (get-buffer jack-output-buffer-name)
-      (with-current-buffer (get-buffer-create jack-output-buffer-name)
-	(setq major-mode 'jack-mode
+(defun emms-jack-output-buffer ()
+  (or (get-buffer emms-jack-output-buffer-name)
+      (with-current-buffer (get-buffer-create emms-jack-output-buffer-name)
+	(setq major-mode 'emms-jack-mode
 	      mode-name "JACK"
 	      mode-line-format (copy-tree mode-line-format))
 	(setcar (nthcdr 16 mode-line-format)
-		`(:eval (format "load:%.2f" jack-load)))
-	(add-hook 'kill-buffer-hook #'jack-kill nil t)
+		`(:eval (format "load:%.2f" emms-jack-load)))
+	(add-hook 'kill-buffer-hook #'emms-jack-kill nil t)
 	(current-buffer))))
 
-(defvar jack-xruns nil)
+(defvar emms-jack-xruns nil)
 
-(defun jack-filter (proc string)
+(defun emms-jack-filter (proc string)
   (with-current-buffer (process-buffer proc)
     (let ((moving (= (point) (process-mark proc))))
       (save-excursion
 	(save-match-data
 	  (if (string-match "^load = \\([^ ]+\\) max usecs: \\([^,]+\\), spare = \\(.+\\)$" string)
-	      (setq jack-load (string-to-number (match-string 1 string))
-		    jack-max-usecs (string-to-number (match-string 2 string))
-		    jack-spare (string-to-number (match-string 3 string)))
+	      (setq emms-jack-load (string-to-number (match-string 1 string))
+		    emms-jack-max-usecs (string-to-number (match-string 2 string))
+		    emms-jack-spare (string-to-number (match-string 3 string)))
 	    (if (string-match "^**** alsa_pcm: xrun of at least \\([^ ]+\\) msecs$" string)
-		(push (string-to-number (match-string 1 string)) jack-xruns)
+		(push (string-to-number (match-string 1 string)) emms-jack-xruns)
 	      (goto-char (process-mark proc))
 	      (insert string)
 	      (set-marker (process-mark proc) (point))))))
       (when moving (goto-char (process-mark proc))))))
 
-(defun jack-running-p ()
-  (and jack-process (processp jack-process)
-       (eq (process-status jack-process) 'run)))
+(defun emms-jack-running-p ()
+  (and emms-jack-process (processp emms-jack-process)
+       (eq (process-status emms-jack-process) 'run)))
 
-(defcustom jack-started-hook nil
-  "Hook run when `jack-start' successfully started a new JACK intance."
+(defcustom emms-jack-started-hook nil
+  "Hook run when `emms-jack-start' successfully started a new JACK intance."
   :type 'hook)
 
-(defun jack-start ()
+(defun emms-jack-start ()
   "Start the JACK process."
   (interactive)
-  (if (jack-running-p) (error "JACK already running")
-    (setq jack-process
-	  (apply #'start-process "jack" (jack-output-buffer)
-		 (jack-maybe-rtlimits (jack-args))))
-    (set-process-filter jack-process #'jack-filter)
-    (run-hooks 'jack-started-hook)
-    (switch-to-buffer (jack-output-buffer))))
+  (if (emms-jack-running-p) (error "JACK already running")
+    (setq emms-jack-process
+	  (apply #'start-process "jack" (emms-jack-output-buffer)
+		 (emms-jack-maybe-rtlimits (emms-jack-args))))
+    (set-process-filter emms-jack-process #'emms-jack-filter)
+    (run-hooks 'emms-jack-started-hook)
+    (switch-to-buffer (emms-jack-output-buffer))))
 
-(defun jack-kill ()
+(defun emms-jack-kill ()
   "Kill the currently running JACK process."
   (interactive)
-  (when (jack-running-p) (delete-process jack-process))
-  (setq jack-process nil))
+  (when (emms-jack-running-p) (delete-process emms-jack-process))
+  (setq emms-jack-process nil))
 
-(defun jack-restart ()
+(defun emms-jack-restart ()
   "Restart JACK."
   (interactive)
-  (if (jack-running-p) (jack-kill))
+  (if (emms-jack-running-p) (emms-jack-kill))
   (sit-for 0)
-  (jack-start))
+  (emms-jack-start))
 
-(defun jack-list ()
+(defun emms-jack-list ()
   "Retrieve a list of JACK clients/ports."
   (with-temp-buffer
     (call-process "jack_lsp" nil t nil "-cpl")
@@ -228,30 +228,30 @@ is given in jackd command-line."
 	(forward-line 1))
       result)))
 	  
-(defun jack-ports (program)
-  (cdr (assoc program (jack-list))))
+(defun emms-jack-ports (program)
+  (cdr (assoc program (emms-jack-list))))
 
-(defun jack-get-port-connections (program port)
-  (cdr (assoc 'connections (cdr (assoc port (jack-ports program))))))
+(defun emms-jack-get-port-connections (program port)
+  (cdr (assoc 'connections (cdr (assoc port (emms-jack-ports program))))))
 
-(defun jack-get-port-properties (program port)
-  (cdr (assoc 'properties (cdr (assoc port (jack-ports program))))))
+(defun emms-jack-get-port-properties (program port)
+  (cdr (assoc 'properties (cdr (assoc port (emms-jack-ports program))))))
 
-(defun jack-get-direction (program port)
-  (let ((props (jack-get-port-properties program port)))
+(defun emms-jack-get-direction (program port)
+  (let ((props (emms-jack-get-port-properties program port)))
     (or (car (member 'output props))
 	(car (member 'input props))
 	(error "Neither input nor output port"))))
       
-(defun jack-read-program (prompt &optional predicate)
+(defun emms-jack-read-program (prompt &optional predicate)
   (let ((progs (if (functionp predicate)
-		   (emms-remove-if-not predicate (jack-list))
-		 (jack-list))))
+		   (emms-remove-if-not predicate (emms-jack-list))
+		 (emms-jack-list))))
     (unless progs (error "No matching JACK clients found"))
     (if (< (length progs) 2) (caar progs)
       (completing-read prompt progs nil t))))
 
-(defun jack-unique-port-name (strings)
+(defun emms-jack-unique-port-name (strings)
   (let ((start "")
 	(maxlen (apply #'min (mapcar #'length strings))))
     (while (and (< (length start) maxlen)
@@ -265,30 +265,30 @@ is given in jackd command-line."
       (setq start (substring (car strings) 0 (1+ (length start)))))
     start))
 
-(defun jack-read-port (program prompt &optional predicate)
+(defun emms-jack-read-port (program prompt &optional predicate)
   (let ((ports (if (functionp predicate)
-		   (emms-remove-if-not predicate (jack-ports program))
-		 (jack-ports program))))
+		   (emms-remove-if-not predicate (emms-jack-ports program))
+		 (emms-jack-ports program))))
     (if (< (length ports) 2) (caar ports)
       (completing-read prompt ports nil t
-                       (jack-unique-port-name (mapcar #'car ports))))))
+                       (emms-jack-unique-port-name (mapcar #'car ports))))))
 
-(defun jack-connect (from-program from-port to-program to-port)
+(defun emms-jack-connect (from-program from-port to-program to-port)
   "Connect FROM-PROGRAM's output port FROM-PORT to TO-PROGRAM's input port
 TO-PORT.
 If called interactively, the direction does not matter."
   (interactive
-   (let* ((prog (jack-read-program "Connect: "))
-	  (port (jack-read-port prog (format "Connect %s port: " prog)))
-	  (to-type (if (eq (jack-get-direction prog port) 'input) 'output 'input))
-	  (to-prog (jack-read-program
+   (let* ((prog (emms-jack-read-program "Connect: "))
+	  (port (emms-jack-read-port prog (format "Connect %s port: " prog)))
+	  (to-type (if (eq (emms-jack-get-direction prog port) 'input) 'output 'input))
+	  (to-prog (emms-jack-read-program
 		 (format "Connect %s port %s to: " prog port)
 		 (lambda (prog)
 		   (emms-find-if (lambda (port)
 				   (member to-type (assoc 'properties
 							  (cdr port))))
 				 (cdr prog)))))
-	  (to-port (jack-read-port
+	  (to-port (emms-jack-read-port
 		    to-prog
 		    (format "Connect %s port %s to %s port: " prog port to-prog)
 		    (lambda (port)
@@ -303,21 +303,21 @@ If called interactively, the direction does not matter."
 	(message "JACK: Connected %s:%s to %s:%s"
 		 from-program from-port to-program to-port))))
 
-(defun jack-disconnect (from-program from-port to-program to-port)
+(defun emms-jack-disconnect (from-program from-port to-program to-port)
   "Disconnect FROM-PROGRAM's output port FROM-PORT from TO-PROGRAM's
 input port TO-PORT.
 If called interactively, the direction is not relevant."
   (interactive
-   (let* ((prog (jack-read-program
+   (let* ((prog (emms-jack-read-program
 		 "Disconnect: "
 		 (lambda (prog)
 		   (emms-find-if (lambda (port) (assoc 'connections (cdr port)))
 				 (cdr prog)))))
-	  (port (jack-read-port prog
+	  (port (emms-jack-read-port prog
 		 (format "Disconnect %s port: " prog)
 		 (lambda (port)
 		   (assoc 'connections (cdr port)))))
-	  (connections (jack-get-port-connections prog port))
+	  (connections (emms-jack-get-port-connections prog port))
 	  (from (list prog port))
 	  (to (if (< (length connections) 2)
 		  (car connections)
@@ -345,7 +345,7 @@ If called interactively, the direction is not relevant."
 					    prog port to-prog)
 				    (mapcar #'cdr connections) nil t)))
 		      (list to-prog to-port)))))))
-     (if (eq (jack-get-direction prog port) 'output)
+     (if (eq (emms-jack-get-direction prog port) 'output)
 	 (append from to)
        (append to from))))
   (let ((result (call-process "jack_disconnect" nil nil nil
@@ -355,5 +355,5 @@ If called interactively, the direction is not relevant."
 	(message "JACK: Disconnected %s:%s from %s:%s"
 		 from-program from-port to-program to-port))))
 
-(provide 'jack)
-;;; jack.el ends here
+(provide 'emms-jack)
+;;; emms-jack.el ends here
