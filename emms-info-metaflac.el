@@ -70,7 +70,7 @@ external metaflac program"
 (defun emms-info-metaflac (track)
   "Get the FLAC tag of file TRACK, using `emms-info-metaflac-program'
 and return an emms-info structure representing it."
-  (when (and (eq 'file (emms-track-type track))
+  (when (and (emms-track-file-p track)
              (string-match "\\.\\(flac\\|FLAC\\)\\'" (emms-track-name track)))
     (with-temp-buffer
       (when (zerop

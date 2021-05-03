@@ -1669,7 +1669,7 @@ from @file{emms-player-simple.el}
 @lisp
 (defun emms-mpg321-remote-playablep (track)
        "Return non-nil when we can play this track."
-       (and (eq 'file (emms-track-type track))
+       (and (emms-track-file-p track)
 @end lisp
 @noindent
 

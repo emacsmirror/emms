@@ -93,7 +93,7 @@ When PREVIOUS-P is t, get previous track info instead."
 (defun emms-info-cueinfo (track)
   "Add track information to TRACK.
 This is a useful element for `emms-info-functions'."
-  (when (and (eq 'file (emms-track-type track))
+  (when (and (emms-track-file-p track)
              (string-match "\\.\\(ape\\|flac\\)\\'" (emms-track-name track)))
     (let ((cue (concat (file-name-sans-extension (emms-track-name track))
                        ".cue")))

@@ -72,7 +72,7 @@ This should be a list of info-flag=value lines."
 (defun emms-info-mp3info (track)
   "Add track information to TRACK.
 This is a useful element for `emms-info-functions'."
-  (when (and (eq 'file (emms-track-type track))
+  (when (and (emms-track-file-p track)
              (string-match "\\.[Mm][Pp]3\\'" (emms-track-name track)))
     (with-temp-buffer
       (when (zerop

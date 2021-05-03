@@ -271,27 +271,52 @@ This string is suitable for inserting into the tags buffer."
     (goto-char (point-min))
     (emms-tag-editor-display-log-buffer-maybe)))
 
-(defun emms-tag-editor-edit-track (track)
-  "Edit the track at point, or TRACK."
-  (interactive (list (emms-tag-editor-track-at)))
-  (if (null track)
-      (message "No track at point!")
-    (emms-tag-editor-insert-tracks (list track))))
+(defun emms-tag-editor--tagfile-function (track)
+  "Return value of `emms-tag-editor-tagfile-functions' for TRACK, or nil."
+  (assoc (file-name-extension (emms-track-get track 'name))
+         emms-tag-editor-tagfile-functions))
 
-(defun emms-tag-editor-edit-marked-tracks ()
-  "Edit all tracks marked in the current buffer."
+(defun emms-tag-editor--track-editable-p (track)
+  "Return t if TRACK is not a file, or has a tagfile function defined."
+  (or (not (emms-track-file-p track))
+      (emms-tag-editor--tagfile-function track)))
+
+(defun emms-tag-editor-edit-track (track &optional edit-anyway)
+  "Edit the track at point, or TRACK.
+If EDIT-ANYWAY is true or TRACK is not a file type, it will be loaded
+in the tag editor. Otherwise, if EMMS does not have a program configured
+to actually write tags to the audio file, do not open the tag data in
+the editor."
+  (interactive (list (emms-tag-editor-track-at)))
+  (cond
+   ((null track) (message "No track at point!"))
+   ((or (emms-tag-editor--track-editable-p track) edit-anyway)
+    (emms-tag-editor-insert-tracks (list track)))
+   (t (message "EMMS has no tag writing program configured for this file type!"))))
+
+(defun emms-tag-editor-edit-marked-tracks (&optional edit-anyway)
+  "Edit all tracks marked in the current buffer.
+If EDIT-ANYWAY is nil, filter out any file tracks that do not have a
+tagfile function defined."
   (interactive)
-  (let ((tracks (emms-mark-mapcar-marked-track 'emms-tag-editor-track-at t)))
+  (let* ((tracks (emms-mark-mapcar-marked-track 'emms-tag-editor-track-at t))
+         (funcs (mapcar #'emms-tag-editor--tagfile-function tracks)))
+    (when (seq-some #'null funcs)
+      (unless edit-anyway
+        (setq tracks (seq-filter #'emms-tag-editor--track-editable-p tracks))
+        (message "Skipped file tracks without a tag writing program configured.")))
     (if (null tracks)
-        (message "No track marked!")
+        (message "No writable track marked!")
       (emms-tag-editor-insert-tracks tracks))))
 
-(defun emms-tag-editor-edit ()
-  "Edit tags of either the track at point or all marked tracks."
-  (interactive)
+(defun emms-tag-editor-edit (&optional arg)
+  "Edit tags of either the track at point or all marked tracks.
+With a prefix argument, edits tags even if there is no external
+program for writing tags to the specified track or tracks."
+  (interactive "P")
   (if (emms-mark-has-markedp)
-      (emms-tag-editor-edit-marked-tracks)
-    (emms-tag-editor-edit-track (emms-tag-editor-track-at))))
+      (emms-tag-editor-edit-marked-tracks arg)
+    (emms-tag-editor-edit-track (emms-tag-editor-track-at) arg)))
 
 (defvar emms-tag-editor-mode-map
   (let ((map (make-sparse-keymap)))
@@ -617,7 +642,7 @@ With prefix argument, bury the tag edit buffer."
                 old (emms-track-get track 'orig-track))
           ;; rename local file
           (when (and (emms-track-get track 'newname)
-                     (eq (emms-track-get track 'type) 'file)
+                     (emms-track-file-p track)
                      (file-writable-p (emms-track-name track))
                      (y-or-n-p (format "Rename %s to %s? "
                                        (emms-track-name track)
@@ -646,10 +671,9 @@ With prefix argument, bury the tag edit buffer."
             (when (setq val (emms-track-get track (car tag)))
             (emms-track-set old (car tag) val)))
           ;; use external program to change tags in the file
-          (when (and (eq (emms-track-get track 'type) 'file)
+          (when (and (emms-track-file-p track)
                      (file-writable-p (emms-track-name track))
-                     (setq func (assoc (file-name-extension filename)
-                                       emms-tag-editor-tagfile-functions)))
+                     (setq func (emms-tag-editor--tagfile-function track)))
             (setq exit
                   (if (functionp (cdr func))
                       (funcall (cdr func) track)
@@ -755,7 +779,7 @@ value.
 If DONT-APPLY is non-nil the changes won't be applied directly.
 Then it's the callers job to apply them afterwards with
 `emms-tag-editor-apply'."
-  (if (eq (emms-track-get track 'type) 'file)
+  (if (emms-track-file-p track)
       (let* ((old-file (emms-track-name track))
              (path     (file-name-directory old-file))
              (suffix   (file-name-extension old-file))
@@ -829,7 +853,7 @@ A pipe is defined like below:
 
 (defun emms-tag-editor-track-pipe (track pipe-name)
   "Run command of pipe nameed PIPE-NAME to TRACK."
-  (if (eq (emms-track-get track 'type) 'file)
+  (if (emms-track-file-p track)
       (let* ((coding-system-for-read 'utf-8)
              (command (emms-tag-editor-pipe-get pipe-name :command))
              (arguments (emms-tag-editor-pipe-get pipe-name :arguments)))
@@ -876,7 +900,6 @@ A pipe is defined like below:
         (message "No track marked!")
       (dolist (track tracks)
         (emms-tag-editor-track-pipe track pipe-name)))))
-
 
 (provide 'emms-tag-editor)
 ;;; Emms-tag-editor.el ends here

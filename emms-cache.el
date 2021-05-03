@@ -163,7 +163,7 @@ regardless of whether they have been modified or not."
   (interactive "P")
   (let (removed)
     (maphash (lambda (path track)
-               (when (eq (emms-track-get track 'type) 'file)
+               (when (emms-track-file-p track)
                  ;; if no longer here, remove
                  (if (not (file-exists-p path))
                      (progn

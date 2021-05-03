@@ -81,7 +81,7 @@ Case is irrelevant."
   :type '(string))
 
 (defun emms-info-libtag (track)
-  (when (and (eq 'file (emms-track-type track))
+  (when (and (emms-track-file-p track)
              (let ((case-fold-search t))
                (string-match
                 emms-info-libtag-known-extensions

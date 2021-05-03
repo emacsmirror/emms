@@ -1158,7 +1158,7 @@ info from MusicPD.
 This is a useful addition to `emms-info-functions'."
   (if info
       (emms-info-mpd-process track info)
-    (when (and (eq 'file (emms-track-type track))
+    (when (and (emms-track-file-p track)
                (not (string-match "\\`http://" (emms-track-name track))))
       (let ((file (emms-player-mpd-get-mpd-filename (emms-track-name track))))
         (when (or emms-player-mpd-music-directory

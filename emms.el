@@ -676,6 +676,10 @@ before the error is signaled."
   "Return the type of TRACK."
   (emms-track-get track 'type))
 
+(defun emms-track-file-p (track)
+  "True if TRACK is a file type"
+  (eq 'file (emms-track-type track)))
+
 (defun emms-track-name (track)
   "Return the name of TRACK."
   (emms-track-get track 'name))

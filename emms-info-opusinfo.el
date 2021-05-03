@@ -43,7 +43,7 @@ program"
 (defun emms-info-opusinfo (track)
   "Add track information to TRACK.
 This is a useful element for `emms-info-functions'."
-  (when (and (eq 'file (emms-track-type track))
+  (when (and (emms-track-file-p track)
              (or (string-match "\\.[Oo][Gg][Gg]\\'" (emms-track-name track))
                  (string-match "\\.[Oo][Pp][Uu][Ss]\\'" (emms-track-name track))))
 
