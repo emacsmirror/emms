@@ -1,7 +1,15 @@
+News since version 7.1
+
+  - Make it possible to force-update Emms cache.
+  - Myriad bug fixes and code improvements.
+  - Move jack.el into the Emms namespace.
+
+
 News since version 7.0
 
   - Add authinfo support for libre.fm streaming.
   - Allow easily disabling the icon in the modeline.
+
 
 News since version 6.3
 
@@ -10,9 +18,11 @@ News since version 6.3
   - Compatibility with lexical scoping.
   - Improvements to the fine manual.
 
+
 News since version 6.2
 
   - Updated documentation
+
 
 News since version 5.4
 
@@ -21,6 +31,7 @@ News since version 5.4
   - New info method: exiftool.
   - emms-volume.el: Fix missing quote in emms-volume-change-function.
   - namespace cleanup (emms-later-do.el).
+
 
 News since version 5.3
 
@@ -31,12 +42,14 @@ News since version 5.3
   - Bug fix: prevent skipping track when switching them during mpv playback.
   - Mixerctl now availabe in custom interface.
 
+
 News since version 5.2
 
   - emms-volume-mixerctl.el: mixerctl volume control.
   - emms-playlist-save: improve behavior.
   - emms-playing-time: add a count-down timer display style.
   - Try to auto-detect the appropriate volume control.
+
 
 News since version 5.1
 
@@ -47,6 +60,7 @@ News since version 5.1
   - Allow changing the mode-line icon.
   - Bug fix: emms-player-mode, more consistent behavior.
   - Bug fix: emms-browser, Don't rely on (interactive "r").
+
 
 News since version 5.0
 
@@ -61,6 +75,7 @@ News since version 5.0
     emms-playlist-limit-to-description.
   - Rewrite mpv backend to use long-running mpv instances controlled
     over json-rpc protocol for newer versions.
+
 
 News since version 4.4
 
@@ -84,6 +99,7 @@ News since version 4.4
   - Add dynamic thumbnail caching.
   - Improve emms-metaplaylist-mode.
 
+
 News since version 4.3:
 
   - emms-volume-amixer.el: card id can be customized
@@ -94,6 +110,7 @@ News since version 4.3:
   - Improve emms-volume.
   - Bug fix: fix mpg321 autoplay.
 
+
 News since version 4.2:
 
   - Limit network lookups in Browser mode.
@@ -101,12 +118,14 @@ News since version 4.2:
   - Compilation warnings gone (excl. cl).
   - Bug fix: emms-lyrics free variable fix.
 
+
 News since version 4.1:
 
   - Removed defunct streams.
   - Various emms-tag-editor bug fixes.
   - Bug fix: Info file now installs with correct suffix.
   - Bug fix: `make install' now installs emms-print-metadata.
+
 
 News since version 4.0:
 
@@ -123,6 +142,7 @@ News since version 4.0:
   - emms-setup.el has been simplified.
   - The Emms manual has been revised to help new users.
   - New feature: M-x emms-show-all.
+
 
 News since version 3.0:
 
@@ -143,6 +163,7 @@ News since version 3.0:
   - Support displaying lyrics in a dedicated buffer, to highlight playing lyric.
   - Fix make install on Cygwin.
   - Compilation errors cleanup.
+
 
 News since version 2.1:
 
@@ -185,6 +206,7 @@ News since version 2.1:
   - emms-lyrics: Now support lyrics auto-scrolling.
   - emms-player-mplayer: Capable of loading movie subtitles
     automatically now.
+
 
 News since version 2.0:
 

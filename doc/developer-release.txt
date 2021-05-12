@@ -6,7 +6,7 @@ distributed via Emacs ELPA (https://elpa.gnu.org/).
 
 * Update NEWS
 
-* Update the manual, then copy compiled emms.info to root directory
+* Update the manual
 
 * Update website (cvs commit -m "update website" index.html)
 
