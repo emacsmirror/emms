@@ -57,8 +57,7 @@ too annoying for you, set this variable to nil."
   :type 'boolean)
 
 (defcustom emms-info-asynchronously t
-  "Non-nil when track information should be loaded asynchronously.
-This requires `emms-later-do', which should come with EMMS."
+  "Non-nil when track information should be loaded asynchronously."
   :type 'boolean)
 
 (defcustom emms-info-report-each-num-tracks 200

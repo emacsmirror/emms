@@ -927,17 +927,20 @@ Return the text as string."
 (defun emms-info-native (track)
   "Set info fields for TRACK.
 Supports Ogg Vorbis/Opus, FLAC, and MP3 files."
-  (let* ((filename (emms-track-name track))
-         (info-fields (emms-info-native--decode-info-fields filename)))
-    (dolist (field info-fields)
-      (let ((name (intern (concat "info-" (car field))))
-            (value (cdr field)))
-        (unless (zerop (length value))
-          (emms-track-set track
-                          name
-                          (if (eq name 'info-playing-time)
-                              (string-to-number value)
-                            (string-trim-right value))))))))
+  (condition-case env
+      (let* ((filename (emms-track-name track))
+             (info-fields (emms-info-native--decode-info-fields filename)))
+	(dolist (field info-fields)
+	  (let ((name (intern (concat "info-" (car field))))
+		(value (cdr field)))
+            (unless (zerop (length value))
+              (emms-track-set track
+                              name
+                              (if (eq name 'info-playing-time)
+				  (string-to-number value)
+				(string-trim-right value)))))))
+    (error (message "emms-info-native error processing %s: %s"
+		    (emms-track-name track) env))))
 
 (defun emms-info-native--decode-info-fields (filename)
   "Decode info fields from FILENAME.
