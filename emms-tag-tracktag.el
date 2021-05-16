@@ -1,4 +1,4 @@
-;;; emms-tracktag.el --- EMMS interface for audiotools tracktag  -*- lexical-binding: t; -*-
+;;; emms-tag-tracktag.el --- EMMS interface for audiotools tracktag  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2021  Grant Shoshin Shangreaux
 
@@ -30,42 +30,44 @@
 
 (require 'emms)
 
-(defvar emms-info-tracktag--info-fields
-  '((info-album . album)
-    (info-artist . artist)
+(defvar emms-tag-tracktag--info-fields
+  '((info-artist . artist)
     (info-composer . composer)
     (info-performer . performer)
-    (info-year . year)
-    (info-date . year)
+    (info-title . name)
+    (info-album . album)
     (info-tracknumber . number)
     (info-discnumber . album-number)
-    (info-note . comment)
-    (info-title . name))
+    (info-year . year)
+    (info-date . date)
+    (info-note . comment))
   "An alist mapping info-* fields to tracktag fields.")
 
-(defun emms-tracktag--map-track-info (track)
+(defun emms-tag-tracktag--map-track-info (track)
   (seq-filter (lambda (cell) (cdr cell))
               (mapcar (lambda (pair)
                         (cons (cdr pair) (emms-track-get track (car pair))))
-                      emms-info-tracktag--info-fields)))
+                      emms-tag-tracktag--info-fields)))
 
-(defun emms-tracktag--build-args (track)
+(defun emms-tag-tracktag--build-args (track)
   (flatten-list
-   (append (mapcar (lambda (pair)
-                     (let ((tag (car pair)) (value (cdr pair)))
-                       (when value
-                         (if (string-equal value "") (concat "--remove-" (format "%s" tag))
-                           (concat "--" (format "%s" tag) "=" value)))))
-                   (emms-tracktag--map-track-info track))
-           (list (emms-track-name track)))))
+   (append
+    (mapcar (lambda (pair)
+              (let ((tag (car pair)) (value (cdr pair)))
+                (when value
+                  ;; if we've deleted a tag value in the editor, remove the tag from file metadata.
+                  (if (string-equal "" value) (concat "--remove-" (format "%s" tag))
+                    (concat "--" (format "%s" tag) "=" value)))))
+            (emms-tag-tracktag--map-track-info track))
+    (list (emms-track-name track)))))
 
-(defun emms-tracktag-file (track)
+(defun emms-tag-tracktag-file (track)
   (apply #'call-process
    "tracktag" nil
    (get-buffer-create emms-tag-editor-log-buffer)
    nil
    "-Vdebug"
-   (emms-tracktag--build-args track)))
+   (emms-tag-tracktag--build-args track)))
 
-(provide 'emms-tracktag)
-;;; emms-tracktag.el ends here
+(provide 'emms-tag-tracktag)
+;;; emms-tag-tracktag.el ends here
