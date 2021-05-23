@@ -43,6 +43,10 @@
     (info-note . comment))
   "An alist mapping info-* fields to tracktag fields.")
 
+(defvar emms-tag-tracktag-log-buffer "*EMMS-LOG*"
+  "Name of emms-tag-tractack's log buffer.
+Defaults to the same value as emms-tag-editor-log-buffer")
+
 (defun emms-tag-tracktag--map-track-info (track)
   (seq-filter (lambda (cell) (cdr cell))
               (mapcar (lambda (pair)
@@ -64,7 +68,7 @@
 (defun emms-tag-tracktag-file (track)
   (apply #'call-process
    "tracktag" nil
-   (get-buffer-create emms-tag-editor-log-buffer)
+   (get-buffer-create emms-tag-tracktag-log-buffer)
    nil
    "-Vdebug"
    (emms-tag-tracktag--build-args track)))
