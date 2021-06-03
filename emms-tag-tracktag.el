@@ -1,6 +1,6 @@
 ;;; emms-tag-tracktag.el --- EMMS interface for audiotools tracktag  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2021  Grant Shoshin Shangreaux
+;; Copyright (C) 2021  Free Software Foundation, Inc.
 
 ;; Author: Grant Shoshin Shangreaux <grant@churls.world>
 ;; Keywords:
