@@ -37,6 +37,7 @@
 (require 'emms-info-mp3info)
 (require 'emms-playlist-mode)
 (require 'emms-mark)
+(require 'emms-tag-tracktag)
 (require 'format-spec)
 (require 'subr-x)
 
@@ -85,6 +86,7 @@
     `(("mp3" . ,default)
       ("ogg" . ,(emms-tag-editor-make-format (remove 'info-year tags)))
       ("flac" . ,(emms-tag-editor-make-format (remove 'info-year tags)))
+      ("opus" . ,(emms-tag-editor-make-format (remove 'info-genre tags)))
       ("default" . ,default)))
   "Format to use when inserting the track.
 The CAR part is the extension of the track name, and the CDR part
@@ -138,7 +140,8 @@ See also `emms-tag-editor-default-parser'.")
       (info-performer   . "--TOPE")
       (info-date        . "--TDAT")))
     ("ogg" . emms-tag-editor-tag-ogg)
-    ("flac" . emms-tag-editor-tag-flac))
+    ("flac" . emms-tag-editor-tag-flac)
+    ("opus" . emms-tag-tracktag-file))
   "An alist used when committing changes to tags in files.
 If the external program sets tags by command line options
 one-by-one, then the list should like:

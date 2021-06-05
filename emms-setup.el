@@ -90,6 +90,7 @@ the stable features which come with the Emms distribution."
     (require 'emms-mode-line)
     (require 'emms-mark)
     (require 'emms-tag-editor)
+    (require 'emms-tag-tracktag)
     (require 'emms-show-all)
     (require 'emms-streams)
     (require 'emms-lyrics)
