@@ -86,6 +86,7 @@
     `(("mp3" . ,default)
       ("ogg" . ,(emms-tag-editor-make-format (remove 'info-year tags)))
       ("flac" . ,(emms-tag-editor-make-format (remove 'info-year tags)))
+      ("opus" . ,(emms-tag-editor-make-format (remove 'info-genre tags)))
       ("default" . ,default)))
   "Format to use when inserting the track.
 The CAR part is the extension of the track name, and the CDR part
