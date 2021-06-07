@@ -44,7 +44,7 @@
   "An alist mapping info-* fields to tracktag fields.")
 
 (defvar emms-tag-tracktag-log-buffer "*EMMS-LOG*"
-  "Name of emms-tag-tractack's log buffer.
+  "Name of emms-tag-tracktag's log buffer.
 Defaults to the same value as emms-tag-editor-log-buffer")
 
 (defun emms-tag-tracktag--map-track-info (track)
