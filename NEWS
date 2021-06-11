@@ -1,3 +1,9 @@
+News since version 7.2
+
+  - Add support for the audiotools tracktag executable.
+  - Errors reading track metadata no longer stalls building the playlist.
+
+
 News since version 7.1
 
   - Make it possible to force-update Emms cache.
