@@ -224,7 +224,7 @@ runs 'stop'.")
 
 
 (defvar emms-player-mpv-event-connect-hook nil
-  "Normal hook run right after establishing new JSON IPC connection to mpv. 
+  "Normal hook run right after establishing new JSON IPC connection to mpv.
 Run before `emms-player-mpv-ipc-connect-command', if any.
 Best place to send any `observe_property', `request_log_messages',
 `enable_event' commands.
@@ -804,7 +804,7 @@ if there was any issue when trying to start it initially."
       (emms-player-mpv-cmd mpv-cmd
                            (lambda (_mpv-data _mpv-error)
                              (emms-player-mpv-cmd mpv-cmd)
-                             (emms-player-mpv-cmd `(set pause no))))))
+                             (emms-player-mpv-cmd '(set pause no))))))
 
 (defun emms-player-mpv-start (track)
   (setq emms-player-mpv-stopped nil)
@@ -825,7 +825,8 @@ if there was any issue when trying to start it initially."
                             track-name 'replace))
            (start-func (lambda ()
                           (emms-player-mpv-cmd start-cmd
-                                               (apply-partially #'emms-player-mpv-start-error-handler ',start-cmd)))))
+                                               (apply-partially #'emms-player-mpv-start-error-handler ',start-cmd))
+                          (emms-player-mpv-cmd '(set pause no)))))
         (if emms-player-mpv-ipc-stop-command
             (setq emms-player-mpv-ipc-stop-command start-func)
           (funcall start-func))))))
