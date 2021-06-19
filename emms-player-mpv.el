@@ -181,8 +181,7 @@ if it refuses to exit cleanly on `emms-player-mpv-proc-stop'.")
 
 
 (defvar emms-player-mpv-ipc-proc nil
-  "Process that communicates with running `emms-player-mpv-proc' instance.
-Connected via a Unix socket.")
+  "Unix socket network process connected to running `emms-player-mpv-proc' instance.")
 
 (defvar emms-player-mpv-ipc-buffer " *emms-player-mpv-ipc*"
   "Buffer to associate with `emms-player-mpv-ipc-proc' socket/pipe process.")
@@ -206,7 +205,7 @@ Use for for `request_id' and `observe_property' identifiers.
 Use `emms-player-mpv-ipc-id-get' to get and increment this value,
 instead of using it directly.
 Wraps-around upon reaching `emms-player-mpv-ipc-id-max'
-\(unlikely to ever happen).")
+(unlikely to ever happen).")
 
 (defvar emms-player-mpv-ipc-id-max (expt 2 30)
   "Max value for `emms-player-mpv-ipc-id' to wrap around after.
@@ -225,7 +224,7 @@ runs 'stop'.")
 
 (defvar emms-player-mpv-event-connect-hook nil
   "Normal hook run right after establishing new JSON IPC connection to mpv.
-Run before `emms-player-mpv-ipc-connect-command', if any.
+Runs before `emms-player-mpv-ipc-connect-command', if any.
 Best place to send any `observe_property', `request_log_messages',
 `enable_event' commands.
 Use `emms-player-mpv-ipc-id-get' to get unique id values for these.
