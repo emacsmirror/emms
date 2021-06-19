@@ -1,3 +1,8 @@
+News since version 7.4
+
+  - emms-player-mpv.el: fix reconnect-playback-restart issue.
+
+
 News since version 7.3
 
   - emms-player-mpv.el: explicitly unpause after switching to a new track.
