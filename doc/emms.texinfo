@@ -2772,6 +2772,14 @@ The @file{emms-streams.el} package provides the command
 Invoking @command{emms-streams} will pull up an Emms playlist buffer
 and populate it with the built-in list of streaming audio sources.
 
+If you are using the mpv player, defined by @file{emms-player-mpv.el},
+then you can display the currently streaming track title (if the
+station provides that information) by configuring:
+
+@lisp
+  (customize-set-variable 'emms-player-mpv-update-metadata t)
+@end lisp
+
 
 @c -------------------------------------------------------------------
 @node APE / FLAC Commands
