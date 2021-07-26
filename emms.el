@@ -67,7 +67,7 @@
   :group 'emms)
 
 (defcustom emms-player-list nil
-  "*List of players that EMMS can use.  You need to set this!"
+  "*List of players that EMMS can use."
   :group 'emms
   :type '(repeat (symbol :tag "Player")))
 
