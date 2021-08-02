@@ -42,14 +42,15 @@ Fran Burstall            <fran.burstall@gmail.com>
 
 
 The following is a list of people who contributed trivial patches,
-which is to say very simple patches and those with total of 12 lines
-or fewer. We started recording trivial patches this way in June of
-2017, so trivial patches before that date would not appear below.
+which is to say, simple patches and those with total of 12 lines or
+fewer. We started recording trivial patches this way in June of 2017,
+so trivial patches before that date would not appear below.
 
 David Michael
 tumashu
 Maxim Cournoyer
 Ian Dunn
+Pavel Korytov
 
 
 ;; Local variables:
