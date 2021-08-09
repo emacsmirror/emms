@@ -4,19 +4,19 @@ distributed via Emacs ELPA (https://elpa.gnu.org/).
 
 * Check for clean compilation.
 
-* Increase the version number in emms.el (variable, elpa header)
+* Increase the version number in emms.el (variable, elpa header).
 
-* Update NEWS
+* Update NEWS.
 
-* Update the manual
+* Update the manual (makeinfo --html --no-split emms.texinfo).
 
-* Update website (cvs commit -m "update website" index.html)
+* Update website (cvs commit -m "update website" index.html).
 
-* Tag release in VCS, for example `git tag -a 4.2 -m "4.2"'
+* Tag release in VCS, for example `git tag -a 4.2 -m "4.2"'.
 
-* Push tag to VCS, for example `git push --tags origin "4.2"'
+* Push tag to VCS, for example `git push --tags origin "4.2"'.
 
-* Push version updates to VCS
+* Push version updates to VCS.
 
 * If automatic syncronization is enabled then we are done. Otherwise:
 
@@ -26,4 +26,4 @@ distributed via Emacs ELPA (https://elpa.gnu.org/).
 
           - from the "elpa" branch in Savannah push to elpa.git: "git push elpa elpa:externals/emms"
 
-* Send announcement email to the emms mailing list
+* Send announcement email to the emms mailing list if needed.

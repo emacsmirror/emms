@@ -1,3 +1,11 @@
+New in 7.6
+
+    * Change the way we write the NEWS file: "New in..." instead of "News since...".
+    * emms-player-mpv.el: Fix customize.
+    * Document how `emms-player-mpv-update-metadata' works.
+    * emms-player-mpd: fix caching behavior.
+
+
 News since version 7.4
 
   - emms-player-mpv.el: fix reconnect-playback-restart issue.

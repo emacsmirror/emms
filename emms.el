@@ -4,7 +4,7 @@
 
 ;; Author: Jorgen Schäfer <forcer@forcix.cx>, the Emms developers (see AUTHORS file)
 ;; Maintainer: Yoni Rabkin <yrk@gnu.org>
-;; Version: 7.5
+;; Version: 7.6
 ;; Keywords: emms, mp3, ogg, flac, music, mpeg, video, multimedia
 ;; Package-Type: multi
 ;; Package-Requires: ((cl-lib "0.5") (nadvice "0.3") (seq))
@@ -44,7 +44,7 @@
 
 ;;; Code:
 
-(defvar emms-version "7.5"
+(defvar emms-version "7.6"
   "EMMS version string.")
 
 
