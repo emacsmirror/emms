@@ -314,6 +314,10 @@ being the playlist buffer.")
 (defvar emms-playlist-buffer nil
   "The current playlist buffer, if any.")
 
+(defvar emms-players-preference-f #'emms-players-default-preference-f
+  "Default function for player preference.")
+
+
 
 ;;; Macros
 
@@ -1454,11 +1458,43 @@ non-nil, or nil if no such player exists."
         (car lis)
       nil)))
 
+(defun emms-players-default-preference-f (track players)
+  "Default preference function.
+
+Returns the first player."
+  (ignore track)
+  (car players))
+
+(defun emms-players-preference (track players)
+  "Call `emms-players-preference-f' with TRACK and PLAYERS.
+
+The function `emms-players-preference-f' must accept an Emms
+track and a list of players. It can be assumed that all of the
+players in PLAYERS can play TRACK.
+
+The function must return one of the players from PLAYERS."
+  (funcall emms-players-preference-f track players))
+
+(defun emms-players-for (track)
+  "Return a player for TRACK.
+
+If the track can be played by more than one player, call
+`emms-players-preference' to choose a player."
+  (let (players)
+    (mapc
+     #'(lambda (player)
+	 (when (funcall (emms-player-get player 'playablep) track)
+	   (push player players)))
+     emms-player-list)
+    (if (< 1 (length players))
+	(emms-players-preference track players)
+      (car players))))
+
 (defun emms-player-start (track)
   "Start playing TRACK."
   (if emms-player-playing-p
       (error "A player is already playing")
-    (let ((player (emms-player-for track)))
+    (let ((player (emms-players-for track)))
       (if (not player)
           (error "Don't know how to play track: %S" track)
         ;; Change default-directory so we don't accidentally block any
