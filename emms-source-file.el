@@ -45,6 +45,7 @@
       (require 'locate)
     (error nil)))
 (require 'dired)
+(require 'thingatpt)
 
 (defgroup emms-source-file nil
   "*Sources for EMMS that use the file system."
@@ -293,7 +294,7 @@ files) can play."
 ;;;###autoload (autoload 'emms-add-url "emms-source-file" nil t)
 (define-emms-source url (url)
   "An EMMS source for an URL - for example, for streaming."
-  (interactive "sPlay URL: ")
+  (interactive (list (read-string "Play URL: " (thing-at-point-url-at-point))))
   (emms-playlist-insert-track (emms-track 'url url)))
 
 ;;;###autoload (autoload 'emms-play-streamlist "emms-source-file" nil t)
