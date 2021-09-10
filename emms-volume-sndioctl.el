@@ -32,6 +32,7 @@
 ;; Sep 09 2021: Based on emms-volume-mixerctl.el by Omar Polo
 
 ;;; Code:
+(require 'subr-x)
 
 (defcustom emms-volume-sndioctl-stream "output"
   "The stream to change the volume with.
