@@ -8,6 +8,8 @@ distributed via Emacs ELPA (https://elpa.gnu.org/).
 
 * Update NEWS.
 
+* Update AUTHORS file with the names of any new contributors.
+
 * Update the manual (makeinfo --html --no-split emms.texinfo).
 
 * Update website (cvs commit -m "update website" index.html).
