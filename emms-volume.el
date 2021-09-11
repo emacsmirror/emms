@@ -52,6 +52,7 @@
 (require 'emms-volume-amixer)
 (require 'emms-volume-pulse)
 (require 'emms-volume-mixerctl)
+(require 'emms-volume-sndioctl)
 
 ;; Customize group
 (defgroup emms-volume nil
@@ -61,9 +62,12 @@
 ;; General volume setting related code.
 (defcustom emms-volume-change-function
   (cond
-   ((executable-find "amixer") 'emms-volume-amixer-change)
-   ((executable-find "pactl") 'emms-volume-pulse-change)
-   ((executable-find "mixerctl") 'emms-volume-mixerctl-change)
+   ;; check for sndioctl first to avoid picking up mixerctl or pactl
+   ;; on OpenBSD.
+   ((executable-find "sndioctl") #'emms-volume-sndioctl-change)
+   ((executable-find "amixer") #'emms-volume-amixer-change)
+   ((executable-find "pactl") #'emms-volume-pulse-change)
+   ((executable-find "mixerctl") #'emms-volume-mixerctl-change)
    (t #'(lambda (_amount) (user-error "%s" "No supported mixer found.  Please, define ‘emms-volume-change-function’."))))
   "The function to use to change the volume.
 If you have your own functions for changing volume, set this."
@@ -71,6 +75,7 @@ If you have your own functions for changing volume, set this."
                  (const :tag "MPD" emms-volume-mpd-change)
 		 (const :tag "PulseAudio" emms-volume-pulse-change)
 		 (const :tag "Mixerctl" emms-volume-mixerctl-change)
+                 (const :tag "Sndioctl" emms-volume-sndioctl-change)
                  (function :tag "Lisp function")))
 
 (defcustom emms-volume-change-amount 2
