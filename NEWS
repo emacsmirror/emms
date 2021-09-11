@@ -1,3 +1,10 @@
+New in 7.7
+
+    * Add sndioctl support.
+    * Use thing-at-point for URLs.
+    * Add player-preference interface.
+
+
 New in 7.6
 
     * Change the way we write the NEWS file: "New in..." instead of "News since...".
