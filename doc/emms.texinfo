@@ -545,10 +545,14 @@ A source for multiple directory trees - either @var{dir}, or the
 value of @var{emms-source-file-default-directory}.
 @end defun
 @defun emms-play-url url
-A source for an @var{url} - for example, for streaming.
+A source for an @var{url} - for example, for streaming over http,
+playing over sftp, or playing local files (with the ``file://''
+scheme).
 @end defun
 @defun emms-add-url url
-A source for an @var{url} - for example, for streaming.
+A source for an @var{url} - for example, for streaming over http,
+playing over sftp, or playing local files (with the ``file://''
+scheme).
 @end defun
 @defun emms-play-playlist playlist
 A source for the M3u or PLS playlist format from the file @var{playlist}.
