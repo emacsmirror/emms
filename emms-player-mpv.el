@@ -689,7 +689,8 @@ Called before `emms-player-mpv-event-functions' and does same thing as these hoo
 
 (defun emms-player-mpv-info-meta-connect-func ()
   "Hook function for `emms-player-mpv-event-connect-hook' to update metadata from mpv."
-  (emms-player-mpv-observe-property 'metadata))
+  (emms-player-mpv-observe-property 'metadata)
+  (emms-player-mpv-observe-property 'duration))
 
 (defun emms-player-mpv-info-meta-event-func (json-data)
   "Hook function for `emms-player-mpv-event-functions' to update metadata from mpv."
@@ -737,32 +738,14 @@ Called before `emms-player-mpv-event-functions' and does same thing as these hoo
 (defun emms-player-mpv-info-duration-event-func (json-data)
   "Hook function for `emms-player-mpv-event-functions' to update track duration from mpv."
   (when
-      (string= (alist-get 'event json-data)
-               "playback-restart")
-    (emms-player-mpv-info-duration-check)))
-
-(defun emms-player-mpv-info-duration-check ()
-  "Check whether current mpv track has reliable duration info and request it."
-  (emms-player-mpv-ipc-req-send '(get_property stream-end)
-                                (lambda (pts-end err)
-                                  (if err
-                                      (unless (and (stringp err)
-                                                   (string= err "property unavailable"))
-                                        (emms-player-mpv-ipc-req-error-printer pts-end err))
-                                    (when pts-end
-                                      (emms-player-mpv-ipc-req-send '(get_property duration)
-                                                                    #'emms-player-mpv-info-duration-handler))))))
-
-(defun emms-player-mpv-info-duration-handler (duration err)
-  "Duration property request handler to update it for current emms track."
-  (if err
-      (emms-player-mpv-debug-msg "duration-req-error: %s" err)
-    ;; Duration can be nil or 0 for network streams, depending on version/stream
-    (when (and (numberp duration)
-               (> duration 0))
-      (let
-          ((duration (round duration))
-           (track (emms-playlist-current-selected-track)))
+      (and
+       (string= (alist-get 'event json-data) "property-change")
+       (string= (alist-get 'name json-data) "duration"))
+    (let
+        ((duration (alist-get 'data json-data))
+         (track (emms-playlist-current-selected-track)))
+      (when (and track (numberp duration) (> duration 0))
+        (setq duration (round duration))
         (emms-track-set track 'info-playing-time duration)
         (emms-track-set track 'info-playing-time-min (/ duration 60))
         (emms-track-set track 'info-playing-time-sec (% duration 60))))))
