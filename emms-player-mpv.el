@@ -60,6 +60,7 @@
 
 (require 'emms)
 (require 'emms-player-simple)
+(require 'emms-playing-time)
 (require 'json)
 (require 'cl-lib)
 
@@ -655,6 +656,12 @@ potential duplication if used for same properties from different functions."
   (emms-player-mpv-debug-msg "idle-check (stopped=%s)" emms-player-mpv-stopped)
   (unless emms-player-mpv-stopped (emms-player-stopped)))
 
+(defun emms-player-mpv-event-playing-time-sync ()
+  "Request and update `emms-playing-time' after playback seek/restart or unpause."
+  (emms-player-mpv-ipc-req-send '(get_property time-pos)
+                                #'(lambda (pos err)
+                                    (unless err (emms-playing-time-set pos)))))
+
 (defun emms-player-mpv-event-handler (json-data)
   "Handler for supported mpv events, including property changes.
 Called before `emms-player-mpv-event-functions' and does same thing as these hooks."
@@ -665,7 +672,15 @@ Called before `emms-player-mpv-event-functions' and does same thing as these hoo
      ;;	and don't correspond to actual playback state.
      (unless (emms-player-mpv-proc-playing-p)
        (emms-player-mpv-proc-playing t)
-       (emms-player-started emms-player-mpv)))
+       (emms-player-started emms-player-mpv))
+     (emms-player-mpv-event-playing-time-sync))
+    ("pause"
+     (setq emms-player-paused-p t)
+     (run-hooks 'emms-player-paused-hook))
+    ("unpause"
+     (emms-player-mpv-event-playing-time-sync)
+     (setq emms-player-paused-p nil)
+     (run-hooks 'emms-player-paused-hook))
     ("end-file"
      (when (emms-player-mpv-proc-playing-p)
        (emms-player-mpv-proc-playing nil)
