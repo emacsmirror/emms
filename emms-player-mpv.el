@@ -675,12 +675,14 @@ Called before `emms-player-mpv-event-functions' and does same thing as these hoo
        (emms-player-started emms-player-mpv))
      (emms-player-mpv-event-playing-time-sync))
     ("pause"
-     (setq emms-player-paused-p t)
-     (run-hooks 'emms-player-paused-hook))
+     (unless emms-player-paused-p
+       (setq emms-player-paused-p t)
+       (run-hooks 'emms-player-paused-hook)))
     ("unpause"
      (emms-player-mpv-event-playing-time-sync)
-     (setq emms-player-paused-p nil)
-     (run-hooks 'emms-player-paused-hook))
+     (when emms-player-paused-p
+       (setq emms-player-paused-p nil)
+       (run-hooks 'emms-player-paused-hook)))
     ("end-file"
      (when (emms-player-mpv-proc-playing-p)
        (emms-player-mpv-proc-playing nil)
