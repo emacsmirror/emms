@@ -1,3 +1,9 @@
+New in 7.8
+
+    * Fix to Libre.FM scrobbing.
+    * Multiple improvements to emms-player-mpv.el.
+
+
 New in 7.7
 
     * Add sndioctl support.
