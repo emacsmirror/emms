@@ -31,6 +31,7 @@
 
 (require 'emms-playing-time)
 (require 'auth-source)
+(require 'url-vars)
 
 
 (defvar emms-librefm-scrobbler-handshake-url
