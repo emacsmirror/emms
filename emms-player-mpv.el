@@ -98,10 +98,13 @@ For mpv binary path, see `emms-player-mpv-command-name'."
                  function))
 
 (defcustom emms-player-mpv-environment ()
-  "List of extra environment variables (\"VAR=value\" strings) to pass on to mpv process.
+  "List of extra environment variables (\"VAR=value\" strings) to pass on to
+mpv process.
+
 These are added on top of `process-environment' by default.
 Adding nil as an element to this list will discard emacs
-`process-environment' and only pass variables that are specified in the list."
+`process-environment' and only pass variables that are specified
+in the list."
   :type '(repeat (choice string (const :tag "Start from blank environment" nil))))
 
 (defcustom emms-player-mpv-ipc-method nil
@@ -144,9 +147,12 @@ Uses `emms-player-mpv-event-functions' hook."
                       value)))
 
 (defcustom emms-player-mpv-update-metadata nil
-  "Update track info (artist, album, name, etc) from mpv events, when it is played.
-This allows to dynamically update stream info from ICY tags, for example.
-Uses `emms-player-mpv-event-connect-hook' and `emms-player-mpv-event-functions' hooks."
+  "Update track info (artist, album, name, etc) from mpv events, when it
+is played.
+
+This allows to dynamically update stream info from ICY tags, for
+example.  Uses `emms-player-mpv-event-connect-hook' and
+`emms-player-mpv-event-functions' hooks."
   :type 'boolean
   :set (lambda (sym value)
          (set-default-toplevel-value sym value)
@@ -181,7 +187,8 @@ if it refuses to exit cleanly on `emms-player-mpv-proc-stop'.")
 
 
 (defvar emms-player-mpv-ipc-proc nil
-  "Unix socket network process connected to running `emms-player-mpv-proc' instance.")
+  "Unix socket network process connected to running `emms-player-mpv-proc'
+instance.")
 
 (defvar emms-player-mpv-ipc-buffer " *emms-player-mpv-ipc*"
   "Buffer to associate with `emms-player-mpv-ipc-proc' socket/pipe process.")
@@ -292,7 +299,9 @@ Strips whitespace from start/end of TPL-OR-MSG and strings in TPL-VALUES."
 
 (defun emms-player-mpv-ipc-fifo-p ()
   "Returns non-nil if --input-file fifo should be used.
-Runs `emms-player-mpv-ipc-detect' to detect/set `emms-player-mpv-ipc-method' if necessary."
+
+Runs `emms-player-mpv-ipc-detect' to detect/set
+`emms-player-mpv-ipc-method' if necessary."
   (unless emms-player-mpv-ipc-method
     (setq emms-player-mpv-ipc-method
           (emms-player-mpv-ipc-detect emms-player-mpv-command-name)))
@@ -341,7 +350,8 @@ Used to signal emms via `emms-player-started' and `emms-player-stopped' calls."
     (when proc (process-put proc 'mpv-playing state))))
 
 (defun emms-player-mpv-proc-symbol-id (sym &optional proc)
-  "Get unique process-specific id integer for SYM or nil if it was already requested."
+  "Get unique process-specific id integer for SYM or nil if it
+was already requested."
   (let
       ((proc (or proc emms-player-mpv-proc))
        (sym-id (intern (concat "mpv-sym-" (symbol-name sym)))))
@@ -351,9 +361,11 @@ Used to signal emms via `emms-player-started' and `emms-player-stopped' calls."
         id))))
 
 (defun emms-player-mpv-proc-init-fifo (path &optional mode)
-  "Create named pipe (fifo) socket for mpv --input-file PATH, if not exists already.
-Optional MODE should be 12-bit octal integer, e.g. #o600 (safe default).
-Signals error if mkfifo exits with non-zero code."
+  "Create named pipe (fifo) socket for mpv --input-file PATH, if not exists
+already.
+
+Optional MODE should be 12-bit octal integer, e.g. #o600 (safe
+default).  Signals error if mkfifo exits with non-zero code."
   (let ((attrs (file-attributes path)))
     (when
         (and attrs (not (string-prefix-p "p" (nth 8 attrs))))
@@ -408,7 +420,9 @@ MEDIA-ARGS are used instead of --idle, if specified."
 
 (defun emms-player-mpv-proc-stop ()
   "Stop running `emms-player-mpv-proc' instance via SIGINT, if any.
-`delete-process' (SIGKILL) timer is started if `emms-player-mpv-proc-kill-delay' is non-nil."
+
+`delete-process' (SIGKILL) timer is started if
+`emms-player-mpv-proc-kill-delay' is non-nil."
   (when emms-player-mpv-proc
     (let ((proc emms-player-mpv-proc))
       (emms-player-mpv-debug-msg "proc[%s]: stop" proc)
@@ -534,9 +548,12 @@ writing to a named pipe (fifo) file/node or signal error."
     (setq emms-player-mpv-ipc-proc nil)))
 
 (defun emms-player-mpv-ipc ()
-  "Return open IPC socket/fifo process or nil, (re-)starting mpv/connection if necessary.
-Return nil when starting async process/connection, and any follow-up
-command should be stored to `emms-player-mpv-ipc-connect-command' in this case."
+  "Return open IPC socket/fifo process or nil, (re-)starting mpv/connection
+if necessary.
+
+Return nil when starting async process/connection, and any
+follow-up command should be stored to
+`emms-player-mpv-ipc-connect-command' in this case."
   (unless
       ;; Don't start idle processes for fifo - just ignore all ipc requests there
       (and (not (process-live-p emms-player-mpv-proc))
@@ -565,14 +582,18 @@ command should be stored to `emms-player-mpv-ipc-connect-command' in this case."
 
 (defun emms-player-mpv-ipc-req-send (cmd &optional handler proc)
   "Send JSON IPC request and assign HANDLER to response for it, if any.
+
 CMD value is encoded via `json-encode'.
-HANDLER func will be called with decoded response JSON as (handler data err),
-where ERR will be either nil on \"success\", 'connection-error or whatever is in JSON.
-If HANDLER is nil, default `emms-player-mpv-ipc-req-error-printer'
-will be used to at least log errors.
-Multiple commands can be batched in one list as '(batch (cmd1 . handler1) ...),
-in which case common HANDLER argument is ignored.
-PROC can be specified to avoid `emms-player-mpv-ipc' call (e.g. from sentinel/filter funcs)."
+
+HANDLER func will be called with decoded response JSON
+as (handler data err), where ERR will be either nil on
+\"success\", 'connection-error or whatever is in JSON.  If
+HANDLER is nil, default `emms-player-mpv-ipc-req-error-printer'
+will be used to at least log errors.  Multiple commands can be
+batched in one list as '(batch (cmd1 . handler1) ...), in which
+case common HANDLER argument is ignored.  PROC can be specified
+to avoid `emms-player-mpv-ipc' call (e.g. from sentinel/filter
+funcs)."
   (dolist
       (cmd-and-handler
        (if (and (listp cmd)
@@ -611,12 +632,15 @@ PROC can be specified to avoid `emms-player-mpv-ipc' call (e.g. from sentinel/fi
       (when handler (funcall handler data err)))))
 
 (defun emms-player-mpv-ipc-req-error-printer (_data err)
-  "Simple default `emms-player-mpv-ipc-req-send' handler to log errors, if any."
+  "Simple default `emms-player-mpv-ipc-req-send' handler to log
+errors, if any."
   (when err (message "emms-player-mpv ipc-error: %s" err)))
 
 (defun emms-player-mpv-ipc-recv (json)
   "Handler for all JSON lines from mpv process.
-Only used with JSON IPC, never called with --input-file as there's no feedback there."
+
+Only used with JSON IPC, never called with --input-file as
+there's no feedback there."
   (emms-player-mpv-debug-msg "json << %s" json)
   (let*
       ((json-data (json-read-from-string json))
@@ -657,14 +681,17 @@ potential duplication if used for same properties from different functions."
   (unless emms-player-mpv-stopped (emms-player-stopped)))
 
 (defun emms-player-mpv-event-playing-time-sync ()
-  "Request and update `emms-playing-time' after playback seek/restart or unpause."
+  "Request and update `emms-playing-time' after playback
+seek/restart or unpause."
   (emms-player-mpv-ipc-req-send '(get_property time-pos)
                                 #'(lambda (pos err)
                                     (unless err (emms-playing-time-set pos)))))
 
 (defun emms-player-mpv-event-handler (json-data)
   "Handler for supported mpv events, including property changes.
-Called before `emms-player-mpv-event-functions' and does same thing as these hooks."
+
+Called before `emms-player-mpv-event-functions' and does same
+thing as these hooks."
   (pcase (alist-get 'event json-data)
     ("playback-restart"
      ;; Separate emms-player-mpv-proc-playing state is used for emms started/stopped signals,
@@ -705,12 +732,14 @@ Called before `emms-player-mpv-event-functions' and does same thing as these hoo
 ;; ----- Metadata update hooks
 
 (defun emms-player-mpv-info-meta-connect-func ()
-  "Hook function for `emms-player-mpv-event-connect-hook' to update metadata from mpv."
+  "Hook function for `emms-player-mpv-event-connect-hook' to update
+metadata from mpv."
   (emms-player-mpv-observe-property 'metadata)
   (emms-player-mpv-observe-property 'duration))
 
 (defun emms-player-mpv-info-meta-event-func (json-data)
-  "Hook function for `emms-player-mpv-event-functions' to update metadata from mpv."
+  "Hook function for `emms-player-mpv-event-functions' to update
+metadata from mpv."
   (when
       (and
        (string= (alist-get 'event json-data)
@@ -753,7 +782,8 @@ Called before `emms-player-mpv-event-functions' and does same thing as these hoo
     (emms-track-updated track)))
 
 (defun emms-player-mpv-info-duration-event-func (json-data)
-  "Hook function for `emms-player-mpv-event-functions' to update track duration from mpv."
+  "Hook function for `emms-player-mpv-event-functions' to update
+track duration from mpv."
   (when
       (and
        (string= (alist-get 'event json-data) "property-change")
@@ -785,15 +815,18 @@ in which case common HANDLER argument is ignored."
       (setq emms-player-mpv-ipc-connect-command cmd))))
 
 (defmacro emms-player-mpv-cmd-prog (cmd &rest handler-body)
-  "Obsolete macro around `emms-player-mpv-cmd' that creates
-handler callback (see `emms-player-mpv-ipc-req-send') from HANDLER-BODY forms,
-which have following bindings:
+  "Obsolete macro around `emms-player-mpv-cmd' that creates handler
+callback (see `emms-player-mpv-ipc-req-send') from HANDLER-BODY
+forms, which have following bindings:
+
 - mpv-cmd for CMD.
 - mpv-data for response data (decoded json, nil if none).
-- mpv-error for response error (nil if no error, decoded json or 'connection-error).
+- mpv-error for response error (nil if no error, decoded json or
+  'connection-error).
 
-Do not use it with new code - it will raise warnings when used with lexical bindings,
-and will be removed in a future EMMS version."
+Do not use it with new code - it will raise warnings when used
+with lexical bindings, and will be removed in a future EMMS
+version."
   `(emms-player-mpv-cmd ,cmd (apply-partially
                               (lambda (mpv-cmd mpv-data mpv-error)
                                 ,@handler-body)

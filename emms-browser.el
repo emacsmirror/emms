@@ -2104,11 +2104,14 @@ If the track is not of TYPE, return t."
   "Directory where to store cover thumbnails.")
 
 (defvar emms-browser-thumbnail-small-size 128
-  "Cover thumbnail will be resized if necessary so that neither width nor height exceed this dimension.")
+  "Cover thumbnail will be resized if necessary so that neither
+  width nor height exceed this dimension.")
 (defvar emms-browser-thumbnail-medium-size 256
-  "Cover thumbnail will be resized if necessary so that neither width nor height exceed this dimension.")
+  "Cover thumbnail will be resized if necessary so that neither
+  width nor height exceed this dimension.")
 (defvar emms-browser-thumbnail-large-size 1024 ; Emms does not use large covers as of 2017-11-26.
-  "Cover thumbnail will be resized if necessary so that neither width nor height exceed this dimension.")
+  "Cover thumbnail will be resized if necessary so that neither
+  width nor height exceed this dimension.")
 
 (defun emms-browser-thumbnail-filter-default (dir)
   "Select covers containing 'front' or 'cover' in DIR.
@@ -2134,7 +2137,9 @@ See `emms-browser-thumbnail-filter'."
       (setq covers (append (file-expand-wildcards (expand-file-name (concat "*." ext) dir)) covers)))))
 
 (defvar emms-browser-thumbnail-filter 'emms-browser-thumbnail-filter-default
-  "This filter must hold a function that takes a directory argument and returns a list of cover file names.
+  "This filter must hold a function that takes a directory argument and returns
+a list of cover file names.
+
 The list will be processed by `emms-browser-cache-thumbnail'.
 See also `emms-browser-thumbnail-filter-default'.")
 
