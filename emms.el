@@ -1495,6 +1495,8 @@ If the track can be played by more than one player, call
   (if emms-player-playing-p
       (error "A player is already playing")
     (let ((player (emms-players-for track)))
+      (when (not emms-player-list)
+	(error "emms-player-list empty"))
       (if (not player)
           (error "Don't know how to play track: %S" track)
         ;; Change default-directory so we don't accidentally block any
