@@ -770,7 +770,9 @@ metadata from mpv."
     (unless track (setq track (emms-playlist-current-selected-track)))
     (set-track-info track
                     title (or (key title)
-                              (key icy-title))
+                              (and (not (string= "" (key icy-title)))
+				   (key icy-title))
+			      (key icy-name))
                     artist (or (key artist)
                                (key album_artist)
                                (key icy-name))
