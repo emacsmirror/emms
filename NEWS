@@ -1,3 +1,10 @@
+New in 8
+
+    * emms-player-mpv.el: graceful handling of no icy-title.
+    * Prune defuct streams from the list.
+    * Notify if `emms-player-list' is empty.
+
+
 New in 7.8
 
     * Fix to Libre.FM scrobbing.
