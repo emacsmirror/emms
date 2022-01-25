@@ -1,3 +1,8 @@
+New in 9
+
+    * emms-player-mpd.el: playing order fix
+
+
 New in 8
 
     * emms-player-mpv.el: graceful handling of no icy-title.
