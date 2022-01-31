@@ -178,6 +178,14 @@ example.  Uses `emms-player-mpv-event-connect-hook' and
                              #'emms-player-mpv-info-meta-event-func))))
                       value)))
 
+(defcustom emms-player-mpv-use-playlist-option nil
+	"Use --playlist option and loadlist mpv command for playlist files and URLs.
+
+Use of this option is explicitly discouraged by mpv documentation for security
+reasons, and should be unnecessary in most common cases with modern mpv.
+Make sure to check mpv manpage for --playlist option before enabling this."
+	:type 'boolean)
+
 
 (defvar emms-player-mpv-proc nil
   "Running mpv process, controlled over --input-ipc-server/--input-file sockets.")
@@ -847,19 +855,23 @@ version."
   (emms-player-mpv-proc-playing nil)
   (let
       ((track-name (emms-track-get track 'name))
-       (track-is-playlist (memq (emms-track-get track 'type)
-                                '(streamlist playlist))))
+       (track-playlist-option
+        (and emms-player-mpv-use-playlist-option
+             (memq (emms-track-get track 'type)
+                   '(streamlist playlist)))))
     (if (emms-player-mpv-ipc-fifo-p)
         (progn
           ;; ipc-stop is to clear any buffered commands
           (emms-player-mpv-ipc-stop)
-          (emms-player-mpv-proc-init (if track-is-playlist "--playlist" "--")
-                                     track-name)
+          (apply 'emms-player-mpv-proc-init
+                 (if track-playlist-option
+                     (list (concat "--playlist=" track-name))
+                   (list "--" track-name)))
           (emms-player-started emms-player-mpv))
       (let*
           ((play-cmd
             `(batch
-              ((,(if track-is-playlist 'loadlist 'loadfile)
+              ((,(if track-playlist-option 'loadlist 'loadfile)
                 ,track-name replace))
               ((set pause no))))
            (start-func
