@@ -113,12 +113,13 @@ Possible symbols: detect, ipc-server, unix-socket, file.
 Defaults to nil value, which will cause `emms-player-mpv-ipc-detect'
 to pick one based on mpv --version output.
 Using JSON-IPC variants (ipc-server and unix-socket) enables
-support for various feedback and metadata options from mpv."
+support for various feedback and metadata options from mpv.
+Use of 'file value here is deprecated and will be removed in the future."
   :type '(choice
           (const :tag "Auto-detect from mpv --version" nil)
           (const :tag "Use --input-ipc-server JSON IPC (v0.17.0 2016-04-11)" ipc-server)
           (const :tag "Use --input-unix-socket JSON IPC (v0.7.0 2014-10-16)" unix-socket)
-          (const :tag "Use --input-file FIFO (any mpv version)" file)))
+          (const :tag "Use --input-file FIFO (removed in v0.33.0 2020-11-22)" file)))
 
 (defcustom emms-player-mpv-ipc-socket
   (concat (file-name-as-directory emms-directory)
