@@ -695,8 +695,8 @@ thing as these hooks."
   (pcase (alist-get 'event json-data)
     ("playback-restart"
      ;; Separate emms-player-mpv-proc-playing state is used for emms started/stopped signals,
-     ;;	because start-file/end-file are also emitted after track-change and for playlists,
-     ;;	and don't correspond to actual playback state.
+     ;;  because start-file/end-file are also emitted after track-change and for playlists,
+     ;;  and don't correspond to actual playback state.
      (unless (emms-player-mpv-proc-playing-p)
        (emms-player-mpv-proc-playing t)
        (emms-player-started emms-player-mpv))
@@ -771,8 +771,8 @@ metadata from mpv."
     (set-track-info track
                     title (or (key title)
                               (and (not (string= "" (key icy-title)))
-				   (key icy-title))
-			      (key icy-name))
+                                   (key icy-title))
+                              (key icy-name))
                     artist (or (key artist)
                                (key album_artist)
                                (key icy-name))
