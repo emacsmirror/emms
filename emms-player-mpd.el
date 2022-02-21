@@ -870,12 +870,12 @@ playlist."
 	 nil
 	 (lambda (closure response)
 	   (ignore closure response)
-	   (setq emms-player-mpd-current-song nil)
-	   (if emms-player-mpd-check-interval
-	       (setq emms-player-mpd-status-timer
-		     (run-at-time emms-player-mpd-check-interval t
-				  #'emms-player-mpd-detect-song-change))
-	     (emms-player-mpd-detect-song-change)))))
+          (setq emms-player-mpd-current-song nil)
+          (if emms-player-mpd-check-interval
+              (setq emms-player-mpd-status-timer
+                    (run-at-time t emms-player-mpd-check-interval
+                                 #'emms-player-mpd-detect-song-change))
+            (emms-player-mpd-detect-song-change)))))
     ;; we only want to play one track, so don't start the timer
     (emms-player-mpd-send
      "play"
@@ -943,9 +943,9 @@ This is called if `emms-player-mpd-sync-playlist' is non-nil."
     (unless (string= state "stop")
       (emms-player-mpd-detect-song-change info)
       (when emms-player-mpd-check-interval
-	(setq emms-player-mpd-status-timer
-	      (run-at-time emms-player-mpd-check-interval t
-			   #'emms-player-mpd-detect-song-change))))))
+       (setq emms-player-mpd-status-timer
+             (run-at-time t emms-player-mpd-check-interval
+                          #'emms-player-mpd-detect-song-change))))))
 
 ;;;###autoload
 (defun emms-player-mpd-connect ()
