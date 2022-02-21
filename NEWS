@@ -1,3 +1,9 @@
+New in 10
+
+    * emms-player-mpv.el: bug fixes and improvments (details in VC history)
+    * emms-player-mpd.el: bug fixes and improvments (details in VC history)
+
+
 New in 9
 
     * emms-player-mpd.el: playing order fix
