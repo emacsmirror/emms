@@ -2553,6 +2553,11 @@ should then be accessible via the Emms browser.
 You can set @var{emms-player-mpd-sync-playlist} to nil if your master
 Emms playlist contains only stored playlists.
 
+In order for Emms to synchronize track information correctly with
+MusicPD, you must set the MusicPD server runtime 'consume' option to
+'off'. This can be accomplished with the mpc command line MusicPD client
+using the command @command{mpc consume off}.
+
 @subheading Commands provided
 
 @defun emms-player-mpd-connect
