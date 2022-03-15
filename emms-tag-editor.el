@@ -37,6 +37,7 @@
 (require 'emms-info-mp3info)
 (require 'emms-playlist-mode)
 (require 'emms-mark)
+(require 'emms-cache)
 (require 'emms-tag-tracktag)
 (require 'format-spec)
 (require 'subr-x)
@@ -632,7 +633,7 @@ With prefix argument, bury the tag edit buffer."
         (message "No tags were modified")
       (emms-tag-editor-erase-buffer emms-tag-editor-log-buffer)
       (emms-tag-editor-apply tracks)))
-  (if arg (bury-buffer)))
+  (when arg (bury-buffer)))
 
 (defun emms-tag-editor-apply (tracks)
   "Apply all changes made to TRACKS."
@@ -665,14 +666,14 @@ With prefix argument, bury the tag edit buffer."
             (emms-track-set track 'name filename)
             (setq need-sync t)
             ;; register to emms-cache-db
-            (when (boundp 'emms-cache-modified-function)
+            (when (functionp emms-cache-modified-function)
               (funcall emms-cache-modified-function)
               (funcall emms-cache-set-function 'file filename old)))
           (emms-track-set track 'newname nil)
           ;; set tags to original track
           (dolist (tag emms-tag-editor-tags)
             (when (setq val (emms-track-get track (car tag)))
-            (emms-track-set old (car tag) val)))
+              (emms-track-set old (car tag) val)))
           ;; use external program to change tags in the file
           (when (and (emms-track-file-p track)
                      (file-writable-p (emms-track-name track))
@@ -694,11 +695,9 @@ With prefix argument, bury the tag edit buffer."
             (funcall emms-playlist-update-track-function))
           ;; clear modified tag
           (emms-track-set track 'tag-modified nil))))
-    (if (and (featurep 'emms-cache)
-             need-sync
-             (y-or-n-p "You have changed some track names; sync the cache? "))
-        (and (fboundp 'emms-cache-sync) ; silence byte-compiler
-             (emms-cache-sync)))
+    ;; sync the cache
+    (when need-sync
+      (emms-cache-sync nil))
     (unless (emms-tag-editor-display-log-buffer-maybe)
       (message "Setting tags...done"))))
 
