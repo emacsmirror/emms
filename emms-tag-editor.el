@@ -632,7 +632,8 @@ With prefix argument, bury the tag edit buffer."
     (if (not (and tracks (y-or-n-p "Submit changes? ")))
         (message "No tags were modified")
       (emms-tag-editor-erase-buffer emms-tag-editor-log-buffer)
-      (emms-tag-editor-apply tracks)))
+      (emms-tag-editor-apply tracks)
+      (emms-cache-save)))
   (when arg (bury-buffer)))
 
 (defun emms-tag-editor-apply (tracks)

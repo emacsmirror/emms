@@ -1,8 +1,8 @@
 ;;; emms-cache.el --- persistence for emms-track  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2006, 2007, 2008, 2009  Free Software Foundation, Inc.
+;; Copyright (C) 2006, 2007, 2008, 2009, 2022  Free Software Foundation, Inc.
 
-;; Author: Damien Elmes <emacs@repose.cx>
+;; Author: Damien Elmes <emacs@repose.cx>, Yoni Rabkin <yrk@gnu.org>
 ;; Keywords: emms, mp3, mpeg, multimedia
 
 ;; This file is part of EMMS.
@@ -130,23 +130,21 @@ This is used to cache over emacs sessions.")
   (interactive)
   (when emms-cache-dirty
     (message "Saving emms track cache...")
-    (set-buffer (get-buffer-create " emms-cache "))
-    (erase-buffer)
-    (insert
-     (concat ";;; .emms-cache -*- mode: emacs-lisp; coding: "
-             (symbol-name emms-cache-file-coding-system)
-             "; -*-\n"))
-    (maphash (lambda (k v)
-               (insert (format
-                        "(puthash %S '%S emms-cache-db)\n" k v)))
-             emms-cache-db)
-    (when (fboundp 'set-buffer-file-coding-system)
-      (set-buffer-file-coding-system emms-cache-file-coding-system))
-    (unless (file-directory-p (file-name-directory emms-cache-file))
-      (make-directory (file-name-directory emms-cache-file)))
-    (write-region (point-min) (point-max) emms-cache-file)
-    (kill-buffer (current-buffer))
-    (message "Saving emms track cache...done")
+    (with-temp-buffer
+      (insert
+       (concat ";;; .emms-cache -*- mode: emacs-lisp; coding: "
+               (symbol-name emms-cache-file-coding-system)
+               "; -*-\n"))
+      (maphash (lambda (k v)
+		 (insert (format
+                          "(puthash %S '%S emms-cache-db)\n" k v)))
+               emms-cache-db)
+      (when (fboundp 'set-buffer-file-coding-system)
+	(set-buffer-file-coding-system emms-cache-file-coding-system))
+      (unless (file-directory-p (file-name-directory emms-cache-file))
+	(make-directory (file-name-directory emms-cache-file)))
+      (write-region (point-min) (point-max) emms-cache-file)
+      (message "Saving emms track cache...done"))
     (setq emms-cache-dirty nil)))
 
 (defun emms-cache-restore ()
