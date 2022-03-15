@@ -69,14 +69,14 @@
 (defun emms-tag-editor-make-format (tags)
   "Make a format string based on TAGS."
   (concat "%m\n" (emms-propertize (format "%-16s = " "name")
-                             'read-only t 'rear-nonsticky t
-                             'face 'bold)
+				  'read-only t 'rear-nonsticky t
+				  'face 'bold)
           "%f\n"
           (mapconcat
            (lambda (tag)
              (concat (emms-propertize (format "%-16s = " (symbol-name tag))
-                                 'read-only t 'rear-nonsticky t
-                                 'face 'bold)
+                                      'read-only t 'rear-nonsticky t
+                                      'face 'bold)
                      "%" (cdr (assoc tag emms-tag-editor-tags))))
            tags "\n")
           "\n\n"))
@@ -436,8 +436,8 @@ changes will only take effect on the tracks in the region."
    (let* ((tag1 (intern (emms-completing-read
                          "Tag 1: "
                          (mapcar (lambda (arg)
-                                         (list (symbol-name (car arg))))
-                                       emms-tag-editor-tags)
+                                   (list (symbol-name (car arg))))
+                                 emms-tag-editor-tags)
                          nil t)))
           (tag2 (intern (emms-completing-read
                          "Tag 2: "
@@ -484,25 +484,25 @@ C-u M-x emms-tag-editor-guess-tag-filename RET
     (read-from-minibuffer (format "Match in %sfile name(C-h for help): "
                                   (if current-prefix-arg "FULL " ""))
                           nil
-     (let ((map (make-sparse-keymap)))
-       (set-keymap-parent map minibuffer-local-map)
-       (define-key map "\C-h"
-         (lambda ()
-           (interactive)
-           (with-output-to-temp-buffer "*Help*"
-             (princ
-              "A pattern is a string like \"%a-%t-%y\" which stand for
+			  (let ((map (make-sparse-keymap)))
+			    (set-keymap-parent map minibuffer-local-map)
+			    (define-key map "\C-h"
+			      (lambda ()
+				(interactive)
+				(with-output-to-temp-buffer "*Help*"
+				  (princ
+				   "A pattern is a string like \"%a-%t-%y\" which stand for
 the file name is constructed by artist, title, year with seperator '-'.
 see `emms-tag-editor-compile-pattern' for detail about pattern syntax.
 
 Available tags are:
 ")
-             (mapc (lambda (tag)
-                     (princ (format "\t%s - %S\n" (cdr tag) (car tag))))
-                   emms-tag-editor-tags)
-             (with-current-buffer standard-output
-               (help-mode)))))
-       map))
+				  (mapc (lambda (tag)
+					  (princ (format "\t%s - %S\n" (cdr tag) (car tag))))
+					emms-tag-editor-tags)
+				  (with-current-buffer standard-output
+				    (help-mode)))))
+			    map))
     current-prefix-arg))
   (setq pattern (emms-tag-editor-compile-pattern pattern))
   (save-excursion
@@ -797,7 +797,7 @@ Then it's the callers job to apply them afterwards with
                                                 (or (emms-track-get track (car tag))
                                                     "")))
                                         emms-tag-editor-tags))))
-                      "." suffix)))
+			"." suffix)))
         (emms-track-set track 'newname new-file)
         (emms-track-set track 'tag-modified t)
         (unless dont-apply
