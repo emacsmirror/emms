@@ -150,13 +150,14 @@
 ;;; ------------------------------------------------------------------
 
 (defun emms-streams-install ()
-  (interactive)
   "Install the built-in streams file."
+  (interactive)
   (emms-streams-install-file emms-streams-file))
 
+;;;###autoload
 (defun emms-streams ()
-  (interactive)
   "Create or switch to the built-in streaming audio playlist."
+  (interactive)
   (when (and (not (file-exists-p emms-streams-file))
 	     (y-or-n-p "Emms' built-in streams file hasn't been installed yet. Install it now?"))
     (emms-streams-install))
