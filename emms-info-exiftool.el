@@ -91,6 +91,7 @@
 			(cond ((eq emms-field 'info-playing-time)
 			       (emms-info-exiftool-time))
 			      ((memq emms-field '(info-tracknumber
+						  info-title
 						  info-year
 						  info-discnumber))
                                (format "%s" (cdr track-field)))
