@@ -1,3 +1,10 @@
+New in 11
+
+    * Bug fix: emms-info-exiftool.el now handles numeric song titles gracefully.
+    * Cache is now saved after tag editing
+    * Minor bug fixes in emms-tag-editor.el and emms-streams.el.
+
+
 New in 10
 
     * emms-player-mpv.el: bug fixes and improvments (details in VC history)
