@@ -2,7 +2,10 @@ This is an explanation of how to make a release for Emms. Emms is
 developed at Savannah (https://savannah.gnu.org/projects/emms/) and
 distributed via Emacs ELPA (https://elpa.gnu.org/).
 
-* Check for clean compilation.
+* Check for clean compilation on the two latest major Emacs releases.
+
+* Check for clean running of basic functionality on the two latest
+  major Emacs releases.
 
 * Increase the version number in emms.el (variable, elpa header).
 
