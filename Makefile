@@ -43,7 +43,6 @@ BINDIR=$(PREFIX)/bin
 SITELISP=$(PREFIX)/share/emacs/site-lisp/emms
 
 # testing against previous versions
-PRINT_VERSION=--eval='(message "\n%s" (emacs-version))'
 RELEASE_BIN=$(EMACS)
 PREV_RELEASE_BIN=$(EMACS)
 
@@ -57,7 +56,7 @@ VERSION=100.00
 
 .PHONY: all install docs clean
 .PRECIOUS: %.elc
-all: emms-auto.el $(TARGET) docs
+all: show_version emms-auto.el $(TARGET) docs
 
 emms-auto.el: emms-auto.in $(SOURCE)
 	cp emms-auto.in emms-auto.el
@@ -78,9 +77,9 @@ docs:
 
 .PHONY: show_version
 show_version:
-	@$(EMACS) $(SITEFLAG) -batch $(PRINT_VERSION)
+	@$(EMACS) $(SITEFLAG) -batch --eval='(message "\n%s" (emacs-version))'
 
-.PHONY
+.PHONY:
 test_releases:
 	($(MAKE) EMACS=$(RELEASE_BIN); $(MAKE) clean)
 	($(MAKE) EMACS=$(PREV_RELEASE_BIN); $(MAKE) clean)
