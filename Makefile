@@ -1,3 +1,28 @@
+## Copyright (C) 2006, 2008, 2010, 2012, 2014, 2016-2022  Free Software Foundation, Inc.
+##
+## This file is part of EMMS.
+##
+## EMMS is free software; you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation; either version 3, or (at your option)
+## any later version.
+##
+## EMMS is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with EMMS; if not, write to the Free Software Foundation,
+## Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
+
+## Release testing
+##
+## As a policy, each release of Emms should be tested to compile and
+## run well on the two latest Emacs releases.
+
+
+## Code:
 GZIP=gzip
 MAN1PAGES=emms-print-metadata.1
 DOCDIR=doc/
@@ -16,6 +41,11 @@ INFODIR=$(PREFIX)/info
 MAN1DIR=$(PREFIX)/share/man/man1
 BINDIR=$(PREFIX)/bin
 SITELISP=$(PREFIX)/share/emacs/site-lisp/emms
+
+# testing against previous versions
+PRINT_VERSION=--eval='(message "\n%s" (emacs-version))'
+RELEASE_BIN=$(EMACS)
+PREV_RELEASE_BIN=$(EMACS)
 
 GINSTALLINFO = /usr/bin/ginstall-info --info-dir=$(INFODIR)
 # For systems without ginstall-info
@@ -45,6 +75,15 @@ emms-auto.el: emms-auto.in $(SOURCE)
 
 docs:
 	$(MAKE) -C $(DOCDIR)
+
+.PHONY: show_version
+show_version:
+	@$(EMACS) $(SITEFLAG) -batch $(PRINT_VERSION)
+
+.PHONY
+test_releases:
+	($(MAKE) EMACS=$(RELEASE_BIN); $(MAKE) clean)
+	($(MAKE) EMACS=$(PREV_RELEASE_BIN); $(MAKE) clean)
 
 emms-print-metadata: $(SRCDIR)/emms-print-metadata.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $(SRCDIR)/$@ $< `taglib-config --cflags --libs`
