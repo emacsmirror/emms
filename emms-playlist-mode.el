@@ -312,15 +312,17 @@ set it as current."
           (goto-char (point-min))
           (message "Added %s" (symbol-name type)))))))
 
-(defun emms-playlist-mode-goto-dired-at-point ()
-  "Visit the track at point in a `dired' buffer."
-  (interactive)
+(defun emms-playlist-mode-goto-dired-at-point (&optional other-window)
+  "Visit the track at point in a `dired' buffer.
+
+With a prefix arg, open the `dired' buffer in OTHER-WINDOW."
+  (interactive "P")
   (let ((track (emms-playlist-track-at)))
     (if track
 	(let ((name (emms-track-get track 'name))
 	      (type (emms-track-get track 'type)))
 	  (if (eq type 'file)
-	      (dired (file-name-directory name))
+              (dired-jump other-window name)
 	    (error "Can't visit this track type in Dired")))
       (error "No track at point"))))
 
