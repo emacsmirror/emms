@@ -455,21 +455,50 @@ If player hasn't started, then start it now."
       (emms-player-pause)
     (emms-start)))
 
-(defun emms-seek (seconds)
-  "Seek the current player SECONDS seconds.
-This can be a floating point number for sub-second fractions.
-It can also be negative to seek backwards."
-  (interactive "nSeconds to seek: ")
-  (emms-ensure-player-playing-p)
-  (emms-player-seek seconds))
+(defun emms-seek (duration)
+  "Seek the current player by DURATION from its current position.
+DURATION can be:
 
-(defun emms-seek-to (seconds)
-  "Seek the current player to SECONDS seconds.
-This can be a floating point number for sub-second fractions.
-It can also be negative to seek backwards."
-  (interactive "nSeconds to seek to: ")
+- A single number, in which case it is interpreted as seconds.
+
+- A string of form [-][HH:]MM:SS.m, where HH is hours, MM is
+  minutes, and SS is seconds.
+
+In both forms seconds can be a floating point number.  A negative
+value seeks backwards."
+  (interactive "sDuration to seek: ")
   (emms-ensure-player-playing-p)
-  (emms-player-seek-to seconds))
+  (emms-player-seek (emms-timespec-to-secs duration)))
+
+(defun emms-seek-to (timestamp)
+  "Seek the current player to TIMESTAMP.
+TIMESTAMP can be:
+
+- A single number, in which case it is interpreted as seconds.
+
+- A string of form [HH:]MM:SS.m, where HH is hours, MM is
+  minutes, and SS is seconds.
+
+In both forms seconds can be a floating point number."
+  (interactive "sTimestamp to seek to: ")
+  (emms-ensure-player-playing-p)
+  (emms-player-seek-to (emms-timespec-to-secs timestamp t)))
+
+(defun emms-timespec-to-secs (timespec &optional absolute)
+  "TODO: docstring"
+  (let ((tokens (split-string timespec ":")))
+    (if (= (length tokens) 1)
+        ;; seconds only
+        (let ((secs (string-to-number (car tokens))))
+          (if absolute (abs secs) secs))
+      ;; HH:MM:SS
+      (let* ((sign (if (< (string-to-number (car tokens)) 0) -1 1))
+             (revtokens (reverse tokens))
+             (seconds (abs (string-to-number (or (pop revtokens) "0"))))
+             (minutes (abs (string-to-number (or (pop revtokens) "0"))))
+             (hours (abs (string-to-number (or (pop revtokens) "0"))))
+             (seekpos (* sign (+ (* 60 60 hours) (* 60 minutes) seconds))))
+        (if absolute (abs seekpos) seekpos)))))
 
 (defun emms-seek-forward ()
   "Seek ten seconds forward."
