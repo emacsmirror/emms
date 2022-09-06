@@ -55,56 +55,6 @@
 
 ;; (require 'emms-browser)
 
-;; Key bindings
-;; -------------------------------------------------------------------
-
-;; C-j             emms-browser-add-tracks-and-play
-;; RET             emms-browser-add-tracks
-;; SPC             emms-browser-toggle-subitems
-;; ^               emms-browser-move-up-level
-;; /               emms-isearch-buffer
-;; 1               emms-browser-collapse-all
-;; 2               emms-browser-expand-to-level-2
-;; 3               emms-browser-expand-to-level-3
-;; 4               emms-browser-expand-to-level-4
-;; <               emms-browser-previous-filter
-;; >               emms-browser-next-filter
-;; ?               describe-mode
-;; C               emms-browser-clear-playlist
-;; E               emms-browser-expand-all
-;; d               emms-browser-view-in-dired
-;; D               emms-browser-delete-files
-;; q               emms-browser-bury-buffer
-;; r               emms-browser-goto-random
-;; n               next-line
-;; p               previous-line
-;; C-/             emms-playlist-mode-undo
-;; <C-return>      emms-browser-add-tracks-and-play
-;; <backtab>       emms-browser-prev-non-track
-;; <tab>           emms-browser-next-non-track
-
-;; s A             emms-browser-search-by-album
-;; s a             emms-browser-search-by-artist
-;; s c             emms-browser-search-by-composer
-;; s s             emms-browser-search-by-names
-;; s t             emms-browser-search-by-title
-;; s p             emms-browser-search-by-performer
-
-;; b 1             emms-browse-by-artist
-;; b 2             emms-browse-by-album
-;; b 3             emms-browse-by-genre
-;; b 4             emms-browse-by-year
-;; b 5             emms-browse-by-composer
-;; b 6             emms-browse-by-performer
-
-;; W a w           emms-browser-lookup-album-on-wikipedia
-
-;; W A w           emms-browser-lookup-artist-on-wikipedia
-
-;; W C w           emms-browser-lookup-composer-on-wikipedia
-
-;; W P w           emms-browser-lookup-performer-on-wikipedia
-
 ;; Displaying covers
 ;; -------------------------------------------------------------------
 
