@@ -896,11 +896,19 @@ Execute CALLBACK with CLOSURE as its first argument when done."
   "Return non-nil when we can play this track."
   (and (memq (emms-track-type track) '(file url playlist streamlist))
        (string-match (emms-player-get emms-player-mpd 'regex)
-		     (emms-track-name track))
-       (condition-case nil
-	   (progn (emms-player-mpd-ensure-process)
-		  t)
-	 (error nil))))
+                     (emms-track-name track))
+       ;; Detect if file is in the MPD directory.  We could use the "listall"
+       ;; command and ask MPD directly but this is easier, quicker, and likely
+       ;; good enough
+       (if (and emms-player-mpd-music-directory
+                (eq (emms-track-type track) 'file)
+                (file-accessible-directory-p emms-player-mpd-music-directory))
+           (file-in-directory-p (emms-track-get track 'name)
+                                emms-player-mpd-music-directory)
+         t)
+       (ignore-errors
+         (emms-player-mpd-ensure-process)
+         t)))
 
 (defun emms-player-mpd-play (&optional id)
   "Play whatever is in the current MusicPD playlist.
