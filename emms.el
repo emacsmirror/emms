@@ -1511,8 +1511,9 @@ If the track can be played by more than one player, call
     (mapc
      #'(lambda (player)
 	 (when (funcall (emms-player-get player 'playablep) track)
-	   (setq players (append players `(,player)))))
+	   (push player players)))
      emms-player-list)
+    (setq players (nreverse players))
     (if (< 1 (length players))
 	(emms-players-preference track players)
       (car players))))
