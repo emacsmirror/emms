@@ -57,6 +57,14 @@
   "Default list of players for emms-setup."
   :type 'list)
 
+(defvar emms-setup-discover-player-alist
+  '((emms-player-mpg321  . "mpg123")
+    (emms-player-ogg123  . "ogg123")
+    (emms-player-mplayer . "mplayer")
+    (emms-player-mpv     . "mpv")
+    (emms-player-vlc     . "vlc"))
+  "Association list of players and their binaries.")
+
 ;;;###autoload
 (defun emms-minimalistic ()
   "An Emms setup script.
@@ -146,6 +154,45 @@ the stable features which come with the Emms distribution."
 (defun emms-standard ()
   (emms-all))
 (make-obsolete 'emms-standard 'emms-all "4.1")
+
+
+;;; ------------------------------------------------------------------
+;;; Player discovery
+;;; ------------------------------------------------------------------
+(defun emms-setup-discover-player-binary (bin-str)
+  "Find if BIN-STR can be executed in the current environment."
+  (when (not (eq system-type 'gnu/linux))
+    (error "Player discovery only supported on GNU/Linux."))
+  (let ((result (call-process "which" nil nil nil bin-str)))
+    (cond ((eq 0 result) t)
+          ((eq 1 result) nil)
+          ((eq 2 result) (error "invalid arguments to `which'.")))))
+
+(defun emms-setup-discover-player-has-binary-p (player)
+  "Find if PLAYER has an excecutable in the current environment."
+  (let ((bin-str (alist-get player emms-setup-discover-player-alist)))
+    (if bin-str
+	(emms-setup-discover-player-binary bin-str)
+      nil)))
+
+(defun emms-setup-discover-players ()
+  "Interactively add players to `emms-player-list'."
+  (interactive)
+  (when (and emms-player-list
+             (y-or-n-p (format "emms-player-list is already set to %s, do you want to empty it first?"
+			       emms-player-list)))
+    (setq emms-player-list nil))
+  (let ((players (copy-tree emms-setup-default-player-list)))
+    (while players
+      (let ((player (car players)))
+	(when (emms-setup-discover-player-has-binary-p player)
+          (when (y-or-n-p
+                 (format "Player %s is installed on your system, add it to the Emms player list?"
+                         player))
+            (add-to-list 'emms-player-list player))))
+      (setq players (cdr players))))
+  (message "emms-player-list is now set to: %s" emms-player-list))
+
 
 
 (provide 'emms-setup)
