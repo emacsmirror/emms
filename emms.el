@@ -482,23 +482,26 @@ TIMESTAMP can be:
 In both forms seconds can be a floating point number."
   (interactive "sTimestamp to seek to: ")
   (emms-ensure-player-playing-p)
-  (emms-player-seek-to (emms-timespec-to-secs timestamp t)))
+  (emms-player-seek-to (max 0 (emms-timespec-to-secs timestamp))))
 
-(defun emms-timespec-to-secs (timespec &optional absolute)
-  "TODO: docstring"
+(defun emms-timespec-to-secs (timespec)
+  "Convert TIMESPEC to seconds.
+
+TIMESPEC is assumed to be a string of form [-][[HH:]MM:]SS, where
+HH is hours, MM is minutes and SS is seconds.  Each element is
+converted to number by calling `string-to-number'.  Missing or
+invalid elements are treated as zeros."
   (let ((tokens (split-string timespec ":")))
     (if (= (length tokens) 1)
         ;; seconds only
-        (let ((secs (string-to-number (car tokens))))
-          (if absolute (abs secs) secs))
+        (string-to-number (car tokens))
       ;; HH:MM:SS
       (let* ((sign (if (< (string-to-number (car tokens)) 0) -1 1))
              (revtokens (reverse tokens))
              (seconds (abs (string-to-number (or (pop revtokens) "0"))))
              (minutes (abs (string-to-number (or (pop revtokens) "0"))))
-             (hours (abs (string-to-number (or (pop revtokens) "0"))))
-             (seekpos (* sign (+ (* 60 60 hours) (* 60 minutes) seconds))))
-        (if absolute (abs seekpos) seekpos)))))
+             (hours (abs (string-to-number (or (pop revtokens) "0")))))
+        (* sign (+ (* 60 60 hours) (* 60 minutes) seconds))))))
 
 (defun emms-seek-forward ()
   "Seek ten seconds forward."
