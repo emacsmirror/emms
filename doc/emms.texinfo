@@ -782,11 +782,32 @@ Stop the currently playing player.
 Declare that the current Emms player is finished.
 This should only be done by the current player itself.
 @end defun
-@defun emms-seek seconds
-Seek the current player @var{seconds} seconds. This can be a floating
-point number for sub-second fractions. It can also be negative to
-seek backwards.
+
+@defun emms-seek duration
+Seek the current player by @var{duration} from its current position.
+The argument @var{duration} can be:
+
+@itemize @minus
+
+@item
+A single number, in which case it is interpreted as seconds.
+
+@item
+A string of form @verb{|[-][HH:]MM:SS.m|}, where @verb{|HH|} is hours,
+@verb{|MM|} is minutes, and @verb{|SS|} is seconds.
+
+@end itemize
+
+In both forms seconds can be a floating point number.  A negative
+value seeks backwards.
 @end defun
+
+@defun emms-seek-to timestamp
+Seek the current player to @var{timestamp}.  Acceptable forms for
+@var{timestamp} are the same as time duration in @code{emms-seek},
+except that timestamps cannot be negative.
+@end defun
+
 @defun emms-seek-forward
 Seek ten seconds forward.
 @end defun
