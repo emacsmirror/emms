@@ -47,13 +47,16 @@
 ;; TODO: it would be great if custom could have
 ;; choices based on pactl list short sinks | cut -f1-2
 
-(defcustom emms-volume-pulse-sink 0
+(defcustom emms-volume-pulse-sink nil
   "The sink to use for volume adjustment.
+
+If nil try to use the default sink.
 
 See full list of devices on your system by running
     pactl list short sinks"
   :type '(choice (number :tag "Sink number")
-                 (string :tag "Sink symbolic name"))
+                 (string :tag "Sink symbolic name")
+                 (const :tag "Default sink" nil))
   :group 'emms-volume)
 
 (defcustom emms-volume-pulse-max-volume 100
@@ -61,14 +64,22 @@ See full list of devices on your system by running
   :type 'integer
   :group 'emms-volume)
 
-
+;; 'pactl get-sink-volume' was only added recently (version 14.1).
+;; When that version is more widespread this function can be
+;; simplified
 (defun emms-volume--pulse-get-volume ()
   "Return `emms-volume-pulse-sink' volume."
-  (let ((sink-number-p (numberp emms-volume-pulse-sink))
-        (output
-         (shell-command-to-string
-          (concat "pactl list sinks" "|"
-                  "grep -E -e 'Sink' -e 'Name' -e '^[^a-zA-Z]*Volume'"))))
+  (let* ((emms-volume-pulse-sink
+          (if emms-volume-pulse-sink
+              emms-volume-pulse-sink
+            (string-trim
+             (shell-command-to-string
+              "pactl info | grep 'Default Sink: ' | cut -d ' ' -f3-"))))
+         (sink-number-p (numberp emms-volume-pulse-sink))
+         (output
+          (shell-command-to-string
+           (concat "pactl list sinks" "|"
+                   "grep -E -e 'Sink' -e 'Name' -e '^[^a-zA-Z]*Volume'"))))
     (string-to-number
      (car
       (reverse
@@ -89,7 +100,6 @@ See full list of devices on your system by running
 				       (match-string 3 output))
 			 do (setq output (replace-match "" nil nil output))))))))))
 
-
 ;;;###autoload
 (defun emms-volume-pulse-change (amount)
   "Change PulseAudio volume by AMOUNT."
@@ -101,7 +111,9 @@ See full list of devices on your system by running
                                 0)))
              (when (zerop (shell-command
                            (format "%s set-sink-volume %s %s%%"
-                                   pactl emms-volume-pulse-sink next-vol)))
+                                   pactl
+                                   (or emms-volume-pulse-sink "@DEFAULT_SINK@")
+                                   next-vol)))
                next-vol))))
 
 (provide 'emms-volume-pulse)
