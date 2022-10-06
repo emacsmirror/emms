@@ -199,6 +199,10 @@ mplayer, mpv, vlc, etc.. To be sure that emms can play all your music
 you should check that your preferred players are installed on the
 machine.
 
+You can also have Emms try to find which playes are installed on your
+machine and set them up for you by invoking @kbd{M-x
+emms-setup-discover-players} and following the interactive prompts.
+
 More detail about setting up Emms can be found in the setup chapter,
 @xref{Setup}.
 
