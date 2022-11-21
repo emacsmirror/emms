@@ -375,8 +375,8 @@ different streams will be mixed together without an error."
         (offset 0)
         (stream (vector)))
     (while (< num-packets packets)
-      (let ((page (emms-info-native--decode-ogg-page filename
-                                                     offset)))
+      (let ((page (emms-info-native--read-and-decode-ogg-page filename
+                                                              offset)))
         (cl-incf num-packets (or (plist-get page :num-packets) 0))
         (cl-incf offset (plist-get page :num-bytes))
         (setq stream (vconcat stream (plist-get page :stream)))
@@ -384,14 +384,11 @@ different streams will be mixed together without an error."
           (error "Ogg payload is too large"))))
     stream))
 
-(defun emms-info-native--decode-ogg-page (filename offset)
+(defun emms-info-native--read-and-decode-ogg-page (filename offset)
   "Read and decode a single Ogg page from FILENAME.
 Starting reading data from byte offset OFFSET.
 
-Return a plist (:num-packets N :num-bytes B :stream S), where N
-is the number of packets in the page, B is the size of the page
-in bytes, and S is the unframed logical bitstream in a vector.
-Note that N can be zero."
+Return the plist from `emms-info-native--decode-ogg-page'."
   (with-temp-buffer
     (set-buffer-multibyte nil)
     (insert-file-contents-literally filename
@@ -399,15 +396,21 @@ Note that N can be zero."
                                     offset
                                     (+ offset
                                        emms-info-native--ogg-page-size))
-    (let* ((page (bindat-unpack emms-info-native--ogg-page-bindat-spec
-                                (buffer-string)))
-           (num-packets (emms-info-native--num-of-packets page))
-           (num-bytes (bindat-length emms-info-native--ogg-page-bindat-spec
-                                     page))
-           (stream (bindat-get-field page 'payload)))
+    (emms-info-native--decode-ogg-page (buffer-string))))
+
+(defun emms-info-native--decode-ogg-page (bytes)
+  "Decode a single Ogg page from a sequence of BYTES.
+Return a plist (:num-packets N :num-bytes B :stream S), where N
+is the number of packets in the page, B is the size of the page
+in bytes, and S is the unframed logical bitstream in a vector.
+Note that N can be zero."
+  (let* ((page (bindat-unpack emms-info-native--ogg-page-bindat-spec bytes))
+         (num-packets (emms-info-native--num-of-packets page))
+         (num-bytes (bindat-length emms-info-native--ogg-page-bindat-spec page))
+         (stream (bindat-get-field page 'payload)))
       (list :num-packets num-packets
             :num-bytes num-bytes
-            :stream stream))))
+            :stream stream)))
 
 (defun emms-info-native--num-of-packets (page)
   "Return the number of packets in Ogg page PAGE.
@@ -465,10 +468,8 @@ FIELDs that are listed in
 `emms-info-native--accepted-vorbis-fields' are returned."
   (unless (emms-info-native--has-flac-signature filename)
     (error "Invalid FLAC stream"))
-  (let* ((block (emms-info-native--decode-flac-comment-block
-                 filename))
-         (unpacked (bindat-unpack emms-info-native--flac-comment-block-bindat-spec
-                                  block))
+  (let* ((block (emms-info-native--decode-flac-comment-block (emms-info-native--file-inserter filename)))
+         (unpacked (bindat-unpack emms-info-native--flac-comment-block-bindat-spec block))
          (user-comments (bindat-get-field unpacked 'user-comments)))
     (emms-info-native--extract-vorbis-comments user-comments)))
 
@@ -480,7 +481,13 @@ Return t if there is a valid stream marker, nil otherwise."
     (insert-file-contents-literally filename nil 0 4)
     (looking-at "fLaC")))
 
-(defun emms-info-native--decode-flac-comment-block (filename)
+(defun emms-info-native--file-inserter (filename)
+  "Return a function that reads and inserts bytes from FILENAME.
+This is meant for `emms-info-native--decode-flac-comment-block'."
+  (lambda (offset end replace)
+    (insert-file-contents-literally filename nil offset end replace)))
+
+(defun emms-info-native--decode-flac-comment-block (read-func)
   "Read and decode a comment block from FLAC file FILENAME.
 Return the comment block data in a vector."
   (with-temp-buffer
@@ -489,10 +496,7 @@ Return the comment block data in a vector."
           last-flag
           (offset 4))
       (while (and (not comment-block) (not last-flag))
-        (insert-file-contents-literally filename
-                                        nil
-                                        offset
-                                        (cl-incf offset 4))
+        (funcall read-func offset (cl-incf offset 4) t)
         (let* ((header (bindat-unpack emms-info-native--flac-metadata-block-header-bindat-spec
                                       (buffer-string)))
                (end (+ offset (bindat-get-field header 'length)))
@@ -504,7 +508,7 @@ Return the comment block data in a vector."
                    block-type))
           (when (= block-type 4)
             ;; Comment block found, extract it.
-            (insert-file-contents-literally filename nil offset end t)
+            (funcall read-func offset end t)
             (setq comment-block (vconcat (buffer-string))))
           (setq offset end)))
       comment-block)))
