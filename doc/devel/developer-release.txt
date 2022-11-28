@@ -1,0 +1,64 @@
+-*- outline -*-
+This is an explanation of how to make a release for Emms. Emms is
+developed at Savannah (https://savannah.gnu.org/projects/emms/) and
+distributed via Emacs ELPA (https://elpa.gnu.org/).
+
+* clean compilation
+Check for clean compilation on the two latest major Emacs releases.
+
+
+* check for basic functionality
+Check for clean loading and running with basic functionality on the
+two latest major Emacs releases.
+
+
+* version bump
+Increase the version number in emms.el (`emms-version' and the elpa
+header as a comment).
+
+
+* NEWS
+update the NEWS file from the git log to include all significant
+user-facing changes.
+
+
+* contributors
+Update AUTHORS file with the names of any new contributors. This is a
+good chance to make sure we are releasing everything with proper
+copyleft.
+
+
+* update the manual
+Update the manual:
+
+    $ makeinfo --html --no-split emms.texinfo
+
+Make sure that the manual compiles cleanly and that it looks right.
+
+
+* website update
+Update the website with all any pertinent information. Upload a new
+version of the manual if it has changed in this release:
+
+    $ cvs commit -m "update website" index.html
+
+
+* tag release
+Tag the release in git, for example:
+
+    $ git tag -a 4.2 -m "4.2"
+
+
+* push tag
+Push the tag to the git repo, for example:
+
+    $ git push --tags origin "4.2"
+
+
+* push to repo
+Push the version update itself to the git repo. We have automatic
+synchronization set up for GNU ELPA, so we are done.
+
+
+* announce
+Announce the release in the emms mailing list if it is called for.
