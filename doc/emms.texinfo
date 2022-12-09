@@ -170,75 +170,67 @@ This chapter demonstrates how to setup Emms so that you can start
 listening to your music without having to read all of the
 documentation first. This is the tl;dr version of the manual.
 
-The first thing you do is to load Emms via GNU ELPA. But if you are
-installing manually, then start by telling Emacs where Emms is
-located. Let's say you have it in @file{~/elisp/emms/}. So add this
-line to your @file{.emacs}:
+The first thing to do is to load Emms via GNU ELPA. Invoke @kbd{M-x
+list-packages} and choose to install Emms.
+
+If you are installing Emms manually, then start by telling Emacs where
+your copy of Emms is located. Let's say you have it in
+@file{~/elisp/emms/}. So add this line to your @file{.emacs}:
 
 @lisp
 (add-to-list 'load-path "~/elisp/emms/lisp/")
-@end lisp
-
-More detailed information about installing Emms can be found in the
-installation chapter, @xref{Installation}.
-
-You'll then want to load Emms into Emacs. To achieve this you invoke
-the @code{emms-all} setup function by adding the following three lines
-to your Emacs initialization file.
-
-@lisp
 (require 'emms-setup)
-(emms-all)
-(emms-default-players)
 @end lisp
 
-The function @code{emms-default-players} in the last line sets up the
-list of default players. The list contains lightweight specialized
-players like ogg123 or mpg321 and we-play-everything-players such as
-mplayer, mpv, vlc, etc.. To be sure that emms can play all your music
-you should check that your preferred players are installed on the
-machine.
+(More detailed information about installing Emms can be found in the
+installation chapter, @xref{Installation}.)
 
-You can also have Emms try to find which playes are installed on your
-machine and set them up for you by invoking @kbd{M-x
-emms-setup-discover-players} and following the interactive prompts.
-
-More detail about setting up Emms can be found in the setup chapter,
-@xref{Setup}.
-
-Emms tries to display the tags (the name of the song, as opposed to
-the name of the file) of the music you listen to. Emms can use a
-number of pieces of software and libraries as sources for track info,
-see @xref{Track Information} for more.
-
-The last thing to do is to tell Emms where is your music; the root
-directory of our music collection. Let's say all your music is in
-@file{~/Music} or in subdirectories thereof:
+Either way, you are now ready to configure Emms. Your Emms config can
+be as simple as three lines. For example:
 
 @lisp
-(setq emms-source-file-default-directory "~/Music/")
+(emms-all)
+(setq emms-player-list '(emms-player-vlc)
+      emms-info-functions '(emms-info-native))
 @end lisp
 
-OK, now we've set up Emms. Reload your Emacs initialization file or
-restart Emacs to let the changes have an effect.
+The function @code{emms-all} loads all of the stable features in Emms.
 
-Now we will add all our music to a playlist by invoking @kbd{M-x
-emms-add-directory-tree RET ~/Music/ RET}. We do this because then
-Emms will read the tags of all your music files and caches them (the
-cache is also required for the Emms browser, @xref{The Browser}.)
+The variable @var{emms-player-list} is a list of players that Emms
+should call to play your media. In this example we assume that you
+have VLC installed on your system. But if you use mpv or mplayer
+instead, just change @code{emms-player-vlc} to @code{emms-player-mpv}
+or @code{emms-player-mplayer}; you get the idea.
 
-To switch to the playlist buffer, invoke @kbd{M-x
-emms-playlist-mode-go} or simply @kbd{M-x emms}. You may see that some
-tracks are displayed with their file name, but as Emms asynchronously
-populates its tag cache, track by track, the filenames get replaced
-with the artist and track name of the file's tag.
+The variable @var{emms-info-functions} is a list of ways for Emms to
+read the metadata in your media files, so that Emms can display the
+song title, artist name, etc. @code{emms-info-native} is a metadata
+reader written entirely in Emacs Lisp, but there are also other
+backends which call external programs such as TinyTag, Taglib,
+Exiftool, and etc.
 
-Go ahead and navigate to a track and hit @kbd{RET} on it to start
-playback.
+Reload your Emacs initialization file, or restart Emacs to let the
+changes have an effect.
+
+Add all your music to a playlist by invoking @kbd{M-x
+emms-add-directory-tree RET ~/my_music_directory/ RET}. When you do
+this Emms will start reading metadata from the files and populating
+the cache. This may take a while.
+
+When you are done, you can load the browser with @kbd{M-x
+emms-browser}, or view your playlist directly with @kbd{M-x
+emms-playlist-mode-go} (when in the playlist you can hit @kbd{RET} on
+a track to start playing it.)
 
 Now you can start exploring Emms. It's probably best to begin with the
 basic commands (@pxref{Basic Commands}), the interactive playlists
 (@pxref{Interactive Playlists}), and the browser (@pxref{The Browser}).
+
+More detail about setting up Emms can be found in the setup chapter,
+@xref{Setup}.
+
+Need help? There are knowledgeable people on the #emacs channel on irc
+(irc.libera.chat), and Emms has a mailing list at emms-help@@gnu.org.
 
 
 @c -------------------------------------------------------------------
