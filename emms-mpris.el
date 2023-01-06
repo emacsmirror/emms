@@ -80,6 +80,7 @@
 
 ;;* What we need
 (require 'dbus)
+(require 'url-parse)
 (require 'emms)
 (require 'emms-browser)
 (require 'emms-playing-time)
