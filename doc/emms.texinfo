@@ -84,6 +84,7 @@ Modules and Extensions
 * Bookmarks::            Saving a place in a media file.
 * Managing Playlists::   Managing multiple playlists.
 * GNU FM::               Connect to music community websites.
+* D-Bus::                Control Emms over D-Bus
 
 Copying and license
 * Copying::             The GNU General Public License gives you permission to
@@ -3004,6 +3005,30 @@ setup level.
 Then invoke @kbd{emms-librefm-stream} and enter the URL of the station
 you wish to listen to, for example ``librefm://globaltags/Classical''.
 
+@c -------------------------------------------------------------------
+@node D-Bus
+@chapter D-Bus
+
+@cindex D-Bus
+
+Emms can provide an MPRIS interface which allows it to be
+controlled over D-Bus.
+
+To enable this, first load the feature:
+
+@lisp
+(require 'emms-mpris)
+@end lisp
+
+
+and then turn it on with @kbd{emms-mpris-enable}.  You can
+turn it off with @kbd{emms-mpris-disable}.
+
+At present, Emms only provides a partial implementation of
+the @url{
+https://specifications.freedesktop.org/mpris-spec/latest/index.html,
+MPRIS specification}: changing the volume, shuffle or loop
+status is not currently supported.
 
 
 @c including the relevant licenses

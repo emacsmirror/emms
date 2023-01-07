@@ -119,7 +119,8 @@ the stable features which come with the Emms distribution."
     (require 'emms-volume)
     (require 'emms-playlist-limit)
     (require 'emms-librefm-scrobbler)
-    (require 'emms-librefm-stream))
+    (require 'emms-librefm-stream)
+    (require 'emms-mpris))
   ;; setup
   (setq emms-playlist-default-major-mode #'emms-playlist-mode)
   (add-to-list 'emms-track-initialize-functions #'emms-info-initialize-track)
