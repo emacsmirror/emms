@@ -496,6 +496,7 @@ Each entry of the form (info-field mpris-field dbus-type).")
 
 (defun emms-mpris-enable ()
   "Activate EMMS dbus service."
+  (interactive)
   (unless emms-mpris-enabled-p
     (emms-mpris-register-iface emms-mpris-mediaplayer-iface-spec)
     (emms-mpris-register-iface emms-mpris-player-iface-spec)
@@ -510,6 +511,7 @@ Each entry of the form (info-field mpris-field dbus-type).")
 
 (defun emms-mpris-disable ()
   "Turn off EMMS dbus service."
+  (interactive)
   (when emms-mpris-enabled-p
     (remove-hook 'emms-player-started-hook #'emms-mpris-change-status)
     (remove-hook 'emms-player-paused-hook #'emms-mpris-change-status)
