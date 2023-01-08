@@ -1,6 +1,6 @@
 ;;; emms-mpris.el --- Mpris interface for EMMS        -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2022  Fran Burstall
+;; Copyright (C) 2022-2023  Free Software Foundation, Inc.
 
 ;; Author: Fran Burstall <fran.burstall@gmail.com>
 ;; Keywords: multimedia
