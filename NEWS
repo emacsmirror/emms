@@ -1,3 +1,9 @@
+New in 13
+
+    * emms-mpris.el: provides a dbus interface to EMMS
+    * quickstart section in the manual has been improved
+
+
 New in 12
 
     * emms-volume-pulse.el: Try to find the default sink
