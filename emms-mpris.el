@@ -459,7 +459,7 @@ Each entry of the form (info-field mpris-field dbus-type).")
 ;;*** Seek method
 (defun emms-mpris-seek (ms)
   "Method to seek by MS microseconds."
-  (emms-seek (emms-mpris-musec-to-sec ms))
+  (emms-seek (number-to-string (emms-mpris-musec-to-sec ms)))
   (emms-mpris-signal-position emms-playing-time)
   :ignore)
 
@@ -472,7 +472,7 @@ Each entry of the form (info-field mpris-field dbus-type).")
 	 (pos-in-secs (emms-mpris-musec-to-sec pos)))
     (when (and (string-equal track-id current-track-id)
 	       (<= 0.0 pos-in-secs duration))
-      (emms-seek-to pos-in-secs)
+      (emms-seek-to (number-to-string pos-in-secs))
       (emms-mpris-signal-position emms-playing-time))
     :ignore))
 
