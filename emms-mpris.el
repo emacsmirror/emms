@@ -305,8 +305,8 @@ which evaluates to that value or the value itself."
   (let* ((last-input-event last-input-event)
 	 (prop (cadr args)))
     (if (string-equal prop "Position")
-	(list :variant :int64
-	      (emms-mpris-sec-to-musec emms-playing-time))
+	(list (list :variant :int64
+		    (emms-mpris-sec-to-musec emms-playing-time)))
       (apply #'dbus-property-handler args))))
 
 (defvar emms-mpris-properties-iface-spec
