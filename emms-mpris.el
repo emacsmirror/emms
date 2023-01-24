@@ -39,8 +39,7 @@
 ;; - Shuffle
 ;; - LoopStatus
 ;; The issue with the last two is how to allow them to be set both
-;; over dbus and via lisp/emms-ui.  I do not know how to do this in a
-;; simple way.
+;; over dbus and via lisp/emms-ui.  See below for an implementation strategy.
 
 ;; TODO:
 ;;   * Shuffle: value is emms-random-playlist and
@@ -54,26 +53,19 @@
 ;; NEXT: think through how setting Shuffle or LoopStatus should work:
 ;; How can shuffle be set and what should happen when it does?
 ;; 1. Can be set over dbus and then a PropertiesChanged signal is
-;; fired.  This should provoke emms into changing state.  This is part
-;; of a general story: we have d-bus state and emms-state and the
-;; question is how to keep them in sync.
-;; Change in d-bus state (via dbus-set-property called from a client
-;; or wherever): this fires a PropertiesChanged signal to which emms
-;; should respond to change its state.  So we need a signal handler
-;; listening.
-;; Change in emms-state (from Lisp or emms UI): this should trigger a
-;; change in d-bus state via dbus-set-property.  This in turn emits
-;; the signal to which the handler must respond without creating a
-;; loop.  This last requirement is the heart of the matter.
-;; Strategies:
-;; 1. Advise the state changing functions in emms to only change the
-;; dbus state and then let the signal handler bring everything up to
-;; date using d-bus state as the source of truth.
-;; Pros:
-;; - Easy to reason about
-;; Cons:
-;; - Lots of advice to keep track of
-;; 2. Have a second signal internal to us which is fired from emms hooks.
+;; fired.  This should provoke emms into changing state.
+;; 2.  The user can also change state from lisp or the EMMS UI and then we
+;; need to bring the dbus state up to date.
+;; All this without provoking a loop.
+;;
+;; Here is a strategy:
+;; - Have a global flag usually set to t 
+;; - If Shuffle changes from dbus, have a signal handler react to
+;; change emms state if flag is t, otherwise do nothing except reset
+;; flag to t.
+;; - Advise the emms shuffle function to end by changing dbus state
+;; via Properties.Set and setting the flag to nil.
+
 
 
 ;;; Code:
