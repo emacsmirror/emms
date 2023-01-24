@@ -487,6 +487,16 @@ In both forms seconds can be a floating point number."
 (defun emms-timespec-to-secs (timespec)
   "Convert TIMESPEC to seconds.
 
+If TIMESPEC is number, use it verbatim.  If TIMESPEC is string,
+use `emms-timestr-to-secs' for conversion.  Otherwise return
+zero."
+  (cond ((numberp timespec) timespec)
+        ((stringp timespec) (emms-timestr-to-secs timespec))
+        (t 0)))
+
+(defun emms-timestr-to-secs (timespec)
+  "Convert TIMESPEC to seconds.
+
 TIMESPEC is assumed to be a string of form [-][[HH:]MM:]SS, where
 HH is hours, MM is minutes and SS is seconds.  Each element is
 converted to number by calling `string-to-number'.  Missing or
