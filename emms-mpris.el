@@ -291,27 +291,40 @@ which evaluates to that value or the value itself."
 
 ;;** Properties interface
 
-;; We re-implement the "Get" method of the dbus.properties interface.
-;; For why?  Well, the default handler looks up the value of a property
-;; in a table which works fine unless we want the "Position" property
-;; of the Player interface which changes all the time (and we don't
-;; want to update the table every second!).  So we wrap the default
-;; handle to treat this special case differently.
+;; We re-implement the "Get" and "GetAll" methods of the
+;; dbus.properties interface.  For why?  Well, the default handler
+;; looks up the value of a property in a hash table which works fine
+;; unless we want the "Position" property of the Player interface
+;; which changes all the time (and we don't want to update the table
+;; every second!).  So we wrap the default handler to update the
+;; Position entry in the table before delegating to the default
+;; handler.  This is a bit of a hack in that we go rather beyond the
+;; API of dbus.el and hope that the internals do not change.
+
+(defun emms-mpris-update-position-hash-value ()
+  "Update the D-Bus hash-table.
+
+Refresh the value in the hash-table corresponding to the Position
+property of the org.mpris.MediaPlayer2.Player interface."
+  (puthash (list :property :session "org.mpris.MediaPlayer2.Player" "Position")
+	   (list (list nil
+		       emms-mpris-service
+		       emms-mpris-path
+		       (list :read nil (list :variant :int64 (emms-mpris-sec-to-musec emms-playing-time)))))
+	   dbus-registered-objects-table))
 
 (defun emms-mpris-get-property-handler (&rest args)
-  "Handle Get event for property in ARGS.
+  "Handle Get and GetAll event for property in ARGS.
 
- The Position property gets special treatment."
-  (let* ((last-input-event last-input-event)
-	 (prop (cadr args)))
-    (if (string-equal prop "Position")
-	(list (list :variant :int64
-		    (emms-mpris-sec-to-musec emms-playing-time)))
-      (apply #'dbus-property-handler args))))
+ The Position property gets refreshed before delegating to `dbus-property-handler'."
+  (let* ((last-input-event last-input-event))
+    (emms-mpris-update-position-hash-value)
+    (apply #'dbus-property-handler args)))
 
 (defvar emms-mpris-properties-iface-spec
   '("org.freedesktop.DBus.Properties"
-    (("Get" emms-mpris-get-property-handler))
+    (("Get" emms-mpris-get-property-handler)
+     ("GetAll" emms-mpris-get-property-handler))
     nil)
   "Partial Properties interface spec for dbus.")
 
