@@ -308,7 +308,8 @@ property of the org.mpris.MediaPlayer2.Player interface."
 (defun emms-mpris-get-property-handler (&rest args)
   "Handle Get and GetAll event for property in ARGS.
 
- The Position property gets refreshed before delegating to `dbus-property-handler'."
+The Position property gets refreshed before delegating
+to `dbus-property-handler'."
   (let* ((last-input-event last-input-event))
     (emms-mpris-update-position-hash-value)
     (apply #'dbus-property-handler args)))
