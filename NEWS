@@ -1,17 +1,23 @@
+New in 14
+
+    * emms.el: Fix emms-seek-* functions to work with number arguments.
+    * emms-mpris.el: Fix Seek and SetPosition methods, implement Properties.GetAll method.
+
+
 New in 13
 
-    * emms-mpris.el: provides a dbus interface to EMMS
-    * quickstart section in the manual has been improved
+    * emms-mpris.el: provides a dbus interface to EMMS.
+    * quickstart section in the manual has been improved.
 
 
 New in 12
 
-    * emms-volume-pulse.el: Try to find the default sink
-    * `emms-setup-discover-players' automatic player discovery
-    * emms.el: reverse the order players are collected
-    * emms-browser.el: tab now toggles subitems
-    * emms.el: accept timestamps in emms-seek*
-    * emms-playlist-mode.el: Prefer using dired-jump
+    * emms-volume-pulse.el: Try to find the default sink.
+    * `emms-setup-discover-players' automatic player discovery.
+    * emms.el: reverse the order players are collected.
+    * emms-browser.el: tab now toggles subitems.
+    * emms.el: accept timestamps in emms-seek*.
+    * emms-playlist-mode.el: Prefer using dired-jump.
     * emms-playlist-mode.el (emms-playlist-mode-goto-dired-at-point): Use
       dired-jump, optionally opening the dired buffer in other-window.
 
@@ -19,19 +25,19 @@ New in 12
 New in 11
 
     * Bug fix: emms-info-exiftool.el now handles numeric song titles gracefully.
-    * Cache is now saved after tag editing
+    * Cache is now saved after tag editing.
     * Minor bug fixes in emms-tag-editor.el and emms-streams.el.
 
 
 New in 10
 
-    * emms-player-mpv.el: bug fixes and improvments (details in VC history)
-    * emms-player-mpd.el: bug fixes and improvments (details in VC history)
+    * emms-player-mpv.el: bug fixes and improvments (details in VC history).
+    * emms-player-mpd.el: bug fixes and improvments (details in VC history).
 
 
 New in 9
 
-    * emms-player-mpd.el: playing order fix
+    * emms-player-mpd.el: playing order fix.
 
 
 New in 8
