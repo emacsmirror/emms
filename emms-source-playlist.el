@@ -209,9 +209,16 @@ See `emms-source-playlist-formats' for a list of supported formats."
 (defun emms-source-playlist-parse-native (file)
   "Parse the native EMMS playlist in the current buffer."
   (ignore file)
-  (save-excursion
-    (goto-char (point-min))
-    (read (current-buffer))))
+  (let ((tracks (save-excursion
+                 (goto-char (point-min))
+                 (read (current-buffer)))))
+    (mapc (lambda (track)
+            (funcall emms-cache-set-function
+                     (emms-track-type track)
+                     (emms-track-name track)
+                     track))
+          tracks)
+    tracks))
 
 (defun emms-source-playlist-unparse-native (in out)
   "Unparse a native playlist from IN to OUT.
