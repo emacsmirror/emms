@@ -37,34 +37,6 @@
 ;; simple percentage to report the volume---every emms-volume
 ;; controller returns a string in a different format, sigh.
 ;; - Shuffle
-;; - LoopStatus
-;; The issue with the last two is how to allow them to be set both
-;; over dbus and via lisp/emms-ui.  See below for an implementation strategy.
-
-;; TODO:
-;;   * Shuffle: value is emms-random-playlist and
-;; emms-toggle-random-playlist shows implementation
-;;   * LoopStatus: mpris expects three possibilities here: None, Track
-;; and Playlist.See emms-repeat-track and emms-repeat-playlist for
-;; values and emms-toggle-repeat-* for implementations
-;;   * Support more than tracks in files and directories (example:
-;; playlists and urls: I need a way to work out which emms-play-* to call).
-
-;; NEXT: think through how setting Shuffle or LoopStatus should work:
-;; How can shuffle be set and what should happen when it does?
-;; 1. Can be set over dbus and then a PropertiesChanged signal is
-;; fired.  This should provoke emms into changing state.
-;; 2.  The user can also change state from lisp or the EMMS UI and then we
-;; need to bring the dbus state up to date.
-;; All this without provoking a loop.
-;;
-;; Here is a strategy:
-;; - Have a global flag usually set to t 
-;; - If Shuffle changes from dbus, have a signal handler react to
-;; change emms state if flag is t, otherwise do nothing except reset
-;; flag to t.
-;; - Advise the emms shuffle function to end by changing dbus state
-;; via Properties.Set and setting the flag to nil.
 
 
 
@@ -77,6 +49,8 @@
 (require 'emms-browser)
 (require 'emms-playing-time)
 (require 'cl-lib)
+(require 'pcase)
+(require 'subr-x)
 
 ;;* Dbus components
 (defconst emms-mpris-service "org.mpris.MediaPlayer2.emms"
@@ -110,7 +84,9 @@ VALUE is the initial value, ACCESS the access mode."
 			    property
 			    access
 			    val
-			    nil t)))
+			    ;; emit signal when readwrite properties change
+			    (equal access :readwrite)
+			    t)))
 
 (defun emms-mpris-register-iface (spec)
   "Register an interface with spec SPEC on the EMMS service.
@@ -166,13 +142,13 @@ which evaluates to that value or the value itself."
      ("Seek" emms-mpris-seek)
      ("SetPosition" emms-mpris-set-position))
    ;; Properties: Shuffle, LoopStatus, Volume not supported (yet)
-    (;; ("LoopStatus" :readwrite emms-mpris-loop-status)
+    (("LoopStatus" :readwrite emms-mpris-loop-status)
      ;; ("Shuffle" :readwrite emms-random-playlist)
      ("PlaybackStatus" :read emms-mpris-status)
      ("Rate" :readwrite 1.0)
      ("MinimumRate" :read 1.0)
      ("MaximumRate" :read 1.0)
-     ("Position" :read (:int64 0)) 	;think more about this
+     ("Position" :read (:int64 0))	;think more about this
      ("CanGoNext" :read t)
      ("CanGoPrevious" :read t)
      ("CanPlay" :read t)
@@ -253,7 +229,7 @@ which evaluates to that value or the value itself."
       <arg type=\"x\" name=\"Position\"/>
     </signal>
     <property type=\"s\" name=\"PlaybackStatus\" access=\"read\"/>
-   <!-- <property type=\"s\" name=\"LoopStatus\" access=\"readwrite\"/> -->
+    <property type=\"s\" name=\"LoopStatus\" access=\"readwrite\"/>
     <property type=\"d\" name=\"Rate\" access=\"readwrite\"/>
    <!--  <property type=\"b\" name=\"Shuffle\" access=\"readwrite\"/> -->
     <property type=\"a{sv}\" name=\"Metadata\" access=\"read\"/>
@@ -355,6 +331,24 @@ to `dbus-property-handler'."
 			  value
 			  t nil))
 
+(defvar emms-mpris-ignore-signal-p nil
+  "Non-nil if we should ignore a PropertiesChanged signal.
+
+We do this when we have already taken action via the EMMS UI.")
+
+(defun emms-mpris-property-change-handler (_service changes _invalidated)
+  "Respond to PropertiesChanged signal by updating emms state to reflect CHANGES."
+  (if emms-mpris-ignore-signal-p
+      (setq emms-mpris-ignore-signal-p nil)
+    (when-let ((payload (assoc "LoopStatus" changes)))
+      (pcase (caadr payload)
+	("Track" (setq emms-repeat-playlist nil
+		       emms-repeat-track t))
+	("Playlist" (setq emms-repeat-playlist t
+			  emms-repeat-track nil))
+	(_ (setq emms-repeat-playlist nil
+		 emms-repeat-track nil))))))
+
 ;;*** Playback status
 (defun emms-mpris-status ()
   "Return the playback status of EMMS as string: Playing, Paused or Stopped."
@@ -363,12 +357,24 @@ to `dbus-property-handler'."
           "Paused" "Playing")
     "Stopped"))
 
-;;*** Loop status (not used yet)
+;;*** Loop status
 (defun emms-mpris-loop-status ()
   "Return the loop status of EMMS as a string: Track, Playlist or None."
   (cond (emms-repeat-track "Track")
 	(emms-repeat-playlist "Playlist")
 	(t "None")))
+
+(defun emms-mpris-advise-loop-status ()
+  "Update dbus value of LoopStatus.
+
+Intended to advise emms-toggle-repeat-*."
+  (setq emms-mpris-ignore-signal-p t)
+  (dbus-set-property :session
+		     emms-mpris-service
+		     emms-mpris-path
+		     "org.mpris.MediaPlayer2.Player"
+		     "LoopStatus"
+		     (emms-mpris-loop-status)))
 
 ;;*** Metadata
 
@@ -509,6 +515,15 @@ Each entry of the form (info-field mpris-field dbus-type).")
     (emms-mpris-register-iface emms-mpris-introspectable-iface-spec)
     (emms-mpris-register-iface emms-mpris-properties-iface-spec)
     (dbus-register-service :session emms-mpris-service :allow-replacement)
+    (dbus-register-signal :session
+			  emms-mpris-service
+			  emms-mpris-path
+			  dbus-interface-properties
+			  "PropertiesChanged"
+			  #'emms-mpris-property-change-handler
+			  :eavesdrop)
+    (advice-add 'emms-toggle-repeat-track :after #'emms-mpris-advise-loop-status)
+    (advice-add 'emms-toggle-repeat-playlist :after #'emms-mpris-advise-loop-status)
     (add-hook 'emms-player-started-hook #'emms-mpris-change-status)
     (add-hook 'emms-player-paused-hook #'emms-mpris-change-status)
     (add-hook 'emms-player-stopped-hook #'emms-mpris-change-status)
@@ -523,6 +538,8 @@ Each entry of the form (info-field mpris-field dbus-type).")
     (remove-hook 'emms-player-paused-hook #'emms-mpris-change-status)
     (remove-hook 'emms-player-stopped-hook #'emms-mpris-change-status)
     (remove-hook 'emms-player-finished-hook #'emms-mpris-change-status)
+    (advice-remove 'emms-toggle-repeat-track  #'emms-mpris-advise-loop-status)
+    (advice-remove 'emms-toggle-repeat-playlist  #'emms-mpris-advise-loop-status)
     ;; Call this twice: we have two methods for "Get" on the Properties
     ;; interface (there /must/ be a better way to do this!):
     (dbus-unregister-service :session emms-mpris-service)
