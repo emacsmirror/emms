@@ -36,7 +36,6 @@
 ;;  - Volume: this should be easy but there seems to be no way to get a
 ;; simple percentage to report the volume---every emms-volume
 ;; controller returns a string in a different format, sigh.
-;; - Shuffle
 
 
 
@@ -143,7 +142,7 @@ which evaluates to that value or the value itself."
      ("SetPosition" emms-mpris-set-position))
    ;; Properties: Shuffle, LoopStatus, Volume not supported (yet)
     (("LoopStatus" :readwrite emms-mpris-loop-status)
-     ;; ("Shuffle" :readwrite emms-random-playlist)
+     ("Shuffle" :readwrite emms-random-playlist)
      ("PlaybackStatus" :read emms-mpris-status)
      ("Rate" :readwrite 1.0)
      ("MinimumRate" :read 1.0)
@@ -231,7 +230,7 @@ which evaluates to that value or the value itself."
     <property type=\"s\" name=\"PlaybackStatus\" access=\"read\"/>
     <property type=\"s\" name=\"LoopStatus\" access=\"readwrite\"/>
     <property type=\"d\" name=\"Rate\" access=\"readwrite\"/>
-   <!--  <property type=\"b\" name=\"Shuffle\" access=\"readwrite\"/> -->
+    <property type=\"b\" name=\"Shuffle\" access=\"readwrite\"/>
     <property type=\"a{sv}\" name=\"Metadata\" access=\"read\"/>
     <property type=\"d\" name=\"Volume\" access=\"readwrite\"/>
     <property type=\"x\" name=\"Position\" access=\"read\"/>
@@ -247,6 +246,7 @@ which evaluates to that value or the value itself."
 </node>
 "
   "Mpris introspection data for emms.")
+
 (defun emms-mpris-introspect ()
   "Return dbus introspection data."
   emms-mpris-xml)
@@ -347,7 +347,12 @@ We do this when we have already taken action via the EMMS UI.")
 	("Playlist" (setq emms-repeat-playlist t
 			  emms-repeat-track nil))
 	(_ (setq emms-repeat-playlist nil
-		 emms-repeat-track nil))))))
+		 emms-repeat-track nil))))
+    (when-let ((payload (assoc "Shuffle" changes)))
+      (setq emms-random-playlist (caadr payload))
+      (if emms-random-playlist
+	  (setq emms-player-next-function #'emms-random)
+	(setq emms-player-next-function #'emms-next-noerror)))))
 
 ;;*** Playback status
 (defun emms-mpris-status ()
@@ -375,6 +380,19 @@ Intended to advise emms-toggle-repeat-*."
 		     "org.mpris.MediaPlayer2.Player"
 		     "LoopStatus"
 		     (emms-mpris-loop-status)))
+
+;;*** Shuffle
+(defun emms-mpris-advise-shuffle ()
+  "Update dbus value of Shuffle.
+
+Intended to advise `emms-toggle-random-playlist'."
+  (setq emms-mpris-ignore-signal-p t)
+  (dbus-set-property :session
+		     emms-mpris-service
+		     emms-mpris-path
+		     "org.mpris.MediaPlayer2.Player"
+		     "Shuffle"
+		     emms-random-playlist))
 
 ;;*** Metadata
 
@@ -524,6 +542,7 @@ Each entry of the form (info-field mpris-field dbus-type).")
 			  :eavesdrop)
     (advice-add 'emms-toggle-repeat-track :after #'emms-mpris-advise-loop-status)
     (advice-add 'emms-toggle-repeat-playlist :after #'emms-mpris-advise-loop-status)
+    (advice-add 'emms-toggle-random-playlist :after #'emms-mpris-advise-shuffle)
     (add-hook 'emms-player-started-hook #'emms-mpris-change-status)
     (add-hook 'emms-player-paused-hook #'emms-mpris-change-status)
     (add-hook 'emms-player-stopped-hook #'emms-mpris-change-status)
@@ -540,6 +559,7 @@ Each entry of the form (info-field mpris-field dbus-type).")
     (remove-hook 'emms-player-finished-hook #'emms-mpris-change-status)
     (advice-remove 'emms-toggle-repeat-track  #'emms-mpris-advise-loop-status)
     (advice-remove 'emms-toggle-repeat-playlist  #'emms-mpris-advise-loop-status)
+    (advice-remove 'emms-toggle-random-playlist #'emms-mpris-advise-shuffle)
     ;; Call this twice: we have two methods for "Get" on the Properties
     ;; interface (there /must/ be a better way to do this!):
     (dbus-unregister-service :session emms-mpris-service)
