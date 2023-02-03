@@ -50,6 +50,7 @@
 (require 'cl-lib)
 (require 'pcase)
 (require 'subr-x)
+(require 'seq)
 
 ;;* Dbus components
 (defconst emms-mpris-service "org.mpris.MediaPlayer2.emms"
@@ -437,8 +438,11 @@ Each entry of the form (info-field mpris-field dbus-type).")
     ;; url
     (push (emms-mpris-dict "xesam:url" (url-encode-url (concat "file:" track-name))) metadata)
     ;; artUrl
-    (when-let ((art-file (emms-browser-get-cover-from-path track-name 'medium)))
-      (push (emms-mpris-dict "mpris:artUrl" (url-encode-url (concat "file:" art-file))) metadata))
+    ;; Shockingly, emms-browser-get-cover-from-path needs a graphical display to
+    ;; function (it eventually calls image-size) so we check there is one...
+    (when (seq-some #'display-graphic-p (frame-list))
+      (when-let ((art-file (emms-browser-get-cover-from-path track-name 'medium)))
+	(push (emms-mpris-dict "mpris:artUrl" (url-encode-url (concat "file://" art-file))) metadata)))
     ;; length
     (push
      (emms-mpris-dict "mpris:length"
