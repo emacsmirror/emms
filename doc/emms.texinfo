@@ -3024,11 +3024,10 @@ To enable this, first load the feature:
 and then turn it on with @kbd{emms-mpris-enable}.  You can
 turn it off with @kbd{emms-mpris-disable}.
 
-At present, Emms only provides a partial implementation of
-the @url{
+At present, the Emms implementation of the @url{
 https://specifications.freedesktop.org/mpris-spec/latest/index.html,
-MPRIS specification}: changing the volume, shuffle or loop
-status is not currently supported.
+MPRIS specification} is not complete: changing the volume
+is not currently supported.
 
 
 @c including the relevant licenses
