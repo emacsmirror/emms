@@ -89,6 +89,7 @@ outside itself.")
 This is a kludge; it is needed because bindat spec cannot refer
 outside itself.")
 
+
 ;;;; Vorbis code
 
 (defconst emms-info-native--max-num-vorbis-comments 1024
@@ -161,8 +162,8 @@ header.")
     (eval (unless (= last 0)
             (error "Vorbis version mismatch: expected 0, got %s"
                    last)))
-    (audio-channels u8)
-    (audio-sample-rate u32r)
+    (channel-count u8)
+    (sample-rate u32r)
     (bitrate-maximum u32r)
     (bitrate-nominal u32r)
     (bitrate-minimum u32r)
@@ -249,6 +250,7 @@ lower case and VALUE is the decoded value."
       (cons (downcase (match-string 1 comment-string))
             (match-string 2 comment-string)))))
 
+
 ;;;; Opus code
 
 (defconst emms-info-native--opus-headers-bindat-spec
@@ -312,6 +314,7 @@ header.")
   (string-to-vector "OpusTags")
   "Opus comment header magic pattern.")
 
+
 ;;;; Ogg code
 
 (defconst emms-info-native--ogg-page-size 65307
@@ -329,9 +332,9 @@ header.")
                    last)))
     (header-type-flag u8)
     (granule-position vec 8)
-    (stream-serial-number vec 4)
-    (page-sequence-no vec 4)
-    (page-checksum vec 4)
+    (stream-serial-number u32r)
+    (page-sequence-no u32r)
+    (page-checksum u32r)
     (page-segments u8)
     (segment-table vec (page-segments))
     (payload vec (eval (seq-reduce #'+ last 0))))
@@ -341,8 +344,63 @@ header.")
   (string-to-vector "OggS")
   "Ogg format magic capture pattern.")
 
-(defun emms-info-native--decode-ogg-comments (filename stream-type)
-  "Read and decode comments from Ogg file FILENAME.
+(defconst emms-info-native--ogg-crc-table
+  [#x00000000 #x04C11DB7 #x09823B6E #x0D4326D9 #x130476DC
+   #x17C56B6B #x1A864DB2 #x1E475005 #x2608EDB8 #x22C9F00F
+   #x2F8AD6D6 #x2B4BCB61 #x350C9B64 #x31CD86D3 #x3C8EA00A
+   #x384FBDBD #x4C11DB70 #x48D0C6C7 #x4593E01E #x4152FDA9
+   #x5F15ADAC #x5BD4B01B #x569796C2 #x52568B75 #x6A1936C8
+   #x6ED82B7F #x639B0DA6 #x675A1011 #x791D4014 #x7DDC5DA3
+   #x709F7B7A #x745E66CD #x9823B6E0 #x9CE2AB57 #x91A18D8E
+   #x95609039 #x8B27C03C #x8FE6DD8B #x82A5FB52 #x8664E6E5
+   #xBE2B5B58 #xBAEA46EF #xB7A96036 #xB3687D81 #xAD2F2D84
+   #xA9EE3033 #xA4AD16EA #xA06C0B5D #xD4326D90 #xD0F37027
+   #xDDB056FE #xD9714B49 #xC7361B4C #xC3F706FB #xCEB42022
+   #xCA753D95 #xF23A8028 #xF6FB9D9F #xFBB8BB46 #xFF79A6F1
+   #xE13EF6F4 #xE5FFEB43 #xE8BCCD9A #xEC7DD02D #x34867077
+   #x30476DC0 #x3D044B19 #x39C556AE #x278206AB #x23431B1C
+   #x2E003DC5 #x2AC12072 #x128E9DCF #x164F8078 #x1B0CA6A1
+   #x1FCDBB16 #x018AEB13 #x054BF6A4 #x0808D07D #x0CC9CDCA
+   #x7897AB07 #x7C56B6B0 #x71159069 #x75D48DDE #x6B93DDDB
+   #x6F52C06C #x6211E6B5 #x66D0FB02 #x5E9F46BF #x5A5E5B08
+   #x571D7DD1 #x53DC6066 #x4D9B3063 #x495A2DD4 #x44190B0D
+   #x40D816BA #xACA5C697 #xA864DB20 #xA527FDF9 #xA1E6E04E
+   #xBFA1B04B #xBB60ADFC #xB6238B25 #xB2E29692 #x8AAD2B2F
+   #x8E6C3698 #x832F1041 #x87EE0DF6 #x99A95DF3 #x9D684044
+   #x902B669D #x94EA7B2A #xE0B41DE7 #xE4750050 #xE9362689
+   #xEDF73B3E #xF3B06B3B #xF771768C #xFA325055 #xFEF34DE2
+   #xC6BCF05F #xC27DEDE8 #xCF3ECB31 #xCBFFD686 #xD5B88683
+   #xD1799B34 #xDC3ABDED #xD8FBA05A #x690CE0EE #x6DCDFD59
+   #x608EDB80 #x644FC637 #x7A089632 #x7EC98B85 #x738AAD5C
+   #x774BB0EB #x4F040D56 #x4BC510E1 #x46863638 #x42472B8F
+   #x5C007B8A #x58C1663D #x558240E4 #x51435D53 #x251D3B9E
+   #x21DC2629 #x2C9F00F0 #x285E1D47 #x36194D42 #x32D850F5
+   #x3F9B762C #x3B5A6B9B #x0315D626 #x07D4CB91 #x0A97ED48
+   #x0E56F0FF #x1011A0FA #x14D0BD4D #x19939B94 #x1D528623
+   #xF12F560E #xF5EE4BB9 #xF8AD6D60 #xFC6C70D7 #xE22B20D2
+   #xE6EA3D65 #xEBA91BBC #xEF68060B #xD727BBB6 #xD3E6A601
+   #xDEA580D8 #xDA649D6F #xC423CD6A #xC0E2D0DD #xCDA1F604
+   #xC960EBB3 #xBD3E8D7E #xB9FF90C9 #xB4BCB610 #xB07DABA7
+   #xAE3AFBA2 #xAAFBE615 #xA7B8C0CC #xA379DD7B #x9B3660C6
+   #x9FF77D71 #x92B45BA8 #x9675461F #x8832161A #x8CF30BAD
+   #x81B02D74 #x857130C3 #x5D8A9099 #x594B8D2E #x5408ABF7
+   #x50C9B640 #x4E8EE645 #x4A4FFBF2 #x470CDD2B #x43CDC09C
+   #x7B827D21 #x7F436096 #x7200464F #x76C15BF8 #x68860BFD
+   #x6C47164A #x61043093 #x65C52D24 #x119B4BE9 #x155A565E
+   #x18197087 #x1CD86D30 #x029F3D35 #x065E2082 #x0B1D065B
+   #x0FDC1BEC #x3793A651 #x3352BBE6 #x3E119D3F #x3AD08088
+   #x2497D08D #x2056CD3A #x2D15EBE3 #x29D4F654 #xC5A92679
+   #xC1683BCE #xCC2B1D17 #xC8EA00A0 #xD6AD50A5 #xD26C4D12
+   #xDF2F6BCB #xDBEE767C #xE3A1CBC1 #xE760D676 #xEA23F0AF
+   #xEEE2ED18 #xF0A5BD1D #xF464A0AA #xF9278673 #xFDE69BC4
+   #x89B8FD09 #x8D79E0BE #x803AC667 #x84FBDBD0 #x9ABC8BD5
+   #x9E7D9662 #x933EB0BB #x97FFAD0C #xAFB010B1 #xAB710D06
+   #xA6322BDF #xA2F33668 #xBCB4666D #xB8757BDA #xB5365D03
+   #xB1F740B4]
+  "Lookup table for calculating Ogg checksums.")
+
+(defun emms-info-native--decode-ogg-metadata (filename stream-type)
+  "Read and decode metadata from Ogg file FILENAME.
 The file is assumed to contain a single stream of type
 STREAM-TYPE, which must either `vorbis' or `opus'.
 
@@ -351,10 +409,13 @@ Return comments in a list of (FIELD . VALUE) cons cells.  See
   (let* ((packets (emms-info-native--decode-ogg-packets filename 2))
          (headers (emms-info-native--decode-ogg-headers packets
                                                         stream-type))
-         (comments (bindat-get-field headers
-                                     'comment-header
-                                     'user-comments)))
-    (emms-info-native--extract-vorbis-comments comments)))
+         (rate (bindat-get-field headers 'identification-header 'sample-rate))
+         (commdata (bindat-get-field headers 'comment-header 'user-comments))
+         (lastpage (emms-info-native--read-and-decode-last-ogg-page filename))
+         (granpos (cdr (assoc 'granule-position lastpage)))
+         (playtime (emms-info-native--decode-ogg-granule-position granpos rate))
+         (comments (emms-info-native--extract-vorbis-comments commdata)))
+    (nconc comments (when playtime (list (cons "playing-time" playtime))))))
 
 (defun emms-info-native--decode-ogg-packets (filename packets)
   "Read and decode packets from Ogg file FILENAME.
@@ -395,7 +456,7 @@ Return the plist from `emms-info-native--decode-ogg-page'."
                                     nil
                                     offset
                                     (+ offset
-                                       emms-info-native--ogg-page-size))
+                                       emms-info-native--ogg-page-size)) ;FIXME: may go over file size
     (emms-info-native--decode-ogg-page (buffer-string))))
 
 (defun emms-info-native--decode-ogg-page (bytes)
@@ -437,6 +498,83 @@ Return a structure that corresponds to either
                           packets)))
         (t (error "Unknown stream type %s" stream-type))))
 
+(defun emms-info-native--read-and-decode-last-ogg-page (filename)
+  "Read and decode the last Ogg page from FILENAME.
+Return the page in bindat type structure."
+  (with-temp-buffer
+    (let* ((length (file-attribute-size (file-attributes filename)))
+           (begin (max 0 (- length emms-info-native--ogg-page-size))))
+      (set-buffer-multibyte nil)
+      (insert-file-contents-literally filename nil begin length)
+      (emms-info-native--decode-last-ogg-page))))
+
+(defun emms-info-native--decode-last-ogg-page ()
+  "Find and return the last valid Ogg page from the current buffer.
+Ensure page synchronization by verifying Ogg page checksum.
+Return the page in bindat type structure.  If there is no valid
+Ogg page in the buffer, return nil."
+  (let (page)
+    (goto-char (point-max))
+    (while (and (not page)
+                (search-backward (concat emms-info-native--ogg-magic-pattern) nil t))
+      (setq page (condition-case nil
+                     (emms-info-native--verify-ogg-page)
+                   (error nil))))
+    (when (and page
+               (> (logand (cdr (assoc 'header-type-flag page)) #x04) 0))
+      page)))
+
+(defun emms-info-native--verify-ogg-page ()
+  "Verify Ogg page starting from point.
+Unpack page into `emms-info-native--ogg-page-bindat-spec'
+structure and calculate its checksum.  Return the page if the
+checksum is correct, or nil if the checksum does not match."
+  (let* ((offset (point))
+         (page (bindat-unpack emms-info-native--ogg-page-bindat-spec
+                              (buffer-string)
+                              (1- offset)))
+         (num-bytes (bindat-length emms-info-native--ogg-page-bindat-spec page))
+         (buf (buffer-substring-no-properties offset (+ offset num-bytes)))
+         (checksum (emms-info-native--calculate-ogg-checksum (concat (substring buf 0 22)
+                                                             [0 0 0 0]
+                                                             (substring buf 26)))))
+    (when (= (cdr (assoc 'page-checksum page)) checksum) page)))
+
+(defun emms-info-native--calculate-ogg-checksum (bytes)
+  "Calculate and return Ogg checksum for BYTES.
+See URL `https://xiph.org/vorbis/doc/framing.html' for details on
+checksum."
+  (let ((crc 0))
+    (dotimes (n (length bytes))
+      (setq crc (logxor (logand (ash crc 8) #xffffffff)
+                        (aref emms-info-native--ogg-crc-table
+                              (logxor (ash crc -24)
+                                      (aref bytes n))))))
+    crc))
+
+(defun emms-info-native--decode-ogg-granule-position (vec rate)
+  "Decode Ogg granule position vector VEC for sampling rate RATE.
+Granule position is 64-bit little-endian signed integer counting
+the number of PCM samples per channel.  If granule position is
+-1, it was for a partial packet and hence invalid.  In that case
+return nil."
+  (let* ((int (emms-info-native--vector-to-integer vec))
+         (pos (emms-info-native--unsigned-to-signed int 64)))
+    (unless (= pos -1) (/ pos rate))))
+
+(defun emms-info-native--vector-to-integer (vec)
+  (apply '+ (seq-map-indexed (lambda (elt idx)
+                               (* (expt 2 (* 8 idx)) elt))
+                             vec)))
+
+(defun emms-info-native--unsigned-to-signed (num bits)
+  (let ((bitmask (1- (expt 2 bits)))
+        (max (1- (expt 2 (1- bits)))))
+    (if (> num max)
+        (* -1 (1+ (logand (lognot num) bitmask)))
+      num)))
+
+
 ;;;; FLAC code
 
 (defconst emms-info-native--flac-metadata-block-header-bindat-spec
@@ -513,6 +651,7 @@ Return the comment block data in a vector."
           (setq offset end)))
       comment-block)))
 
+
 ;;;; id3v2 (MP3) code
 
 (defconst emms-info-native--id3v2-header-bindat-spec
@@ -931,6 +1070,7 @@ Return the text as string."
   (cdr (assoc (seq-first bytes)
               emms-info-native--id3v2-text-encodings)))
 
+
 ;;;; EMMS code
 
 (defun emms-info-native (track)
@@ -958,7 +1098,7 @@ info field and VALUE is the corresponding info value.  Both are
 strings."
   (let ((stream-type (emms-info-native--find-stream-type filename)))
     (cond ((or (eq stream-type 'vorbis) (eq stream-type 'opus))
-           (emms-info-native--decode-ogg-comments filename stream-type))
+           (emms-info-native--decode-ogg-metadata filename stream-type))
           ((eq stream-type 'flac)
            (emms-info-native--decode-flac-comments filename))
           ((eq stream-type 'mp3)
