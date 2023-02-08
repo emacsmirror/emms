@@ -153,9 +153,9 @@ header.")
             (error "Vorbis header type mismatch: expected 1, got %s"
                    last)))
     (vorbis vec 6)
-    (eval (unless (equal last emms-info-native--vorbis-magic-array)
+    (eval (unless (equal last emms-info-native--vorbis-magic-pattern)
             (error "Vorbis framing mismatch: expected `%s', got `%s'"
-                   emms-info-native--vorbis-magic-array
+                   emms-info-native--vorbis-magic-pattern
                    last)))
     (vorbis-version u32r)
     (eval (unless (= last 0)
@@ -173,9 +173,9 @@ header.")
                  last)))
   "Vorbis identification header specification.")
 
-(defconst emms-info-native--vorbis-magic-array
-  [118 111 114 98 105 115]
-  "Header packet magic pattern `vorbis'.")
+(defconst emms-info-native--vorbis-magic-pattern
+  (string-to-vector "vorbis")
+  "Header packet magic pattern.")
 
 (defconst emms-info-native--vorbis-comment-header-bindat-spec
   '((packet-type u8)
@@ -183,9 +183,9 @@ header.")
             (error "Vorbis header type mismatch: expected 3, got %s"
                    last)))
     (vorbis vec 6)
-    (eval (unless (equal last emms-info-native--vorbis-magic-array)
+    (eval (unless (equal last emms-info-native--vorbis-magic-pattern)
             (error "Vorbis framing mismatch: expected `%s', got `%s'"
-                   emms-info-native--vorbis-magic-array
+                   emms-info-native--vorbis-magic-pattern
                    last)))
     (vendor-length u32r)
     (eval (when (> last emms-info-native--max-vorbis-vendor-length)
@@ -260,9 +260,9 @@ header.")
 
 (defconst emms-info-native--opus-identification-header-bindat-spec
   '((opus-head vec 8)
-    (eval (unless (equal last emms-info-native--opus-head-magic-array)
+    (eval (unless (equal last emms-info-native--opus-head-magic-pattern)
             (error "Opus framing mismatch: expected `%s', got `%s'"
-                   emms-info-native--opus-head-magic-array
+                   emms-info-native--opus-head-magic-pattern
                    last)))
     (opus-version u8)
     (eval (unless (< last 16)
@@ -279,9 +279,9 @@ header.")
            (t (struct emms-info-native--opus-channel-mapping-table))))
   "Opus identification header specification.")
 
-(defconst emms-info-native--opus-head-magic-array
-  [79 112 117 115 72 101 97 100]
-  "Opus identification header magic pattern `OpusHead'.")
+(defconst emms-info-native--opus-head-magic-pattern
+  (string-to-vector "OpusHead")
+  "Opus identification header magic pattern.")
 
 (defconst emms-info-native--opus-channel-mapping-table
   '((stream-count u8)
@@ -291,9 +291,9 @@ header.")
 
 (defconst emms-info-native--opus-comment-header-bindat-spec
   '((opus-tags vec 8)
-    (eval (unless (equal last emms-info-native--opus-tags-magic-array)
+    (eval (unless (equal last emms-info-native--opus-tags-magic-pattern)
             (error "Opus framing mismatch: expected `%s', got `%s'"
-                   emms-info-native--opus-tags-magic-array
+                   emms-info-native--opus-tags-magic-pattern
                    last)))
     (vendor-length u32r)
     (eval (when (> last emms-info-native--max-vorbis-vendor-length)
@@ -308,9 +308,9 @@ header.")
                    (struct emms-info-native--vorbis-comment-field-bindat-spec)))
   "Opus comment header specification.")
 
-(defconst emms-info-native--opus-tags-magic-array
-  [79 112 117 115 84 97 103 115]
-  "Opus comment header magic pattern `OpusTags'.")
+(defconst emms-info-native--opus-tags-magic-pattern
+  (string-to-vector "OpusTags")
+  "Opus comment header magic pattern.")
 
 ;;;; Ogg code
 
@@ -319,9 +319,9 @@ header.")
 
 (defconst emms-info-native--ogg-page-bindat-spec
   '((capture-pattern vec 4)
-    (eval (unless (equal last emms-info-native--ogg-magic-array)
+    (eval (unless (equal last emms-info-native--ogg-magic-pattern)
             (error "Ogg framing mismatch: expected `%s', got `%s'"
-                   emms-info-native--ogg-magic-array
+                   emms-info-native--ogg-magic-pattern
                    last)))
     (stream-structure-version u8)
     (eval (unless (= last 0)
@@ -337,9 +337,9 @@ header.")
     (payload vec (eval (seq-reduce #'+ last 0))))
   "Ogg page structure specification.")
 
-(defconst emms-info-native--ogg-magic-array
-  [79 103 103 83]
-  "Ogg format magic capture pattern `OggS'.")
+(defconst emms-info-native--ogg-magic-pattern
+  (string-to-vector "OggS")
+  "Ogg format magic capture pattern.")
 
 (defun emms-info-native--decode-ogg-comments (filename stream-type)
   "Read and decode comments from Ogg file FILENAME.
@@ -517,9 +517,9 @@ Return the comment block data in a vector."
 
 (defconst emms-info-native--id3v2-header-bindat-spec
   '((file-identifier vec 3)
-    (eval (unless (equal last emms-info-native--id3v2-magic-array)
+    (eval (unless (equal last emms-info-native--id3v2-magic-pattern)
             (error "id3v2 framing mismatch: expected `%s', got `%s'"
-                   emms-info-native--id3v2-magic-array
+                   emms-info-native--id3v2-magic-pattern
                    last)))
     (version u8)
     (eval (setq emms-info-native--id3v2-version last))
@@ -529,9 +529,9 @@ Return the comment block data in a vector."
     (size eval (emms-info-native--checked-id3v2-size 'tag last)))
   "id3v2 header specification.")
 
-(defconst emms-info-native--id3v2-magic-array
-  [#x49 #x44 #x33]
-  "id3v2 header magic pattern `ID3'.")
+(defconst emms-info-native--id3v2-magic-pattern
+  (string-to-vector "ID3")
+  "id3v2 header magic pattern.")
 
 (defconst emms-info-native--id3v2-frame-header-bindat-spec
   '((id str (eval (if (= emms-info-native--id3v2-version 2) 3 4)))
