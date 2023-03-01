@@ -78,6 +78,19 @@ If you have your own functions for changing volume, set this."
                  (const :tag "Sndioctl" emms-volume-sndioctl-change)
                  (function :tag "Lisp function")))
 
+;; The function referenced by `emms-volume-get-function' must return
+;; an integer in the range [0-100]. This explicitly ignores
+;; over-amplification settings.
+(defcustom emms-volume-get-function
+  (cond
+   ;; check for sndioctl first to avoid picking up mixerctl or pactl
+   ;; on OpenBSD.
+   ((executable-find "pactl") #'emms-volume-pulse-get)
+   (t #'(lambda (_amount) (user-error "%s" "No supported mixer found.  Please, define ‘emms-volume-get-function’."))))
+  "The function to use to get the volume."
+  :type '(choice (const :tag "PulseAudio" emms-volume-pulse-get)
+                 (function :tag "Lisp function")))
+
 (defcustom emms-volume-change-amount 2
   "The amount to use when raising or lowering the volume using the
 emms-volume interface.
@@ -85,15 +98,19 @@ emms-volume interface.
 This should be a positive integer."
   :type 'integer)
 
+(defun emms-volume-get ()
+  "Return the volume as an integer in the range [0-100]."
+  (funcall emms-volume-get-function))
+
 ;;;###autoload
 (defun emms-volume-raise ()
-  "Raise the speaker volume."
+  "Raise the volume."
   (interactive)
   (funcall emms-volume-change-function emms-volume-change-amount))
 
 ;;;###autoload
 (defun emms-volume-lower ()
-  "Lower the speaker volume."
+  "Lower the volume."
   (interactive)
   (funcall emms-volume-change-function (- emms-volume-change-amount)))
 
