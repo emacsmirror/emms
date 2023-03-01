@@ -59,11 +59,6 @@ See full list of devices on your system by running
                  (const :tag "Default sink" nil))
   :group 'emms-volume)
 
-(defcustom emms-volume-pulse-max-volume 100
-  "The maximum volume percentage."
-  :type 'integer
-  :group 'emms-volume)
-
 ;; 'pactl get-sink-volume' was only added recently (version 14.1).
 ;; When that version is more widespread this function can be
 ;; simplified
@@ -103,6 +98,14 @@ See full list of devices on your system by running
 	(string-to-number volume-string)
       (error "cannot get volume from sink, check `emms-volume-pulse-sink'"))))
 
+(defun emms-volume-pulse-limit (v)
+  "Limit V to the range [0-100]"
+  (max (min v 100) 0))
+
+(defun emms-volume-pulse-get ()
+  "Return the pulse volume."
+  (emms-volume-pulse-limit
+   (emms-volume--pulse-get-volume)))
 
 ;;;###autoload
 (defun emms-volume-pulse-change (amount)
@@ -110,9 +113,8 @@ See full list of devices on your system by running
   (message "Volume is %s%%"
            (let ((pactl (or (executable-find "pactl")
                             (error "pactl is not in PATH")))
-                 (next-vol (max (min (+ (emms-volume--pulse-get-volume) amount)
-                                     emms-volume-pulse-max-volume)
-                                0)))
+                 (next-vol (emms-volume-pulse-limit
+			    (+ (emms-volume--pulse-get-volume) amount))))
              (when (zerop (shell-command
                            (format "%s set-sink-volume %s %s%%"
                                    pactl
