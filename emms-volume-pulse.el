@@ -79,26 +79,30 @@ See full list of devices on your system by running
          (output
           (shell-command-to-string
            (concat "pactl list sinks" "|"
-                   "grep -E -e 'Sink' -e 'Name' -e '^[^a-zA-Z]*Volume'"))))
-    (string-to-number
-     (car
-      (reverse
-       (funcall
-        (if sink-number-p #'assq #'assoc)
-        emms-volume-pulse-sink
-        (mapcar (if sink-number-p 'identity 'cdr)
-                (cl-loop while
-			 (string-match
-			  (mapconcat #'identity
-				     '(".*Sink[ \t]+\\#\\([0-9]+\\)"
-				       ".*Name:[ \t]\\([^\n]+\\)"
-				       ".*Volume:.*?\\([0-9]+\\)%.*\n?")
-				     "\n")
-			  output)
-			 collect (list (string-to-number (match-string 1 output))
-				       (match-string 2 output)
-				       (match-string 3 output))
-			 do (setq output (replace-match "" nil nil output))))))))))
+                   "grep -E -e 'Sink' -e 'Name' -e '^[^a-zA-Z]*Volume'")))
+	 (volume-string
+	  (car
+	   (reverse
+	    (funcall
+             (if sink-number-p #'assq #'assoc)
+             emms-volume-pulse-sink
+             (mapcar (if sink-number-p 'identity 'cdr)
+                     (cl-loop while
+			      (string-match
+			       (mapconcat #'identity
+					  '(".*Sink[ \t]+\\#\\([0-9]+\\)"
+					    ".*Name:[ \t]\\([^\n]+\\)"
+					    ".*Volume:.*?\\([0-9]+\\)%.*\n?")
+					  "\n")
+			       output)
+			      collect (list (string-to-number (match-string 1 output))
+					    (match-string 2 output)
+					    (match-string 3 output))
+			      do (setq output (replace-match "" nil nil output)))))))))
+    (if volume-string
+	(string-to-number volume-string)
+      (error "cannot get volume from sink, check `emms-volume-pulse-sink'"))))
+
 
 ;;;###autoload
 (defun emms-volume-pulse-change (amount)
