@@ -32,14 +32,8 @@
 ;; May 30 2006: First cleanup and collation of amixer functions into a
 ;;              separate file for releasability.
 
-;;; Todo:
-
-;; There probably needs to be more configurability, which may in turn
-;; mean adding some more functions.
-;; Some of this could benefit from adding customize interfaces.
 
 ;;; Code:
-
 (defcustom emms-volume-amixer-control "Master"
   "The control to change the volume with.
 Controls includes \"Master\", \"PCM\", etc. For a full list of available
@@ -56,6 +50,10 @@ The card is identified by a number. For a full list run `cat
   :type 'integer
   :group 'emms-volume)
 
+(defvar emms-volume-amixer-volume-regexp
+  "\\[\\([0-9]+\\)%\\]"
+  "Regexp to capture the volume from amixer output.")
+
 ;;;###autoload
 (defun emms-volume-amixer-change (amount)
   "Change amixer master volume by AMOUNT."
@@ -68,8 +66,28 @@ The card is identified by a number. For a full list run `cat
                                   "sset" emms-volume-amixer-control
                                   (format "%d%%%s" (abs amount)
                                           (if (< amount 0) "-" "+"))))
-               (if (re-search-backward "\\[\\([0-9]+%\\)\\]" nil t)
+               (if (re-search-backward emms-volume-amixer-volume-regexp nil t)
                    (match-string 1))))))
+
+(defun emms-volume-amixer-get ()
+  "Return the amixer volume.
+
+Number is limited to the range [0-100]."
+  (let ((v (with-temp-buffer
+	     (when (zerop
+		    (call-process "amixer" nil (current-buffer) nil
+				  "-c"
+				  (format "%d" emms-volume-amixer-card)
+				  "sget" emms-volume-amixer-control))
+	       (if (re-search-backward
+		    emms-volume-amixer-volume-regexp nil t)
+		   (match-string 1)
+		 nil)))))
+    (if v
+	(max (min (string-to-number v) 100) 0)
+      (error "could not get volume from amixer backend"))))
+
+
 
 (provide 'emms-volume-amixer)
 
