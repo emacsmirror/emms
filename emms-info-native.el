@@ -238,6 +238,7 @@ FIELDs that are listed in
 Vorbis comments are of form `FIELD=VALUE'.  FIELD is a
 case-insensitive field name with a restricted set of ASCII
 characters.  VALUE is an arbitrary UTF-8 encoded octet stream.
+Comments with empty FIELD or VALUE are ignored.
 
 Return a cons cell (FIELD . VALUE), where FIELD is converted to
 lower case and VALUE is the decoded value."
@@ -246,7 +247,7 @@ lower case and VALUE is the decoded value."
                                                comment
                                                nil)
                                               'utf-8)))
-    (when (string-match "^\\(.+?\\)=\\(.+?\\)$" comment-string)
+    (when (string-match "^\\(.+?\\)=\\(.+\\)$" comment-string)
       (cons (downcase (match-string 1 comment-string))
             (match-string 2 comment-string)))))
 
@@ -1081,12 +1082,8 @@ Supports Ogg Vorbis/Opus, FLAC, and MP3 files."
 	(dolist (field info-fields)
 	  (let ((name (intern (concat "info-" (car field))))
 		(value (cdr field)))
-            (unless (zerop (length value))
-              (emms-track-set track
-                              name
-                              (if (eq name 'info-playing-time)
-				  (string-to-number value)
-				(string-trim-right value)))))))
+            (when (stringp value) (setq value (string-trim-right value)))
+            (emms-track-set track name value))))
     (error (message "emms-info-native error processing %s: %s"
 		    (emms-track-name track) env))))
 

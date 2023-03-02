@@ -1,5 +1,6 @@
 ;; -*- lexical-binding: t; -*-
 
+(require 'emms-info-native)
 (require 'ert)
 
 (ert-deftest emms-test-extract-vorbis-comments ()
@@ -20,7 +21,10 @@
     (should (equal (emms-info-native--split-vorbis-comment "x") nil))
     (should (equal (emms-info-native--split-vorbis-comment "x=") nil))
     (should (equal (emms-info-native--split-vorbis-comment "=x") nil))
-    (should (equal (emms-info-native--split-vorbis-comment "a=B") (cons "a" "B")))
+    (should (equal (emms-info-native--split-vorbis-comment "a=B")
+                   (cons "a" "B")))
+    (should (equal (emms-info-native--split-vorbis-comment "abc=ABC=123")
+                   (cons "abc" "ABC=123")))
     (should (equal (emms-info-native--split-vorbis-comment utf-8-comment)
                    (cons "key" "Οὐχὶ Ταὐτὰ")))))
 
