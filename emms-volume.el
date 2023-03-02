@@ -1,6 +1,6 @@
 ;;; emms-volume.el --- Volume functions and a minor mode to adjust volume easily  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2006-2021  Free Software Foundation, Inc.
+;; Copyright (C) 2006-2023  Free Software Foundation, Inc.
 
 ;; Author: Martin Schoenmakers <aiviru@diamond-age.net>
 ;;         Bruno Félix Rezende Ribeiro <oitofelix@gnu.org>
