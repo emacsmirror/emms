@@ -57,6 +57,9 @@
 ;;
 ;; Format detection is based solely on filename extension, which is
 ;; matched case-insensitively.
+;;
+;; For technical details on MP3 duration estimation, see URL
+;; `https://www.codeproject.com/Articles/8295/MPEG-Audio-Frame-Header'.
 
 ;;; Code:
 
@@ -558,11 +561,11 @@ Granule position is 64-bit little-endian signed integer counting
 the number of PCM samples per channel.  If granule position is
 -1, it was for a partial packet and hence invalid.  In that case
 return nil."
-  (let* ((int (emms-info-native--vector-to-integer vec))
+  (let* ((int (emms-info-native--lsb-to-integer vec))
          (pos (emms-info-native--unsigned-to-signed int 64)))
     (unless (= pos -1) (/ pos rate))))
 
-(defun emms-info-native--vector-to-integer (vec)
+(defun emms-info-native--lsb-to-integer (vec)
   (apply '+ (seq-map-indexed (lambda (elt idx)
                                (* (expt 2 (* 8 idx)) elt))
                              vec)))
@@ -652,7 +655,7 @@ Return the comment block data in a vector."
       comment-block)))
 
 
-;;;; id3v2 (MP3) code
+;;;; MP3 code
 
 (defconst emms-info-native--id3v2-header-bindat-spec
   '((file-identifier vec 3)
@@ -852,11 +855,66 @@ Sources:
     (3 . utf-8))
   "id3v2 text encodings.")
 
+(defconst emms-info-native--mp3-audio-versions
+  '((0 . mpeg25)
+    (1 . reserved)
+    (2 . mpeg2)
+    (3 . mpeg1)))
+
+(defconst emms-info-native--mp3-layers
+  '((0 . reserved)
+    (1 . layerIII)
+    (2 . layerII)
+    (3 . layerI)))
+
+(defconst emms-info-native--mp3-channel-modes
+  '((0 . stereo)
+    (1 . joint-stereo)
+    (2 . dual-channel)
+    (3 . single-channel)))
+
+(defconst emms-info-native--mp3-bit-rates
+  '((mpeg1-layerI       'free  32  64  96  128  160  192  224  256  288  320  352  384  416  448  'reserved)
+    (mpeg1-layerII      'free  32  48  56  64   80   96   112  128  160  192  224  256  320  384  'reserved)
+    (mpeg1-layerIII     'free  32  40  48  56   64   80   96   112  128  160  192  224  256  320  'reserved)
+    (mpeg2x-layerI      'free  32  48  56  64   80   96   112  128  144  160  176  192  224  256  'reserved)
+    (mpeg2x-layerII-III 'free  8   16  24  32   40   48   56   64   80   96   112  128  144  160  'reserved)))
+
+(defconst emms-info-native--mp3-samples-per-frame
+  '((layerI . 384)
+    (layerII . 1152)
+    (layerIII-mpeg1 . 1152)
+    (layerIII-mpeg2x . 576)))
+
+(defconst emms-info-native--mp3-sample-rates
+  '((mpeg1  44100  48000  32000  'reserved)
+    (mpeg2  22050  24000  16000  'reserved)
+    (mpeg25 11025  12000  8000   'reserved)))
+
+(defconst emms-info-native--vbri-header-bindat-spec
+  '((id vec 4)
+    (version u16)
+    (delay u16)
+    (quality u16)
+    (bytes u32)
+    (frames u32))
+  "VBR header, VBRI format.
+This spec is purposefully incomplete, as we are interested only
+in frame count.")
+
+(defconst emms-info-native--xing-header-bindat-spec
+  '((id vec 4)
+    (flags bits 4)
+    (frames u32))
+  "VBR header, Xing/Info format.
+This spec is purposefully incomplete, as we are is interested
+only in frame count.")
+
 (defun emms-info-native--valid-id3v2-frame-id-p (id)
   "Return t if ID is a proper id3v2 frame identifier, nil otherwise."
   (if (= emms-info-native--id3v2-version 2)
-      (string-match "[A-Z0-9]\\{3\\}" id)
-    (string-match "[A-Z0-9]\\{4\\}" id)))
+      (string-match "^[A-Z0-9]\\{3\\}$" id)
+    (string-match "^[A-Z0-9]\\{4\\}$" id)))
 
 (defun emms-info-native--checked-id3v2-size (elt bytes)
   "Calculate id3v2 element ELT size from BYTES.
@@ -879,9 +937,11 @@ Depending on SYNCSAFE, BYTES are interpreted as 7- or 8-bit
 bytes, MSB first.
 
 Return the decoded size."
-  (let ((num-bits (if syncsafe 7 8)))
+  (let ((num-bits (if syncsafe 7 8))
+        (mask (if syncsafe #x7f #xff)))
     (apply '+ (seq-map-indexed (lambda (elt idx)
-                                 (* (expt 2 (* num-bits idx)) elt))
+                                 (* (expt 2 (* num-bits idx))
+                                    (logand elt mask)))
                                (reverse bytes)))))
 
 (defun emms-info-native--decode-id3v2 (filename)
@@ -901,10 +961,12 @@ fields."
           ;; Skip the extended header.
           (cl-incf offset
                    (emms-info-native--checked-id3v2-ext-header-size filename)))
-        (emms-info-native--decode-id3v2-frames filename
-                                               offset
-                                               (+ tag-size 10)
-                                               unsync))
+        (let ((tags (emms-info-native--decode-id3v2-frames
+                     filename offset (+ tag-size 10) unsync))
+              (playtime (emms-info-native--decode-mp3-duration
+                         filename (+ tag-size 10))))
+          (nconc tags (when playtime
+                        (list (cons "playing-time" playtime))))))
     (error nil)))
 
 (defun emms-info-native--decode-id3v2-header (filename)
@@ -1069,6 +1131,167 @@ Return the text as string."
   "Return the encoding for text information BYTES."
   (cdr (assoc (seq-first bytes)
               emms-info-native--id3v2-text-encodings)))
+
+(defun emms-info-native--decode-mp3-duration (filename offset)
+  (with-temp-buffer
+    (set-buffer-multibyte nil)
+    (insert-file-contents-literally filename nil offset (+ offset 1024))
+    (let* ((header (emms-info-native--find-and-decode-mp3-frame-header))
+           (samples-per-frame (alist-get 'samples-per-frame header))
+           (sample-rate (alist-get 'sample-rate header))
+           (bit-rate (alist-get 'bit-rate header))
+           (frames (or (emms-info-native--find-and-decode-xing-header)
+                       (emms-info-native--find-and-decode-vbri-header))))
+      (cond ((and frames samples-per-frame sample-rate)
+             (/ (* frames samples-per-frame) sample-rate))
+            (bit-rate
+             (emms-info-native--estimate-mp3-duration
+              filename bit-rate))))))
+
+(defun emms-info-native--find-and-decode-mp3-frame-header ()
+  (let (header)
+    (goto-char (point-min))
+    (condition-case nil
+        (while (and (not header)
+                    (search-forward (string 255)))
+          (let ((bytes (emms-info-native--msb-to-integer
+                        (buffer-substring-no-properties
+                         (- (point) 1) (+ (point) 3)))))
+            (setq header
+                  (emms-info-native--decode-mp3-frame-header bytes))))
+      (error nil))
+    header))
+
+(defun emms-info-native--decode-mp3-frame-header (header)
+  (when (= (logand header #xffe00000) #xffe00000)
+    (let* ((version-bits
+            (emms-info-native--extract-bits header 19 20))
+           (layer-bits
+            (emms-info-native--extract-bits header 17 18))
+           (crc-bit
+            (emms-info-native--extract-bits header 16))
+           (bit-rate-bits
+            (emms-info-native--extract-bits header 12 15))
+           (sample-rate-bits
+            (emms-info-native--extract-bits header 10 11))
+           (padding-bit
+            (emms-info-native--extract-bits header 9))
+           (private-bit
+            (emms-info-native--extract-bits header 8))
+           (channel-mode-bits
+            (emms-info-native--extract-bits header 6 7))
+           (mode-extension-bits
+            (emms-info-native--extract-bits header 4 5))
+           (copyright-bit
+            (emms-info-native--extract-bits header 3))
+           (original-bit
+            (emms-info-native--extract-bits header 2))
+           (emphasis-bits
+            (emms-info-native--extract-bits header 0 1))
+           (version
+            (alist-get version-bits
+                       emms-info-native--mp3-audio-versions))
+           (layer
+            (alist-get layer-bits
+                       emms-info-native--mp3-layers))
+           (channel-mode
+            (alist-get channel-mode-bits
+                       emms-info-native--mp3-channel-modes))
+           (sample-rate
+            (nth sample-rate-bits
+                 (alist-get version
+                            emms-info-native--mp3-sample-rates)))
+           (samples-per-frame
+            (emms-info-native--get-samples-per-frame
+             version layer))
+           (bit-rate
+            (emms-info-native--decode-bit-rate
+             version layer bit-rate-bits)))
+      (list (cons 'version version)
+            (cons 'layer layer)
+            (cons 'crc crc-bit)
+            (cons 'bit-rate bit-rate)
+            (cons 'sample-rate sample-rate)
+            (cons 'samples-per-frame samples-per-frame)
+            (cons 'padding padding-bit)
+            (cons 'private private-bit)
+            (cons 'channel-mode channel-mode)
+            (cons 'mode-extension mode-extension-bits)
+            (cons 'copyright copyright-bit)
+            (cons 'emphasis emphasis-bits)
+            (cons 'original original-bit)))))
+
+(defun emms-info-native--find-and-decode-xing-header ()
+  (goto-char (point-min))
+  (when (re-search-forward "Xing\\|Info" (point-max) t)
+    (let ((header (bindat-unpack
+                   emms-info-native--xing-header-bindat-spec
+                   (buffer-string) (1- (match-beginning 0)))))
+      (when (memq 0 (bindat-get-field header 'flags))
+        (bindat-get-field header 'frames)))))
+
+(defun emms-info-native--find-and-decode-vbri-header ()
+  (goto-char (point-min))
+  (when (re-search-forward "VBRI" (point-max) t)
+    (let ((header (bindat-unpack
+                   emms-info-native--vbri-header-bindat-spec
+                   (buffer-string) (1- (match-beginning 0)))))
+      (bindat-get-field header 'frames))))
+
+(defun emms-info-native--estimate-mp3-duration (filename bitrate)
+  (let ((size (file-attribute-size
+               (file-attributes (file-chase-links filename)))))
+    (when bitrate (/ (* 8 size) (* 1000 bitrate)))))
+
+(defun emms-info-native--extract-bits (int from &optional to)
+  "Extract consequent set bits FROM[..TO] from INT.
+The first (rightmost) bit is zero.  Return the value of bits as
+if they would have been shifted to right by FROM positions."
+  (unless to (setq to from))
+  (let ((num-bits (1+ (- to from)))
+        (mask (1- (expt 2 (1+ to)))))
+    (when (> num-bits 0) (ash (logand int mask) (- from)))))
+
+(defun emms-info-native--msb-to-integer (vec)
+  (emms-info-native--lsb-to-integer (reverse vec)))
+
+(defun emms-info-native--decode-bit-rate (version layer bits)
+  (cond ((eq version 'mpeg1)
+         (cond ((eq layer 'layerI)
+                (nth bits (alist-get
+                           'mpeg1-layerI
+                           emms-info-native--mp3-bit-rates)))
+               ((eq layer 'layerII)
+                (nth bits (alist-get
+                           'mpeg1-layerII
+                           emms-info-native--mp3-bit-rates)))
+               ((eq layer 'layerIII)
+                (nth bits (alist-get
+                           'mpeg1-layerIII
+                           emms-info-native--mp3-bit-rates)))))
+        (t (cond ((eq layer 'layerI)
+                  (nth bits (alist-get
+                             'mpeg2x-layerI
+                             emms-info-native--mp3-bit-rates)))
+                 (t (nth bits (alist-get
+                               'mpeg2x-layerII-III
+                               emms-info-native--mp3-bit-rates)))))))
+
+(defun emms-info-native--get-samples-per-frame (version layer)
+  (cond ((eq layer 'layerIII)
+         (cond ((eq version 'mpeg1)
+                (alist-get
+                 'layerIII-mpeg1
+                 emms-info-native--mp3-samples-per-frame))
+               (t (alist-get
+                   'layerIII-mpeg2x
+                   emms-info-native--mp3-samples-per-frame))))
+        ((eq layer 'layerII)
+         (alist-get 'layerII
+                    emms-info-native--mp3-samples-per-frame))
+        ((eq layer 'layerI)
+         (alist-get 'layerI
+                    emms-info-native--mp3-samples-per-frame))))
 
 
 ;;;; EMMS code
