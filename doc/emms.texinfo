@@ -932,7 +932,9 @@ configuration see @xref{Configuration}.
 
 You can create any number of playlist buffers you wish. At any time
 Emms has a single ``current'' buffer through which it proceeds track
-by track.
+by track. A saved playlist can be added to the current buffer by
+calling @kbd{M-x emms-add-playlist} or @kbd{M-x emms-play-playlist},
+which also plays the tracks immediately.
 
 @defun emms-playlist-new &optional name
 Create a new playlist buffer.
