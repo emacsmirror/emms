@@ -510,7 +510,7 @@ When NO-NEWLINE is non-nil, do not insert a newline after the track."
 	  (not (buffer-live-p emms-playlist-buffer)))
       (error "No current Emms buffer")
     (switch-to-buffer emms-playlist-buffer)
-    (when (and (not (eq major-mode 'emms-playlist-mode))
+    (when (and (not (member major-mode '(emms-playlist-mode emms-mark-mode)))
 	       emms-playlist-buffer-p)
       (emms-playlist-mode))
     (when emms-playlist-mode-center-when-go
