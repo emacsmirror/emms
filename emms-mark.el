@@ -260,9 +260,9 @@ this function collects the result of FUNC."
       nil
 
     ;; start emms-playlist-mode exactly once
-    (setq emms-playlist-buffer-p t)
     (unless (eq major-mode 'emms-playlist-mode)
       (emms-playlist-mode))
+    (setq emms-playlist-buffer-p t)
 
     ;; use inherited keymap
     (set-keymap-parent emms-mark-mode-map (current-local-map))
