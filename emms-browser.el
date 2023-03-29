@@ -1847,9 +1847,12 @@ the text that it generates."
        ((looking-at "\\([-0-9.]*\\)\\([a-zA-Z]+\\)")
         (let* ((num (match-string 1))
                (spec (match-string 2))
-               (val (cdr (assoc spec specification))))
-          (unless val
+               (val-alist (assoc spec specification))
+               (val (cdr val-alist)))
+          (unless val-alist
             (error "Invalid format character: %s" spec))
+          ;; Value for a valid spec may not exist. Not an error, just nothing to show.
+          (unless val (setq val ""))
           ;; Pad result to desired length.
           (let ((text (format (concat "%" num "s") val)))
             ;; Insert first, to preserve text properties.
