@@ -1,3 +1,15 @@
+New in 15
+
+    * emms-source-playlist.el: add native playlist to cache.
+    * emms-mpris.el: add shuffle and loopstatus.
+    * emms-mpris.el: fix artUrl metatadata issues.
+    * emms-volume-pulse.el, emms-volume-amixer.el, emms.el: unified `get' interface.
+    * emms-mark.el: fix bug when setting `emms-playlist-default-major-mode'.
+    * emms-playlist-mode.el: Do not run `emms-playlist-mode' at the wrong time.
+    * emms-browser.el: Fix bug in emms-browser-format-spec.
+    * Documentation improvements and updates.
+
+
 New in 14
 
     * emms.el: Fix emms-seek-* functions to work with number arguments.
