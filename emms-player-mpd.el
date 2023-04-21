@@ -105,6 +105,7 @@
 
 (require 'cl-lib)
 (require 'emms-player-simple)
+(require 'emms-playlist-mode)
 (require 'emms-source-playlist)  ; for emms-source-file-parse-playlist
 (require 'tq)
 (require 'emms-cache)
