@@ -1050,16 +1050,26 @@ from other functions."
 (defun emms-player-mpd-seek (amount)
   "Seek backward or forward by AMOUNT seconds, depending on sign of AMOUNT."
   (interactive)
-  (emms-player-mpd-send
-   (concat "seekcur " (if (> amount 0) "+" "-") (number-to-string amount))
-   nil #'ignore))
+  (emms-player-mpd-get-status
+   amount
+   (lambda (amount info)
+     (let ((song (emms-player-mpd-get-current-song nil #'ignore info))
+	   (secs (emms-player-mpd-get-playing-time nil #'ignore info)))
+       (when (and song secs)
+	 (emms-player-mpd-send
+	  (concat "seek " song " " (number-to-string (round (+ secs amount))))
+	  nil #'ignore))))))
 
 (defun emms-player-mpd-seek-to (pos)
   "Seek to POS seconds from the start of the current track."
   (interactive)
-  (emms-player-mpd-send
-   (concat "seekcur " (number-to-string (round pos)))
-   nil #'ignore))
+  (emms-player-mpd-get-current-song
+   pos
+   (lambda (pos song)
+     (when (and song pos)
+       (emms-player-mpd-send
+	(concat "seek " song " " (number-to-string (round pos)))
+	nil #'ignore)))))
 
 (defun emms-player-mpd-next ()
   "Move forward by one track in MusicPD's internal playlist."
