@@ -847,7 +847,7 @@ A pipe is defined like below:
 (defun emms-tag-editor-pipe ()
   "Select and run pipe command to track at point or all marked tracks."
   (interactive)
-  (let* ((pipe-name (completing-read "Please choise pipe: " emms-tag-editor-pipe-config)))
+  (let* ((pipe-name (completing-read "Please choose pipe: " emms-tag-editor-pipe-config)))
     (when pipe-name
       (if (emms-mark-has-markedp)
           (emms-tag-editor-marked-track-pipe pipe-name)
