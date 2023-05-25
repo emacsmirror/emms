@@ -1,6 +1,6 @@
 ;;; emms-tag-editor.el --- Edit track tags. -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2006-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2023 Free Software Foundation, Inc.
 ;;
 ;; Original Author: Ye Wenbin <wenbinye@163.com>
 ;; Authors: the Emms developers (see AUTHORS file)

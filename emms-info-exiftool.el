@@ -1,6 +1,6 @@
 ;;; emms-info-exiftool.el --- info-method for EMMS using exiftool  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2020  Free Software Foundation, Inc.
+;; Copyright (C) 2020, 2022  Free Software Foundation, Inc.
 
 ;; Author: Yoni Rabkin (yrk@gnu.org)
 ;; Keywords: multimedia

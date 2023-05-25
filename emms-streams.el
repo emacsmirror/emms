@@ -1,6 +1,6 @@
 ;; emms-streams.el -- A collection of online streaming audio  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2019  Free Software Foundation, Inc.
+;; Copyright (C) 2019, 2022  Free Software Foundation, Inc.
 
 ;; Authors: Yoni Rabkin <yrk@gnu.org>
 

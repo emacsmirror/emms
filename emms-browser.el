@@ -1,6 +1,6 @@
 ;;; emms-browser.el --- a track browser supporting covers and filtering  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2006-2021  Free Software Foundation, Inc.
+;; Copyright (C) 2006-2023  Free Software Foundation, Inc.
 
 ;; Author: Damien Elmes <emacs@repose.cx>
 ;; Keywords: emms, mp3, mpeg, multimedia

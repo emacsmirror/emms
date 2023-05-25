@@ -1,6 +1,6 @@
 ;;; emms-mark.el --- mark track like dired  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2006-2021  Free Software Foundation, Inc.
+;; Copyright (C) 2006-2023  Free Software Foundation, Inc.
 ;;
 ;; Author: Ye Wenbin <wenbinye@163.com>
 
