@@ -73,7 +73,7 @@ This is a useful element for `emms-info-functions'."
             (let ((a (match-string 1))
                   (b (match-string 2)))
               (when (and (< 0 (length a))
-                         (< 0 (length b)))
+                         (< 0 (length b) 1024))
                 (emms-track-set track
                                 (intern (downcase (concat "info-" (match-string 1))))
                                 (match-string 2))))))))))
