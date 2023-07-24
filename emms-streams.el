@@ -37,6 +37,7 @@
 (require 'emms)
 (require 'emms-source-playlist)
 (require 'emms-playlist-mode)
+(require 'emms-cache)
 
 
 ;;; ------------------------------------------------------------------
