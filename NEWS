@@ -1,3 +1,11 @@
+New in 16
+
+    * emms-info-ogginfo: Avoid writing ogginfo tags over 1k.
+    * emms-streams.el: Updated URLs, avoid early loading errors.
+    * emms-player-mpd.el: Use native relative seeking.
+    * emms-player-mpd.el: Fix consume and random modes in MPD.
+
+
 New in 15
 
     * emms-source-playlist.el: add native playlist to cache.

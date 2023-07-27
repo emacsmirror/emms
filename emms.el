@@ -4,7 +4,7 @@
 
 ;; Author: Jorgen Schäfer <forcer@forcix.cx>, the Emms developers (see AUTHORS file)
 ;; Maintainer: Yoni Rabkin <yrk@gnu.org>
-;; Version: 15
+;; Version: 16
 ;; Keywords: emms, mp3, ogg, flac, music, mpeg, video, multimedia
 ;; Package-Type: multi
 ;; Package-Requires: ((cl-lib "0.5") (nadvice "0.3") (seq))
@@ -45,7 +45,7 @@
 ;;; Code:
 (require 'emms-compat)
 
-(defvar emms-version "15"
+(defvar emms-version "16"
   "EMMS version string.")
 
 ;;; User Customization
