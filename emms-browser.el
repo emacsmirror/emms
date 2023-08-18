@@ -936,7 +936,7 @@ Uses `emms-browser-alpha-sort-function'."
 (defun emms-browser-bdata-at-point ()
   "Return the bdata object at point.
 Includes information at point (such as album name), and metadata."
-  (get-text-property (point-at-bol)
+  (get-text-property (line-beginning-position)
                      'emms-browser-bdata))
 
 (defun emms-browser-data-at-point ()
@@ -1063,14 +1063,14 @@ If there is no more subitems to expand, collapse the current node."
 Stops at the next line at the same level, or EOF."
   (when (emms-browser-subitems-visible)
     (let ((current-level (emms-browser-level-at-point))
-          (next-line (point-at-bol 2)))
+          (next-line (line-beginning-position 2)))
       (emms-with-inhibit-read-only-t
        (delete-region next-line
                       (save-excursion
                         (while
                             (emms-browser-find-entry-more-than-level
                              current-level))
-                        (point-at-bol 2)))))))
+                        (line-beginning-position 2)))))))
 
 ;; --------------------------------------------------
 ;; Dealing with the playlist (queuing songs, etc)
@@ -1161,8 +1161,8 @@ After expanding, jump to the currently marked entry."
   (save-excursion
     (emms-browser-find-top-level)
     (emms-with-inhibit-read-only-t
-     (add-text-properties (point-at-bol)
-                          (point-at-eol)
+     (add-text-properties (line-beginning-position)
+                          (line-end-position)
                           (list 'emms-browser-mark t)))))
 
 (defun emms-browser-pop-mark ()
@@ -1174,8 +1174,8 @@ After expanding, jump to the currently marked entry."
         (progn
           (goto-char pos)
           (emms-with-inhibit-read-only-t
-           (remove-text-properties (point-at-bol)
-                                   (point-at-eol)
+           (remove-text-properties (line-beginning-position)
+                                   (line-end-position)
                                    (list 'emms-browser-mark))))
       (message "No mark saved!"))))
 
@@ -1207,7 +1207,7 @@ Return point. If at level one, return the current point."
         (when (emms-browser-subitems-visible)
           (emms-browser-kill-subitems))
         (emms-with-inhibit-read-only-t
-         (goto-char (point-at-bol))
+         (goto-char (line-beginning-position))
          (kill-line 1))
         (unless (eq (emms-browser-bdata-level child-bdata) 1)
           ;; remove the node from the parent, and recurse

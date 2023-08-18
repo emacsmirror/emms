@@ -74,7 +74,7 @@
 This function must be called inside the response buffer. Leaves
 point after the HTTP headers."
   (goto-char (point-min))
-  (when (not (re-search-forward "^.*200 OK$" (point-at-eol) t))
+  (when (not (re-search-forward "^.*200 OK$" (line-end-position) t))
     (error "bad HTTP server response"))
   ;; go to the start of the FM response
   (when (not (re-search-forward "\n\n" (point-max) t))
@@ -355,7 +355,7 @@ point after the HTTP headers."
 		 (point-min)))
     (when (and (eq (current-buffer)
 		   emms-librefm-stream-playlist-buffer)
-	       (not (next-single-property-change (point-at-eol)
+	       (not (next-single-property-change (line-end-position)
 						 'emms-track)))
       (emms-librefm-stream-queue))))
 

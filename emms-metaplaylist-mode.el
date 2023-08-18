@@ -98,8 +98,8 @@
   "Switch to the buffer at point."
   (interactive)
   (let ((buffer (get-buffer
-		 (buffer-substring (point-at-bol)
-				   (point-at-eol)))))
+		 (buffer-substring (line-beginning-position)
+				   (line-end-position)))))
   (emms-playlist-set-playlist-buffer buffer)
   (switch-to-buffer buffer)))
 
@@ -110,7 +110,7 @@
 	  (let ((inhibit-read-only t))
 	    (insert (buffer-name buf))
 	    (add-text-properties
-	     (point-at-bol) (point-at-eol)
+	     (line-beginning-position) (line-end-position)
 	     (list 'face
 		   (if (eq buf emms-playlist-buffer)
 		       'emms-metaplaylist-mode-current-face
@@ -141,7 +141,7 @@
 				       (point-max) t)))
       (when (not p) (error "cannot not find the current playlist buffer"))
       (goto-char p)
-      (goto-char (point-at-bol)))))
+      (goto-char (line-beginning-position)))))
 
 (defun emms-metaplaylist-mode-create ()
   "Create the meta-playlist buffer."
@@ -174,8 +174,8 @@
   "Kill the buffer at point"
   (interactive)
   (let ((buffer (get-buffer
-		 (buffer-substring (point-at-bol)
-				   (point-at-eol)))))
+		 (buffer-substring (line-beginning-position)
+				   (line-end-position)))))
     (when (not buffer)
       (error "can't find buffer at point"))
     (if (y-or-n-p (format "kill playlist buffer \"%s\"?"
@@ -204,7 +204,7 @@
   "Set the buffer at point to be the active playlist."
   (interactive)
   (emms-playlist-set-playlist-buffer 
-   (get-buffer (buffer-substring (point-at-bol) (point-at-eol))))
+   (get-buffer (buffer-substring (line-beginning-position) (line-end-position))))
   (emms-metaplaylist-mode-update))
 
 

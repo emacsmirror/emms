@@ -151,27 +151,27 @@ TOKEN is :user of :secret."
     (error "response not a buffer"))
   (with-current-buffer resbuf
     (goto-char (point-min))
-    (when (not (re-search-forward "^.*200 OK$" (point-at-eol) t))
+    (when (not (re-search-forward "^.*200 OK$" (line-end-position) t))
       (error "bad HTTP server response"))
     ;; go to the start of the FM response
     (when (not (re-search-forward "\n\n" (point-max) t))
       (error "bad FM server response"))
-    (let ((status (buffer-substring (point-at-bol)
-				    (point-at-eol))))
+    (let ((status (buffer-substring (line-beginning-position)
+				    (line-end-position))))
       (when (not (string= status "OK"))
 	(error "FM server returned: %s" status))
       (let (session-id
 	    now-playing-url
 	    submission-url)
 	(forward-line 1)
-	(setq session-id (buffer-substring (point-at-bol)
-					   (point-at-eol)))
+	(setq session-id (buffer-substring (line-beginning-position)
+					   (line-end-position)))
 	(forward-line 1)
-	(setq now-playing-url (buffer-substring (point-at-bol)
-						(point-at-eol)))
+	(setq now-playing-url (buffer-substring (line-beginning-position)
+						(line-end-position)))
 	(forward-line 1)
-	(setq submission-url (buffer-substring (point-at-bol)
-					       (point-at-eol)))
+	(setq submission-url (buffer-substring (line-beginning-position)
+					       (line-end-position)))
 	(when (or (= 0 (length session-id))
 		  (= 0 (length now-playing-url))
 		  (= 0 (length submission-url)))
@@ -241,7 +241,7 @@ TOKEN is :user of :secret."
     (goto-char (point-min))
     (re-search-forward "\n\n")
     (buffer-substring-no-properties
-     (point-at-bol) (point-at-eol))))
+     (line-beginning-position) (line-end-position))))
 
 (defun emms-librefm-scrobbler-make-async-submission-call (track rating)
   "Make asynchronous submission call."

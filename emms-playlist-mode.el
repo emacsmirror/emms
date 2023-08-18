@@ -358,7 +358,7 @@ With a prefix arg, open the `dired' buffer in OTHER-WINDOW."
 	   (delete-overlay emms-playlist-mode-selected-overlay)
 	   (setq emms-playlist-mode-selected-overlay nil))))
      (let ((kill-whole-line emms-playlist-mode-kill-whole-line-p))
-       (goto-char (point-at-bol))
+       (goto-char (line-beginning-position))
        (kill-line)))))
 
 ;; C-w
@@ -380,8 +380,8 @@ With a prefix arg, open the `dired' buffer in OTHER-WINDOW."
 
 (defun emms-playlist-mode-correct-previous-yank ()
   "Fix the previous yank if needed."
-  (when (and (< (point-at-bol) (point))
-	     (< (point) (point-at-eol)))
+  (when (and (< (line-beginning-position) (point))
+	     (< (point) (line-end-position)))
     (newline)))
 
 ;; C-y
@@ -389,7 +389,7 @@ With a prefix arg, open the `dired' buffer in OTHER-WINDOW."
   "Yank into the playlist buffer."
   (interactive)
   (emms-with-inhibit-read-only-t
-   (goto-char (point-at-bol))
+   (goto-char (line-beginning-position))
    (yank)
    (emms-playlist-mode-correct-previous-yank)))
 
