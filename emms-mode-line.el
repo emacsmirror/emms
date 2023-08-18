@@ -93,8 +93,8 @@
 ;;;###autoload
 (defun emms-mode-line-enable ()
   "Turn on `emms-mode-line'."
-  (interactive)
   (declare (obsolete emms-mode-line-mode "Apr 2021"))
+  (interactive)
   (emms-mode-line-mode 1))
 
 ;;;###autoload
@@ -106,8 +106,8 @@
 ;;;###autoload
 (defun emms-mode-line-toggle ()
   "Toggle `emms-mode-line'."
-  (interactive)
   (declare (obsolete emms-mode-line-mode "Apr 2021"))
+  (interactive)
   (emms-mode-line-mode 'toggle))
 
 (defun emms-mode-line-alter (&optional track)
