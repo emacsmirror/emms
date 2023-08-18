@@ -247,7 +247,7 @@ If we can't find it from local disk, then search it from internet."
 ;;; EMMS Lyrics
 
 (defvar emms-lyrics-alist nil
-  "a list of the form: '((time0 . lyric0) (time1 . lyric1)...)). In
+  "a list of the form: \\='((time0 . lyric0) (time1 . lyric1)...)). In
 short, at time-i, display lyric-i.")
 
 (defvar emms-lyrics-timers nil
@@ -267,7 +267,7 @@ short, at time-i, display lyric-i.")
 
 (defun emms-lyrics-read-file (file &optional catchup)
   "Read a lyric file(LRC format).
-Optional CATCHUP is for recognizing `emms-lyrics-catchup'.
+Optional CATCHUP is for recognizing `emms-lyrics-catchup\\='.
 FILE should end up with \".lrc\", its content looks like one of the
 following:
 
@@ -276,7 +276,7 @@ following:
     [00:39.67]I love you, Emacs!
 
 FILE should be under the same directory as the music file, or under
-`emms-lyrics-dir'."
+`emms-lyrics-dir\\='."
   (or catchup
       (setq file (funcall emms-lyrics-find-lyric-function file)))
   (when (and file (file-exists-p file))
@@ -310,7 +310,7 @@ FILE should be under the same directory as the music file, or under
       t)))
 
 (defun emms-lyrics-create-buffer ()
-  "Create `emms-lyrics-buffer' dedicated to lyrics. "
+  "Create `emms-lyrics-buffer\\=' dedicated to lyrics. "
   ;; leading white space in buffer name to hide the buffer
   (setq emms-lyrics-buffer (get-buffer-create " *EMMS Lyrics*"))
   (set-buffer emms-lyrics-buffer)
@@ -447,15 +447,15 @@ job."
 
 (defun emms-lyrics-display-handler (lyric next-lyric line diff)
   "DIFF is the timestamp differences between current LYRIC and
-NEXT-LYRIC; LINE corresponds line number for LYRIC in `emms-lyrics-buffer'."
+NEXT-LYRIC; LINE corresponds line number for LYRIC in `emms-lyrics-buffer\\='."
   (emms-lyrics-display (format emms-lyrics-display-format lyric) line)
   (when (and emms-lyrics-display-on-modeline emms-lyrics-scroll-p)
     (emms-lyrics-scroll lyric next-lyric diff)))
 
 (defun emms-lyrics-display (lyric line)
   "Display LYRIC now.
-See `emms-lyrics-display-on-modeline' and
-`emms-lyrics-display-on-minibuffer' on how to config where to
+See `emms-lyrics-display-on-modeline\\=' and
+`emms-lyrics-display-on-minibuffer\\=' on how to config where to
 display."
   (when emms-lyrics-alist
     (when emms-lyrics-display-on-modeline
@@ -481,8 +481,8 @@ display."
 
 (defun emms-lyrics-find-lyric (file)
   "Return full path of found lrc FILE, or nil if not found.
-Use `emms-source-file-directory-tree-function' to find lrc FILE under
-current directory and `emms-lyrics-dir'.
+Use `emms-source-file-directory-tree-function\\=' to find lrc FILE under
+current directory and `emms-lyrics-dir\\='.
 e.g., (emms-lyrics-find-lyric \"abc.lrc\")"
   (let* ((track (emms-playlist-current-selected-track))
          (lyric-under-curr-dir
@@ -530,7 +530,7 @@ NEXT-LYRIC."
     (define-key map "n" #'emms-lyrics-next-line)
     (define-key map "i" #'emms-lyrics-insert-time)
     map)
-  "Keymap for `emms-lyrics-mode'.")
+  "Keymap for `emms-lyrics-mode\\='.")
 
 (defun emms-lyrics-rem* (x y)
   "The remainder of X divided by Y, with the same sign as X."

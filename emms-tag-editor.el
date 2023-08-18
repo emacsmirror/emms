@@ -118,14 +118,14 @@ the track, and returns a string to insert in
 used for inserting the track.")
 
 (defvar emms-tag-editor-parse-function 'emms-tag-editor-default-parser
-  "Function to parse tags in `emms-tag-editor-edit-buffer'.
+  "Function to parse tags in `emms-tag-editor-edit-buffer\\='.
 It should find all modified tags, and return all the tracks.  The
 tracks for which a tag has been modified should set a property
-'tag-modified to t.  If the track name has been changed, the
-function should set a new property 'newname instead of setting
-the 'name directly.
+\\='tag-modified to t.  If the track name has been changed, the
+function should set a new property \\='newname instead of setting
+the \\='name directly.
 
-See also `emms-tag-editor-default-parser'.")
+See also `emms-tag-editor-default-parser\\='.")
 
 (defvar emms-tag-editor-tagfile-functions
   '(("mp3" "mid3v2"
@@ -832,15 +832,15 @@ A pipe is defined like below:
 :arguments is a list or a function return list, for example:
 
   (\"--track-name\" name (\"--year\" info-year))
-  (lambda (track) (list (emms-track-name track 'name)))
+  (lambda (track) (list (emms-track-name track \\='name)))
 
-1. symbols can be 'name or elements of (mapcar 'car emms-tag-editor-tags),
+1. symbols can be \\='name or elements of (mapcar \\='car emms-tag-editor-tags),
    which will be replaced to track info before run command.
 2. sublist used to deal with group args, for example, (\"--year\" info-year), when
-   track's info-year is nil, the \"--year\" will be removed too.")
+   track\\='s info-year is nil, the \"--year\" will be removed too.")
 
 (defun emms-tag-editor-pipe-get (pipe-name key)
-  "Get the pipe value of KEY named PIPE-NAME in `emms-tag-editor-pipe-config'."
+  "Get the pipe value of KEY named PIPE-NAME in `emms-tag-editor-pipe-config\\='."
   (let ((config emms-tag-editor-pipe-config))
     (plist-get (cdr (assoc pipe-name config)) key)))
 

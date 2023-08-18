@@ -130,10 +130,10 @@
   :type '(cons symbol alist))
 
 (defcustom emms-player-mpd-music-directory nil
-  "The value of 'music_directory' in your MusicPD configuration file.
+  "The value of \\='music_directory\\=' in your MusicPD configuration file.
 
 Unless your MusicPD is configured to use absolute file names, you must
-set this variable to the value of 'music_directory' in your MusicPD
+set this variable to the value of \\='music_directory\\=' in your MusicPD
 config."
   ;; The :format part ensures that entering directories happens on the
   ;; next line, where there is more space to work with

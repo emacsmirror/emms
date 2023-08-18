@@ -364,7 +364,7 @@ Called once for each directory."
 (make-variable-buffer-local 'emms-browser-top-level-hash)
 
 (defvar emms-browser-top-level-type nil
-  "The current mapping type, eg. 'info-artist.")
+  "The current mapping type, eg. \\='info-artist.")
 (make-variable-buffer-local 'emms-browser-top-level-type)
 
 (defvar emms-browser-current-indent nil
@@ -587,10 +587,10 @@ This function can be used as
 
 (defun emms-browser-get-track-field-albumartist (track type)
   "Return TYPE from TRACK with an albumartist-oriented heuristic.
-For 'info-artist TYPE, use 'info-albumartistsort, 'info-albumartist,
-'info-artistsort.
-For 'info-year TYPE, use 'info-originalyear, 'info-originaldate and
-'info-date symbols."
+For \\='info-artist TYPE, use \\='info-albumartistsort,
+\\='info-albumartist, \\='info-artistsort.
+For \\='info-year TYPE, use \\='info-originalyear, \\='info-originaldate and
+\\='info-date symbols."
   (cond ((eq type 'info-artist)
          (or (emms-track-get track 'info-albumartist)
              (emms-track-get track 'info-albumartistsort)
@@ -701,7 +701,8 @@ browser, and hit 'b 1' to refresh.")))
 
 (defun emms-browser-next-mapping-type (current-mapping)
   "Return the next sensible mapping.
-Eg. if CURRENT-MAPPING is currently 'info-artist, return 'info-album."
+Eg. if CURRENT-MAPPING is currently \\='info-artist, return
+ \\='info-album."
   (cond
    ((eq current-mapping 'info-artist) 'info-album)
    ((eq current-mapping 'info-composer) 'info-album)
@@ -720,7 +721,7 @@ Eg. if CURRENT-MAPPING is currently 'info-artist, return 'info-album."
 
 (defun emms-browser-make-bdata-tree-recurse (type level tracks)
   "Build a tree of alists based on a list of tracks, TRACKS.
-For example, if TYPE is 'info-year, return an alist like:
+For example, if TYPE is \\='info-year, return an alist like:
 artist1 -> album1 -> *track* 1.."
   (let* ((next-type (emms-browser-next-mapping-type type))
          (next-level (1+ level))
@@ -778,8 +779,8 @@ return an empty string."
       discnum)))
 
 (defun emms-browser-year-number (track)
-  "Return a string representation of a track's year.
-This will be in the form '(1998) '."
+  "Return a string representation of a track\\='s year.
+This will be in the form \\='(1998) \\='."
   (let ((year (emms-track-get-year track)))
     (if (or (not (stringp year)) (string= year "0"))
         ""
@@ -800,7 +801,7 @@ If no duration is available, return an empty string."
   "Return a browser data item from ALIST.
 DATA should be a list of DB items, or a list of tracks.
 NAME is a name for the DB item.
-TYPE is a category the data is organised by, such as 'info-artist.
+TYPE is a category the data is organised by, such as \\='info-artist.
 LEVEL is the number of the sublevel the db item will be placed in."
   (list (cons 'type type)
         (cons 'level level)
@@ -809,7 +810,7 @@ LEVEL is the number of the sublevel the db item will be placed in."
 
 (defun emms-browser-make-alist (type tracks)
   "Make an alist mapping of TYPE -> TRACKS.
-Items with no metadata for TYPE will be placed in 'misc'"
+Items with no metadata for TYPE will be placed in \\='misc\\='"
   (let (db key existing tracknum)
     (dolist (track tracks)
       (setq key (emms-browser-get-track-field track type))
@@ -831,8 +832,8 @@ Items with no metadata for TYPE will be placed in 'misc'"
 
 (defun emms-browser-make-sorted-alist (type tracks)
   "Return a sorted alist of TRACKS.
-TYPE is the metadata to make the alist by - eg. if it's
-'info-artist, an alist of artists will be made."
+TYPE is the metadata to make the alist by - eg. if it\\='s
+\\='info-artist, an alist of artists will be made."
   (emms-browser-sort-alist
    (emms-browser-make-alist type tracks)
    type))
@@ -2067,10 +2068,10 @@ If the track is not of TYPE, return t."
   width nor height exceed this dimension.")
 
 (defun emms-browser-thumbnail-filter-default (dir)
-  "Select covers containing 'front' or 'cover' in DIR.
-If none was found, fallback on `emms-browser-thumbnail-filter-all'.
+  "Select covers containing \\='front\\=' or \\='cover\\=' in DIR.
+If none was found, fallback on `emms-browser-thumbnail-filter-all\\='.
 
-See `emms-browser-thumbnail-filter'."
+See `emms-browser-thumbnail-filter\\='."
   (when (file-directory-p dir)
     (let ((ls (directory-files dir t nil t))
           (case-fold-search t)
@@ -2082,7 +2083,7 @@ See `emms-browser-thumbnail-filter'."
       covers)))
 
 (defun emms-browser-thumbnail-filter-all (dir)
-  "Return the list of all files with `emms-browser-covers-file-extensions' in DIR.
+  "Return the list of all files with `emms-browser-covers-file-extensions\\=' in DIR.
 
 See `emms-browser-thumbnail-filter'."
   (let (covers)
@@ -2102,19 +2103,19 @@ See also `emms-browser-thumbnail-filter-default'.")
 (defun emms-browser-cache-thumbnail (dir size)
   "Return cached cover SIZE for album in DIR.
 
-SIZE must be 'small, 'medium or 'large.  It will determine the
+SIZE must be \\='small, \\='medium or \\='large.  It will determine the
 resolution of the cached file.  See the variables
-`emms-browser-thumbnail-SIZE-size'.
+`emms-browser-thumbnail-SIZE-size\\='.
 
 If cover is not cached or if cache is out-of-date, re-cache it.
 If both the width and the height of the cover are smaller than
-`emms-browser-thumbnail-SIZE-size', it need not be cached and
+`emms-browser-thumbnail-SIZE-size\\=', it need not be cached and
 will be used directly.
 
 Emms assumes that you have one album per folder. This function
 will always use the same cover per folder.
 
-`emms-browser-covers' can be `fset' to this function."
+`emms-browser-covers\\=' can be `fset\\=' to this function."
   (if (eq size 'large)
       ;; 'large is unused for now. Return empty.
       nil

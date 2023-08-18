@@ -717,7 +717,7 @@ Sources:
 
 (defun emms-info-native--checked-id3v2-size (elt bytes)
   "Calculate id3v2 element ELT size from BYTES.
-ELT must be either 'tag or 'frame.
+ELT must be either \\='tag or \\='frame.
 
 Return the size.  Signal an error if the size is zero."
   (let ((size (cond ((eq elt 'tag)

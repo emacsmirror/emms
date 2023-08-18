@@ -784,8 +784,8 @@ string), a confusing error message would result."
 
 (defun emms-track-get-year (track)
   "Get year of TRACK for display.
-There is the separation between the 'release date' and the
-'original date'.  This difference matters e.g. for
+There is the separation between the \\='release date\\=' and the
+\\='original date\\='.  This difference matters e.g. for
 re-releases (anniversaries and such) where the release date is
 more recent than the original release date.  In such cases the
 user probably wants the original release date so this is what we

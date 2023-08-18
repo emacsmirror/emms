@@ -147,12 +147,12 @@ If this playlist is current, make the playlist we switch to current."
 (defun emms-playlist-limit-track-get (track type)
   "Return the value of TYPE from TRACK.
 
-Here TYPE is a field available to `emms-track-get' or
-'description which gives the result of
-`emms-track-description-function'.
+Here TYPE is a field available to `emms-track-get\\=' or
+\\='description which gives the result of
+`emms-track-description-function\\='.
 
-When type is 'info-year, also tries 'info-originalyear,
- 'info-originaldate and 'info-date to get a usable date."
+When type is \\='info-year, also tries \\='info-originalyear,
+ \\='info-originaldate and \\='info-date to get a usable date."
   (cond ((eq type 'info-year)
 	 (let ((date (or (emms-track-get track 'info-originaldate)
 			 (emms-track-get track 'info-originalyear)
@@ -192,9 +192,9 @@ is non-nil."
 (defun emms-playlist-limit-do (type regexp)
   "Switch to a derived playlist containing the tracks with TYPE matching REGEXP.
 e.g.,
-    (emms-playlist-limit-do 'info-artist \"Jane Zhang\")
+    (emms-playlist-limit-do \\='info-artist \"Jane Zhang\")
 
-See `emms-info-mp3find-arguments' for possible options for TYPE."
+See `emms-info-mp3find-arguments\\=' for possible options for TYPE."
   (emms-playlist-ensure-playlist-buffer)
   (let* ((curr (emms-playlist-selected-track))
 	 (old-buf (current-buffer))
