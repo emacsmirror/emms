@@ -1,6 +1,6 @@
 ;;; emms-info-native.el --- Native Emacs Lisp info method for EMMS -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2020-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2020-2023 Free Software Foundation, Inc.
 
 ;; Author: Petteri Hintsanen <petterih@iki.fi>
 
@@ -51,6 +51,10 @@
 ;;   encryption are not supported.  Based on id3v2 Informal Standards,
 ;;   see URL `https://id3.org'.
 ;;
+;; - SPC files with extension `.spc' and id666 tags.  This is an audio
+;;   file based on a memory dump from an SPC700, a special audio chip
+;;   found within Super Nintendos.
+;;
 ;; Format detection is based solely on filename extension, which is
 ;; matched case-insensitively.
 
@@ -59,6 +63,7 @@
 (require 'bindat)
 (require 'cl-lib)
 (require 'emms-info)
+(require 'emms-info-spc)
 (require 'seq)
 (require 'subr-x)
 
@@ -954,6 +959,8 @@ strings."
            (emms-info-native--decode-flac-comments filename))
           ((eq stream-type 'mp3)
            (emms-info-native--decode-id3v2 filename))
+	  ((eq stream-type 'spc)
+	   (emms-info-spc--decode-id666 filename))
           (t nil))))
 
 (defun emms-info-native--find-stream-type (filename)
@@ -967,6 +974,7 @@ Return one of symbols `vorbis', `opus', `flac', or `mp3'."
           ((string-match ".opus$" filename) 'opus)
           ((string-match ".flac$" filename) 'flac)
           ((string-match ".mp3$" filename) 'mp3)
+	  ((string-match ".spc$" filename) 'spc)
           (t nil))))
 
 (provide 'emms-info-native)
