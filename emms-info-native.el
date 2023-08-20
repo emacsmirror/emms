@@ -588,6 +588,15 @@ return nil."
             (error "FLAC block length %s is invalid" last))))
   "FLAC metadata block header specification.")
 
+(defconst emms-info-native--flac-stream-info-block-bindat-spec
+  '((min-block-size u16)
+    (max-block-size u16)
+    (min-frame-size u24)
+    (max-frame-size u24)
+    (sample-metadata vec 8)
+    (md5 vec 16))
+  "FLAC stream info block specification.")
+
 (defconst emms-info-native--flac-comment-block-bindat-spec
   '((vendor-length u32r)
     (eval (when (> last emms-info-native--max-vorbis-vendor-length)
@@ -602,17 +611,25 @@ return nil."
                    (struct emms-info-native--vorbis-comment-field-bindat-spec)))
   "FLAC Vorbis comment block specification.")
 
-(defun emms-info-native--decode-flac-comments (filename)
-  "Read and decode comments from FLAC file FILENAME.
+(defun emms-info-native--decode-flac-metadata (filename)
+  "Read and decode metadata from FLAC file FILENAME.
 Return comments in a list of (FIELD . VALUE) cons cells.  Only
 FIELDs that are listed in
-`emms-info-native--accepted-vorbis-fields' are returned."
+`emms-info-native--accepted-vorbis-fields' are returned.
+
+Also decode and return playing time in `playing-time' field, if
+it is available in the stream info block."
   (unless (emms-info-native--has-flac-signature filename)
     (error "Invalid FLAC stream"))
-  (let* ((block (emms-info-native--decode-flac-comment-block (emms-info-native--file-inserter filename)))
-         (unpacked (bindat-unpack emms-info-native--flac-comment-block-bindat-spec block))
-         (user-comments (bindat-get-field unpacked 'user-comments)))
-    (emms-info-native--extract-vorbis-comments user-comments)))
+  (let* ((blocks (emms-info-native--decode-flac-meta-blocks (emms-info-native--file-inserter filename)))
+         (comment-block (bindat-unpack emms-info-native--flac-comment-block-bindat-spec (car blocks)))
+         (stream-info-block (bindat-unpack emms-info-native--flac-stream-info-block-bindat-spec (cadr blocks)))
+         (user-comments (bindat-get-field comment-block 'user-comments))
+         (comments (emms-info-native--extract-vorbis-comments user-comments))
+         (playtime (emms-info-native--decode-flac-playtime
+                    (emms-info-native--msb-to-integer
+                     (bindat-get-field stream-info-block 'sample-metadata)))))
+    (nconc comments (when playtime (list (cons "playing-time" playtime))))))
 
 (defun emms-info-native--has-flac-signature (filename)
   "Check for FLAC stream marker at the beginning of FILENAME.
@@ -624,19 +641,22 @@ Return t if there is a valid stream marker, nil otherwise."
 
 (defun emms-info-native--file-inserter (filename)
   "Return a function that reads and inserts bytes from FILENAME.
-This is meant for `emms-info-native--decode-flac-comment-block'."
+This is meant for `emms-info-native--decode-flac-meta-blocks'."
   (lambda (offset end replace)
     (insert-file-contents-literally filename nil offset end replace)))
 
-(defun emms-info-native--decode-flac-comment-block (read-func)
+(defun emms-info-native--decode-flac-meta-blocks (read-func)
   "Read and decode a comment block from FLAC file FILENAME.
-Return the comment block data in a vector."
+Return the comment block data in a vector.
+
+TODO: fix docstring"
   (with-temp-buffer
     (set-buffer-multibyte nil)
     (let (comment-block
+          stream-info-block
           last-flag
           (offset 4))
-      (while (and (not comment-block) (not last-flag))
+      (while (not last-flag)
         (funcall read-func offset (cl-incf offset 4) t)
         (let* ((header (bindat-unpack emms-info-native--flac-metadata-block-header-bindat-spec
                                       (buffer-string)))
@@ -647,12 +667,23 @@ Return the comment block data in a vector."
           (when (> block-type 6)
             (error "FLAC block type error: expected <= 6, got %s"
                    block-type))
+          (when (= block-type 0)
+            ;; Stream info block found, extract it.
+            (funcall read-func offset end t)
+            (setq stream-info-block (vconcat (buffer-string))))
           (when (= block-type 4)
             ;; Comment block found, extract it.
             (funcall read-func offset end t)
             (setq comment-block (vconcat (buffer-string))))
           (setq offset end)))
-      comment-block)))
+      (list comment-block stream-info-block))))
+
+(defun emms-info-native--decode-flac-playtime (stream-info)
+  (let ((sample-rate (emms-info-native--extract-bits stream-info 44 63))
+        (num-samples (emms-info-native--extract-bits stream-info 0 35)))
+    (when (and (> sample-rate 0)
+               (> num-samples 0))
+      (/ num-samples sample-rate))))
 
 
 ;;;; MP3 code
@@ -1319,7 +1350,7 @@ strings."
     (cond ((or (eq stream-type 'vorbis) (eq stream-type 'opus))
            (emms-info-native--decode-ogg-metadata filename stream-type))
           ((eq stream-type 'flac)
-           (emms-info-native--decode-flac-comments filename))
+           (emms-info-native--decode-flac-metadata filename))
           ((eq stream-type 'mp3)
            (emms-info-native--decode-id3v2 filename))
 	  ((eq stream-type 'spc)

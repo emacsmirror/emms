@@ -147,13 +147,20 @@
 
 (emms-test-make-flac-data-func emms-test-invalid-flac-block-length [1 200 200 200 0 1 2 3])
 (emms-test-make-flac-data-func emms-test-invalid-flac-block-type [9 0 0 0 0 1 2 3])
-(emms-test-make-flac-data-func emms-test-valid-flac-block [1 0 0 1 0 4 0 0 4 1 2 3 4])
+(emms-test-make-flac-data-func emms-test-valid-flac-block [0 0 0 8 10 11 12 13 14 15 16 17 132 0 0 4 1 2 3 4])
 
-(ert-deftest emms-test-decode-flac-comment-block ()
-  (should-error (emms-info-native--decode-flac-comment-block #'emms-test-invalid-flac-block-length))
-  (should-error (emms-info-native--decode-flac-comment-block #'emms-test-invalid-flac-block-type))
-  (should (equal (emms-info-native--decode-flac-comment-block #'emms-test-valid-flac-block)
-                 [1 2 3 4])))
+(ert-deftest emms-test-decode-flac-meta-blocks ()
+  (should-error (emms-info-native--decode-flac-meta-blocks
+                 #'emms-test-invalid-flac-block-length))
+  (should-error (emms-info-native--decode-flac-meta-blocks
+                 #'emms-test-invalid-flac-block-type))
+  (should (equal (emms-info-native--decode-flac-meta-blocks
+                  #'emms-test-valid-flac-block)
+                 '([1 2 3 4] [10 11 12 13 14 15 16 17]))))
+
+(ert-deftest emms-test-decode-flac-playtime ()
+  ;; The corresponding sample metadata bytes are [10 196 66 240 1 8 36 0].
+  (should (= (emms-info-native--decode-flac-playtime 775818634391462912) 392)))
 
 (ert-deftest emms-test-valid-id3v2-frame-id-p ()
   (let ((emms-info-native--id3v2-version 2))
@@ -262,4 +269,4 @@
  186 206 187 55 186 207 186 103 187 55 188 215 187 159 186 207
  185 44 187 53 187 56 188 8 187 159 185 149 190 224 188 8 185 250
  186 99 184 90 182]))
-    (should (= (emms-info-native--find-and-decode-xing-header) 8506))))
+    (should (= (emms-info-native--find-and-decode-vbri-header) 8506))))
