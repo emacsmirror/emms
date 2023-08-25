@@ -1342,6 +1342,42 @@ If POS does not contain PROP, try to find PROP just before POS."
       (setq i (- i 1))))
   vector)
 
+(defun emms-le-to-int (vec)
+  "Convert bytes in VEC to an integer.
+Bytes are assumed to be in little-endian order, that is, the
+least significant byte first.
+
+If VEC is nil, return zero."
+  (apply '+ (seq-map-indexed (lambda (elt idx)
+                               (* (expt 2 (* 8 idx)) elt))
+                             vec)))
+
+(defun emms-be-to-int (vec)
+  "Convert bytes in VEC to an integer.
+Bytes are assumed to be in big-endian order, that is, the most
+significant byte first.
+
+If VEC is nil, return zero."
+  (emms-le-to-int (reverse vec)))
+
+(defun emms-from-twos-complement (num bits)
+  "Convert integer NUM from two's complement with BITS bits."
+  (let ((signmask (ash 1 (1- bits))))
+    (if (= (logand num signmask) signmask)
+        ;; negative
+        (* -1 (1+ (logand (lognot num) (1- signmask))))
+      ;; positive
+      num)))
+
+(defun emms-extract-bits (int from &optional to)
+  "Extract consequent set bits FROM[..TO] from INT.
+The first (least significant, rightmost) bit is zero.  Return the
+integer value of bits as if they would have been shifted to right
+by FROM positions."
+  (unless to (setq to from))
+  (let ((num-bits (1+ (- to from)))
+        (mask (1- (expt 2 (1+ to)))))
+    (when (> num-bits 0) (ash (logand int mask) (- from)))))
 
 ;;; ------------------------------------------------------------------
 ;;; Sources

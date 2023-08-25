@@ -75,7 +75,7 @@ Sources:
     (bindat-unpack emms-info-spc--id666-header-bindat-spec
                    (buffer-string))))
 
-(defun emms-info-spc--decode-id666 (filename)
+(defun emms-info-spc-decode-id666 (filename)
   "Read and decode id666 metadata from FILENAME.
 Return metadata in a list of (FIELD . VALUE) cons cells, or nil
 in case of errors or if there were no known fields in FILENAME."
