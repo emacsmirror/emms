@@ -152,8 +152,6 @@ See `emms-info-vorbis--split-comment' for details."
           (emms-info-ogg--read-and-decode-packets filename 2))
          (headers
           (emms-info-ogg--decode-headers packets stream-type))
-         (sample-rate
-          (bindat-get-field headers 'identification-header 'sample-rate))
          (user-comments
           (bindat-get-field headers 'comment-header 'user-comments))
          (last-page
@@ -161,7 +159,15 @@ See `emms-info-vorbis--split-comment' for details."
          (granule-pos
           (alist-get 'granule-position last-page))
          (playing-time
-          (emms-info-ogg--decode-granule-pos granule-pos sample-rate))
+          (emms-info-ogg--decode-granule-pos
+           granule-pos
+           (if (eq stream-type 'vorbis)
+               (bindat-get-field headers
+                                 'identification-header
+                                 'sample-rate)
+             ;; Opus assumes a fixed sample rate of 48 kHz for granule
+             ;; position.
+             48000)))
          (comments
           (emms-info-vorbis-extract-comments user-comments)))
     (nconc comments
