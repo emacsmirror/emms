@@ -77,7 +77,7 @@ exhaustion in case of garbled or malicious inputs.")
     (page-checksum u32r)
     (page-segments u8)
     (segment-table vec (page-segments))
-    (payload vec (eval (seq-reduce #'+ last 0))))
+    (payload str (eval (seq-reduce #'+ last 0))))
   "Ogg page structure specification.")
 
 (defconst emms-info-ogg--magic-pattern
@@ -189,12 +189,12 @@ Only elementary streams are supported, that is, FILENAME should
 contain only a single logical stream.  Note that this assumption
 is not verified: with non-elementary streams packets from
 different streams will be mixed together without an error."
-  (let ((num-packets 0) (offset 0) (stream (vector)))
+  (let ((num-packets 0) (offset 0) (stream (string)))
     (while (< num-packets packets)
       (let ((page (emms-info-ogg--read-and-decode-page filename offset)))
         (cl-incf num-packets (or (plist-get page :num-packets) 0))
         (cl-incf offset (plist-get page :num-bytes))
-        (setq stream (vconcat stream (plist-get page :stream)))
+        (setq stream (concat stream (plist-get page :stream)))
         (when (> (length stream) emms-info-ogg--max-peek-size)
           (error "Ogg payload is too large"))))
     stream))
