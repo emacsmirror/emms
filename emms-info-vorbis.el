@@ -160,11 +160,9 @@ returned."
     (dolist (user-comment user-comments)
       (let* ((comment (alist-get 'user-comment user-comment))
              (pair (emms-info-vorbis--split-comment comment)))
-        (push pair comments)))
-    (seq-filter (lambda (elt)
-                  (member (car elt)
-                          emms-info-vorbis--accepted-fields))
-                comments)))
+        (when (member (car pair) emms-info-vorbis--accepted-fields)
+          (push pair comments))))
+    comments))
 
 (defun emms-info-vorbis--split-comment (comment)
   "Split Vorbis COMMENT to a field-value pair.
