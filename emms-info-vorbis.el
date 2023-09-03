@@ -144,7 +144,7 @@ header.")
   '((length u32r)
     (eval (when (> last emms-info-vorbis--max-comment-size)
             (error "Vorbis comment length %s is too long" last)))
-    (user-comment vec (length)))
+    (user-comment str (length)))
   "Vorbis comment field specification.")
 
 (defun emms-info-vorbis-extract-comments (user-comments)
@@ -175,11 +175,7 @@ Comments with empty FIELD or VALUE are ignored.
 
 Return a cons cell (FIELD . VALUE), where FIELD is converted to
 lower case and VALUE is the decoded value."
-  (let ((comment-string
-         (decode-coding-string (mapconcat #'byte-to-string
-                                          comment
-                                          nil)
-                               'utf-8)))
+  (let ((comment-string (decode-coding-string comment 'utf-8)))
     (when (string-match "^\\(.+?\\)=\\(.+\\)$" comment-string)
       (cons (downcase (match-string 1 comment-string))
             (match-string 2 comment-string)))))
