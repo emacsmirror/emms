@@ -144,11 +144,11 @@ info blocks.  Extract and return them in a list, if found."
           (when (= block-type 0)
             ;; Stream info block found, extract it.
             (funcall read-func offset end)
-            (setq stream-info-block (vconcat (buffer-string))))
+            (setq stream-info-block (buffer-string)))
           (when (= block-type 4)
             ;; Comment block found, extract it.
             (funcall read-func offset end)
-            (setq comment-block (vconcat (buffer-string))))
+            (setq comment-block (buffer-string)))
           (setq offset end)))
       (list comment-block stream-info-block))))
 

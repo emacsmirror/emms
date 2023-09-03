@@ -47,7 +47,8 @@ for `emms-info-flac--decode-meta-blocks'."
                  #'emms-test-invalid-flac-block-type))
   (should (equal (emms-info-flac--decode-meta-blocks
                   #'emms-test-valid-flac-block)
-                 '([1 2 3 4] [10 11 12 13 14 15 16 17]))))
+                 (list (unibyte-string 1 2 3 4)
+                       (unibyte-string 10 11 12 13 14 15 16 17)))))
 
 (ert-deftest emms-flac-test-decode-duration ()
   ;; The corresponding sample metadata bytes are [10 196 66 240 1 8 36 0].
