@@ -436,8 +436,7 @@ Remove the terminating null byte, if any.
 
 Return the text as string."
   (let* ((encoding (emms-info-id3v2--text-encoding bytes))
-         (string (mapconcat #'byte-to-string (seq-rest bytes) ""))
-         (decoded (decode-coding-string string encoding)))
+         (decoded (decode-coding-string (seq-rest bytes) encoding)))
     (when (> (length decoded) 0)
       (if (equal (substring decoded -1) "\0")
           (substring decoded 0 -1)
