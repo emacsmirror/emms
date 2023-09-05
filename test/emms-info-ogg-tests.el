@@ -27,11 +27,12 @@
 (require 'ert)
 
 (ert-deftest emms-ogg-test-decode-page ()
-  (let ((bytes [79 103 103 83 0 2 0 0 0 0 0 0 0 0 134 209 158 23 0 0 0 0 53 82 251 136 1 30 1 118 111 114 98 105 115 0 0 0 0 1 68 172 0 0 0 0 0 0 128 56 1 0 0 0 0 0 184 1]))
-    (should (equal (emms-info-ogg--decode-page bytes)
-                   (list :num-packets 1
-                         :num-bytes 58
-                         :stream [1 118 111 114 98 105 115 0 0 0 0 1 68 172 0 0 0 0 0 0 128 56 1 0 0 0 0 0 184 1])))))
+  (let* ((bytes [79 103 103 83 0 2 0 0 0 0 0 0 0 0 134 209 158 23 0 0 0 0 53 82 251 136 1 30 1 118 111 114 98 105 115 0 0 0 0 1 68 172 0 0 0 0 0 0 128 56 1 0 0 0 0 0 184 1])
+         (page (bindat-unpack emms-info-ogg--page-bindat-spec bytes)))
+    (should (= (emms-info-ogg--num-packets page) 1))
+    (should (= (bindat-length emms-info-ogg--page-bindat-spec page) 58))
+    (should (equal (bindat-get-field page 'payload)
+                   (unibyte-string 1 118 111 114 98 105 115 0 0 0 0 1 68 172 0 0 0 0 0 0 128 56 1 0 0 0 0 0 184 1)))))
 
 (ert-deftest emms-ogg-test-decode-vorbis-headers ()
   "Test `emms-info-ogg--decode-headers' with Vorbis data."
@@ -100,7 +101,7 @@ This is a helper function for `emms-ogg-test-decode-last-page'."
         (notlast [#x01 #x02 #x03 #x04 #x4f #x67 #x67 #x53 #x00 #x00 #x00 #x24 #x08 #x01 #x00 #x00 #x00 #x00 #x9c #x39 #x6e #x47 #x40 #x08 #x00 #x00 #x19 #x4e #xac #xa3 #x01 #x0a #x4f #x67 #x67 #x53 #x31 #x32 #x33 #x34 #x35 #x36])
         (invalid [#x01 #x02 #x03 #x04 #x4f #x67 #x67 #x53 #x00 #x04 #x00 #x24 #x08 #x01 #x00 #x00 #x00 #x00 #x9c #x39 #x6e #x47 #x40 #x08 #x00 #x00 #x01 #x02 #x03 #x04 #x01 #x0a #x4f #x67 #x67 #x53 #x31 #x32 #x33 #x34 #x35 #x36]))
     (should (equal (emms-ogg-test--decode-last-page valid)
-                   '((payload . [79 103 103 83 49 50 51 52 53 54])
+                   '((payload . "OggS123456")
                      (segment-table . [10])
                      (page-segments . 1)
                      (page-checksum . 2745978393)

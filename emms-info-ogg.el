@@ -179,25 +179,25 @@ See `emms-info-vorbis--split-comment' for details."
 Read in data from the start of FILENAME, remove Ogg packet
 frames, and concatenate payloads until at least PACKETS number of
 packets have been decoded.  Return the decoded packets in a
-vector, concatenated.
+string, concatenated.
 
-Data is read in `emms-info-ogg--page-size' chunks.  If the total
-length of concatenated packets becomes greater than
-`emms-info-ogg--max-peek-size', an error is signaled.
+Read data in `emms-info-ogg--page-size' chunks.  If more than
+`emms-info-ogg--max-peek-size' bytes of data would be read,
+signal an error.
 
 Only elementary streams are supported, that is, FILENAME should
 contain only a single logical stream.  Note that this assumption
 is not verified: with non-elementary streams packets from
 different streams will be mixed together without an error."
-  (let ((num-packets 0) (offset 0) (stream (string)))
+  (let ((num-packets 0) (offset 0) (stream (list)))
     (while (< num-packets packets)
+      (when (> offset emms-info-ogg--max-peek-size)
+        (error "Ogg payload is too large"))
       (let ((page (emms-info-ogg--read-and-decode-page filename offset)))
-        (cl-incf num-packets (or (plist-get page :num-packets) 0))
-        (cl-incf offset (plist-get page :num-bytes))
-        (setq stream (concat stream (plist-get page :stream)))
-        (when (> (length stream) emms-info-ogg--max-peek-size)
-          (error "Ogg payload is too large"))))
-    stream))
+        (cl-incf num-packets (emms-info-ogg--num-packets page))
+        (cl-incf offset (bindat-length emms-info-ogg--page-bindat-spec page))
+        (push (bindat-get-field page 'payload) stream)))
+    (reverse (mapconcat #'nreverse stream))))
 
 (defun emms-info-ogg--read-and-decode-page (filename offset)
   "Read and decode a single Ogg page from FILENAME.
@@ -208,25 +208,8 @@ Return the plist from `emms-info-ogg--decode-page'."
     (set-buffer-multibyte nil)
     (insert-file-contents-literally
      filename nil offset (+ offset emms-info-ogg--page-size))
-    (emms-info-ogg--decode-page (buffer-string))))
-
-(defun emms-info-ogg--decode-page (bytes)
-  "Decode a single Ogg page from a sequence of BYTES.
-Return a plist (:num-packets N :num-bytes B :stream S), where N
-is the number of packets in the page, B is the size of the page
-in bytes, and S is the unframed logical bitstream in a vector.
-Note that N can be zero."
-  (let* ((page
-          (bindat-unpack emms-info-ogg--page-bindat-spec bytes))
-         (num-packets
-          (emms-info-ogg--num-packets page))
-         (num-bytes
-          (bindat-length emms-info-ogg--page-bindat-spec page))
-         (stream
-          (bindat-get-field page 'payload)))
-    (list :num-packets num-packets
-          :num-bytes num-bytes
-          :stream stream)))
+    (bindat-unpack emms-info-ogg--page-bindat-spec
+                   (buffer-string))))
 
 (defun emms-info-ogg--num-packets (page)
   "Return the number of packets in Ogg page PAGE.
