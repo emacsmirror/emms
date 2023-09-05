@@ -412,10 +412,11 @@ case map the reference to a string via `emms-info-id3v1--genres';
 in the latter case use the genre string verbatim.
 
 Return a cons cell (INFO-ID . VALUE) where VALUE is the decoded
-string."
+string, or nil if the decoding failed."
   (when info-id
     (let ((str (emms-info-id3v2--decode-string data)))
-      (cond ((stringp info-id) (cons info-id str))
+      (cond ((string-empty-p str) nil)
+            ((stringp info-id) (cons info-id str))
             ((eq info-id 'genre)
              (if (string-match "^(?\\([0-9]+\\))?" str)
                  (let ((v1-genre
@@ -427,7 +428,8 @@ string."
              (let* ((key-val (split-string str (string 0)))
                     (key (downcase (car key-val)))
                     (val (cadr key-val)))
-               (when (rassoc key emms-info-id3v2--frame-to-info)
+               (when (and (rassoc key emms-info-id3v2--frame-to-info)
+                          (not (string-empty-p val)))
                  (cons key val))))))))
 
 (defun emms-info-id3v2--decode-string (bytes)
@@ -437,10 +439,10 @@ Remove the terminating null byte, if any.
 Return the text as string."
   (let* ((encoding (emms-info-id3v2--text-encoding bytes))
          (decoded (decode-coding-string (seq-rest bytes) encoding)))
-    (when (> (length decoded) 0)
-      (if (equal (substring decoded -1) "\0")
-          (substring decoded 0 -1)
-        decoded))))
+    (if (and (> (length decoded) 0)
+             (equal (substring decoded -1) "\0"))
+        (substring decoded 0 -1)
+      decoded)))
 
 (defun emms-info-id3v2--text-encoding (bytes)
   "Return the encoding for text information BYTES."
