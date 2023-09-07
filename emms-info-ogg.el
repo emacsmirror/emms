@@ -43,8 +43,6 @@
 (require 'emms)
 (require 'emms-info-opus)
 (require 'emms-info-vorbis)
-(eval-when-compile
-  (require 'cl-lib))
 
 (defconst emms-info-ogg--page-size 65307
   "Maximum size for a single Ogg container page.")
@@ -194,8 +192,11 @@ different streams will be mixed together without an error."
       (when (> offset emms-info-ogg--max-peek-size)
         (error "Ogg payload is too large"))
       (let ((page (emms-info-ogg--read-and-decode-page filename offset)))
-        (cl-incf num-packets (emms-info-ogg--num-packets page))
-        (cl-incf offset (bindat-length emms-info-ogg--page-bindat-spec page))
+        (setq num-packets (+ num-packets
+                             (emms-info-ogg--num-packets page)))
+        (setq offset (+ offset
+                        (bindat-length
+                         emms-info-ogg--page-bindat-spec page)))
         (push (bindat-get-field page 'payload) stream)))
     (reverse (mapconcat #'nreverse stream))))
 

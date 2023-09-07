@@ -42,8 +42,6 @@
 
 (require 'bindat)
 (require 'emms)
-(eval-when-compile
-  (require 'cl-lib))
 
 
 ;;; id3 code
@@ -392,7 +390,7 @@ data."
           (while (and (re-search-forward (string 255 0) nil t)
                       (< (point) end))
             (replace-match (string 255))
-            (cl-incf end 1))
+            (setq end (1+ end)))
           (delete-region (1+ num-bytes) (point-max))
           (cons (+ begin end) (buffer-string)))
       ;; No unsynchronization: read the data as-is.
@@ -528,8 +526,9 @@ See `emms-info-id3v2--frame-to-info' for recognized fields."
          (offset 10))
     (when (memq 6 (bindat-get-field header 'flags))
       ;; Skip the extended header.
-      (cl-incf offset
-               (emms-info-id3v2--checked-ext-header-size filename)))
+      (setq offset (+ offset
+                      (emms-info-id3v2--checked-ext-header-size
+                       filename))))
     (let ((tags
            (emms-info-id3v2--decode-frames
             filename offset (+ tag-size 10) unsync))

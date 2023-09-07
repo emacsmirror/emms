@@ -33,8 +33,6 @@
 (require 'bindat)
 (require 'emms)
 (require 'emms-info-vorbis)
-(eval-when-compile
-  (require 'cl-lib))
 
 (defconst emms-info-flac--max-peek-size (* 2048 1024)
   "Maximum buffer size for metadata decoding.
@@ -130,7 +128,7 @@ info blocks.  Extract and return them in a list, if found."
     (set-buffer-multibyte nil)
     (let (comment-block stream-info-block last-flag (offset 4))
       (while (not last-flag)
-        (funcall read-func offset (cl-incf offset 4))
+        (funcall read-func offset (setq offset (+ offset 4)))
         (let* ((header
                 (bindat-unpack emms-info-flac--meta-header-bindat-spec
                                (buffer-string)))
