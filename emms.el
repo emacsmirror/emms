@@ -45,6 +45,10 @@
 ;;; Code:
 (require 'emms-compat)
 
+(defvar emms--use-bindat-type
+  (eval-when-compile (fboundp 'bindat-type))
+"Use bindat-type macro.")
+
 (defvar emms-version "16"
   "EMMS version string.")
 
@@ -1378,6 +1382,24 @@ by FROM positions."
   (let ((num-bits (1+ (- to from)))
         (mask (1- (expt 2 (1+ to)))))
     (when (> num-bits 0) (ash (logand int mask) (- from)))))
+
+(defun emms-equal-lists (x y)
+  "Compare two lists X and Y for equality.
+List elements can be in any order, and Y can have more elements
+than X.
+
+This is a special helper function for tests.  It is not meant for
+general use."
+  (cond ((and (not (proper-list-p x))
+              (not (proper-list-p y)))
+         (equal x y))
+        ((and (proper-list-p x)
+              (proper-list-p y))
+         (seq-every-p (lambda (elt-x)
+                        (seq-find (lambda (elt-y)
+                                    (emms-equal-lists elt-x elt-y))
+                                  y))
+                      x))))
 
 ;;; ------------------------------------------------------------------
 ;;; Sources

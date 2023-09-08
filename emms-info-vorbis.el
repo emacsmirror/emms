@@ -88,7 +88,7 @@ header.")
     (eval (unless (= last 1)
             (error "Vorbis header type mismatch: expected 1, got %s"
                    last)))
-    (vorbis vec 6)
+    (vorbis str 6)
     (eval (unless (equal last emms-info-vorbis--header-magic-pattern)
             (error "Vorbis framing mismatch: expected `%s', got `%s'"
                    emms-info-vorbis--header-magic-pattern
@@ -109,8 +109,7 @@ header.")
                  last)))
   "Vorbis identification header specification.")
 
-(defconst emms-info-vorbis--header-magic-pattern
-  (string-to-vector "vorbis")
+(defconst emms-info-vorbis--header-magic-pattern "vorbis"
   "Header packet magic pattern.")
 
 (defconst emms-info-vorbis--comment-header-bindat-spec
@@ -118,7 +117,7 @@ header.")
     (eval (unless (= last 3)
             (error "Vorbis header type mismatch: expected 3, got %s"
                    last)))
-    (vorbis vec 6)
+    (vorbis str 6)
     (eval (unless (equal last emms-info-vorbis--header-magic-pattern)
             (error "Vorbis framing mismatch: expected `%s', got `%s'"
                    emms-info-vorbis--header-magic-pattern
@@ -126,7 +125,7 @@ header.")
     (vendor-length u32r)
     (eval (when (> last emms-info-vorbis--max-vendor-length)
             (error "Vorbis vendor length %s is too long" last)))
-    (vendor-string vec (vendor-length))
+    (vendor-string str (vendor-length))
     (user-comments-list-length u32r)
     (eval (when (> last emms-info-vorbis--max-comments)
             (error "Vorbis user comment list length %s is too long"

@@ -39,10 +39,10 @@
 
 ;;; Code:
 
-(require 'bindat)
 (require 'emms)
 (require 'emms-info-opus)
 (require 'emms-info-vorbis)
+(require 'bindat)
 
 (defconst emms-info-ogg--page-size 65307
   "Maximum size for a single Ogg container page.")
@@ -59,28 +59,49 @@ Technically metadata blocks can have almost arbitrary lengths,
 but in practice processing must be constrained to prevent memory
 exhaustion in case of garbled or malicious inputs.")
 
-(defconst emms-info-ogg--page-bindat-spec
-  '((capture-pattern vec 4)
-    (eval (unless (equal last emms-info-ogg--magic-pattern)
-            (error "Ogg framing mismatch: expected `%s', got `%s'"
-                   emms-info-ogg--magic-pattern
-                   last)))
-    (stream-structure-version u8)
-    (eval (unless (= last 0)
-            (error "Ogg version mismatch: expected 0, got %s" last)))
-    (header-type-flag u8)
-    (granule-position vec 8)
-    (stream-serial-number u32r)
-    (page-sequence-no u32r)
-    (page-checksum u32r)
-    (page-segments u8)
-    (segment-table vec (page-segments))
-    (payload str (eval (seq-reduce #'+ last 0))))
-  "Ogg page structure specification.")
-
-(defconst emms-info-ogg--magic-pattern
-  (string-to-vector "OggS")
+(defconst emms-info-ogg--magic-pattern "OggS"
   "Ogg format magic capture pattern.")
+
+(defconst emms-info-ogg--page-bindat-spec
+  (if emms--use-bindat-type
+      (bindat-type
+        (capture-pattern str 4)
+        (_ unit (unless (equal capture-pattern emms-info-ogg--magic-pattern)
+                  (error "Ogg framing mismatch: expected `%s', got `%s'"
+                         emms-info-ogg--magic-pattern
+                         capture-pattern)))
+        (stream-structure-version u8)
+        (_ unit (unless (= stream-structure-version 0)
+                  (error "Ogg version mismatch: expected 0, got %d"
+                         stream-structure-version)))
+        (header-type-flag u8)
+        (granule-position sint 64 'le)
+        (stream-serial-number uint 32 'le)
+        (page-sequence-no uint 32 'le)
+        (page-checksum uint 32 'le)
+        (page-segments u8)
+        (segment-table vec page-segments)
+        (payload str (seq-reduce #'+ segment-table 0)))
+    ;; For Emacsen older than 28
+    '((capture-pattern str 4)
+      (eval (unless (equal last emms-info-ogg--magic-pattern)
+              (error "Ogg framing mismatch: expected `%s', got `%s'"
+                     emms-info-ogg--magic-pattern
+                     last)))
+      (stream-structure-version u8)
+      (eval (unless (= last 0)
+              (error "Ogg version mismatch: expected 0, got %s" last)))
+      (header-type-flag u8)
+      (granule-position-bytes vec 8)
+      (granule-position eval (emms-from-twos-complement
+                              (emms-le-to-int last) 64))
+      (stream-serial-number u32r)
+      (page-sequence-no u32r)
+      (page-checksum u32r)
+      (page-segments u8)
+      (segment-table vec (page-segments))
+      (payload str (eval (seq-reduce #'+ last 0)))))
+  "Ogg page structure specification.")
 
 (defconst emms-info-ogg--crc-table
   [#x00000000 #x04C11DB7 #x09823B6E #x0D4326D9 #x130476DC
@@ -152,22 +173,23 @@ See `emms-info-vorbis--split-comment' for details."
           (emms-info-ogg--decode-headers packets stream-type))
          (user-comments
           (bindat-get-field headers 'comment-header 'user-comments))
+         (comments
+          (emms-info-vorbis-extract-comments user-comments))
          (last-page
           (emms-info-ogg--read-and-decode-last-page filename))
          (granule-pos
           (alist-get 'granule-position last-page))
+         (sample-rate
+          (if (eq stream-type 'vorbis)
+              (bindat-get-field headers
+                                'identification-header
+                                'sample-rate)
+            ;; Opus assumes a fixed sample rate of 48 kHz for granule
+            ;; position.
+            48000))
          (playing-time
-          (emms-info-ogg--decode-granule-pos
-           granule-pos
-           (if (eq stream-type 'vorbis)
-               (bindat-get-field headers
-                                 'identification-header
-                                 'sample-rate)
-             ;; Opus assumes a fixed sample rate of 48 kHz for granule
-             ;; position.
-             48000)))
-         (comments
-          (emms-info-vorbis-extract-comments user-comments)))
+          (when (and granule-pos (> granule-pos 0))
+            (/ granule-pos sample-rate))))
     (nconc comments
            (when playing-time
              (list (cons "playing-time" playing-time))))))
@@ -198,7 +220,7 @@ different streams will be mixed together without an error."
                         (bindat-length
                          emms-info-ogg--page-bindat-spec page)))
         (push (bindat-get-field page 'payload) stream)))
-    (reverse (mapconcat #'nreverse stream))))
+    (reverse (mapconcat #'nreverse stream nil))))
 
 (defun emms-info-ogg--read-and-decode-page (filename offset)
   "Read and decode a single Ogg page from FILENAME.
@@ -231,16 +253,17 @@ Return a structure that corresponds to either
          (bindat-unpack emms-info-vorbis--headers-bindat-spec
                         packets))
         ((eq stream-type 'opus)
-         (let (emms-info-opus--channel-count)
-           (bindat-unpack emms-info-opus--headers-bindat-spec
-                          packets)))
+         (bindat-unpack emms-info-opus--headers-bindat-spec
+                        packets))
         (t (error "Unknown stream type %s" stream-type))))
 
 (defun emms-info-ogg--read-and-decode-last-page (filename)
   "Read and decode the last Ogg page from FILENAME.
 Return the page in bindat type structure."
   (with-temp-buffer
-    (let* ((length (file-attribute-size (file-attributes filename)))
+    (let* ((length (file-attribute-size
+                    (file-attributes
+                     (file-truename filename))))
            (begin (max 0 (- length emms-info-ogg--page-size))))
       (set-buffer-multibyte nil)
       (insert-file-contents-literally filename nil begin length)
@@ -255,8 +278,7 @@ Ogg page in the buffer, return nil."
   (let (page)
     (goto-char (point-max))
     (while (and (not page)
-                (search-backward
-                 (concat emms-info-ogg--magic-pattern) nil t))
+                (search-backward emms-info-ogg--magic-pattern nil t))
       (setq page (emms-info-ogg--verify-page)))
     (when (and page
                (> (logand (alist-get 'header-type-flag page) #x04) 0))
@@ -296,20 +318,6 @@ checksum."
                               (logxor (ash crc -24)
                                       (aref bytes n))))))
     crc))
-
-(defun emms-info-ogg--decode-granule-pos (vec rate)
-  "Decode Ogg granule position vector VEC for sampling rate RATE.
-Granule position is 64-bit little-endian signed integer counting
-the number of passed PCM samples per channel at the end of a
-packet.  For a partial packet granule position is -1 and hence
-invalid.
-
-Return the granule position in seconds, or nil if VEC is nil or
-from a partial packet."
-  (when vec
-    (let* ((int (emms-le-to-int vec))
-           (pos (emms-from-twos-complement int 64)))
-      (unless (= pos -1) (/ pos rate)))))
 
 (provide 'emms-info-ogg)
 
