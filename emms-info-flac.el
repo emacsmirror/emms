@@ -30,9 +30,9 @@
 
 ;;; Code:
 
-(require 'bindat)
 (require 'emms)
 (require 'emms-info-vorbis)
+(require 'bindat)
 
 (defconst emms-info-flac--max-peek-size (* 2048 1024)
   "Maximum buffer size for metadata decoding.
@@ -47,34 +47,62 @@ but in practice processing must be constrained to prevent memory
 exhaustion in case of garbled or malicious inputs.")
 
 (defconst emms-info-flac--meta-header-bindat-spec
-  '((flags u8)
-    (length u24)
-    (eval (when (or (> last emms-info-flac--max-peek-size)
-                    (= last 0))
-            (error "FLAC block length %s is invalid" last))))
+  (if emms--use-bindat-type
+      (bindat-type
+        (flags u8)
+        (length uint 24)
+        (_ unit (when (or (> length emms-info-flac--max-peek-size)
+                          (= length 0))
+                  (error "FLAC block length %s is invalid" length))))
+    '((flags u8)
+      (length u24)
+      (eval (when (or (> last emms-info-flac--max-peek-size)
+                      (= last 0))
+              (error "FLAC block length %s is invalid" last)))))
   "FLAC metadata block header specification.")
 
 (defconst emms-info-flac--stream-info-block-bindat-spec
-  '((min-block-size u16)
-    (max-block-size u16)
-    (min-frame-size u24)
-    (max-frame-size u24)
-    (sample-metadata vec 8)
-    (md5 vec 16))
+  (if emms--use-bindat-type
+      (bindat-type
+        (min-block-size uint 16)
+        (max-block-size uint 16)
+        (min-frame-size uint 24)
+        (max-frame-size uint 24)
+        (sample-metadata vec 8)
+        (md5 vec 16))
+    '((min-block-size u16)
+      (max-block-size u16)
+      (min-frame-size u24)
+      (max-frame-size u24)
+      (sample-metadata vec 8)
+      (md5 vec 16)))
   "FLAC stream info block specification.")
 
 (defconst emms-info-flac--comment-block-bindat-spec
-  '((vendor-length u32r)
-    (eval (when (> last emms-info-vorbis--max-vendor-length)
-            (error "FLAC vendor length %s is too long" last)))
-    (vendor-string vec (vendor-length))
-    (user-comments-list-length u32r)
-    (eval (when (> last emms-info-vorbis--max-comments)
-            (error "FLAC user comment list length %s is too long"
-                   last)))
-    (user-comments repeat
-                   (user-comments-list-length)
-                   (struct emms-info-vorbis--comment-field-bindat-spec)))
+  (if emms--use-bindat-type
+      (bindat-type
+        (vendor-length uint 32 'le)
+        (_ unit (when (> vendor-length emms-info-vorbis--max-vendor-length)
+                  (error "FLAC vendor length %s is too long"
+                         vendor-length)))
+        (vendor-string str vendor-length)
+        (user-comments-list-length uint 32 'le)
+        (_ unit (when (> user-comments-list-length emms-info-vorbis--max-comments)
+                  (error "FLAC user comment list length %s is too long"
+                         user-comments-list-length)))
+        (user-comments repeat user-comments-list-length
+                       type emms-info-vorbis--comment-field-bindat-spec))
+    '((vendor-length u32r)
+      (eval (when (> last emms-info-vorbis--max-vendor-length)
+              (error "FLAC vendor length %s is too long" last)))
+      (vendor-string str (vendor-length))
+      (user-comments-list-length u32r)
+      (eval (when (> last emms-info-vorbis--max-comments)
+              (error "FLAC user comment list length %s is too long"
+                     last)))
+      (user-comments repeat
+                     (user-comments-list-length)
+                     (struct emms-info-vorbis--comment-field-bindat-spec))))
   "FLAC Vorbis comment block specification.")
 
 (defun emms-info-flac-decode-metadata (filename)
