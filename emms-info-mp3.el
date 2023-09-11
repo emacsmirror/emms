@@ -40,42 +40,61 @@
 
 ;;; Code:
 
-(require 'bindat)
 (require 'emms)
+(require 'bindat)
+(require 'subr-x)
 
 
 ;;; id3 code
 
 (defvar emms-info-id3v2--version 0
-  "Last decoded id3v2 version.
-This is a kludge; it is needed because bindat spec cannot refer
-outside itself.")
+  "Last decoded id3v2 version.")
 
-(defconst emms-info-id3v2--header-bindat-spec
-  '((file-identifier vec 3)
-    (eval (unless (equal last emms-info-id3v2--magic-pattern)
-            (error "id3v2 framing mismatch: expected `%s', got `%s'"
-                   emms-info-id3v2--magic-pattern
-                   last)))
-    (version u8)
-    (eval (setq emms-info-id3v2--version last))
-    (revision u8)
-    (flags bits 1)
-    (size-bytes vec 4)
-    (size eval (emms-info-id3v2--checked-size 'tag last)))
-  "id3v2 header specification.")
-
-(defconst emms-info-id3v2--magic-pattern
-  (string-to-vector "ID3")
+(defconst emms-info-id3v2--magic-pattern "ID3"
   "id3v2 header magic pattern.")
 
+(defconst emms-info-id3v2--header-bindat-spec
+  (if emms--use-bindat-type
+      (bindat-type
+        (file-identifier str 3)
+        (_ unit (unless (equal file-identifier emms-info-id3v2--magic-pattern)
+                  (error "id3v2 framing mismatch: expected `%s', got `%s'"
+                         emms-info-id3v2--magic-pattern
+                         file-identifier)))
+        (version u8)
+        (_ unit (progn (setq emms-info-id3v2--version version) nil))
+        (revision u8)
+        (flags bits 1)
+        (size-bytes vec 4)
+        (size unit (emms-info-id3v2--checked-size 'tag size-bytes)))
+    '((file-identifier str 3)
+      (eval (unless (equal last emms-info-id3v2--magic-pattern)
+              (error "id3v2 framing mismatch: expected `%s', got `%s'"
+                     emms-info-id3v2--magic-pattern
+                     last)))
+      (version u8)
+      (eval (setq emms-info-id3v2--version last))
+      (revision u8)
+      (flags bits 1)
+      (size-bytes vec 4)
+      (size eval (emms-info-id3v2--checked-size 'tag last))))
+  "id3v2 header specification.")
+
 (defconst emms-info-id3v2--frame-header-bindat-spec
-  '((id str (eval (if (= emms-info-id3v2--version 2) 3 4)))
-    (eval (unless (emms-info-id3v2--valid-frame-id-p last)
-            (error "id3v2 frame id `%s' is invalid" last)))
-    (size-bytes vec (eval (if (= emms-info-id3v2--version 2) 3 4)))
-    (size eval (emms-info-id3v2--checked-size 'frame last))
-    (flags bits (eval (if (= emms-info-id3v2--version 2) 0 2))))
+  (if emms--use-bindat-type
+      (bindat-type
+        (id str (if (= emms-info-id3v2--version 2) 3 4))
+        (_ unit (unless (emms-info-id3v2--valid-frame-id-p id)
+                  (error "id3v2 frame id `%s' is invalid" id)))
+        (size-bytes vec (if (= emms-info-id3v2--version 2) 3 4))
+        (size unit (emms-info-id3v2--checked-size 'frame size-bytes))
+        (flags bits (if (= emms-info-id3v2--version 2) 0 2)))
+    '((id str (eval (if (= emms-info-id3v2--version 2) 3 4)))
+      (eval (unless (emms-info-id3v2--valid-frame-id-p last)
+              (error "id3v2 frame id `%s' is invalid" last)))
+      (size-bytes vec (eval (if (= emms-info-id3v2--version 2) 3 4)))
+      (size eval (emms-info-id3v2--checked-size 'frame last))
+      (flags bits (eval (if (= emms-info-id3v2--version 2) 0 2)))))
   "id3v2 frame header specification.")
 
 (defconst emms-info-id3v2--frame-to-info
@@ -304,7 +323,7 @@ Return the size.  Signal an error if the size is zero."
 BEGIN should be the offset of first byte of the first frame, and
 END should be the offset after the complete id3v2 tag.
 
-If UNSYNC is t, the frames are assumed to have gone through
+If UNSYNC is non-nil, the frames are assumed to have gone through
 unsynchronization and decoded as such.
 
 Return metadata in a list of (FIELD . VALUE) cons cells."
@@ -344,8 +363,8 @@ next frame (if any) and FRAME is the decoded frame.  See
          (info-id (cdr (assoc frame-id emms-info-id3v2--frame-to-info)))
          (size (bindat-get-field header 'size)))
     (if (or info-id unsync)
-        ;; Note that if unsync is t, we have to always read the frame
-        ;; to determine next-frame-offset.
+        ;; Note that if unsync is non-nil, we have to always read the
+        ;; frame to determine next-frame-offset.
         (let* ((data (emms-info-id3v2--read-frame-data
                       filename data-offset size unsync))
                (next-frame-offset (car data))
@@ -372,9 +391,9 @@ header."
 
 (defun emms-info-id3v2--read-frame-data (filename begin num-bytes unsync)
   "Read NUM-BYTES of raw id3v2 frame data from FILENAME.
-Start reading from offset BEGIN.  If UNSYNC is t, all \"FF 00\"
-byte combinations are replaced by \"FF\".  Replaced byte pairs
-are counted as one, instead of two, towards NUM-BYTES.
+Start reading from offset BEGIN.  If UNSYNC is non-nil, all \"FF
+00\" byte combinations are replaced by \"FF\".  Replaced byte
+pairs are counted as one, instead of two, towards NUM-BYTES.
 
 Return a cons cell (OFFSET . DATA), where OFFSET is the byte
 offset after NUM-BYTES bytes have been read, and DATA is the raw
@@ -493,20 +512,33 @@ Return the text as string."
   "Sample rate for each MPEG version/layer combination.")
 
 (defconst emms-info-mp3--vbri-header-bindat-spec
-  '((id vec 4)
-    (version u16)
-    (delay u16)
-    (quality u16)
-    (bytes u32)
-    (frames u32))
+  (if emms--use-bindat-type
+      (bindat-type
+        (id str 4)
+        (version uint 16)
+        (delay uint 16)
+        (quality uint 16)
+        (bytes uint 32)
+        (frames uint 32))
+    '((id str 4)
+      (version u16)
+      (delay u16)
+      (quality u16)
+      (bytes u32)
+      (frames u32)))
   "VBR header, VBRI format.
 This specification is purposefully incomplete, as we are
 interested only in the frame count.")
 
 (defconst emms-info-mp3--xing-header-bindat-spec
-  '((id vec 4)
-    (flags bits 4)
-    (frames u32))
+    (if emms--use-bindat-type
+        (bindat-type
+          (id vec 4)
+          (flags bits 4)
+          (frames uint 32))
+      '((id vec 4)
+        (flags bits 4)
+        (frames u32)))
   "VBR header, Xing/Info format.
 This specification is purposefully incomplete, as we are
 interested only in the frame count.")
