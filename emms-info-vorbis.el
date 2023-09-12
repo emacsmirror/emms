@@ -27,6 +27,9 @@
 
 ;;; Code:
 
+(require 'bindat)
+(require 'emms)
+
 (defconst emms-info-vorbis--max-comments 1024
   "Maximum number of Vorbis comment fields in a stream.
 Technically a single Vorbis stream may have up to 2^32 comments,
@@ -76,75 +79,137 @@ their comments have almost the same format as Vorbis.")
     "year")
   "EMMS info fields that are extracted from Vorbis comments.")
 
-(defconst emms-info-vorbis--headers-bindat-spec
-  '((identification-header struct emms-info-vorbis--id-header-bindat-spec)
-    (comment-header struct emms-info-vorbis--comment-header-bindat-spec))
-  "Specification for first two Vorbis header packets.
-They are always an identification header followed by a comment
-header.")
-
-(defconst emms-info-vorbis--id-header-bindat-spec
-  '((packet-type u8)
-    (eval (unless (= last 1)
-            (error "Vorbis header type mismatch: expected 1, got %s"
-                   last)))
-    (vorbis str 6)
-    (eval (unless (equal last emms-info-vorbis--header-magic-pattern)
-            (error "Vorbis framing mismatch: expected `%s', got `%s'"
-                   emms-info-vorbis--header-magic-pattern
-                   last)))
-    (vorbis-version u32r)
-    (eval (unless (= last 0)
-            (error "Vorbis version mismatch: expected 0, got %s"
-                   last)))
-    (channel-count u8)
-    (sample-rate u32r)
-    (bitrate-maximum u32r)
-    (bitrate-nominal u32r)
-    (bitrate-minimum u32r)
-    (blocksize u8)
-    (framing-flag u8)
-    (eval (unless (= last 1))
-          (error "Vorbis framing bit mismatch: expected 1, got %s"
-                 last)))
-  "Vorbis identification header specification.")
-
 (defconst emms-info-vorbis--header-magic-pattern "vorbis"
   "Header packet magic pattern.")
 
-(defconst emms-info-vorbis--comment-header-bindat-spec
-  '((packet-type u8)
-    (eval (unless (= last 3)
-            (error "Vorbis header type mismatch: expected 3, got %s"
-                   last)))
-    (vorbis str 6)
-    (eval (unless (equal last emms-info-vorbis--header-magic-pattern)
-            (error "Vorbis framing mismatch: expected `%s', got `%s'"
-                   emms-info-vorbis--header-magic-pattern
-                   last)))
-    (vendor-length u32r)
-    (eval (when (> last emms-info-vorbis--max-vendor-length)
-            (error "Vorbis vendor length %s is too long" last)))
-    (vendor-string str (vendor-length))
-    (user-comments-list-length u32r)
-    (eval (when (> last emms-info-vorbis--max-comments)
-            (error "Vorbis user comment list length %s is too long"
-                   last)))
-    (user-comments repeat
-                   (user-comments-list-length)
-                   (struct emms-info-vorbis--comment-field-bindat-spec))
-    (framing-bit u8)
-    (eval (unless (= last 1))
-          (error "Vorbis framing bit mismatch: expected 1, got %s"
-                 last)))
-  "Vorbis comment header specification.")
+(defconst emms-info-vorbis--id-header-bindat-spec
+  (if emms--use-bindat-type
+      (bindat-type
+        (packet-type u8)
+        (_ unit (unless (= packet-type 1)
+                  (error "Vorbis header type mismatch: expected 1, got %s"
+                         packet-type)))
+        (vorbis str 6)
+        (_ unit (unless (equal vorbis emms-info-vorbis--header-magic-pattern)
+                  (error "Vorbis framing mismatch: expected `%s', got `%s'"
+                         emms-info-vorbis--header-magic-pattern
+                         vorbis)))
+        (vorbis-version uint 32 'le)
+        (_ unit (unless (= vorbis-version 0)
+                  (error "Vorbis version mismatch: expected 0, got %s"
+                         vorbis-version)))
+        (channel-count u8)
+        (sample-rate uint 32 'le)
+        (bitrate-maximum uint 32 'le)
+        (bitrate-nominal uint 32 'le)
+        (bitrate-minimum uint 32 'le)
+        (blocksize u8)
+        (framing-flag u8)
+        (_ unit (unless (= framing-flag 1)
+                  (error "Vorbis framing bit mismatch: expected 1, got %s"
+                         framing-flag))))
+    '((packet-type u8)
+      (eval (unless (= last 1)
+              (error "Vorbis header type mismatch: expected 1, got %s"
+                     last)))
+      (vorbis str 6)
+      (eval (unless (equal last emms-info-vorbis--header-magic-pattern)
+              (error "Vorbis framing mismatch: expected `%s', got `%s'"
+                     emms-info-vorbis--header-magic-pattern
+                     last)))
+      (vorbis-version u32r)
+      (eval (unless (= last 0)
+              (error "Vorbis version mismatch: expected 0, got %s"
+                     last)))
+      (channel-count u8)
+      (sample-rate u32r)
+      (bitrate-maximum u32r)
+      (bitrate-nominal u32r)
+      (bitrate-minimum u32r)
+      (blocksize u8)
+      (framing-flag u8)
+      (eval (unless (= last 1))
+            (error "Vorbis framing bit mismatch: expected 1, got %s"
+                   last))))
+  "Vorbis identification header specification.")
 
 (defconst emms-info-vorbis--comment-field-bindat-spec
-  '((length u32r)
-    (eval (when (> last emms-info-vorbis--max-comment-size)
-            (error "Vorbis comment length %s is too long" last)))
-    (user-comment str (length)))
+  (if emms--use-bindat-type
+      (bindat-type
+        (length uint 32 'le)
+        (_ unit (when (> length emms-info-vorbis--max-comment-size)
+                  (error "Vorbis comment length %s is too long"
+                         length)))
+        (user-comment str length))
+    '((length u32r)
+      (eval (when (> last emms-info-vorbis--max-comment-size)
+              (error "Vorbis comment length %s is too long" last)))
+      (user-comment str (length))))
   "Vorbis comment field specification.")
+
+(defconst emms-info-vorbis--comment-header-bindat-spec
+  (if emms--use-bindat-type
+      (bindat-type
+        (packet-type u8)
+        (_ unit (unless (= packet-type 3)
+                  (error "Vorbis header type mismatch: expected 3, got %s"
+                         packet-type)))
+        (vorbis str 6)
+        (_ unit (unless (equal vorbis emms-info-vorbis--header-magic-pattern)
+                  (error "Vorbis framing mismatch: expected `%s', got `%s'"
+                         emms-info-vorbis--header-magic-pattern
+                         vorbis)))
+        (vendor-length uint 32 'le)
+        (_ unit (when (> vendor-length emms-info-vorbis--max-vendor-length)
+                  (error "Vorbis vendor length %s is too long"
+                         vendor-length)))
+        (vendor-string str vendor-length)
+        (user-comments-list-length uint 32 'le)
+        (_ unit (when (> user-comments-list-length emms-info-vorbis--max-comments)
+                  (error "Vorbis user comment list length %s is too long"
+                         user-comments-list-length)))
+        (user-comments repeat user-comments-list-length
+                       type emms-info-vorbis--comment-field-bindat-spec)
+        (framing-bit u8)
+        (_ unit (unless (= framing-bit 1)
+                  (error "Vorbis framing bit mismatch: expected 1, got %s"
+                         framing-bit))))
+    '((packet-type u8)
+      (eval (unless (= last 3)
+              (error "Vorbis header type mismatch: expected 3, got %s"
+                     last)))
+      (vorbis str 6)
+      (eval (unless (equal last emms-info-vorbis--header-magic-pattern)
+              (error "Vorbis framing mismatch: expected `%s', got `%s'"
+                     emms-info-vorbis--header-magic-pattern
+                     last)))
+      (vendor-length u32r)
+      (eval (when (> last emms-info-vorbis--max-vendor-length)
+              (error "Vorbis vendor length %s is too long" last)))
+      (vendor-string str (vendor-length))
+      (user-comments-list-length u32r)
+      (eval (when (> last emms-info-vorbis--max-comments)
+              (error "Vorbis user comment list length %s is too long"
+                     last)))
+      (user-comments repeat
+                     (user-comments-list-length)
+                     (struct emms-info-vorbis--comment-field-bindat-spec))
+      (framing-bit u8)
+      (eval (unless (= last 1))
+            (error "Vorbis framing bit mismatch: expected 1, got %s"
+                   last))))
+  "Vorbis comment header specification.")
+
+(defconst emms-info-vorbis--headers-bindat-spec
+  (if emms--use-bindat-type
+      (bindat-type
+        (_ struct (identification-header type emms-info-vorbis--id-header-bindat-spec)
+                  (comment-header type emms-info-vorbis--comment-header-bindat-spec)))
+    '((identification-header struct emms-info-vorbis--id-header-bindat-spec)
+      (comment-header struct emms-info-vorbis--comment-header-bindat-spec)))
+  "Specification for first two Vorbis header packets.
+They are always an identification header followed by a comment
+header.")
 
 (defun emms-info-vorbis-extract-comments (user-comments)
   "Return a decoded list of comments from USER-COMMENTS.
