@@ -1,4 +1,4 @@
-;;; emms-info-spc.el --- Native Emacs Lisp info method for EMMS -*- lexical-binding: t; -*-
+;;; emms-info-spc.el --- EMMS info functions for SPC files  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2023  Free Software Foundation, Inc.
 
@@ -30,17 +30,44 @@
 
 ;;; Code:
 
+(require 'emms)
 (require 'bindat)
 
-(defconst emms-info-spc--id666-magic-array
-  [#x53 #x4e #x45 #x53 #x2d #x53 #x50#x43 #x37 #x30 #x30 #x20 #x53 #x6f #x75 #x6e #x64 #x20 #x46 #x69 #x6c #x65 #x20 #x44 #x61 #x74 #x61 #x20 #x76 #x30 #x2e #x33 #x30]
-  "id666 header magic pattern `SNES-SPC700 Sound File Data v0.30'")
+(defconst emms-info-spc--id666-magic-pattern
+  "SNES-SPC700 Sound File Data v0.30"
+  "id666 header magic pattern.")
 
 (defconst emms-info-spc--id666-header-bindat-spec
-  '((file-identifier vec 33)
-    (eval (unless (equal last emms-info-spc--id666-magic-array)
+  (if emms--use-bindat-type
+      (bindat-type
+        (file-identifier str 33)
+        (_ unit (unless (equal file-identifier
+                               emms-info-spc--id666-magic-pattern)
+                  (error "id666 framing mismatch: expected `%s', got `%s'"
+                         emms-info-spc--id666-magic-pattern
+                         file-identifier)))
+        (unused uint 16)
+        (has-id666 u8)
+        (revision u8)
+        (pc-reg uint 16)
+        (a-reg u8)
+        (x-reg u8)
+        (y-reg u8)
+        (psw-reg u8)
+        (sp-reg u8)
+        (res-reg uint 16)
+        (song-title strz 32)
+        (game-title strz 32)
+        (dumper strz 16)
+        (comment strz 32)
+        (date strz 11)
+        (fadeout vec 3)
+        (fadeout-length vec 5)
+        (artist strz 32))
+  '((file-identifier str 33)
+    (eval (unless (equal last emms-info-spc--id666-magic-pattern)
             (error "id666 framing mismatch: expected `%s', got `%s'"
-                   emms-info-spc--id666-magic-array
+                   emms-info-spc--id666-magic-pattern
                    last)))
     (unused u16)
     (has-id666 u8)
@@ -59,7 +86,7 @@
     (date strz 11)
     (fadeout vec 3)
     (fadeout-length vec 5)
-    (artist strz 32))
+    (artist strz 32)))
   "id666 header specification.
 
 Sources:
