@@ -32,6 +32,9 @@
 (require 'ert)
 (require 'ert-x)
 
+(unless (fboundp 'ert-resource-file)
+  (defun ert-resource-file (file)
+    (concat "resources/" file)))
 (ert-deftest emms-info-native-test-mp3 ()
   (should (equal (emms-info-native--decode-info-fields
                   (ert-resource-file "sine.mp3"))
