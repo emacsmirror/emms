@@ -39,7 +39,6 @@
 
 ;;; Code:
 
-(require 'emms)
 (require 'emms-info-opus)
 (require 'emms-info-vorbis)
 (require 'bindat)
@@ -63,7 +62,7 @@ exhaustion in case of garbled or malicious inputs.")
   "Ogg format magic capture pattern.")
 
 (defconst emms-info-ogg--page-bindat-spec
-  (if emms--use-bindat-type
+  (if (eval-when-compile (fboundp 'bindat-type))
       (bindat-type
         (capture-pattern str 4)
         (_ unit (unless (equal capture-pattern emms-info-ogg--magic-pattern)

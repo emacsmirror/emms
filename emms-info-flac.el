@@ -47,7 +47,7 @@ but in practice processing must be constrained to prevent memory
 exhaustion in case of garbled or malicious inputs.")
 
 (defconst emms-info-flac--meta-header-bindat-spec
-  (if emms--use-bindat-type
+  (if (eval-when-compile (fboundp 'bindat-type))
       (bindat-type
         (flags u8)
         (length uint 24)
@@ -62,7 +62,7 @@ exhaustion in case of garbled or malicious inputs.")
   "FLAC metadata block header specification.")
 
 (defconst emms-info-flac--stream-info-block-bindat-spec
-  (if emms--use-bindat-type
+  (if (eval-when-compile (fboundp 'bindat-type))
       (bindat-type
         (min-block-size uint 16)
         (max-block-size uint 16)
@@ -79,7 +79,7 @@ exhaustion in case of garbled or malicious inputs.")
   "FLAC stream info block specification.")
 
 (defconst emms-info-flac--comment-block-bindat-spec
-  (if emms--use-bindat-type
+  (if (eval-when-compile (fboundp 'bindat-type))
       (bindat-type
         (vendor-length uint 32 'le)
         (_ unit (when (> vendor-length emms-info-vorbis--max-vendor-length)

@@ -45,10 +45,6 @@
 ;;; Code:
 (require 'emms-compat)
 
-(defvar emms--use-bindat-type
-  (eval-when-compile (fboundp 'bindat-type))
-"Use bindat-type macro.")
-
 (defvar emms-version "16"
   "EMMS version string.")
 

@@ -115,7 +115,7 @@ This is a helper function for `emms-ogg-test-decode-last-page'."
            (page-segments . 1)
            (segment-table . [10])
            (payload . "OggS123456")))))
-    (unless emms--use-bindat-type
+    (unless (eval-when-compile (fboundp 'bindat-type))
       (push (cons 'granule-position-bytes [0 36 8 1 0 0 0 0]) valid-result))
     (should (emms-equal-lists (emms-ogg-test--decode-last-page valid)
                               valid-result))

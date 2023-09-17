@@ -54,7 +54,7 @@
   "id3v2 header magic pattern.")
 
 (defconst emms-info-id3v2--header-bindat-spec
-  (if emms--use-bindat-type
+  (if (eval-when-compile (fboundp 'bindat-type))
       (bindat-type
         (file-identifier str 3)
         (_ unit (unless (equal file-identifier emms-info-id3v2--magic-pattern)
@@ -81,7 +81,7 @@
   "id3v2 header specification.")
 
 (defconst emms-info-id3v2--frame-header-bindat-spec
-  (if emms--use-bindat-type
+  (if (eval-when-compile (fboundp 'bindat-type))
       (bindat-type
         (id str (if (= emms-info-id3v2--version 2) 3 4))
         (_ unit (unless (emms-info-id3v2--valid-frame-id-p id)
@@ -512,7 +512,7 @@ Return the text as string."
   "Sample rate for each MPEG version/layer combination.")
 
 (defconst emms-info-mp3--vbri-header-bindat-spec
-  (if emms--use-bindat-type
+  (if (eval-when-compile (fboundp 'bindat-type))
       (bindat-type
         (id str 4)
         (version uint 16)
@@ -531,7 +531,7 @@ This specification is purposefully incomplete, as we are
 interested only in the frame count.")
 
 (defconst emms-info-mp3--xing-header-bindat-spec
-    (if emms--use-bindat-type
+    (if (eval-when-compile (fboundp 'bindat-type))
         (bindat-type
           (id vec 4)
           (flags bits 4)

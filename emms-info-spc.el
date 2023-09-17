@@ -30,7 +30,6 @@
 
 ;;; Code:
 
-(require 'emms)
 (require 'bindat)
 
 (defconst emms-info-spc--id666-magic-pattern
@@ -38,7 +37,7 @@
   "id666 header magic pattern.")
 
 (defconst emms-info-spc--id666-header-bindat-spec
-  (if emms--use-bindat-type
+  (if (eval-when-compile (fboundp 'bindat-type))
       (bindat-type
         (file-identifier str 33)
         (_ unit (unless (equal file-identifier

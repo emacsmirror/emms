@@ -25,7 +25,6 @@
 
 ;; This file contains Opus-specific code for `emms-info-ogg' feature.
 
-(require 'emms)
 (require 'emms-info-vorbis)
 (require 'bindat)
 
@@ -36,7 +35,7 @@
   "Opus identification header magic pattern.")
 
 (defconst emms-info-opus--channel-mapping-bindat-spec
-  (if emms--use-bindat-type
+  (if (eval-when-compile (fboundp 'bindat-type))
       (bindat-type
         (stream-count u8)
         (coupled-count u8)
@@ -47,7 +46,7 @@
   "Opus channel mapping table specification.")
 
 (defconst emms-info-opus--id-header-bindat-spec
-  (if emms--use-bindat-type
+  (if (eval-when-compile (fboundp 'bindat-type))
       (bindat-type
         (opus-head str 8)
         (_ unit (unless (equal opus-head emms-info-opus--id-magic-pattern)
@@ -90,7 +89,7 @@
   "Opus comment header magic pattern.")
 
 (defconst emms-info-opus--comment-header-bindat-spec
-  (if emms--use-bindat-type
+  (if (eval-when-compile (fboundp 'bindat-type))
       (bindat-type
         (opus-tags str 8)
         (_ unit (unless (equal opus-tags emms-info-opus--tags-magic-pattern)
@@ -128,7 +127,7 @@
   "Opus comment header specification.")
 
 (defconst emms-info-opus--headers-bindat-spec
-  (if emms--use-bindat-type
+  (if (eval-when-compile (fboundp 'bindat-type))
       (bindat-type
         (identification-header type emms-info-opus--id-header-bindat-spec)
         (comment-header type emms-info-opus--comment-header-bindat-spec))

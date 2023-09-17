@@ -28,7 +28,6 @@
 ;;; Code:
 
 (require 'bindat)
-(require 'emms)
 
 (defconst emms-info-vorbis--max-comments 1024
   "Maximum number of Vorbis comment fields in a stream.
@@ -83,7 +82,7 @@ their comments have almost the same format as Vorbis.")
   "Header packet magic pattern.")
 
 (defconst emms-info-vorbis--id-header-bindat-spec
-  (if emms--use-bindat-type
+  (if (eval-when-compile (fboundp 'bindat-type))
       (bindat-type
         (packet-type u8)
         (_ unit (unless (= packet-type 1)
@@ -134,7 +133,7 @@ their comments have almost the same format as Vorbis.")
   "Vorbis identification header specification.")
 
 (defconst emms-info-vorbis--comment-field-bindat-spec
-  (if emms--use-bindat-type
+  (if (eval-when-compile (fboundp 'bindat-type))
       (bindat-type
         (length uint 32 'le)
         (_ unit (when (> length emms-info-vorbis--max-comment-size)
@@ -148,7 +147,7 @@ their comments have almost the same format as Vorbis.")
   "Vorbis comment field specification.")
 
 (defconst emms-info-vorbis--comment-header-bindat-spec
-  (if emms--use-bindat-type
+  (if (eval-when-compile (fboundp 'bindat-type))
       (bindat-type
         (packet-type u8)
         (_ unit (unless (= packet-type 3)
@@ -201,7 +200,7 @@ their comments have almost the same format as Vorbis.")
   "Vorbis comment header specification.")
 
 (defconst emms-info-vorbis--headers-bindat-spec
-  (if emms--use-bindat-type
+  (if (eval-when-compile (fboundp 'bindat-type))
       (bindat-type
         (_ struct (identification-header type emms-info-vorbis--id-header-bindat-spec)
                   (comment-header type emms-info-vorbis--comment-header-bindat-spec)))
