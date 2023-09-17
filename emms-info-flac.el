@@ -117,19 +117,25 @@ See `emms-info-vorbis-extract-comments' for details."
           (emms-info-flac--decode-meta-blocks
            (emms-info-flac--file-inserter filename)))
          (comment-block
-          (bindat-unpack emms-info-flac--comment-block-bindat-spec
-                         (car blocks)))
+          (and (car blocks)
+               (bindat-unpack emms-info-flac--comment-block-bindat-spec
+                              (car blocks))))
          (stream-info-block
-          (bindat-unpack emms-info-flac--stream-info-block-bindat-spec
-                         (cadr blocks)))
+          (and (cadr blocks)
+               (bindat-unpack emms-info-flac--stream-info-block-bindat-spec
+                              (cadr blocks))))
          (user-comments
-          (bindat-get-field comment-block 'user-comments))
+          (and comment-block
+               (bindat-get-field comment-block 'user-comments)))
          (comments
-          (emms-info-vorbis-extract-comments user-comments))
+          (and user-comments
+               (emms-info-vorbis-extract-comments user-comments)))
          (playing-time
-          (emms-info-flac--decode-duration
-           (emms-be-to-int
-            (bindat-get-field stream-info-block 'sample-metadata)))))
+          (and stream-info-block
+               (emms-info-flac--decode-duration
+                (emms-be-to-int
+                 (bindat-get-field stream-info-block
+                                   'sample-metadata))))))
     (nconc comments
            (when playing-time
              (list (cons "playing-time" playing-time))))))
