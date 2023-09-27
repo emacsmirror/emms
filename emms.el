@@ -44,6 +44,7 @@
 
 ;;; Code:
 (require 'emms-compat)
+(require 'seq)
 
 (defvar emms-version "16"
   "EMMS version string.")
