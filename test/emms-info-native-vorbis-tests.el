@@ -1,4 +1,4 @@
-;;; emms-info-vorbis-tests.el --- Test suite for emms-info-vorbis  -*- lexical-binding: t; -*-
+;;; emms-info-native-vorbis-tests.el --- Test suite for emms-info-native-vorbis  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2023 Free Software Foundation, Inc.
 
@@ -23,7 +23,7 @@
 
 ;;; Code:
 
-(require 'emms-info-vorbis)
+(require 'emms-info-native-vorbis)
 (require 'ert)
 
 (ert-deftest emms-vorbis-test-extract-comments ()
@@ -40,24 +40,22 @@
                   (length . 20))
                  ((user-comment . "ALBUM=A toda Cuba le gusta")
                   (length . 26))))))
-    (should (equal (emms-info-vorbis-extract-comments comments)
+    (should (equal (emms-info-native-vorbis-extract-comments comments)
                    (quote (("album" . "A toda Cuba le gusta")
                            ("originalyear" . "1997")
                            ("originaldate" . "1997-03-31")))))))
 
 (ert-deftest emms-vorbis-test-split-comment ()
-  (should (equal (emms-info-vorbis--split-comment "") nil))
-  (should (equal (emms-info-vorbis--split-comment "x") nil))
-  (should (equal (emms-info-vorbis--split-comment "x=") nil))
-  (should (equal (emms-info-vorbis--split-comment "=x") nil))
-  (should (equal (emms-info-vorbis--split-comment "a=B")
+  (should (equal (emms-info-native-vorbis--split-comment "") nil))
+  (should (equal (emms-info-native-vorbis--split-comment "x") nil))
+  (should (equal (emms-info-native-vorbis--split-comment "x=") nil))
+  (should (equal (emms-info-native-vorbis--split-comment "=x") nil))
+  (should (equal (emms-info-native-vorbis--split-comment "a=B")
                  (cons "a" "B")))
-  (should (equal (emms-info-vorbis--split-comment "abc=ABC=123")
+  (should (equal (emms-info-native-vorbis--split-comment "abc=ABC=123")
                  (cons "abc" "ABC=123")))
   (let ((comment "Key=\316\237\341\275\220\317\207\341\275\266 \316\244\316\261\341\275\220\317\204\341\275\260"))
-    (should (equal (emms-info-vorbis--split-comment comment)
+    (should (equal (emms-info-native-vorbis--split-comment comment)
                    (cons "key" "Οὐχὶ Ταὐτὰ")))))
 
-(provide 'emms-info-vorbis-tests)
-
-;;; emms-info-vorbis-tests.el ends here
+;;; emms-info-native-vorbis-tests.el ends here

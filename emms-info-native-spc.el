@@ -1,4 +1,4 @@
-;;; emms-info-spc.el --- EMMS info functions for SPC files  -*- lexical-binding: t; -*-
+;;; emms-info-native-spc.el --- EMMS info functions for SPC files  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2023  Free Software Foundation, Inc.
 
@@ -32,18 +32,18 @@
 
 (require 'bindat)
 
-(defconst emms-info-spc--id666-magic-pattern
+(defconst emms-info-native-spc--id666-magic-pattern
   "SNES-SPC700 Sound File Data v0.30"
   "id666 header magic pattern.")
 
-(defconst emms-info-spc--id666-header-bindat-spec
+(defconst emms-info-native-spc--id666-header-bindat-spec
   (if (eval-when-compile (fboundp 'bindat-type))
       (bindat-type
         (file-identifier str 33)
         (_ unit (unless (equal file-identifier
-                               emms-info-spc--id666-magic-pattern)
+                               emms-info-native-spc--id666-magic-pattern)
                   (error "id666 framing mismatch: expected `%s', got `%s'"
-                         emms-info-spc--id666-magic-pattern
+                         emms-info-native-spc--id666-magic-pattern
                          file-identifier)))
         (unused uint 16)
         (has-id666 u8)
@@ -64,9 +64,9 @@
         (fadeout-length vec 5)
         (artist strz 32))
   '((file-identifier str 33)
-    (eval (unless (equal last emms-info-spc--id666-magic-pattern)
+    (eval (unless (equal last emms-info-native-spc--id666-magic-pattern)
             (error "id666 framing mismatch: expected `%s', got `%s'"
-                   emms-info-spc--id666-magic-pattern
+                   emms-info-native-spc--id666-magic-pattern
                    last)))
     (unused u16)
     (has-id666 u8)
@@ -93,20 +93,20 @@ Sources:
 - URL `https://ocremix.org/info/SPC_Format_Specification'
 - URL `https://picard-docs.musicbrainz.org/en/appendices/tag_mapping.html'")
 
-(defun emms-info-spc--decode-id666-header (filename)
+(defun emms-info-native-spc--decode-id666-header (filename)
   "Read and decode id666 header from FILENAME."
   (with-temp-buffer
     (set-buffer-multibyte nil)
     (insert-file-contents-literally filename nil 0 210)
-    (bindat-unpack emms-info-spc--id666-header-bindat-spec
+    (bindat-unpack emms-info-native-spc--id666-header-bindat-spec
                    (buffer-string))))
 
-(defun emms-info-spc-decode-id666 (filename)
+(defun emms-info-native-spc-decode-id666 (filename)
   "Read and decode id666 metadata from FILENAME.
 Return metadata in a list of (FIELD . VALUE) cons cells, or nil
 in case of errors or if there were no known fields in FILENAME."
   (condition-case nil
-      (let ((header (emms-info-spc--decode-id666-header filename)))
+      (let ((header (emms-info-native-spc--decode-id666-header filename)))
 	(when (= 26 (bindat-get-field header 'has-id666))
 	  (list
 	   (cons 'info-title (bindat-get-field header 'song-title))
@@ -116,6 +116,6 @@ in case of errors or if there were no known fields in FILENAME."
 	   (cons 'info-note (bindat-get-field header 'comment)))))
     (error nil)))
 
-(provide 'emms-info-spc)
+(provide 'emms-info-native-spc)
 
-;;; emms-info-spc.el ends here
+;;; emms-info-native-spc.el ends here

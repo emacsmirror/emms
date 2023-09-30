@@ -58,6 +58,4 @@
   (should (= (emms-extract-bits 128 32) 0))
   (should (= (emms-extract-bits 4294688772 21 31) 2047)))
 
-(provide 'emms-tests)
-
 ;;; emms-tests.el ends here

@@ -1,4 +1,4 @@
-;;; emms-info-flac-tests.el --- Test suite for emms-info-flac  -*- lexical-binding: t; -*-
+;;; emms-info-native-flac-tests.el --- Test suite for emms-info-native-flac  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2023 Free Software Foundation, Inc.
 
@@ -23,14 +23,14 @@
 
 ;;; Code:
 
-(require 'emms-info-flac)
+(require 'emms-info-native-flac)
 (require 'ert)
 
 (defmacro emms-flac-test-make-data-func (name bytes)
   "Macro for defining test data generator.
 This macro defines a suitable function with NAME that outputs
 BYTES after FLAC signature.  The function NAME can then be passed
-for `emms-info-flac--decode-meta-blocks'."
+for `emms-info-native-flac--decode-meta-blocks'."
   `(defun ,name (offset end)
      (let ((bytes (seq-concatenate 'vector [102 76 97 67] ,bytes)))
        (erase-buffer)
@@ -41,19 +41,17 @@ for `emms-info-flac--decode-meta-blocks'."
 (emms-flac-test-make-data-func emms-test-valid-flac-block [0 0 0 8 10 11 12 13 14 15 16 17 132 0 0 4 1 2 3 4])
 
 (ert-deftest emms-flac-test-meta-blocks ()
-  (should-error (emms-info-flac--decode-meta-blocks
+  (should-error (emms-info-native-flac--decode-meta-blocks
                  #'emms-test-invalid-flac-block-length))
-  (should-error (emms-info-flac--decode-meta-blocks
+  (should-error (emms-info-native-flac--decode-meta-blocks
                  #'emms-test-invalid-flac-block-type))
-  (should (equal (emms-info-flac--decode-meta-blocks
+  (should (equal (emms-info-native-flac--decode-meta-blocks
                   #'emms-test-valid-flac-block)
                  (list (unibyte-string 1 2 3 4)
                        (unibyte-string 10 11 12 13 14 15 16 17)))))
 
 (ert-deftest emms-flac-test-decode-duration ()
   ;; The corresponding sample metadata bytes are [10 196 66 240 1 8 36 0].
-  (should (= (emms-info-flac--decode-duration 775818634391462912) 392)))
+  (should (= (emms-info-native-flac--decode-duration 775818634391462912) 392)))
 
-(provide 'emms-info-flac-tests)
-
-;;; emms-info-flac-tests.el ends here
+;;; emms-info-native-flac-tests.el ends here

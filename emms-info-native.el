@@ -25,8 +25,8 @@
 
 ;; This file provides a native emms-info-method for EMMS.  Here
 ;; "native" means a pure Emacs Lisp implementation instead of one
-;; relying on external tools or libraries like `emms-info-ogginfo' or
-;; `emms-info-libtag'.
+;; relying on external tools or libraries like
+;; `emms-info-native-ogginfo' or `emms-info-libtag'.
 ;;
 ;; To use this method, add `emms-info-native' to
 ;; `emms-info-functions'.
@@ -56,10 +56,10 @@
 ;;; Code:
 
 (require 'emms-info)
-(require 'emms-info-flac)
-(require 'emms-info-ogg)
-(require 'emms-info-mp3)
-(require 'emms-info-spc)
+(require 'emms-info-native-flac)
+(require 'emms-info-native-ogg)
+(require 'emms-info-native-mp3)
+(require 'emms-info-native-spc)
 
 (defun emms-info-native (track)
   "Set info fields for TRACK.
@@ -85,13 +85,13 @@ info field and VALUE is the corresponding info value.  Both are
 strings."
   (let ((stream-type (emms-info-native--find-stream-type filename)))
     (cond ((or (eq stream-type 'vorbis) (eq stream-type 'opus))
-           (emms-info-ogg-decode-metadata filename stream-type))
+           (emms-info-native-ogg-decode-metadata filename stream-type))
           ((eq stream-type 'flac)
-           (emms-info-flac-decode-metadata filename))
+           (emms-info-native-flac-decode-metadata filename))
           ((eq stream-type 'mp3)
-           (emms-info-mp3-decode-metadata filename))
+           (emms-info-native-mp3-decode-metadata filename))
 	  ((eq stream-type 'spc)
-	   (emms-info-spc-decode-id666 filename))
+	   (emms-info-native-spc-decode-id666 filename))
           (t nil))))
 
 (defun emms-info-native--find-stream-type (filename)

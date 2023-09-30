@@ -1,4 +1,4 @@
-;;; emms-info-flac.el --- EMMS info functions for FLAC files  -*- lexical-binding: t; -*-
+;;; emms-info-native-flac.el --- EMMS info functions for FLAC files  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2020-2023 Free Software Foundation, Inc.
 
@@ -31,37 +31,37 @@
 ;;; Code:
 
 (require 'emms)
-(require 'emms-info-vorbis)
+(require 'emms-info-native-vorbis)
 (require 'bindat)
 
-(defconst emms-info-flac--max-peek-size (* 2048 1024)
+(defconst emms-info-native-flac--max-peek-size (* 2048 1024)
   "Maximum buffer size for metadata decoding.
-Functions in `emms-info-flac' read certain amounts of data into a
-temporary buffer while decoding metadata.  This variable controls
-the maximum size of that buffer: if more than
-`emms-info-flac--max-peek-size' bytes are needed, an error is
-signaled.
+Functions in `emms-info-native-flac' read certain amounts of data
+into a temporary buffer while decoding metadata.  This variable
+controls the maximum size of that buffer: if more than
+`emms-info-native-flac--max-peek-size' bytes are needed, an error
+is signaled.
 
 Technically metadata blocks can have almost arbitrary lengths,
 but in practice processing must be constrained to prevent memory
 exhaustion in case of garbled or malicious inputs.")
 
-(defconst emms-info-flac--meta-header-bindat-spec
+(defconst emms-info-native-flac--meta-header-bindat-spec
   (if (eval-when-compile (fboundp 'bindat-type))
       (bindat-type
         (flags u8)
         (length uint 24)
-        (_ unit (when (or (> length emms-info-flac--max-peek-size)
+        (_ unit (when (or (> length emms-info-native-flac--max-peek-size)
                           (= length 0))
                   (error "FLAC block length %s is invalid" length))))
     '((flags u8)
       (length u24)
-      (eval (when (or (> last emms-info-flac--max-peek-size)
+      (eval (when (or (> last emms-info-native-flac--max-peek-size)
                       (= last 0))
               (error "FLAC block length %s is invalid" last)))))
   "FLAC metadata block header specification.")
 
-(defconst emms-info-flac--stream-info-block-bindat-spec
+(defconst emms-info-native-flac--stream-info-block-bindat-spec
   (if (eval-when-compile (fboundp 'bindat-type))
       (bindat-type
         (min-block-size uint 16)
@@ -78,61 +78,61 @@ exhaustion in case of garbled or malicious inputs.")
       (md5 vec 16)))
   "FLAC stream info block specification.")
 
-(defconst emms-info-flac--comment-block-bindat-spec
+(defconst emms-info-native-flac--comment-block-bindat-spec
   (if (eval-when-compile (fboundp 'bindat-type))
       (bindat-type
         (vendor-length uint 32 'le)
-        (_ unit (when (> vendor-length emms-info-vorbis--max-vendor-length)
+        (_ unit (when (> vendor-length emms-info-native-vorbis--max-vendor-length)
                   (error "FLAC vendor length %s is too long"
                          vendor-length)))
         (vendor-string str vendor-length)
         (user-comments-list-length uint 32 'le)
-        (_ unit (when (> user-comments-list-length emms-info-vorbis--max-comments)
+        (_ unit (when (> user-comments-list-length emms-info-native-vorbis--max-comments)
                   (error "FLAC user comment list length %s is too long"
                          user-comments-list-length)))
         (user-comments repeat user-comments-list-length
-                       type emms-info-vorbis--comment-field-bindat-spec))
+                       type emms-info-native-vorbis--comment-field-bindat-spec))
     '((vendor-length u32r)
-      (eval (when (> last emms-info-vorbis--max-vendor-length)
+      (eval (when (> last emms-info-native-vorbis--max-vendor-length)
               (error "FLAC vendor length %s is too long" last)))
       (vendor-string str (vendor-length))
       (user-comments-list-length u32r)
-      (eval (when (> last emms-info-vorbis--max-comments)
+      (eval (when (> last emms-info-native-vorbis--max-comments)
               (error "FLAC user comment list length %s is too long"
                      last)))
       (user-comments repeat
                      (user-comments-list-length)
-                     (struct emms-info-vorbis--comment-field-bindat-spec))))
+                     (struct emms-info-native-vorbis--comment-field-bindat-spec))))
   "FLAC Vorbis comment block specification.")
 
-(defun emms-info-flac-decode-metadata (filename)
+(defun emms-info-native-flac-decode-metadata (filename)
   "Read and decode metadata from FLAC file FILENAME.
 Return comments in a list of (FIELD . VALUE) cons cells.
 Additionally return stream duration in `playing-time' field.
 
-See `emms-info-vorbis-extract-comments' for details."
-  (unless (emms-info-flac--has-signature filename)
+See `emms-info-native-vorbis-extract-comments' for details."
+  (unless (emms-info-native-flac--has-signature filename)
     (error "Invalid FLAC stream"))
   (let* ((blocks
-          (emms-info-flac--decode-meta-blocks
-           (emms-info-flac--file-inserter filename)))
+          (emms-info-native-flac--decode-meta-blocks
+           (emms-info-native-flac--file-inserter filename)))
          (comment-block
           (and (car blocks)
-               (bindat-unpack emms-info-flac--comment-block-bindat-spec
+               (bindat-unpack emms-info-native-flac--comment-block-bindat-spec
                               (car blocks))))
          (stream-info-block
           (and (cadr blocks)
-               (bindat-unpack emms-info-flac--stream-info-block-bindat-spec
+               (bindat-unpack emms-info-native-flac--stream-info-block-bindat-spec
                               (cadr blocks))))
          (user-comments
           (and comment-block
                (bindat-get-field comment-block 'user-comments)))
          (comments
           (and user-comments
-               (emms-info-vorbis-extract-comments user-comments)))
+               (emms-info-native-vorbis-extract-comments user-comments)))
          (playing-time
           (and stream-info-block
-               (emms-info-flac--decode-duration
+               (emms-info-native-flac--decode-duration
                 (emms-be-to-int
                  (bindat-get-field stream-info-block
                                    'sample-metadata))))))
@@ -140,7 +140,7 @@ See `emms-info-vorbis-extract-comments' for details."
            (when playing-time
              (list (cons "playing-time" playing-time))))))
 
-(defun emms-info-flac--has-signature (filename)
+(defun emms-info-native-flac--has-signature (filename)
   "Check for FLAC stream marker at the beginning of FILENAME.
 Return t if there is a valid stream marker, nil otherwise."
   (with-temp-buffer
@@ -148,13 +148,13 @@ Return t if there is a valid stream marker, nil otherwise."
     (insert-file-contents-literally filename nil 0 4)
     (looking-at "fLaC")))
 
-(defun emms-info-flac--file-inserter (filename)
+(defun emms-info-native-flac--file-inserter (filename)
   "Return a function that reads and inserts bytes from FILENAME.
-This is meant for `emms-info-flac--decode-meta-blocks'."
+This is meant for `emms-info-native-flac--decode-meta-blocks'."
   (lambda (offset end)
     (insert-file-contents-literally filename nil offset end t)))
 
-(defun emms-info-flac--decode-meta-blocks (read-func)
+(defun emms-info-native-flac--decode-meta-blocks (read-func)
   "Decode metadata blocks from data supplied by READ-FUNC.
 Go through each metadata block looking for comment and stream
 info blocks.  Extract and return them in a list, if found."
@@ -164,7 +164,7 @@ info blocks.  Extract and return them in a list, if found."
       (while (not last-flag)
         (funcall read-func offset (setq offset (+ offset 4)))
         (let* ((header
-                (bindat-unpack emms-info-flac--meta-header-bindat-spec
+                (bindat-unpack emms-info-native-flac--meta-header-bindat-spec
                                (buffer-string)))
                (end (+ offset (bindat-get-field header 'length)))
                (flags (bindat-get-field header 'flags))
@@ -184,10 +184,10 @@ info blocks.  Extract and return them in a list, if found."
           (setq offset end)))
       (list comment-block stream-info-block))))
 
-(defun emms-info-flac--decode-duration (sample-meta)
+(defun emms-info-native-flac--decode-duration (sample-meta)
   "Decode stream duration from SAMPLE-META.
 SAMPLE-META should be a part of stream info metadata block.  See
-`emms-info-flac--stream-info-block-bindat-spec'.
+`emms-info-native-flac--stream-info-block-bindat-spec'.
 
 Return the duration in seconds, or nil if it is not available."
   (let ((sample-rate (emms-extract-bits sample-meta 44 63))
@@ -196,6 +196,6 @@ Return the duration in seconds, or nil if it is not available."
                (> num-samples 0))
       (/ num-samples sample-rate))))
 
-(provide 'emms-info-flac)
+(provide 'emms-info-native-flac)
 
-;;; emms-info-flac.el ends here
+;;; emms-info-native-flac.el ends here

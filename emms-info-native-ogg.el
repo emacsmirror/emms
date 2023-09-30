@@ -1,4 +1,4 @@
-;;; emms-info-ogg.el --- EMMS info functions for Ogg files  -*- lexical-binding: t; -*-
+;;; emms-info-native-ogg.el --- EMMS info functions for Ogg files  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2020-2023 Free Software Foundation, Inc.
 
@@ -32,42 +32,43 @@
 ;;
 ;; Vorbis code is based on xiph.org's Vorbis I specification,
 ;; available at https://xiph.org/vorbis/doc/Vorbis_I_spec.html.  See
-;; also emms-info-vorbis.el.
+;; also emms-info-native-vorbis.el.
 ;;
 ;; Opus code is based on RFC 7845; see
-;; https://tools.ietf.org/html/rfc7845.html and emms-info-opus.el.
+;; https://tools.ietf.org/html/rfc7845.html and
+;; emms-info-native-opus.el.
 
 ;;; Code:
 
-(require 'emms-info-opus)
-(require 'emms-info-vorbis)
+(require 'emms-info-native-opus)
+(require 'emms-info-native-vorbis)
 (require 'bindat)
 
-(defconst emms-info-ogg--page-size 65307
+(defconst emms-info-native-ogg--page-size 65307
   "Maximum size for a single Ogg container page.")
 
-(defconst emms-info-ogg--max-peek-size (* 2048 1024)
+(defconst emms-info-native-ogg--max-peek-size (* 2048 1024)
   "Maximum buffer size for metadata decoding.
-Functions in `emms-info-ogg' read certain amounts of data into a
+Functions in `emms-info-native-ogg' read certain amounts of data into a
 temporary buffer while decoding metadata.  This variable controls
 the maximum size of that buffer: if more than
-`emms-info-ogg--max-peek-size' bytes are needed, an error is
+`emms-info-native-ogg--max-peek-size' bytes are needed, an error is
 signaled.
 
 Technically metadata blocks can have almost arbitrary lengths,
 but in practice processing must be constrained to prevent memory
 exhaustion in case of garbled or malicious inputs.")
 
-(defconst emms-info-ogg--magic-pattern "OggS"
+(defconst emms-info-native-ogg--magic-pattern "OggS"
   "Ogg format magic capture pattern.")
 
-(defconst emms-info-ogg--page-bindat-spec
+(defconst emms-info-native-ogg--page-bindat-spec
   (if (eval-when-compile (fboundp 'bindat-type))
       (bindat-type
         (capture-pattern str 4)
-        (_ unit (unless (equal capture-pattern emms-info-ogg--magic-pattern)
+        (_ unit (unless (equal capture-pattern emms-info-native-ogg--magic-pattern)
                   (error "Ogg framing mismatch: expected `%s', got `%s'"
-                         emms-info-ogg--magic-pattern
+                         emms-info-native-ogg--magic-pattern
                          capture-pattern)))
         (stream-structure-version u8)
         (_ unit (unless (= stream-structure-version 0)
@@ -83,9 +84,9 @@ exhaustion in case of garbled or malicious inputs.")
         (payload str (seq-reduce #'+ segment-table 0)))
     ;; For Emacsen older than 28
     '((capture-pattern str 4)
-      (eval (unless (equal last emms-info-ogg--magic-pattern)
+      (eval (unless (equal last emms-info-native-ogg--magic-pattern)
               (error "Ogg framing mismatch: expected `%s', got `%s'"
-                     emms-info-ogg--magic-pattern
+                     emms-info-native-ogg--magic-pattern
                      last)))
       (stream-structure-version u8)
       (eval (unless (= last 0)
@@ -102,7 +103,7 @@ exhaustion in case of garbled or malicious inputs.")
       (payload str (eval (seq-reduce #'+ last 0)))))
   "Ogg page structure specification.")
 
-(defconst emms-info-ogg--crc-table
+(defconst emms-info-native-ogg--crc-table
   [#x00000000 #x04C11DB7 #x09823B6E #x0D4326D9 #x130476DC
    #x17C56B6B #x1A864DB2 #x1E475005 #x2608EDB8 #x22C9F00F
    #x2F8AD6D6 #x2B4BCB61 #x350C9B64 #x31CD86D3 #x3C8EA00A
@@ -157,7 +158,7 @@ exhaustion in case of garbled or malicious inputs.")
    #xB1F740B4]
   "Lookup table for calculating Ogg checksums.")
 
-(defun emms-info-ogg-decode-metadata (filename stream-type)
+(defun emms-info-native-ogg-decode-metadata (filename stream-type)
   "Read and decode metadata from Ogg file FILENAME.
 The file is assumed to contain a single stream of type
 STREAM-TYPE, which must either `vorbis' or `opus'.
@@ -165,17 +166,17 @@ STREAM-TYPE, which must either `vorbis' or `opus'.
 Return comments in a list of (FIELD . VALUE) cons cells.
 Additionally return stream duration in `playing-time' field.
 
-See `emms-info-vorbis--split-comment' for details."
+See `emms-info-native-vorbis--split-comment' for details."
   (let* ((packets
-          (emms-info-ogg--read-and-decode-packets filename 2))
+          (emms-info-native-ogg--read-and-decode-packets filename 2))
          (headers
-          (emms-info-ogg--decode-headers packets stream-type))
+          (emms-info-native-ogg--decode-headers packets stream-type))
          (user-comments
           (bindat-get-field headers 'comment-header 'user-comments))
          (comments
-          (emms-info-vorbis-extract-comments user-comments))
+          (emms-info-native-vorbis-extract-comments user-comments))
          (last-page
-          (emms-info-ogg--read-and-decode-last-page filename))
+          (emms-info-native-ogg--read-and-decode-last-page filename))
          (granule-pos
           (alist-get 'granule-position last-page))
          (sample-rate
@@ -193,16 +194,16 @@ See `emms-info-vorbis--split-comment' for details."
            (when playing-time
              (list (cons "playing-time" playing-time))))))
 
-(defun emms-info-ogg--read-and-decode-packets (filename packets)
+(defun emms-info-native-ogg--read-and-decode-packets (filename packets)
   "Read and decode PACKETS packets from Ogg file FILENAME.
 Read in data from the start of FILENAME, remove Ogg packet
 frames, and concatenate payloads until at least PACKETS number of
 packets have been decoded.  Return the decoded packets in a
 string, concatenated.
 
-Read data in `emms-info-ogg--page-size' chunks.  If more than
-`emms-info-ogg--max-peek-size' bytes of data would be read,
-signal an error.
+Read data in `emms-info-native-ogg--page-size' chunks.  If more
+than `emms-info-native-ogg--max-peek-size' bytes of data would be
+read, signal an error.
 
 Only elementary streams are supported, that is, FILENAME should
 contain only a single logical stream.  Note that this assumption
@@ -210,65 +211,65 @@ is not verified: with non-elementary streams packets from
 different streams will be mixed together without an error."
   (let ((num-packets 0) (offset 0) (stream (list)))
     (while (< num-packets packets)
-      (when (> offset emms-info-ogg--max-peek-size)
+      (when (> offset emms-info-native-ogg--max-peek-size)
         (error "Ogg payload is too large"))
-      (let ((page (emms-info-ogg--read-and-decode-page filename offset)))
+      (let ((page (emms-info-native-ogg--read-and-decode-page filename offset)))
         (setq num-packets (+ num-packets
-                             (emms-info-ogg--num-packets page)))
+                             (emms-info-native-ogg--num-packets page)))
         (setq offset (+ offset
                         (bindat-length
-                         emms-info-ogg--page-bindat-spec page)))
+                         emms-info-native-ogg--page-bindat-spec page)))
         (push (bindat-get-field page 'payload) stream)))
     (reverse (mapconcat #'nreverse stream nil))))
 
-(defun emms-info-ogg--read-and-decode-page (filename offset)
+(defun emms-info-native-ogg--read-and-decode-page (filename offset)
   "Read and decode a single Ogg page from FILENAME.
 Starting reading data from byte offset OFFSET.
 
-Return the plist from `emms-info-ogg--decode-page'."
+Return the plist from `emms-info-native-ogg--decode-page'."
   (with-temp-buffer
     (set-buffer-multibyte nil)
     (insert-file-contents-literally
-     filename nil offset (+ offset emms-info-ogg--page-size))
-    (bindat-unpack emms-info-ogg--page-bindat-spec
+     filename nil offset (+ offset emms-info-native-ogg--page-size))
+    (bindat-unpack emms-info-native-ogg--page-bindat-spec
                    (buffer-string))))
 
-(defun emms-info-ogg--num-packets (page)
+(defun emms-info-native-ogg--num-packets (page)
   "Return the number of packets in Ogg page PAGE.
-PAGE must correspond to `emms-info-ogg--page-bindat-spec'."
+PAGE must correspond to `emms-info-native-ogg--page-bindat-spec'."
   ;; Every element that is less than 255 in the segment table
   ;; represents a packet boundary.
   (length (seq-filter (lambda (elt) (< elt 255))
                       (bindat-get-field page 'segment-table))))
 
-(defun emms-info-ogg--decode-headers (packets stream-type)
+(defun emms-info-native-ogg--decode-headers (packets stream-type)
   "Decode first two stream headers from PACKETS for STREAM-TYPE.
 STREAM-TYPE must be either `vorbis' or `opus'.
 
 Return a structure that corresponds to either
-`emms-info-opus--headers-bindat-spec' or
-`emms-info-vorbis--headers-bindat-spec'."
+`emms-info-native-opus--headers-bindat-spec' or
+`emms-info-native-vorbis--headers-bindat-spec'."
   (cond ((eq stream-type 'vorbis)
-         (bindat-unpack emms-info-vorbis--headers-bindat-spec
+         (bindat-unpack emms-info-native-vorbis--headers-bindat-spec
                         packets))
         ((eq stream-type 'opus)
-         (bindat-unpack emms-info-opus--headers-bindat-spec
+         (bindat-unpack emms-info-native-opus--headers-bindat-spec
                         packets))
         (t (error "Unknown stream type %s" stream-type))))
 
-(defun emms-info-ogg--read-and-decode-last-page (filename)
+(defun emms-info-native-ogg--read-and-decode-last-page (filename)
   "Read and decode the last Ogg page from FILENAME.
 Return the page in bindat type structure."
   (with-temp-buffer
     (let* ((length (file-attribute-size
                     (file-attributes
                      (file-truename filename))))
-           (begin (max 0 (- length emms-info-ogg--page-size))))
+           (begin (max 0 (- length emms-info-native-ogg--page-size))))
       (set-buffer-multibyte nil)
       (insert-file-contents-literally filename nil begin length)
-      (emms-info-ogg--decode-last-page))))
+      (emms-info-native-ogg--decode-last-page))))
 
-(defun emms-info-ogg--decode-last-page ()
+(defun emms-info-native-ogg--decode-last-page ()
   "Find and return the last valid Ogg page from the current buffer.
 Ensure page synchronization by verifying page checksum.
 
@@ -277,47 +278,47 @@ Ogg page in the buffer, return nil."
   (let (page)
     (goto-char (point-max))
     (while (and (not page)
-                (search-backward emms-info-ogg--magic-pattern nil t))
-      (setq page (emms-info-ogg--verify-page)))
+                (search-backward emms-info-native-ogg--magic-pattern nil t))
+      (setq page (emms-info-native-ogg--verify-page)))
     (when (and page
                (> (logand (alist-get 'header-type-flag page) #x04) 0))
       page)))
 
-(defun emms-info-ogg--verify-page ()
+(defun emms-info-native-ogg--verify-page ()
   "Verify Ogg page starting from point.
-Unpack page into `emms-info-ogg--page-bindat-spec' structure and
-calculate its checksum.  Return the page if the checksum is
-correct, or nil if the checksum does not match or the page is
-otherwise invalid."
+Unpack page into `emms-info-native-ogg--page-bindat-spec'
+structure and calculate its checksum.  Return the page if the
+checksum is correct, or nil if the checksum does not match or the
+page is otherwise invalid."
   (ignore-errors
     (let* ((offset (point))
            (page
-            (bindat-unpack emms-info-ogg--page-bindat-spec
+            (bindat-unpack emms-info-native-ogg--page-bindat-spec
                            (buffer-string)
                            (1- offset)))
            (num-bytes
-            (bindat-length emms-info-ogg--page-bindat-spec page))
+            (bindat-length emms-info-native-ogg--page-bindat-spec page))
            (buf
             (buffer-substring-no-properties offset
                                             (+ offset num-bytes)))
            (checksum
-            (emms-info-ogg--checksum (concat (substring buf 0 22)
+            (emms-info-native-ogg--checksum (concat (substring buf 0 22)
                                              [0 0 0 0]
                                              (substring buf 26)))))
       (when (= (alist-get 'page-checksum page) checksum) page))))
 
-(defun emms-info-ogg--checksum (bytes)
+(defun emms-info-native-ogg--checksum (bytes)
   "Calculate and return Ogg checksum for BYTES.
 See URL `https://xiph.org/vorbis/doc/framing.html' for details on
 checksum."
   (let ((crc 0))
     (dotimes (n (length bytes))
       (setq crc (logxor (logand (ash crc 8) #xffffffff)
-                        (aref emms-info-ogg--crc-table
+                        (aref emms-info-native-ogg--crc-table
                               (logxor (ash crc -24)
                                       (aref bytes n))))))
     crc))
 
-(provide 'emms-info-ogg)
+(provide 'emms-info-native-ogg)
 
-;;; emms-info-ogg.el ends here
+;;; emms-info-native-ogg.el ends here
