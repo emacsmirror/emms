@@ -1,6 +1,6 @@
 ;;; emms-playlist-mode.el --- Playlist mode for Emms.  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2005-2022  Free Software Foundation, Inc.
+;; Copyright (C) 2005-2023  Free Software Foundation, Inc.
 
 ;; Author: Yoni Rabkin <yrk@gnu.org>
 
@@ -30,10 +30,10 @@
 
 ;;; Code:
 
+
 ;;; --------------------------------------------------------
 ;;; Variables
 ;;; --------------------------------------------------------
-
 (require 'emms)
 (condition-case nil
     (require 'overlay)
@@ -79,10 +79,10 @@ The value should a positive integer."
 This is true for every invocation of `emms-playlist-mode-go'."
   :type 'boolean)
 
+
 ;;; --------------------------------------------------------
 ;;; Faces
 ;;; --------------------------------------------------------
-
 (defface emms-playlist-track-face
   '((((class color) (background dark))
      (:foreground "DarkSeaGreen"))
@@ -103,10 +103,10 @@ This is true for every invocation of `emms-playlist-mode-go'."
     (t (:background "blue3")))
   "Face for highlighting the selected track.")
 
+
 ;;; --------------------------------------------------------
 ;;; Keys
 ;;; --------------------------------------------------------
-
 (defvar emms-playlist-mode-map
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map text-mode-map)
@@ -326,10 +326,10 @@ With a prefix arg, open the `dired' buffer in OTHER-WINDOW."
 	    (error "Can't visit this track type in Dired")))
       (error "No track at point"))))
 
+
 ;;; --------------------------------------------------------
 ;;; Killing and yanking
 ;;; --------------------------------------------------------
-
 (defun emms-playlist-mode-between-p (p a b)
   "Return t if P is a point between points A and B."
   (and (<= a p)
@@ -401,10 +401,10 @@ With a prefix arg, open the `dired' buffer in OTHER-WINDOW."
    (yank-pop nil)
    (emms-playlist-mode-correct-previous-yank)))
 
+
 ;;; --------------------------------------------------------
 ;;; Overlay
 ;;; --------------------------------------------------------
-
 (defun emms-playlist-mode-overlay-selected ()
   "Place an overlay over the currently selected track."
   (when emms-playlist-selected-marker
@@ -424,10 +424,10 @@ With a prefix arg, open the `dired' buffer in OTHER-WINDOW."
           (overlay-put emms-playlist-mode-selected-overlay
                        'evaporate t))))))
 
+
 ;;; --------------------------------------------------------
 ;;; Saving/Restoring
 ;;; --------------------------------------------------------
-
 (defun emms-playlist-mode-open-buffer (filename)
   "Opens a previously saved playlist buffer.
 
@@ -463,10 +463,10 @@ This preserves the current EMMS buffer."
      (emms-playlist-set-playlist-buffer (emms-playlist-new)))
     (emms-add-playlist name)))
 
+
 ;;; --------------------------------------------------------
 ;;; Local functions
 ;;; --------------------------------------------------------
-
 (defun emms-playlist-mode-insert-track (track &optional no-newline)
   "Insert the description of TRACK at point.
 When NO-NEWLINE is non-nil, do not insert a newline after the track."
@@ -499,10 +499,10 @@ When NO-NEWLINE is non-nil, do not insert a newline after the track."
      (when selectedp
        (emms-playlist-select (point))))))
 
+
 ;;; --------------------------------------------------------
 ;;; Entry
 ;;; --------------------------------------------------------
-
 (defun emms-playlist-mode-go ()
   "Switch to the current emms-playlist buffer and use emms-playlist-mode."
   (interactive)
@@ -606,6 +606,8 @@ WINDOW-WIDTH should be a positive integer."
 
   (run-hooks 'emms-playlist-mode-hook))
 
+
 (provide 'emms-playlist-mode)
+
 
 ;;; emms-playlist-mode.el ends here
