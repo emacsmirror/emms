@@ -268,6 +268,20 @@ function switches back to the remembered buffer."
   (emms-with-inhibit-read-only-t
    (undo)))
 
+(defun emms-playlist-mode-add-after-current (dir)
+  "Insert tracks from directory tree DIR after current track."
+  (interactive (list
+                (emms-read-directory-name "Add directory after current track: "
+					  (emms-source-file-directory-hint)
+                                          emms-source-file-default-directory
+                                          t)))
+  (let ((p (if emms-playlist-mode-selected-overlay
+	       (overlay-start emms-playlist-mode-selected-overlay)
+	     (error "no current track"))))
+    (goto-char p)
+    (forward-line 1)
+    (emms-insert-directory-tree dir)))
+
 (defun emms-playlist-mode-add-contents ()
   "Add files in the playlist at point to the current playlist buffer.
 
