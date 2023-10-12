@@ -32,13 +32,13 @@ This macro defines a suitable function with NAME that outputs
 BYTES after FLAC signature.  The function NAME can then be passed
 for `emms-info-native-flac--decode-meta-blocks'."
   `(defun ,name (offset end)
-     (let ((bytes (seq-concatenate 'vector [102 76 97 67] ,bytes)))
+     (let ((bytes (concat "fLaC" ,bytes)))
        (erase-buffer)
-       (mapcar #'insert (seq-subseq bytes offset end)))))
+       (insert (substring bytes offset end)))))
 
-(emms-flac-test-make-data-func emms-test-invalid-flac-block-length [1 200 200 200 0 1 2 3])
-(emms-flac-test-make-data-func emms-test-invalid-flac-block-type [9 0 0 0 0 1 2 3])
-(emms-flac-test-make-data-func emms-test-valid-flac-block [0 0 0 8 10 11 12 13 14 15 16 17 132 0 0 4 1 2 3 4])
+(emms-flac-test-make-data-func emms-test-invalid-flac-block-length "\x01\xff\xff\xff\x00\x01\x02\x03")
+(emms-flac-test-make-data-func emms-test-invalid-flac-block-type "\x09\x00\x00\x00\x00\x01\x02\x03")
+(emms-flac-test-make-data-func emms-test-valid-flac-block "\x00\x00\x00\x08\x10\x11\x12\x13\x14\x15\x16\x17\x84\x00\x00\x04\x01\x02\x03\x04")
 
 (ert-deftest emms-flac-test-meta-blocks ()
   (should-error (emms-info-native-flac--decode-meta-blocks
@@ -47,8 +47,8 @@ for `emms-info-native-flac--decode-meta-blocks'."
                  #'emms-test-invalid-flac-block-type))
   (should (equal (emms-info-native-flac--decode-meta-blocks
                   #'emms-test-valid-flac-block)
-                 (list (unibyte-string 1 2 3 4)
-                       (unibyte-string 10 11 12 13 14 15 16 17)))))
+                 (list "\x01\x02\x03\x04"
+                       "\x10\x11\x12\x13\x14\x15\x16\x17"))))
 
 (ert-deftest emms-flac-test-decode-duration ()
   ;; The corresponding sample metadata bytes are [10 196 66 240 1 8 36 0].

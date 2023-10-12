@@ -27,16 +27,16 @@
 (require 'ert)
 
 (ert-deftest emms-ogg-test-decode-page ()
-  (let* ((bytes (unibyte-string 79 103 103 83 0 2 0 0 0 0 0 0 0 0 134 209 158 23 0 0 0 0 53 82 251 136 1 30 1 118 111 114 98 105 115 0 0 0 0 1 68 172 0 0 0 0 0 0 128 56 1 0 0 0 0 0 184 1))
+  (let* ((bytes "\x4f\x67\x67\x53\x00\x02\x00\x00\x00\x00\x00\x00\x00\x00\x86\xd1\x9e\x17\x00\x00\x00\x00\x35\x52\xfb\x88\x01\x1e\x01\x76\x6f\x72\x62\x69\x73\x00\x00\x00\x00\x01\x44\xac\x00\x00\x00\x00\x00\x00\x80\x38\x01\x00\x00\x00\x00\x00\xb8\x01")
          (page (bindat-unpack emms-info-native-ogg--page-bindat-spec bytes)))
     (should (= (emms-info-native-ogg--num-packets page) 1))
     (should (= (bindat-length emms-info-native-ogg--page-bindat-spec page) 58))
     (should (equal (bindat-get-field page 'payload)
-                   (unibyte-string 1 118 111 114 98 105 115 0 0 0 0 1 68 172 0 0 0 0 0 0 128 56 1 0 0 0 0 0 184 1)))))
+                   "\x01\x76\x6f\x72\x62\x69\x73\x00\x00\x00\x00\x01\x44\xac\x00\x00\x00\x00\x00\x00\x80\x38\x01\x00\x00\x00\x00\x00\xb8\x01"))))
 
 (ert-deftest emms-ogg-test-decode-vorbis-headers ()
   "Test `emms-info-ogg--decode-headers' with Vorbis data."
-  (let ((bytes (unibyte-string 1 118 111 114 98 105 115 0 0 0 0 1 68 172 0 0 0 0 0 0 128 56 1 0 0 0 0 0 184 1 3 118 111 114 98 105 115 52 0 0 0 88 105 112 104 46 79 114 103 32 108 105 98 86 111 114 98 105 115 32 73 32 50 48 50 48 48 55 48 52 32 40 82 101 100 117 99 105 110 103 32 69 110 118 105 114 111 110 109 101 110 116 41 2 0 0 0 7 0 0 0 102 111 111 61 98 97 114 27 0 0 0 75 101 121 61 206 159 225 189 144 207 135 225 189 182 32 206 164 206 177 225 189 144 207 132 225 189 176 1)))
+  (let ((bytes "\x01\x76\x6f\x72\x62\x69\x73\x00\x00\x00\x00\x01\x44\xac\x00\x00\x00\x00\x00\x00\x80\x38\x01\x00\x00\x00\x00\x00\xb8\x01\x03\x76\x6f\x72\x62\x69\x73\x34\x00\x00\x00\x58\x69\x70\x68\x2e\x4f\x72\x67\x20\x6c\x69\x62\x56\x6f\x72\x62\x69\x73\x20\x49\x20\x32\x30\x32\x30\x30\x37\x30\x34\x20\x28\x52\x65\x64\x75\x63\x69\x6e\x67\x20\x45\x6e\x76\x69\x72\x6f\x6e\x6d\x65\x6e\x74\x29\x02\x00\x00\x00\x07\x00\x00\x00\x66\x6f\x6f\x3d\x62\x61\x72\x1b\x00\x00\x00\x4b\x65\x79\x3d\xce\x9f\xe1\xbd\x90\xcf\x87\xe1\xbd\xb6\x20\xce\xa4\xce\xb1\xe1\xbd\x90\xcf\x84\xe1\xbd\xb0\x01"))
     (should
      (emms-equal-lists
       (emms-info-native-ogg--decode-headers bytes 'vorbis)
@@ -66,7 +66,7 @@
 
 (ert-deftest emms-ogg-test-decode-opus-headers ()
   "Test `emms-info-ogg--decode-headers' with Opus data."
-  (let ((bytes (unibyte-string 79 112 117 115 72 101 97 100 1 1 56 1 68 172 0 0 0 0 0 79 112 117 115 84 97 103 115 13 0 0 0 108 105 98 111 112 117 115 32 49 46 51 46 49 3 0 0 0 38 0 0 0 69 78 67 79 68 69 82 61 111 112 117 115 101 110 99 32 102 114 111 109 32 111 112 117 115 45 116 111 111 108 115 32 48 46 49 46 49 48 7 0 0 0 102 111 111 61 98 97 114 27 0 0 0 75 101 121 61 206 159 225 189 144 207 135 225 189 182 32 206 164 206 177 225 189 144 207 132 225 189 176)))
+  (let ((bytes "\x4f\x70\x75\x73\x48\x65\x61\x64\x01\x01\x38\x01\x44\xac\x00\x00\x00\x00\x00\x4f\x70\x75\x73\x54\x61\x67\x73\x0d\x00\x00\x00\x6c\x69\x62\x6f\x70\x75\x73\x20\x31\x2e\x33\x2e\x31\x03\x00\x00\x00\x26\x00\x00\x00\x45\x4e\x43\x4f\x44\x45\x52\x3d\x6f\x70\x75\x73\x65\x6e\x63\x20\x66\x72\x6f\x6d\x20\x6f\x70\x75\x73\x2d\x74\x6f\x6f\x6c\x73\x20\x30\x2e\x31\x2e\x31\x30\x07\x00\x00\x00\x66\x6f\x6f\x3d\x62\x61\x72\x1b\x00\x00\x00\x4b\x65\x79\x3d\xce\x9f\xe1\xbd\x90\xcf\x87\xe1\xbd\xb6\x20\xce\xa4\xce\xb1\xe1\xbd\x90\xcf\x84\xe1\xbd\xb0"))
     (emms-equal-lists
      (emms-info-native-ogg--decode-headers bytes 'opus)
      '((identification-header
@@ -100,9 +100,9 @@ This is a helper function for `emms-ogg-test-decode-last-page'."
     (emms-info-native-ogg--decode-last-page)))
 
 (ert-deftest emms-ogg-test-decode-last-page()
-  (let ((valid [#x01 #x02 #x03 #x04 #x4f #x67 #x67 #x53 #x00 #x04 #x00 #x24 #x08 #x01 #x00 #x00 #x00 #x00 #x9c #x39 #x6e #x47 #x40 #x08 #x00 #x00 #x19 #x4e #xac #xa3 #x01 #x0a #x4f #x67 #x67 #x53 #x31 #x32 #x33 #x34 #x35 #x36])
-        (notlast [#x01 #x02 #x03 #x04 #x4f #x67 #x67 #x53 #x00 #x00 #x00 #x24 #x08 #x01 #x00 #x00 #x00 #x00 #x9c #x39 #x6e #x47 #x40 #x08 #x00 #x00 #x19 #x4e #xac #xa3 #x01 #x0a #x4f #x67 #x67 #x53 #x31 #x32 #x33 #x34 #x35 #x36])
-        (invalid [#x01 #x02 #x03 #x04 #x4f #x67 #x67 #x53 #x00 #x04 #x00 #x24 #x08 #x01 #x00 #x00 #x00 #x00 #x9c #x39 #x6e #x47 #x40 #x08 #x00 #x00 #x01 #x02 #x03 #x04 #x01 #x0a #x4f #x67 #x67 #x53 #x31 #x32 #x33 #x34 #x35 #x36])
+  (let ((valid "\x01\x02\x03\x04\x4f\x67\x67\x53\x00\x04\x00\x24\x08\x01\x00\x00\x00\x00\x9c\x39\x6e\x47\x40\x08\x00\x00\x19\x4e\xac\xa3\x01\x0a\x4f\x67\x67\x53\x31\x32\x33\x34\x35\x36")
+        (notlast "\x01\x02\x03\x04\x4f\x67\x67\x53\x00\x00\x00\x24\x08\x01\x00\x00\x00\x00\x9c\x39\x6e\x47\x40\x08\x00\x00\x19\x4e\xac\xa3\x01\x0a\x4f\x67\x67\x53\x31\x32\x33\x34\x35\x36")
+        (invalid "\x01\x02\x03\x04\x4f\x67\x67\x53\x00\x04\x00\x24\x08\x01\x00\x00\x00\x00\x9c\x39\x6e\x47\x40\x08\x00\x00\x01\x02\x03\x04\x01\x0a\x4f\x67\x67\x53\x31\x32\x33\x34\x35\x36")
         (valid-result
          (quote
           ((capture-pattern . "OggS")
@@ -123,7 +123,7 @@ This is a helper function for `emms-ogg-test-decode-last-page'."
     (should (equal (emms-ogg-test--decode-last-page invalid) nil))))
 
 (ert-deftest emms-ogg-test-calculate-checksum ()
-  (let ((bytes [#x01 #x02 #x03 #x04 #x4f #x67 #x67 #x53 #x00 #x04 #x00 #x24 #x08 #x01 #x00 #x00 #x00 #x00 #x9c #x39 #x6e #x47 #x40 #x08 #x00 #x00 #x19 #x4e #xac #xa3 #x01 #x0a #x4f #x67 #x67 #x53 #x31 #x32 #x33 #x34 #x35 #x36]))
+  (let ((bytes "\x01\x02\x03\x04\x4f\x67\x67\x53\x00\x04\x00\x24\x08\x01\x00\x00\x00\x00\x9c\x39\x6e\x47\x40\x08\x00\x00\x19\x4e\xac\xa3\x01\x0a\x4f\x67\x67\x53\x31\x32\x33\x34\x35\x36"))
     (should (= (emms-info-native-ogg--checksum bytes) 445885580))))
 
 ;;; emms-info-native-ogg-tests.el ends here
