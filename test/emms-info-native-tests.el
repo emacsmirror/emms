@@ -30,15 +30,10 @@
 
 (require 'emms-info-native)
 (require 'ert)
-(require 'ert-x)
-
-(unless (fboundp 'ert-resource-file)
-  (defun ert-resource-file (file)
-    (concat "resources/" file)))
 
 (ert-deftest emms-info-native-test-mp3 ()
   (should (equal (emms-info-native--decode-info-fields
-                  (ert-resource-file "sine.mp3"))
+                  "resources/sine.mp3")
                  '(("year" . "2023")
                    ("album" . "Test Data ☺")
                    ("artist" . "EMMS project")
@@ -47,7 +42,7 @@
 
 (ert-deftest emms-info-native-test-ogg ()
   (should (equal (emms-info-native--decode-info-fields
-                  (ert-resource-file "sine.ogg"))
+                  "resources/sine.ogg")
                  '(("artist" . "EMMS project")
                    ("date" . "2023-09-02")
                    ("title" . "440 Hz sine wave")
@@ -56,7 +51,7 @@
 
 (ert-deftest emms-info-native-test-flac ()
   (should (equal (emms-info-native--decode-info-fields
-                  (ert-resource-file "sine.flac"))
+                  "resources/sine.flac")
                  '(("artist" . "EMMS project")
                    ("date" . "2023-09-02")
                    ("title" . "440 Hz sine wave")
@@ -65,7 +60,7 @@
 
 (ert-deftest emms-info-native-test-opus ()
   (should (equal (emms-info-native--decode-info-fields
-                  (ert-resource-file "sine.opus"))
+                  "resources/sine.opus")
                  '(("artist" . "EMMS project")
                    ("date" . "2023-09-02")
                    ("title" . "440 Hz sine wave")

@@ -23,6 +23,7 @@
 
 ;;; Code:
 
+(require 'emms)
 (require 'emms-info-native-ogg)
 (require 'ert)
 
