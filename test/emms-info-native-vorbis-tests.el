@@ -26,7 +26,7 @@
 (require 'emms-info-native-vorbis)
 (require 'ert)
 
-(ert-deftest emms-vorbis-test-extract-comments ()
+(ert-deftest emms-test-vorbis-extract-comments ()
   (let ((comments
          (quote (((user-comment . "MUSICBRAINZ_RELEASEGROUPID=9b307293-d2e6-34a9-a289-161c5baf187f")
                   (length . 63))
@@ -45,7 +45,7 @@
                            ("originalyear" . "1997")
                            ("originaldate" . "1997-03-31")))))))
 
-(ert-deftest emms-vorbis-test-split-comment ()
+(ert-deftest emms-test-vorbis-split-comment ()
   (should (equal (emms-info-native-vorbis--split-comment "") nil))
   (should (equal (emms-info-native-vorbis--split-comment "x") nil))
   (should (equal (emms-info-native-vorbis--split-comment "x=") nil))

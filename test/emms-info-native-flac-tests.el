@@ -26,7 +26,7 @@
 (require 'emms-info-native-flac)
 (require 'ert)
 
-(defmacro emms-flac-test-make-data-func (name bytes)
+(defmacro emms-test-flac-make-data-func (name bytes)
   "Macro for defining test data generator.
 This macro defines a suitable function with NAME that outputs
 BYTES after FLAC signature.  The function NAME can then be passed
@@ -36,11 +36,11 @@ for `emms-info-native-flac--decode-meta-blocks'."
        (erase-buffer)
        (insert (substring bytes offset end)))))
 
-(emms-flac-test-make-data-func emms-test-invalid-flac-block-length "\x01\xff\xff\xff\x00\x01\x02\x03")
-(emms-flac-test-make-data-func emms-test-invalid-flac-block-type "\x09\x00\x00\x00\x00\x01\x02\x03")
-(emms-flac-test-make-data-func emms-test-valid-flac-block "\x00\x00\x00\x08\x10\x11\x12\x13\x14\x15\x16\x17\x84\x00\x00\x04\x01\x02\x03\x04")
+(emms-test-flac-make-data-func emms-test-invalid-flac-block-length "\x01\xff\xff\xff\x00\x01\x02\x03")
+(emms-test-flac-make-data-func emms-test-invalid-flac-block-type "\x09\x00\x00\x00\x00\x01\x02\x03")
+(emms-test-flac-make-data-func emms-test-valid-flac-block "\x00\x00\x00\x08\x10\x11\x12\x13\x14\x15\x16\x17\x84\x00\x00\x04\x01\x02\x03\x04")
 
-(ert-deftest emms-flac-test-meta-blocks ()
+(ert-deftest emms-test-flac-meta-blocks ()
   (should-error (emms-info-native-flac--decode-meta-blocks
                  #'emms-test-invalid-flac-block-length))
   (should-error (emms-info-native-flac--decode-meta-blocks
@@ -50,7 +50,7 @@ for `emms-info-native-flac--decode-meta-blocks'."
                  (list "\x01\x02\x03\x04"
                        "\x10\x11\x12\x13\x14\x15\x16\x17"))))
 
-(ert-deftest emms-flac-test-decode-duration ()
+(ert-deftest emms-test-flac-decode-duration ()
   ;; The corresponding sample metadata bytes are [10 196 66 240 1 8 36 0].
   (should (= (emms-info-native-flac--decode-duration 775818634391462912) 392)))
 

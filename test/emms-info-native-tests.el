@@ -31,7 +31,7 @@
 (require 'emms-info-native)
 (require 'ert)
 
-(ert-deftest emms-info-native-test-mp3 ()
+(ert-deftest emms-test-info-native-mp3 ()
   (should (equal (emms-info-native--decode-info-fields
                   "resources/sine.mp3")
                  '(("year" . "2023")
@@ -40,7 +40,7 @@
                    ("title" . "440 Hz sine wave")
                    ("playing-time" . 5)))))
 
-(ert-deftest emms-info-native-test-ogg ()
+(ert-deftest emms-test-info-native-ogg ()
   (should (equal (emms-info-native--decode-info-fields
                   "resources/sine.ogg")
                  '(("artist" . "EMMS project")
@@ -49,7 +49,7 @@
                    ("album" . "Test Data ☺")
                    ("playing-time" . 5)))))
 
-(ert-deftest emms-info-native-test-flac ()
+(ert-deftest emms-test-info-native-flac ()
   (should (equal (emms-info-native--decode-info-fields
                   "resources/sine.flac")
                  '(("artist" . "EMMS project")
@@ -58,7 +58,7 @@
                    ("album" . "Test Data ☺")
                    ("playing-time" . 5)))))
 
-(ert-deftest emms-info-native-test-opus ()
+(ert-deftest emms-test-info-native-opus ()
   (should (equal (emms-info-native--decode-info-fields
                   "resources/sine.opus")
                  '(("artist" . "EMMS project")
