@@ -149,7 +149,7 @@ Return t if there is a valid stream marker, nil otherwise."
     (looking-at "fLaC")))
 
 (defun emms-info-native-flac--file-inserter (filename)
-  "Return a function that reads and inserts bytes from FILENAME.
+  "Return a function for reading bytes from FILENAME.
 This is meant for `emms-info-native-flac--decode-meta-blocks'."
   (lambda (offset end)
     (insert-file-contents-literally filename nil offset end t)))

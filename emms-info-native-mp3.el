@@ -24,10 +24,10 @@
 ;;; Commentary:
 
 ;; This file contains functions for extracting metadata from MP3 files
-;; with id3v2 tags.  The code is based on id3v2 Informal Standards,
+;; with ID3v2 tags.  The code is based on ID3v2 Informal Standards,
 ;; see https://id3lib.sourceforge.net/id3/
 
-;; All id3v2 versions should be recognized, but many features like
+;; All ID3v2 versions should be recognized, but many features like
 ;; CRC, compression and encryption are not supported.  Since MP3 does
 ;; not have a generally agreed-upon format for specifying the stream
 ;; length, the reported playing time is only an estimate.  For
@@ -45,20 +45,20 @@
 (require 'subr-x)
 
 
-;;; id3 code
+;;; ID3 code
 
 (defvar emms-info-native-id3v2--version 0
-  "Last decoded id3v2 version.")
+  "Last decoded ID3v2 version.")
 
 (defconst emms-info-native-id3v2--magic-pattern "ID3"
-  "id3v2 header magic pattern.")
+  "ID3v2 header magic pattern.")
 
 (defconst emms-info-native-id3v2--header-bindat-spec
   (if (eval-when-compile (fboundp 'bindat-type))
       (bindat-type
         (file-identifier str 3)
         (_ unit (unless (equal file-identifier emms-info-native-id3v2--magic-pattern)
-                  (error "id3v2 framing mismatch: expected `%s', got `%s'"
+                  (error "ID3v2 framing mismatch: expected `%s', got `%s'"
                          emms-info-native-id3v2--magic-pattern
                          file-identifier)))
         (version u8)
@@ -69,7 +69,7 @@
         (size unit (emms-info-native-id3v2--checked-size 'tag size-bytes)))
     '((file-identifier str 3)
       (eval (unless (equal last emms-info-native-id3v2--magic-pattern)
-              (error "id3v2 framing mismatch: expected `%s', got `%s'"
+              (error "ID3v2 framing mismatch: expected `%s', got `%s'"
                      emms-info-native-id3v2--magic-pattern
                      last)))
       (version u8)
@@ -78,24 +78,24 @@
       (flags bits 1)
       (size-bytes vec 4)
       (size eval (emms-info-native-id3v2--checked-size 'tag last))))
-  "id3v2 header specification.")
+  "ID3v2 header specification.")
 
 (defconst emms-info-native-id3v2--frame-header-bindat-spec
   (if (eval-when-compile (fboundp 'bindat-type))
       (bindat-type
         (id str (if (= emms-info-native-id3v2--version 2) 3 4))
         (_ unit (unless (emms-info-native-id3v2--valid-frame-id-p id)
-                  (error "id3v2 frame id `%s' is invalid" id)))
+                  (error "ID3v2 frame id `%s' is invalid" id)))
         (size-bytes vec (if (= emms-info-native-id3v2--version 2) 3 4))
         (size unit (emms-info-native-id3v2--checked-size 'frame size-bytes))
         (flags bits (if (= emms-info-native-id3v2--version 2) 0 2)))
     '((id str (eval (if (= emms-info-native-id3v2--version 2) 3 4)))
       (eval (unless (emms-info-native-id3v2--valid-frame-id-p last)
-              (error "id3v2 frame id `%s' is invalid" last)))
+              (error "ID3v2 frame id `%s' is invalid" last)))
       (size-bytes vec (eval (if (= emms-info-native-id3v2--version 2) 3 4)))
       (size eval (emms-info-native-id3v2--checked-size 'frame last))
       (flags bits (eval (if (= emms-info-native-id3v2--version 2) 0 2)))))
-  "id3v2 frame header specification.")
+  "ID3v2 frame header specification.")
 
 (defconst emms-info-native-id3v2--frame-to-info
   '(("TAL"  . "album")
@@ -125,7 +125,7 @@
     ("TYE"  . "year")
     ("TYER" . "year")
     ("TXXX" . user-defined))
-  "Mapping from id3v2 frame identifiers to EMMS info fields.
+  "Mapping from ID3v2 frame identifiers to EMMS info fields.
 
 Sources:
 
@@ -259,23 +259,23 @@ Sources:
     (123 . "A cappella")
     (124 . "Euro-House")
     (125 . "Dance Hall"))
-  "id3v1 genres.")
+  "ID3v1 genres.")
 
 (defconst emms-info-native-id3v2--text-encodings
   '((0 . latin-1)
     (1 . utf-16)
     (2 . uft-16be)
     (3 . utf-8))
-  "id3v2 text encodings.")
+  "ID3v2 text encodings.")
 
 (defun emms-info-native-id3v2--valid-frame-id-p (id)
-  "Return t if ID is a proper id3v2 frame identifier, nil otherwise."
+  "Return t if ID is a proper ID3v2 frame identifier, nil otherwise."
   (if (= emms-info-native-id3v2--version 2)
       (string-match "^[A-Z0-9]\\{3\\}$" id)
     (string-match "^[A-Z0-9]\\{4\\}$" id)))
 
 (defun emms-info-native-id3v2--checked-size (elt bytes)
-  "Calculate id3v2 element ELT size from BYTES.
+  "Calculate ID3v2 element ELT size from BYTES.
 ELT must be either `tag' or `frame'.
 
 Return the size.  Signal an error if the size is zero."
@@ -286,11 +286,11 @@ Return the size.  Signal an error if the size is zero."
                          (emms-info-native-id3v2--decode-size bytes t)
                        (emms-info-native-id3v2--decode-size bytes nil))))))
     (if (zerop size)
-        (error "id3v2 tag/frame size is zero")
+        (error "ID3v2 tag/frame size is zero")
       size)))
 
 (defun emms-info-native-id3v2--decode-size (bytes syncsafe)
-  "Decode id3v2 element size from BYTES.
+  "Decode ID3v2 element size from BYTES.
 Depending on SYNCSAFE, BYTES are interpreted as 7- or 8-bit
 bytes, MSB first.
 
@@ -303,7 +303,7 @@ Return the decoded size."
                                (reverse bytes)))))
 
 (defun emms-info-native-id3v2--decode-header (filename)
-  "Read and decode id3v2 header from FILENAME."
+  "Read and decode ID3v2 header from FILENAME."
   (with-temp-buffer
     (set-buffer-multibyte nil)
     (insert-file-contents-literally filename nil 0 10)
@@ -311,7 +311,7 @@ Return the decoded size."
                    (buffer-string))))
 
 (defun emms-info-native-id3v2--checked-ext-header-size (filename)
-  "Read and decode id3v2 extended header size from FILENAME.
+  "Read and decode ID3v2 extended header size from FILENAME.
 Return the size.  Signal an error if the size is zero."
   (with-temp-buffer
     (set-buffer-multibyte nil)
@@ -319,9 +319,9 @@ Return the size.  Signal an error if the size is zero."
     (emms-info-native-id3v2--checked-size 'frame (buffer-string))))
 
 (defun emms-info-native-id3v2--decode-frames (filename begin end unsync)
-  "Read and decode id3v2 text frames from FILENAME.
+  "Read and decode ID3v2 text frames from FILENAME.
 BEGIN should be the offset of first byte of the first frame, and
-END should be the offset after the complete id3v2 tag.
+END should be the offset after the complete ID3v2 tag.
 
 If UNSYNC is non-nil, the frames are assumed to have gone through
 unsynchronization and decoded as such.
@@ -345,7 +345,7 @@ Return metadata in a list of (FIELD . VALUE) cons cells."
   (if (= emms-info-native-id3v2--version 2) 6 10))
 
 (defun emms-info-native-id3v2--decode-frame (filename offset unsync)
-  "Read and decode a single id3v2 frame from FILENAME.
+  "Read and decode a single ID3v2 frame from FILENAME.
 Start reading the frame from byte offset OFFSET.  See
 `emms-info-native-id3v2--read-frame-data' for details on UNSYNC.
 
@@ -375,7 +375,7 @@ next frame (if any) and FRAME is the decoded frame.  See
       (cons (+ data-offset size) nil))))
 
 (defun emms-info-native-id3v2--decode-frame-header (filename begin)
-  "Read and decode id3v2 frame header from FILENAME.
+  "Read and decode ID3v2 frame header from FILENAME.
 Start reading from byte offset BEGIN.
 
 Return a cons cell (OFFSET . HEADER), where OFFSET is the byte
@@ -390,7 +390,7 @@ header."
                            (buffer-string))))))
 
 (defun emms-info-native-id3v2--read-frame-data (filename begin num-bytes unsync)
-  "Read NUM-BYTES of raw id3v2 frame data from FILENAME.
+  "Read NUM-BYTES of raw ID3v2 frame data from FILENAME.
 Start reading from offset BEGIN.  If UNSYNC is non-nil, all \"FF
 00\" byte combinations are replaced by \"FF\".  Replaced byte
 pairs are counted as one, instead of two, towards NUM-BYTES.
@@ -418,13 +418,13 @@ data."
         (cons end (buffer-string))))))
 
 (defun emms-info-native-id3v2--decode-frame-data (data info-id)
-  "Decode id3v2 text frame data DATA.
+  "Decode ID3v2 text frame data DATA.
 If INFO-ID is `user-defined', assume that DATA is a TXXX frame
 with key/value-pair.  Extract the key and, if it is a mapped
 element in `emms-info-native-id3v2--frame-to-info', use it as INFO-ID.
 
 If INFO-ID is `genre', assume that DATA is either an integral
-id3v1 genre reference or a plain genre string.  In the former
+ID3v1 genre reference or a plain genre string.  In the former
 case map the reference to a string via `emms-info-id3v1--genres';
 in the latter case use the genre string verbatim.
 
@@ -450,7 +450,7 @@ string, or nil if the decoding failed."
                  (cons key val))))))))
 
 (defun emms-info-native-id3v2--decode-string (bytes)
-  "Decode id3v2 text information from BYTES.
+  "Decode ID3v2 text information from BYTES.
 Remove the terminating null byte, if any.
 
 Return the text as string."

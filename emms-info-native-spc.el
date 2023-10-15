@@ -24,9 +24,9 @@
 ;;; Commentary:
 
 ;; This file provides a native emms-info-method for SPC files. (well,
-;; actually the id666 tag embedded inside them). "Native" means a pure
-;; Emacs Lisp implementation instead of one relying on external tools
-;; or libraries.
+;; actually the ID666 tag embedded inside them).  "Native" means a
+;; pure Emacs Lisp implementation instead of one relying on external
+;; tools or libraries.
 
 ;;; Code:
 
@@ -34,7 +34,7 @@
 
 (defconst emms-info-native-spc--id666-magic-pattern
   "SNES-SPC700 Sound File Data v0.30"
-  "id666 header magic pattern.")
+  "ID666 header magic pattern.")
 
 (defconst emms-info-native-spc--id666-header-bindat-spec
   (if (eval-when-compile (fboundp 'bindat-type))
@@ -42,7 +42,7 @@
         (file-identifier str 33)
         (_ unit (unless (equal file-identifier
                                emms-info-native-spc--id666-magic-pattern)
-                  (error "id666 framing mismatch: expected `%s', got `%s'"
+                  (error "ID666 framing mismatch: expected `%s', got `%s'"
                          emms-info-native-spc--id666-magic-pattern
                          file-identifier)))
         (unused uint 16)
@@ -65,7 +65,7 @@
         (artist strz 32))
   '((file-identifier str 33)
     (eval (unless (equal last emms-info-native-spc--id666-magic-pattern)
-            (error "id666 framing mismatch: expected `%s', got `%s'"
+            (error "ID666 framing mismatch: expected `%s', got `%s'"
                    emms-info-native-spc--id666-magic-pattern
                    last)))
     (unused u16)
@@ -86,7 +86,7 @@
     (fadeout vec 3)
     (fadeout-length vec 5)
     (artist strz 32)))
-  "id666 header specification.
+  "ID666 header specification.
 
 Sources:
 
@@ -94,7 +94,7 @@ Sources:
 - URL `https://picard-docs.musicbrainz.org/en/appendices/tag_mapping.html'")
 
 (defun emms-info-native-spc--decode-id666-header (filename)
-  "Read and decode id666 header from FILENAME."
+  "Read and decode ID666 header from FILENAME."
   (with-temp-buffer
     (set-buffer-multibyte nil)
     (insert-file-contents-literally filename nil 0 210)
@@ -102,7 +102,7 @@ Sources:
                    (buffer-string))))
 
 (defun emms-info-native-spc-decode-id666 (filename)
-  "Read and decode id666 metadata from FILENAME.
+  "Read and decode ID666 metadata from FILENAME.
 Return metadata in a list of (FIELD . VALUE) cons cells, or nil
 in case of errors or if there were no known fields in FILENAME."
   (condition-case nil

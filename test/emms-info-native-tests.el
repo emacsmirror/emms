@@ -66,3 +66,5 @@
                    ("title" . "440 Hz sine wave")
                    ("album" . "Test Data ☺")
                    ("playing-time" . 5)))))
+
+;;; emms-info-native-tests.el ends here

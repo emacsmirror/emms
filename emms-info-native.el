@@ -42,11 +42,11 @@
 ;; - FLAC streams in native encapsulation format, filename extension
 ;;   `.flac'.
 ;;
-;; - MP3 files with extension `.mp3' and id3v2 tags.  All id3v2
+;; - MP3 files with extension `.mp3' and ID3v2 tags.  All ID3v2
 ;;   versions should work, but many features like compression and
 ;;   encryption are not supported.
 ;;
-;; - SPC files with extension `.spc' and id666 tags.  This is an audio
+;; - SPC files with extension `.spc' and ID666 tags.  This is an audio
 ;;   file based on a memory dump from an SPC700, a special audio chip
 ;;   found within Super Nintendos.
 ;;

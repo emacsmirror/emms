@@ -26,6 +26,8 @@
 ;; This file contains Opus-specific code for `emms-info-native-ogg'
 ;; feature.
 
+;;; Code:
+
 (require 'emms-info-native-vorbis)
 (require 'bindat)
 
