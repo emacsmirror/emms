@@ -93,15 +93,15 @@ their comments have almost the same format as Vorbis.")
                   (error "Vorbis framing mismatch: expected `%s', got `%s'"
                          emms-info-native-vorbis--header-magic-pattern
                          vorbis)))
-        (vorbis-version uint 32 'le)
+        (vorbis-version uintr 32)
         (_ unit (unless (= vorbis-version 0)
                   (error "Vorbis version mismatch: expected 0, got %s"
                          vorbis-version)))
         (channel-count u8)
-        (sample-rate uint 32 'le)
-        (bitrate-maximum uint 32 'le)
-        (bitrate-nominal uint 32 'le)
-        (bitrate-minimum uint 32 'le)
+        (sample-rate uintr 32)
+        (bitrate-maximum uintr 32)
+        (bitrate-nominal uintr 32)
+        (bitrate-minimum uintr 32)
         (blocksize u8)
         (framing-flag u8)
         (_ unit (unless (= framing-flag 1)
@@ -135,7 +135,7 @@ their comments have almost the same format as Vorbis.")
 (defconst emms-info-native-vorbis--comment-field-bindat-spec
   (if (eval-when-compile (fboundp 'bindat-type))
       (bindat-type
-        (length uint 32 'le)
+        (length uintr 32)
         (_ unit (when (> length emms-info-native-vorbis--max-comment-size)
                   (error "Vorbis comment length %s is too long"
                          length)))
@@ -158,12 +158,12 @@ their comments have almost the same format as Vorbis.")
                   (error "Vorbis framing mismatch: expected `%s', got `%s'"
                          emms-info-native-vorbis--header-magic-pattern
                          vorbis)))
-        (vendor-length uint 32 'le)
+        (vendor-length uintr 32)
         (_ unit (when (> vendor-length emms-info-native-vorbis--max-vendor-length)
                   (error "Vorbis vendor length %s is too long"
                          vendor-length)))
         (vendor-string str vendor-length)
-        (user-comments-list-length uint 32 'le)
+        (user-comments-list-length uintr 32)
         (_ unit (when (> user-comments-list-length emms-info-native-vorbis--max-comments)
                   (error "Vorbis user comment list length %s is too long"
                          user-comments-list-length)))

@@ -81,12 +81,12 @@ exhaustion in case of garbled or malicious inputs.")
 (defconst emms-info-native-flac--comment-block-bindat-spec
   (if (eval-when-compile (fboundp 'bindat-type))
       (bindat-type
-        (vendor-length uint 32 'le)
+        (vendor-length uintr 32)
         (_ unit (when (> vendor-length emms-info-native-vorbis--max-vendor-length)
                   (error "FLAC vendor length %s is too long"
                          vendor-length)))
         (vendor-string str vendor-length)
-        (user-comments-list-length uint 32 'le)
+        (user-comments-list-length uintr 32)
         (_ unit (when (> user-comments-list-length emms-info-native-vorbis--max-comments)
                   (error "FLAC user comment list length %s is too long"
                          user-comments-list-length)))

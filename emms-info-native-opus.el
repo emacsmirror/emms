@@ -62,9 +62,9 @@
                          opus-version)))
         (channel-count u8)
         (_ unit (progn (setq emms-info-native-opus--channel-count channel-count) nil))
-        (pre-skip uint 16 'le)
-        (sample-rate uint 32 'le)
-        (output-gain uint 16 'le)
+        (pre-skip uintr 16)
+        (sample-rate uintr 32)
+        (output-gain uintr 16)
         (channel-mapping-family u8)
         (_ . (if (> channel-mapping-family 0)
                  (type emms-info-native-opus--channel-mapping-bindat-spec)
@@ -100,12 +100,12 @@
                   (error "Opus framing mismatch: expected `%s', got `%s'"
                          emms-info-native-opus--tags-magic-pattern
                          opus-tags)))
-        (vendor-length uint 32 'le)
+        (vendor-length uintr 32)
         (_ unit (when (> vendor-length emms-info-native-vorbis--max-vendor-length)
                   (error "Opus vendor length %s is too long"
                          vendor-length)))
         (vendor-string str vendor-length)
-        (user-comments-list-length uint 32 'le)
+        (user-comments-list-length uintr 32)
         (_ unit (when (> user-comments-list-length
                          emms-info-native-vorbis--max-comments)
                   (error "Opus user comment list length %s is too long"
