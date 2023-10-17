@@ -56,8 +56,14 @@
   "The default directory to look for media files."
   :type '(choice (const :tag "None" nil) file))
 
+(defcustom emms-source-file-gnu-find "find"
+  "The program name for GNU find."
+  :type 'string)
+
 (defcustom emms-source-file-directory-tree-function
-  'emms-source-file-directory-tree-internal
+  (if (executable-find emms-source-file-gnu-find)
+      'emms-source-file-directory-tree-find
+    'emms-source-file-directory-tree-internal)
   "*A function to call that searches in a given directory all files
 that match a given regex. DIR and REGEX are the only arguments passed
 to this function.
