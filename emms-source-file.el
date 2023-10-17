@@ -86,10 +86,6 @@ You should set case-fold-search to nil before using this regexp
 in code."
   :type 'regexp)
 
-(defcustom emms-source-file-gnu-find "find"
-  "The program name for GNU find."
-  :type 'string)
-
 (defcustom emms-source-file-directory-hint-p t
   "When non-nil, guess the directory based on a track at point."
   :type 'boolean)
