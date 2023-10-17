@@ -871,8 +871,11 @@ An Emms source that will find files in @var{dir} or
 @defun emms-source-file-directory-tree &optional dir
 Return a list of all files under @var{dir} which match @var{regex}.
 @end defun
-@defun emms-source-dired
+@defun emms-play-dired
 Play all marked files of a dired buffer
+@end defun
+@defun emms-add-dired
+Add all marked files of a dired buffer
 @end defun
 @defun emms-source-file-regex
 Return a regexp that matches everything any player (that supports
