@@ -84,10 +84,22 @@ If non-nil, EMMS will wrap back to the first track when that happens."
   :group 'emms
   :type 'boolean)
 
+(defcustom emms-player-next-function 'emms-next-noerror
+  "*A function run when EMMS thinks the next song should be played."
+  :group 'emms
+  :type 'function
+  :options '(emms-next-noerror
+	     emms-random))
+
 (defcustom emms-random-playlist nil
   "*Non-nil means that tracks are played randomly. If nil, tracks
 are played sequentially."
   :group 'emms
+  :set (lambda (symbol value)
+         (set symbol value)
+         (if value
+             (setq emms-player-next-function #'emms-random)
+           (setq emms-player-next-function #'emms-next-noerror)))
   :type 'boolean)
 
 (defcustom emms-repeat-track nil
@@ -242,13 +254,6 @@ track; the latter, only when the player is stopped
 interactively."
   :group 'emms
   :type 'hook)
-
-(defcustom emms-player-next-function 'emms-next-noerror
-  "*A function run when EMMS thinks the next song should be played."
-  :group 'emms
-  :type 'function
-  :options '(emms-next-noerror
-	     emms-random))
 
 (defcustom emms-player-paused-hook nil
   "*Hook run when a player is paused or resumed.
@@ -579,11 +584,9 @@ This uses `emms-playlist-uniq-function'."
   "Toggle whether emms plays the tracks randomly or sequentially.
 See `emms-random-playlist'."
   (interactive)
-  (setq emms-random-playlist (not emms-random-playlist))
+  (customize-set-variable 'emms-random-playlist (not emms-random-playlist))
   (if emms-random-playlist
-      (progn (setq emms-player-next-function #'emms-random)
-	     (message "Will play the tracks randomly."))
-    (setq emms-player-next-function #'emms-next-noerror)
+	  (message "Will play the tracks randomly.")
     (message "Will play the tracks sequentially.")))
 
 (defun emms-toggle-repeat-playlist ()
