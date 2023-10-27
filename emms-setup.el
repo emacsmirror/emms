@@ -65,6 +65,14 @@
     (emms-player-vlc     . "vlc"))
   "Association list of players and their binaries.")
 
+(defvar emms-setup-discover-info-alist
+  '((emms-info-exiftool . "exiftool")
+    (emms-info-metaflac . "metaflac")
+    (emms-info-mp3info  . "mp3info")
+    (emms-info-ogginfo  . "ogginfo")
+    (emms-info-opusinfo . "opusinfo"))
+  "Association list of info-functions and their binaries.")
+
 ;;;###autoload
 (defun emms-minimalistic ()
   "An Emms setup script.
@@ -160,7 +168,7 @@ the stable features which come with the Emms distribution."
 ;;; ------------------------------------------------------------------
 ;;; Player discovery
 ;;; ------------------------------------------------------------------
-(defun emms-setup-discover-player-binary (bin-str)
+(defun emms-setup-discover-binary (bin-str)
   "Find if BIN-STR can be executed in the current environment."
   (when (not (eq system-type 'gnu/linux))
     (error "Player discovery only supported on GNU/Linux."))
@@ -173,7 +181,14 @@ the stable features which come with the Emms distribution."
   "Find if PLAYER has an excecutable in the current environment."
   (let ((bin-str (alist-get player emms-setup-discover-player-alist)))
     (if bin-str
-	(emms-setup-discover-player-binary bin-str)
+	(emms-setup-discover-binary bin-str)
+      nil)))
+
+(defun emms-setup-discover-info-has-binary-p (info-function)
+  "Find if INFO-FUNCTION has an excecutable in the current environment."
+  (let ((bin-str (alist-get info-function emms-setup-discover-info-alist)))
+    (if bin-str
+	(emms-setup-discover-binary bin-str)
       nil)))
 
 (defun emms-setup-discover-players (arg)
@@ -191,7 +206,7 @@ first?"
       (let ((player (car players)))
 	(when (emms-setup-discover-player-has-binary-p player)
           (when (y-or-n-p
-                 (format "Player %s is installed on your system, add it to the Emms player list?"
+                 (format "Player \"%s\" is installed on your system, add it to the Emms player list?"
                          player))
             (add-to-list 'emms-player-list player))))
       (setq players (cdr players))))
@@ -200,6 +215,49 @@ first?"
      (format "(setq emms-player-list '%s)" emms-player-list)))
   (message "emms-player-list is now set to: %s" emms-player-list))
 
+(defun emms-setup-discover-info (arg)
+  "Interactively add info-functions to `emms-info-functions'.
+
+With prefix, also insert the configuration at point."
+  (interactive "P")
+  (let (native-p)
+    (when (and emms-info-functions
+               (y-or-n-p (format "`emms-info-functions' is already set to %s, do you want to empty it
+first?"
+				 emms-info-functions)))
+      (setq emms-info-functions nil))
+    (when (y-or-n-p
+	   (format "Install the built-in `emms-info-native' info function (recommended)?"))
+      (setq native-p t))
+    (mapc
+     #'(lambda (info-function)
+	 (when (and (emms-setup-discover-info-has-binary-p info-function)
+		    (y-or-n-p
+		     (format "Meta-info reader \"%s\" is installed on your system, add it to the info-function list?"
+			     (alist-get info-function emms-setup-discover-info-alist))))
+	   (add-to-list 'emms-info-functions info-function)))
+     (mapcar
+      #'(lambda (e)
+	  (car e))
+      emms-setup-discover-info-alist))
+    (when native-p
+      (setq emms-info-functions
+	    (cons 'emms-info-native emms-info-functions))))
+  (when arg
+    (insert
+     (format "(setq emms-info-functions '%s)" emms-info-functions)))
+  (message "emms-info-functions is now set to: %s"
+	   emms-info-functions))
+
+(defun emms-setup-discover ()
+  "Discover and output players and info functions.
+
+Scan for media players and meta-data readers on the user's
+machine and print out a setup."
+  (interactive)
+  (emms-setup-discover-players t)
+  (newline)
+  (emms-setup-discover-info t))
 
 
 (provide 'emms-setup)
