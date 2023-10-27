@@ -176,11 +176,14 @@ the stable features which come with the Emms distribution."
 	(emms-setup-discover-player-binary bin-str)
       nil)))
 
-(defun emms-setup-discover-players ()
-  "Interactively add players to `emms-player-list'."
-  (interactive)
+(defun emms-setup-discover-players (arg)
+  "Interactively add players to `emms-player-list'.
+
+With a prefix, also insert the configuration at point."
+  (interactive "P")
   (when (and emms-player-list
-             (y-or-n-p (format "emms-player-list is already set to %s, do you want to empty it first?"
+             (y-or-n-p (format "`emms-player-list' is already set to %s, do you want to empty it
+first?"
 			       emms-player-list)))
     (setq emms-player-list nil))
   (let ((players (copy-tree emms-setup-default-player-list)))
@@ -192,6 +195,9 @@ the stable features which come with the Emms distribution."
                          player))
             (add-to-list 'emms-player-list player))))
       (setq players (cdr players))))
+  (when arg
+    (insert
+     (format "(setq emms-player-list '%s)" emms-player-list)))
   (message "emms-player-list is now set to: %s" emms-player-list))
 
 
