@@ -29,32 +29,7 @@
 
 (require 'bindat)
 
-(defconst emms-info-native-vorbis--max-comments 1024
-  "Maximum number of Vorbis comment fields in a stream.
-Technically a single Vorbis stream may have up to 2^32 comments,
-but in practice processing must be constrained to prevent memory
-exhaustion in case of garbled or malicious inputs.
-
-This limit is used with Opus and FLAC streams as well, since
-their comments have almost the same format as Vorbis.")
-
-(defconst emms-info-native-vorbis--max-comment-size (* 64 1024)
-  "Maximum length for a single Vorbis comment field.
-Technically a single Vorbis comment may have a length up to 2^32
-bytes, but in practice processing must be constrained to prevent
-memory exhaustion in case of garbled or malicious inputs.
-
-This limit is used with Opus and FLAC streams as well, since
-their comments have almost the same format as Vorbis.")
-
-(defconst emms-info-native-vorbis--max-vendor-length 1024
-  "Maximum length of Vorbis vendor string.
-Technically a vendor string can be up to 2^32 bytes long, but in
-practice processing must be constrained to prevent memory
-exhaustion in case of garbled or malicious inputs.
-
-This limit is used with Opus and FLAC streams as well, since
-their comments have almost the same format as Vorbis.")
+(defvar bindat-raw)
 
 (defconst emms-info-native-vorbis--accepted-fields
   '("album"
@@ -136,12 +111,12 @@ their comments have almost the same format as Vorbis.")
   (if (eval-when-compile (fboundp 'bindat-type))
       (bindat-type
         (length uintr 32)
-        (_ unit (when (> length emms-info-native-vorbis--max-comment-size)
+        (_ unit (when (> length (length bindat-raw))
                   (error "Vorbis comment length %s is too long"
                          length)))
         (user-comment str length))
     '((length u32r)
-      (eval (when (> last emms-info-native-vorbis--max-comment-size)
+      (eval (when (> last (length bindat-raw))
               (error "Vorbis comment length %s is too long" last)))
       (user-comment str (length))))
   "Vorbis comment field specification.")
@@ -159,12 +134,12 @@ their comments have almost the same format as Vorbis.")
                          emms-info-native-vorbis--header-magic-pattern
                          vorbis)))
         (vendor-length uintr 32)
-        (_ unit (when (> vendor-length emms-info-native-vorbis--max-vendor-length)
+        (_ unit (when (> vendor-length (length bindat-raw))
                   (error "Vorbis vendor length %s is too long"
                          vendor-length)))
         (vendor-string str vendor-length)
         (user-comments-list-length uintr 32)
-        (_ unit (when (> user-comments-list-length emms-info-native-vorbis--max-comments)
+        (_ unit (when (> user-comments-list-length (length bindat-raw))
                   (error "Vorbis user comment list length %s is too long"
                          user-comments-list-length)))
         (user-comments repeat user-comments-list-length
@@ -183,11 +158,11 @@ their comments have almost the same format as Vorbis.")
                      emms-info-native-vorbis--header-magic-pattern
                      last)))
       (vendor-length u32r)
-      (eval (when (> last emms-info-native-vorbis--max-vendor-length)
+      (eval (when (> last (length bindat-raw))
               (error "Vorbis vendor length %s is too long" last)))
       (vendor-string str (vendor-length))
       (user-comments-list-length u32r)
-      (eval (when (> last emms-info-native-vorbis--max-comments)
+      (eval (when (> last (length bindat-raw))
               (error "Vorbis user comment list length %s is too long"
                      last)))
       (user-comments repeat

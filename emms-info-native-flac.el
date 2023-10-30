@@ -34,7 +34,9 @@
 (require 'emms-info-native-vorbis)
 (require 'bindat)
 
-(defconst emms-info-native-flac--max-peek-size (* 2048 1024)
+(defvar bindat-raw)
+
+(defconst emms-info-native-flac--max-peek-size (* 16 1024 1024)
   "Maximum buffer size for metadata decoding.
 Functions in `emms-info-native-flac' read certain amounts of data
 into a temporary buffer while decoding metadata.  This variable
@@ -82,22 +84,22 @@ exhaustion in case of garbled or malicious inputs.")
   (if (eval-when-compile (fboundp 'bindat-type))
       (bindat-type
         (vendor-length uintr 32)
-        (_ unit (when (> vendor-length emms-info-native-vorbis--max-vendor-length)
+        (_ unit (when (> vendor-length (length bindat-raw))
                   (error "FLAC vendor length %s is too long"
                          vendor-length)))
         (vendor-string str vendor-length)
         (user-comments-list-length uintr 32)
-        (_ unit (when (> user-comments-list-length emms-info-native-vorbis--max-comments)
+        (_ unit (when (> user-comments-list-length (length bindat-raw))
                   (error "FLAC user comment list length %s is too long"
                          user-comments-list-length)))
         (user-comments repeat user-comments-list-length
                        type emms-info-native-vorbis--comment-field-bindat-spec))
     '((vendor-length u32r)
-      (eval (when (> last emms-info-native-vorbis--max-vendor-length)
+      (eval (when (> last (length bindat-raw))
               (error "FLAC vendor length %s is too long" last)))
       (vendor-string str (vendor-length))
       (user-comments-list-length u32r)
-      (eval (when (> last emms-info-native-vorbis--max-comments)
+      (eval (when (> last (length bindat-raw))
               (error "FLAC user comment list length %s is too long"
                      last)))
       (user-comments repeat

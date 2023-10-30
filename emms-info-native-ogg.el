@@ -47,13 +47,13 @@
 (defconst emms-info-native-ogg--page-size 65307
   "Maximum size for a single Ogg container page.")
 
-(defconst emms-info-native-ogg--max-peek-size (* 2048 1024)
+(defconst emms-info-native-ogg--max-peek-size (* 16 1024 1024)
   "Maximum buffer size for metadata decoding.
-Functions in `emms-info-native-ogg' read certain amounts of data into a
-temporary buffer while decoding metadata.  This variable controls
-the maximum size of that buffer: if more than
-`emms-info-native-ogg--max-peek-size' bytes are needed, an error is
-signaled.
+Functions in `emms-info-native-ogg' read certain amounts of data
+into a temporary buffer while decoding metadata.  This variable
+controls the maximum size of that buffer: if more than
+`emms-info-native-ogg--max-peek-size' bytes are needed, an error
+is signaled.
 
 Technically metadata blocks can have almost arbitrary lengths,
 but in practice processing must be constrained to prevent memory

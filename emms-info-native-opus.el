@@ -31,6 +31,8 @@
 (require 'emms-info-native-vorbis)
 (require 'bindat)
 
+(defvar bindat-raw)
+
 (defvar emms-info-native-opus--channel-count 0
   "Last decoded Opus channel count.")
 
@@ -101,13 +103,12 @@
                          emms-info-native-opus--tags-magic-pattern
                          opus-tags)))
         (vendor-length uintr 32)
-        (_ unit (when (> vendor-length emms-info-native-vorbis--max-vendor-length)
+        (_ unit (when (> vendor-length (length bindat-raw))
                   (error "Opus vendor length %s is too long"
                          vendor-length)))
         (vendor-string str vendor-length)
         (user-comments-list-length uintr 32)
-        (_ unit (when (> user-comments-list-length
-                         emms-info-native-vorbis--max-comments)
+        (_ unit (when (> user-comments-list-length (length bindat-raw))
                   (error "Opus user comment list length %s is too long"
                          user-comments-list-length)))
         (user-comments repeat user-comments-list-length
@@ -118,11 +119,11 @@
                      emms-info-native-opus--tags-magic-pattern
                      last)))
       (vendor-length u32r)
-      (eval (when (> last emms-info-native-vorbis--max-vendor-length)
+      (eval (when (> last (length bindat-raw))
               (error "Opus vendor length %s is too long" last)))
       (vendor-string str (vendor-length))
       (user-comments-list-length u32r)
-      (eval (when (> last emms-info-native-vorbis--max-comments)
+      (eval (when (> last (length bindat-raw))
               (error "Opus user comment list length %s is too long"
                      last)))
       (user-comments repeat
