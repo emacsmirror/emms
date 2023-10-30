@@ -42,7 +42,7 @@
 
 (require 'emms)
 (require 'bindat)
-(require 'subr-x)
+(eval-when-compile (require 'subr-x))
 
 
 ;;; ID3 code
