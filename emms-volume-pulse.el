@@ -43,6 +43,7 @@
 ;;; Code:
 
 (require 'cl-lib)
+(require 'subr-x)
 
 ;; TODO: it would be great if custom could have
 ;; choices based on pactl list short sinks | cut -f1-2
