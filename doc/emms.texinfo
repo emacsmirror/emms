@@ -197,6 +197,11 @@ be as simple as three lines. For example:
 
 The function @code{emms-all} loads all of the stable features in Emms.
 
+Emms can automatically generate that `setq' statement for you based on
+which players and metadata readers you have installed on your
+system. Just invoke @code{emms-setup-discover} and answer a few
+questions.
+
 The variable @var{emms-player-list} is a list of players that Emms
 should call to play your media. In this example we assume that you
 have VLC installed on your system. But if you use mpv or mplayer
