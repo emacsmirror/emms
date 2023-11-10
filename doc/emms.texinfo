@@ -1185,7 +1185,7 @@ Emacs initialization file:
 
 @lisp
 (require 'emms-info-metaflac)
-(add-to-list 'emms-info-functions 'emms-info-libtag)
+(add-to-list 'emms-info-functions 'emms-info-metaflac)
 @end lisp
 
 @subsubheading MP3info
