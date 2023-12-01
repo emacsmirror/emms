@@ -1,3 +1,11 @@
+New in 17
+
+    * Automatic detection of existing players via `emms-setup-discover'.
+    * Autodetect GNU find.
+    * Native decoding of playing time for `emms-info-native'.
+    * Add info support for SNES SPC files.
+
+
 New in 16
 
     * emms-info-ogginfo: Avoid writing ogginfo tags over 1k.
