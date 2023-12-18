@@ -198,6 +198,7 @@
       (with-current-buffer buf
 	(emms-playlist-mode)
 	(setq emms-playlist-buffer-p t)))
+    (emms-metaplaylist-mode-go)
     (emms-metaplaylist-mode-update)))
 
 (defun emms-metaplaylist-mode-set-active ()
