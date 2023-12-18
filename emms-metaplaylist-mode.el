@@ -1,6 +1,6 @@
 ;;; emms-metaplaylist-mode.el --- A major mode for lists of Emms playlists  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2006-2021  Free Software Foundation, Inc.
+;; Copyright (C) 2006-2021, 2023  Free Software Foundation, Inc.
 
 ;; Author: Yoni Rabkin <yrk@gnu.org>
 
@@ -29,14 +29,13 @@
 ;; taken there.
 
 ;;; Code:
-
 (require 'emms)
 (require 'emms-playlist-mode)
+
 
 ;;; --------------------------------------------------------
 ;;; Variables, customisation and faces
 ;;; --------------------------------------------------------
-
 (defgroup emms-metaplaylist-mode nil
   "*The Emacs Multimedia System meta-playlist mode."
   :prefix "emms-metaplaylist-mode-"
@@ -70,10 +69,10 @@
     (t (:background "red3")))
   "Face for the current buffer name in the playlists buffer.")
 
+
 ;;; --------------------------------------------------------
 ;;; Keymap
 ;;; --------------------------------------------------------
-
 (defvar emms-metaplaylist-mode-map
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map text-mode-map)
@@ -90,10 +89,10 @@
     map)
   "Keymap for `emms-metaplaylist-mode'.")
 
+
 ;;; --------------------------------------------------------
 ;;; Metaplaylist
 ;;; --------------------------------------------------------
-
 (defun emms-metaplaylist-mode-goto-current ()
   "Switch to the buffer at point."
   (interactive)
@@ -188,7 +187,6 @@
 ;;; --------------------------------------------------------
 ;;; Playlist Management
 ;;; --------------------------------------------------------
-
 (defun emms-metaplaylist-mode-new-buffer (buffer-name)
   "Creates a new buffer playlist buffer BUFFER-NAME."
   (interactive "sBuffer Name: ")
@@ -212,7 +210,6 @@
 ;;; --------------------------------------------------------
 ;;; Mode entry
 ;;; --------------------------------------------------------
-
 (defun emms-metaplaylist-mode-go ()
   "Single entry point to the metaplaylist interface."
   (interactive)
@@ -238,6 +235,8 @@
 
   (run-hooks 'emms-metaplaylist-mode-hooks))
 
+
 (provide 'emms-metaplaylist-mode)
+
 
 ;;; emms-metaplaylist-mode.el ends here
