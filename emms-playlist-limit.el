@@ -109,6 +109,7 @@ the current playlist." attribute attribute)
 (define-emms-playlist-limit info-album)
 (define-emms-playlist-limit info-year)
 (define-emms-playlist-limit info-genre)
+(define-emms-playlist-limit info-note)
 (define-emms-playlist-limit name)
 (define-emms-playlist-limit description)
 
@@ -138,6 +139,7 @@ If this playlist is current, make the playlist we switch to current."
 (define-key emms-playlist-mode-map (kbd "/ b") #'emms-playlist-limit-to-info-album)
 (define-key emms-playlist-mode-map (kbd "/ y") #'emms-playlist-limit-to-info-year)
 (define-key emms-playlist-mode-map (kbd "/ g") #'emms-playlist-limit-to-info-genre)
+(define-key emms-playlist-mode-map (kbd "/ N") #'emms-playlist-limit-to-info-note)
 (define-key emms-playlist-mode-map (kbd "/ d") #'emms-playlist-limit-to-description)
 (define-key emms-playlist-mode-map (kbd "/ /") #'emms-playlist-limit-to-all)
 
