@@ -28,6 +28,13 @@
 
 ;;; Code:
 
+(eval-when-compile
+  (require 'subr-x)
+
+  (declare-function sqlite-next "sqlite.c")
+  (declare-function sqlite-open "sqlite.c")
+  (declare-function sqlite-select "sqlite.c"))
+
 (require 'emms)
 
 (defgroup emms-source-beets nil
