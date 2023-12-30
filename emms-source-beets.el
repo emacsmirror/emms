@@ -61,7 +61,7 @@ for the column."
                   :validate (lambda (w)
                               (unless (member (widget-value w)
                                               emms-source-beets--items-columns)
-                                (widget-put w :error"Invalid column to sort by")
+                                (widget-put w :error "Invalid column to sort by")
                                 w)))
                  (boolean :tag "Descending"))))
 
