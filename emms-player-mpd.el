@@ -277,6 +277,10 @@ If your EMMS playlist contains stored playlists, set this to nil."
   "Regexp that matches the valid status strings that MusicPD can
 return at the end of a request.")
 
+(defun emms-player-mpd-remote-filenamep (filename)
+  "Return t if FILENAME is a remote file."
+  (string-match "\\`http://" filename))
+
 (defun emms-player-mpd-sentinel (proc event)
   "The process sentinel for MusicPD."
   (let ((status (process-status proc)))
@@ -347,8 +351,8 @@ When a reply comes, call FN with CLOSURE and the result."
 
 This usually means removing a prefix."
   (if (or (not emms-player-mpd-music-directory)
-	  (not (eq (aref file 0) ?/))
-	  (string-match "\\`http://" file))
+          (not (eq (aref file 0) ?/))
+          (emms-player-mpd-remote-filenamep file))
       file
     (file-relative-name file emms-player-mpd-music-directory)))
 
@@ -357,8 +361,8 @@ This usually means removing a prefix."
 
 This usually means adding a prefix."
   (if (or (not emms-player-mpd-music-directory)
-	  (eq (aref file 0) ?/)
-	  (string-match "\\`http://" file))
+          (eq (aref file 0) ?/)
+          (emms-player-mpd-remote-filenamep file))
       file
     (expand-file-name file emms-player-mpd-music-directory)))
 
@@ -444,7 +448,7 @@ The list will be in reverse order."
 	(let ((file (cdr (assoc "file" song-info))))
 	  (when file
 	    (setq file (emms-player-mpd-get-emms-filename file))
-	    (let* ((type (if (string-match "\\`http://" file)
+	    (let* ((type (if (emms-player-mpd-remote-filenamep file)
 			     'url
 			   'file))
 		   (track (emms-track type file)))
@@ -1120,7 +1124,7 @@ positive or negative."
 	(when file
 	  (let ((track (emms-dictionary '*track*))
 		track-desc)
-	    (if (string-match "\\`http://" file)
+	    (if (emms-player-mpd-remote-filenamep file)
 		(emms-track-set track 'type 'url)
 	      (emms-track-set track 'type 'file))
 	    (emms-track-set track 'name file)
@@ -1201,7 +1205,7 @@ This is a useful addition to `emms-info-functions'."
   (if info
       (emms-info-mpd-process track info)
     (when (and (emms-track-file-p track)
-	       (not (string-match "\\`http://" (emms-track-name track))))
+	       (not (emms-player-mpd-remote-filenamep (emms-track-name track))))
       (let ((file (emms-player-mpd-get-mpd-filename (emms-track-name track))))
 	(when (or emms-player-mpd-music-directory
 		  (and file
