@@ -48,28 +48,24 @@
   "Database containing beets library information."
   :type '(file :must-match t))
 
+(defconst emms-source-beets--items-columns
+  '("title" "artist" "artist_sort" "album" "albumartist"
+    "albumartist_sort" "genre" "composer" "composer_sort" "year" "track"
+    "tracktotal" "disc" "disctotal" "label" "original_year" "length")
+  "Columns to process in the \"items\" table.")
+
 (defcustom emms-source-beets-sort-columns
   '(("albumartist_sort") ("album") ("track"))
   "List of columns to sort by when adding tracks from a beets database.
 Each \"column\" should be cons cell whose car is the column name (a
 string), and the cdr, if non-nil, indicates a descending sort order
 for the column."
-  :type '( repeat
+  :type `( repeat
            (cons :tag "Sort"
-                 (string
-                  :tag "Column"
-                  :validate (lambda (w)
-                              (unless (member (widget-value w)
-                                              emms-source-beets--items-columns)
-                                (widget-put w :error "Invalid column to sort by")
-                                w)))
+                 (radio :tag "Column"
+                        ,@(mapcar (lambda (col) `(const ,col))
+                                  emms-source-beets--items-columns))
                  (boolean :tag "Descending"))))
-
-(defconst emms-source-beets--items-columns
-  '("title" "artist" "artist_sort" "album" "albumartist"
-    "albumartist_sort" "genre" "composer" "composer_sort" "year" "track"
-    "tracktotal" "disc" "disctotal" "label" "original_year" "length")
-  "Columns to process in the \"items\" table.")
 
 ;;;###autoload (autoload 'emms-play-beets "emms-source-beets" nil t)
 ;;;###autoload (autoload 'emms-add-beets "emms-source-beets" nil t)
