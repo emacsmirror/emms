@@ -363,14 +363,11 @@ With a prefix arg, open the `dired' buffer in OTHER-WINDOW."
   (emms-with-inhibit-read-only-t
    (let ((track (emms-playlist-track-at)))
      (when track
-       (let ((track-region (emms-property-region (point)
-						 'emms-track)))
-	 (ignore track-region)
-	 (when (and emms-player-playing-p
-		    (emms-playlist-selected-track-at-p))
-	   (emms-stop)
-	   (delete-overlay emms-playlist-mode-selected-overlay)
-	   (setq emms-playlist-mode-selected-overlay nil))))
+       (when (and emms-player-playing-p
+		  (emms-playlist-selected-track-at-p))
+	 (emms-stop)
+	 (delete-overlay emms-playlist-mode-selected-overlay)
+	 (setq emms-playlist-mode-selected-overlay nil)))
      (let ((kill-whole-line emms-playlist-mode-kill-whole-line-p))
        (goto-char (line-beginning-position))
        (kill-line)))))
