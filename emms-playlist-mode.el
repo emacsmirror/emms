@@ -496,8 +496,6 @@ When NO-NEWLINE is non-nil, do not insert a newline after the track."
    (insert (emms-propertize (emms-track-force-description track)
                             'emms-track track
                             'face 'emms-playlist-track-face))
-   (when (emms-playlist-selected-track-at-p)
-     (emms-playlist-mode-overlay-selected))
    (unless no-newline
      (insert "\n"))))
 
