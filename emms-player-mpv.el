@@ -212,35 +212,35 @@ Should be fine with both mpv and Emacs, and probably never reached anyway.")
   "Internal flag to track when stop command starts/finishes before next loadfile.
 Set to either nil, t or the playback start function to call on end-file event
 after stop command.
-This is a workaround for mpv-0.30+ behavior, where \\='stop + loadfile\\=' only
-runs \\='stop\\='.")
+This is a workaround for mpv-0.30+ behavior, where \"stop + loadfile\" only
+runs \"stop\".")
 
 
 (defvar emms-player-mpv-event-connect-hook nil
   "Normal hook run right after establishing new JSON IPC connection to mpv.
-Runs before `emms-player-mpv-ipc-connect-command\\=', if any.
-Best place to send any `observe_property\\=', `request_log_messages\\=',
-`enable_event\\=' commands.
-Use `emms-player-mpv-ipc-id-get\\=' to get unique id values for these.
-See also `emms-player-mpv-event-functions\\='.")
+Runs before `emms-player-mpv-ipc-connect-command', if any.
+Best place to send any `observe_property', `request_log_messages',
+`enable_event' commands.
+Use `emms-player-mpv-ipc-id-get' to get unique id values for these.
+See also `emms-player-mpv-event-functions'.")
 
 (defvar emms-player-mpv-event-functions nil
   "List of functions to call for each event emitted from JSON IPC.
 One argument is passed to each function - JSON line,
-as sent by mpv and decoded by `json-read-from-string\\='.
-See also `emms-player-mpv-event-connect-hook\\='.")
+as sent by mpv and decoded by `json-read-from-string'.
+See also `emms-player-mpv-event-connect-hook'.")
 
 
 (defvar emms-player-mpv-stopped nil
   "Non-nil if playback was stopped by call from emms.
-Similar to `emms-player-stopped-p\\=', but set for future async events,
+Similar to `emms-player-stopped-p', but set for future async events,
 to indicate that playback should stop instead of switching to next track.")
 
 (defvar emms-player-mpv-idle-timer (timer-create)
-  "Timer to delay `emms-player-stopped\\=' when mpv unexpectedly goes idle.")
+  "Timer to delay `emms-player-stopped' when mpv unexpectedly goes idle.")
 
 (defvar emms-player-mpv-idle-delay 0.5
-  "Delay before issuing `emms-player-stopped\\=' when mpv unexpectedly goes idle.")
+  "Delay before issuing `emms-player-stopped' when mpv unexpectedly goes idle.")
 
 
 (make-obsolete 'emms-player-mpv-ipc-method nil "Emms 18")
@@ -255,10 +255,10 @@ Haven't been needed since mpv 0.17.0 (2016-04-11), removed in Emms 18+ (2024)."
 
 (defvar emms-player-mpv-debug nil
   "Enable to print sent/received JSON lines and process
-start/stop events to *Messages* buffer using `emms-player-mpv-debug-msg\\='.")
+start/stop events to *Messages* buffer using `emms-player-mpv-debug-msg'.")
 
 (defvar emms-player-mpv-debug-ts-offset nil
-  "Timestamp offset for `emms-player-mpv-debug-msg\\='.
+  "Timestamp offset for `emms-player-mpv-debug-msg'.
 Set on first use, with intent to both shorten and obfuscate time in logs.")
 
 (defun emms-player-mpv-debug-trim (s)
@@ -267,7 +267,7 @@ Set on first use, with intent to both shorten and obfuscate time in logs.")
     s))
 
 (defun emms-player-mpv-debug-msg (tpl-or-msg &rest tpl-values)
-  "Print debug message to *Messages* if `emms-player-mpv-debug\\=' is non-nil.
+  "Print debug message to *Messages* if `emms-player-mpv-debug' is non-nil.
 Message is only formatted if TPL-VALUES is non-empty.
 Strips whitespace from start/end of TPL-OR-MSG and strings in TPL-VALUES."
   (when emms-player-mpv-debug
@@ -287,14 +287,14 @@ Strips whitespace from start/end of TPL-OR-MSG and strings in TPL-VALUES."
 ;; ----- mpv process
 
 (defun emms-player-mpv-proc-playing-p (&optional proc)
-  "Return whether playback in PROC or `emms-player-mpv-proc\\=' is started,
-which is distinct from \\='start-command sent\\=' and \\='process is running\\=' states.
-Used to signal emms via `emms-player-started\\=' and `emms-player-stopped\\=' calls."
+  "Return whether playback in PROC or `emms-player-mpv-proc' is started,
+which is distinct from \"start-command sent\" and \"process is running\" states.
+Used to signal emms via `emms-player-started' and `emms-player-stopped' calls."
   (let ((proc (or proc emms-player-mpv-proc)))
     (and proc (process-get proc 'mpv-playing))))
 
 (defun emms-player-mpv-proc-playing (state &optional proc)
-  "Set process mpv-playing state flag for `emms-player-mpv-proc-playing-p\\='."
+  "Set process mpv-playing state flag for `emms-player-mpv-proc-playing-p'."
   (let ((proc (or proc emms-player-mpv-proc)))
     (when proc (process-put proc 'mpv-playing state))))
 
@@ -479,16 +479,16 @@ follow-up command should be stored to
 (defun emms-player-mpv-ipc-req-send (cmd &optional handler proc)
   "Send JSON IPC request and assign HANDLER to response for it, if any.
 
-CMD value is encoded via `json-encode\\='.
+CMD value is encoded via `json-encode'.
 
 HANDLER func will be called with decoded response JSON
 as (handler data err), where ERR will be either nil on
-\"success\", \\='connection-error or whatever is in JSON.  If
-HANDLER is nil, default `emms-player-mpv-ipc-req-error-printer\\='
+\"success\", \"connection-error\" or whatever is in JSON.  If
+HANDLER is nil, default `emms-player-mpv-ipc-req-error-printer'
 will be used to at least log errors.  Multiple commands can be
 batched in one list as \\='(batch (cmd1 . handler1) ...), in which
 case common HANDLER argument is ignored.  PROC can be specified
-to avoid `emms-player-mpv-ipc\\=' call (e.g. from sentinel/filter
+to avoid `emms-player-mpv-ipc' call (e.g. from sentinel/filter
 funcs)."
   (dolist
       (cmd-and-handler
@@ -688,7 +688,7 @@ track duration from mpv."
 (defun emms-player-mpv-cmd (cmd &optional handler)
   "Send mpv command to process/connection if both are running,
 or otherwise schedule start/connect and set
-`emms-player-mpv-ipc-connect-command\\=' for `emms-player-mpv-ipc-sentinel\\='.
+`emms-player-mpv-ipc-connect-command' for `emms-player-mpv-ipc-sentinel'.
 Multiple commands can be batched in one list as \\='(batch (cmd1 . handler1) ...),
 in which case common HANDLER argument is ignored."
   (setq emms-player-mpv-ipc-connect-command nil)
@@ -698,8 +698,8 @@ in which case common HANDLER argument is ignored."
       (setq emms-player-mpv-ipc-connect-command cmd))))
 
 (defmacro emms-player-mpv-cmd-prog (cmd &rest handler-body)
-  "Obsolete macro around `emms-player-mpv-cmd\\=' that creates handler
-callback (see `emms-player-mpv-ipc-req-send\\=') from HANDLER-BODY
+  "Obsolete macro around `emms-player-mpv-cmd' that creates handler
+callback (see `emms-player-mpv-ipc-req-send') from HANDLER-BODY
 forms, which have following bindings:
 
 - mpv-cmd for CMD.
