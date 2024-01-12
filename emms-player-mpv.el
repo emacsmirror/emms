@@ -1,6 +1,6 @@
 ;;; emms-player-mpv.el --- mpv support for EMMS  -*- lexical-binding: t; -*-
 ;;
-;; Copyright (C) 2018-2022 Free Software Foundation, Inc.
+;; Copyright (C) 2018-2024 Free Software Foundation, Inc.
 
 ;; Authors: Mike Kazantsev <mk.fraggod@gmail.com>
 
@@ -25,15 +25,8 @@
 ;;
 ;; This code provides EMMS backend for using mpv player.
 ;;
-;; It works in one of two modes, depending on `emms-player-mpv-ipc-method'
-;; customizable value or installed mpv version:
-;;
-;;  - Using long-running mpv instance and JSON IPC interface to switch tracks
-;;    and receive player feedback/metadata - for mpv 0.7.0 2014-10-16 and later.
-;;
-;;  - Starting new mpv instance for each track, using its exit
-;;    as "next track" signal and --input-file interface for pause/seek.
-;;    Used as a fallback for any older mpv versions (supported in all of them).
+;; It works using long-running mpv instance and its JSON IPC interface
+;; to switch tracks and receive player feedback/metadata.
 ;;
 ;; In default configuration, mpv will read its configuration files
 ;; (see its manpage for locations), and can display window for
@@ -107,25 +100,10 @@ Adding nil as an element to this list will discard emacs
 in the list."
   :type '(repeat (choice string (const :tag "Start from blank environment" nil))))
 
-(defcustom emms-player-mpv-ipc-method nil
-  "Switch for which IPC method to use with mpv.
-Possible symbols: detect, ipc-server, unix-socket, file.
-Defaults to nil value, which will cause `emms-player-mpv-ipc-detect\\='
-to pick one based on mpv --version output.
-Using JSON-IPC variants (ipc-server and unix-socket) enables
-support for various feedback and metadata options from mpv.
-Use of \\='file value here is deprecated and will be removed in the future."
-  :type '(choice
-          (const :tag "Auto-detect from mpv --version" nil)
-          (const :tag "Use --input-ipc-server JSON IPC (v0.17.0 2016-04-11)" ipc-server)
-          (const :tag "Use --input-unix-socket JSON IPC (v0.7.0 2014-10-16)" unix-socket)
-          (const :tag "Use --input-file FIFO (removed in v0.33.0 2020-11-22)" file)))
-
 (defcustom emms-player-mpv-ipc-socket
   (concat (file-name-as-directory emms-directory)
           "mpv-ipc.sock")
-  "Unix IPC socket or FIFO to use with mpv --input-* options,
-depending on `emms-player-mpv-ipc-method' value and/or mpv version."
+  "Unix socket path to use with mpv --input-ipc-socket= option."
   :type 'file)
 
 (defvar emms-player-mpv-ipc-proc nil) ; to avoid warnings while keeping useful defs at the top
@@ -179,12 +157,12 @@ example.  Uses `emms-player-mpv-event-connect-hook' and
                       value)))
 
 (defcustom emms-player-mpv-use-playlist-option nil
-	"Use --playlist option and loadlist mpv command for playlist files and URLs.
+  "Use --playlist option and loadlist mpv command for playlist files and URLs.
 
 Use of this option is explicitly discouraged by mpv documentation for security
 reasons, and should be unnecessary in most common cases with modern mpv.
 Make sure to check mpv manpage for --playlist option before enabling this."
-	:type 'boolean)
+  :type 'boolean)
 
 
 (defvar emms-player-mpv-proc nil
@@ -200,7 +178,7 @@ if it refuses to exit cleanly on `emms-player-mpv-proc-stop'.")
 instance.")
 
 (defvar emms-player-mpv-ipc-buffer " *emms-player-mpv-ipc*"
-  "Buffer to associate with `emms-player-mpv-ipc-proc' socket/pipe process.")
+	"Buffer to associate with `emms-player-mpv-ipc-proc' socket process.")
 
 (defvar emms-player-mpv-ipc-connect-timer nil
   "Timer for connection attempts to JSON IPC unix socket.")
@@ -273,6 +251,13 @@ Emacs 26.1 fails to indicate missing socket file error for unix socket
 network processes that were started with :nowait t, so blocking connections
 are used there instead.")
 
+(make-obsolete 'emms-player-mpv-ipc-method nil "Emms 18")
+
+(defcustom emms-player-mpv-ipc-method nil
+  "Unused obsolete value. It was used for selecting older IPC methods.
+Haven't been needed since mpv 0.17.0 (2016-04-11), removed in Emms 18+ (2024)."
+  :type 'symbol)
+
 
 ;; ----- helpers
 
@@ -306,43 +291,6 @@ Strips whitespace from start/end of TPL-OR-MSG and strings in TPL-VALUES."
              (- ts emms-player-mpv-debug-ts-offset)
              tpl-values))))
 
-(defun emms-player-mpv-ipc-fifo-p ()
-  "Returns non-nil if --input-file fifo should be used.
-
-Runs `emms-player-mpv-ipc-detect\\=' to detect/set
-`emms-player-mpv-ipc-method\\=' if necessary."
-  (unless emms-player-mpv-ipc-method
-    (setq emms-player-mpv-ipc-method
-          (emms-player-mpv-ipc-detect emms-player-mpv-command-name)))
-  (eq emms-player-mpv-ipc-method 'file))
-
-(defun emms-player-mpv-ipc-detect (cmd)
-  "Run mpv --version and return symbol for best IPC method supported.
-CMD should be either name of mpv binary to use or full path to it.
-Return values correspond to `emms-player-mpv-ipc-method\\=' options.
-Error is signaled if mpv binary fails to run."
-  (with-temp-buffer
-    (let ((exit-code (call-process cmd nil '(t t)
-                                   nil "--version")))
-      (unless (zerop exit-code)
-        (insert (format "----- process exited with code %d -----" exit-code))
-        (error (format "Failed to run mpv binary [%s]:\n%s" cmd (buffer-string))))
-      (goto-char (point-min))
-      (pcase
-          (if (re-search-forward "^mpv\\s-+\\(\\([0-9]+\\.?\\)+\\)" nil t 1)
-              (mapconcat (lambda (n)
-                           (format "%03d" n))
-                         (seq-map 'string-to-number
-                                  (split-string (match-string-no-properties 1)
-                                                "\\." t))
-                         ".")
-            "000.000.000")
-        ((pred (string> "000.006.999"))
-         'file)
-        ((pred (string> "000.016.999"))
-         'unix-socket)
-        (_ 'ipc-server)))))
-
 
 ;; ----- mpv process
 
@@ -369,24 +317,6 @@ was already requested."
         (process-put proc sym-id id)
         id))))
 
-(defun emms-player-mpv-proc-init-fifo (path &optional mode)
-  "Create named pipe (fifo) socket for mpv --input-file PATH, if not exists
-already.
-
-Optional MODE should be 12-bit octal integer, e.g. #o600 (safe
-default).  Signals error if mkfifo exits with non-zero code."
-  (let ((attrs (file-attributes path)))
-    (when
-        (and attrs (not (string-prefix-p "p" (nth 8 attrs))))
-      (delete-file path)
-      (setq attrs nil))
-    (unless attrs
-      (unless
-          (zerop (call-process "mkfifo" nil nil nil
-                               (format "--mode=%o" (or mode #o600))
-                               path))
-        (error (format "Failed to run mkfifo for mpv --input-file path: %s" path))))))
-
 (defun emms-player-mpv-proc-sentinel (proc ev)
   (let
       ((status (process-status proc))
@@ -403,8 +333,6 @@ MEDIA-ARGS are used instead of --idle, if specified."
   (emms-player-mpv-proc-stop)
   (unless (file-directory-p (file-name-directory emms-player-mpv-ipc-socket))
     (make-directory (file-name-directory emms-player-mpv-ipc-socket)))
-  (when (emms-player-mpv-ipc-fifo-p)
-    (emms-player-mpv-proc-init-fifo emms-player-mpv-ipc-socket))
   (let*
       ((argv emms-player-mpv-parameters)
        (argv (append
@@ -412,8 +340,7 @@ MEDIA-ARGS are used instead of --idle, if specified."
               (if (functionp argv)
                   (funcall argv)
                 argv)
-              (list (format "--input-%s=%s"
-                            emms-player-mpv-ipc-method emms-player-mpv-ipc-socket))
+              (list (format "--input-ipc-server=%s" emms-player-mpv-ipc-socket))
               (or media-args '("--idle"))))
        (env emms-player-mpv-environment)
        (process-environment (append
@@ -423,8 +350,6 @@ MEDIA-ARGS are used instead of --idle, if specified."
     (setq emms-player-mpv-proc
           (make-process :name "emms-player-mpv"
                         :buffer nil :command argv :noquery t :sentinel #'emms-player-mpv-proc-sentinel))
-    (when (emms-player-mpv-ipc-fifo-p)
-      (emms-player-mpv-proc-playing t))
     (emms-player-mpv-debug-msg "proc[%s]: start %s" emms-player-mpv-proc argv)))
 
 (defun emms-player-mpv-proc-stop ()
@@ -448,7 +373,7 @@ MEDIA-ARGS are used instead of --idle, if specified."
     (setq emms-player-mpv-proc nil)))
 
 
-;; ----- IPC socket/fifo
+;; ----- IPC unix socket
 
 (defun emms-player-mpv-ipc-sentinel (proc ev)
   (emms-player-mpv-debug-msg "ipc[%s]: %s" proc ev)
@@ -518,37 +443,20 @@ Sets `emms-player-mpv-ipc-proc' value to resulting process on success."
     (run-at-time (car delays)
                  nil #'emms-player-mpv-ipc-connect (cdr delays))))
 
-(defun emms-player-mpv-ipc-connect-fifo ()
-  "Set `emms-player-mpv-ipc-proc' to process wrapper for
-writing to a named pipe (fifo) file/node or signal error."
-  (setq emms-player-mpv-ipc-proc
-        (start-process-shell-command "emms-player-mpv-input-file" nil
-                                     (format "cat > \"%s\"" (shell-quote-argument emms-player-mpv-ipc-socket))))
-  (set-process-query-on-exit-flag emms-player-mpv-ipc-proc nil)
-  (unless emms-player-mpv-ipc-proc (error (format
-                                           "Failed to start cat-pipe to fifo: %s" emms-player-mpv-ipc-socket)))
-  (when emms-player-mpv-ipc-connect-command
-    (let ((cmd emms-player-mpv-ipc-connect-command))
-      (setq emms-player-mpv-ipc-connect-command nil)
-      (emms-player-mpv-ipc-fifo-cmd cmd emms-player-mpv-ipc-proc))))
-
 (defun emms-player-mpv-ipc-init ()
   "Initialize new mpv ipc socket/file process and associated state."
   (emms-player-mpv-ipc-stop)
   (emms-player-mpv-debug-msg "ipc: init")
-  (if (emms-player-mpv-ipc-fifo-p)
-      (emms-player-mpv-ipc-connect-fifo)
-    (when emms-player-mpv-ipc-connect-timer (cancel-timer emms-player-mpv-ipc-connect-timer))
-    (with-current-buffer (get-buffer-create emms-player-mpv-ipc-buffer)
-      (erase-buffer))
-    (setq
-     emms-player-mpv-ipc-id 1
-     emms-player-mpv-ipc-req-table nil
-     emms-player-mpv-ipc-connect-timer nil
-     emms-player-mpv-ipc-connect-timer
-     (run-at-time (car emms-player-mpv-ipc-connect-delays)
-                  nil
-                  #'emms-player-mpv-ipc-connect (cdr emms-player-mpv-ipc-connect-delays)))))
+  (when emms-player-mpv-ipc-connect-timer (cancel-timer emms-player-mpv-ipc-connect-timer))
+  (with-current-buffer (get-buffer-create emms-player-mpv-ipc-buffer) (erase-buffer))
+  (setq
+   emms-player-mpv-ipc-id 1
+   emms-player-mpv-ipc-req-table nil
+   emms-player-mpv-ipc-connect-timer nil
+   emms-player-mpv-ipc-connect-timer
+   (run-at-time (car emms-player-mpv-ipc-connect-delays)
+                nil
+                #'emms-player-mpv-ipc-connect (cdr emms-player-mpv-ipc-connect-delays))))
 
 (defun emms-player-mpv-ipc-stop ()
   (when emms-player-mpv-ipc-proc
@@ -557,25 +465,19 @@ writing to a named pipe (fifo) file/node or signal error."
     (setq emms-player-mpv-ipc-proc nil)))
 
 (defun emms-player-mpv-ipc ()
-  "Return open IPC socket/fifo process or nil, (re-)starting mpv/connection
-if necessary.
+  "Return open IPC process or nil, (re-)starting mpv/connection if necessary.
 
 Return nil when starting async process/connection, and any
 follow-up command should be stored to
 `emms-player-mpv-ipc-connect-command' in this case."
-  (unless
-      ;; Don't start idle processes for fifo - just ignore all ipc requests there
-      (and (not (process-live-p emms-player-mpv-proc))
-           (emms-player-mpv-ipc-fifo-p))
-    (unless (process-live-p emms-player-mpv-proc)
-      (emms-player-mpv-proc-init))
-    (unless (process-live-p emms-player-mpv-ipc-proc)
-      (emms-player-mpv-ipc-init))
-    (and
-     emms-player-mpv-ipc-proc
-     (memq (process-status emms-player-mpv-ipc-proc)
-           '(open run))
-     emms-player-mpv-ipc-proc)))
+  (unless (process-live-p emms-player-mpv-proc)
+    (emms-player-mpv-proc-init))
+  (unless (process-live-p emms-player-mpv-ipc-proc)
+    (emms-player-mpv-ipc-init))
+  (and
+   emms-player-mpv-ipc-proc
+   (memq (process-status emms-player-mpv-ipc-proc) '(open run))
+   emms-player-mpv-ipc-proc))
 
 
 ;; ----- IPC protocol
@@ -664,18 +566,6 @@ there's no feedback there."
       ;; mpv event
       (emms-player-mpv-event-handler json-data)
       (run-hook-with-args 'emms-player-mpv-event-functions json-data))))
-
-(defun emms-player-mpv-ipc-fifo-cmd (cmd &optional proc)
-  "Send --input-file command string for older mpv versions.
-PROC can be specified to avoid `emms-player-mpv-ipc' call."
-  (let
-      ((proc (or proc (emms-player-mpv-ipc)))
-       (cmd-line (concat (mapconcat (lambda (s)
-                                      (format "%s" s))
-                                    cmd " ")
-                         "\n")))
-    (emms-player-mpv-debug-msg "fifo >> %s" cmd-line)
-    (process-send-string proc cmd-line)))
 
 (defun emms-player-mpv-observe-property (sym)
   "Send mpv observe_property command for property identified by SYM.
@@ -779,8 +669,7 @@ metadata from mpv."
     (unless track (setq track (emms-playlist-current-selected-track)))
     (set-track-info track
                     title (or (key title)
-                              (and (not (string= "" (key icy-title)))
-                                   (key icy-title))
+                              (unless (string= "" (key icy-title)) (key icy-title))
                               (key icy-name))
                     artist (or (key artist)
                                (key album_artist)
@@ -820,9 +709,7 @@ in which case common HANDLER argument is ignored."
   (setq emms-player-mpv-ipc-connect-command nil)
   (let ((proc (emms-player-mpv-ipc)))
     (if proc
-        (if (emms-player-mpv-ipc-fifo-p)
-            (emms-player-mpv-ipc-fifo-cmd cmd proc)
-          (emms-player-mpv-ipc-req-send cmd handler proc))
+      (emms-player-mpv-ipc-req-send cmd handler proc)
       (setq emms-player-mpv-ipc-connect-command cmd))))
 
 (defmacro emms-player-mpv-cmd-prog (cmd &rest handler-body)
@@ -853,36 +740,25 @@ version."
 (defun emms-player-mpv-start (track)
   (setq emms-player-mpv-stopped nil)
   (emms-player-mpv-proc-playing nil)
-  (let
+  (let*
       ((track-name (emms-track-get track 'name))
        (track-playlist-option
         (and emms-player-mpv-use-playlist-option
              (memq (emms-track-get track 'type)
-                   '(streamlist playlist)))))
-    (if (emms-player-mpv-ipc-fifo-p)
-        (progn
-          ;; ipc-stop is to clear any buffered commands
-          (emms-player-mpv-ipc-stop)
-          (apply 'emms-player-mpv-proc-init
-                 (if track-playlist-option
-                     (list (concat "--playlist=" track-name))
-                   (list "--" track-name)))
-          (emms-player-started emms-player-mpv))
-      (let*
-          ((play-cmd
-            `(batch
-              ((,(if track-playlist-option 'loadlist 'loadfile)
-                ,track-name replace))
-              ((set pause no))))
-           (start-func
-            ;; Try running play-cmd and retry it on connection failure, e.g. if mpv died
-            (apply-partially 'emms-player-mpv-cmd play-cmd
-                             (lambda (_mpv-data mpv-error)
-                               (when (eq mpv-error 'connection-error)
-                                 (emms-player-mpv-cmd play-cmd))))))
-        (if emms-player-mpv-ipc-stop-command
-            (setq emms-player-mpv-ipc-stop-command start-func)
-          (funcall start-func))))))
+                   '(streamlist playlist))))
+       (play-cmd `(batch
+                   ((,(if track-playlist-option 'loadlist 'loadfile)
+                     ,track-name replace))
+                   ((set pause no))))
+       (start-func
+        ;; Try running play-cmd and retry it on conn failure, e.g. if mpv died
+        (apply-partially 'emms-player-mpv-cmd play-cmd
+                         (lambda (_mpv-data mpv-error)
+                           (when (eq mpv-error 'connection-error)
+                             (emms-player-mpv-cmd play-cmd))))))
+    (if emms-player-mpv-ipc-stop-command
+        (setq emms-player-mpv-ipc-stop-command start-func)
+      (funcall start-func))))
 
 (defun emms-player-mpv-stop ()
   (setq
