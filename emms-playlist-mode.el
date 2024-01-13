@@ -433,8 +433,7 @@ If NUM is 0 or a positive number, shift the track at point down
 one line. Otherwise shift the track up by one line."
   (emms-playlist-ensure-playlist-buffer)
   (let ((track (emms-playlist-track-at (point)))
-	(dir (if (>= num 0) 1 -1))
-	shift)
+	(dir (if (>= num 0) 1 -1)))
     (when (not track)
       (error "no track at point."))
     (when (and (< num 0)
@@ -450,8 +449,9 @@ one line. Otherwise shift the track up by one line."
 	  (forward-line (if (= dir 1) 1 -1)))
       (let ((shift (emms-playlist-track-at (point))))
 	(emms-playlist-mode-kill-track)
-	(emms-with-inhibit-read-only-t
-	 (kill-line))
+	(when (not emms-playlist-mode-kill-whole-line-p)
+	  (emms-with-inhibit-read-only-t
+	   (kill-line)))
 	(forward-line (* dir -1))
 	(emms-playlist-mode-insert-track shift)
 	(when (= dir -1) (forward-line -2))))))
