@@ -1,3 +1,11 @@
+New in 18
+
+    * emms-player-mpv.el: remove emms-player-mpv-ipc-conn-emacs-26.1-workaround.
+    * emms-player-mpv.el: remove long-deprecated --input-file=fifo support.
+    * emms-playlist-mode.el: shift a track up or down by a line.
+    * emms-playlist-limit.el: add limiting to note.
+
+
 New in 17
 
     * Automatic detection of existing players via `emms-setup-discover'.
