@@ -1438,6 +1438,24 @@ silently overwrite existing playlist by setting
 @item ?
 @findex describe-mode
 Describe the mode.
+
+@item C-i
+@findex emms-playlist-mode-shift-track-up
+Shift the track at point up one line.
+
+@item C-o
+@findex emms-playlist-mode-shift-track-down
+Shift the track at point down one line.
+
+@item M-n
+@findex emms-playlist-mode-next
+Switch to the next playlist buffer.
+
+@item M-p
+@findex emms-playlist-mode-previous
+Switch to the previous playlist buffer.
+
+
 @end table
 
 We can also edit the playlist using familiar GNU/Emacs commands:
