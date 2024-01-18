@@ -15,7 +15,8 @@
 
 @copying
  @copyright{} 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2014,
-   2015, 2016, 2020, 2021, 2022  Free Software Foundation, Inc.
+   2015, 2016, 2020, 2021, 2022, 2023, 2024 Free Software Foundation,
+   Inc.
 @quotation
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.1 or
@@ -1431,9 +1432,6 @@ using the @kbd{d} key.
 @item C-y
 @findex emms-playlist-mode-yank
 See the command @command{yank}
-@item C-w
-@findex emms-playlist-mode-kill
-See the command @command{kill-region}
 @item M-y
 @findex emms-playlist-mode-yank-pop
 See the command @command{yank-pop}.
