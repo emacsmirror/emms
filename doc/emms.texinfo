@@ -1359,64 +1359,82 @@ When in the interactive playlist mode we can perform different actions
 on the current playlist.
 
 @table @kbd
+
 @item a
 @findex emms-playlist-mode-add-contents
 Add files in the playlist at point to the current playlist buffer.
 If we are in the current playlist, make a new playlist buffer and
 set it as current.
+
 @item b
 @findex emms-playlist-set-playlist-buffer
 Set the current playlist buffer.
+
 @item n
 @findex emms-next
 Start playing the next track in the playlist.
+
 @item p
 @findex emms-next
 Start playing the previous track in the playlist.
+
 @item s
 @findex emms-stop
 Stop playing.
+
 @item P
 @findex emms-pause
 Pause.
+
 @item >
 @findex emms-seek-forward
 Seek ten seconds forward.
+
 @item <
 @findex emms-seek-backward
 Seek ten seconds backward.
+
 @item f
 @findex emms-show
 Describe the currently playing track in the minibuffer.
+
 @item c
 @findex emms-playlist-mode-center-current
 Display the current track in the center of the screen.
+
 @item RET
 @findex emms-playlist-mode-play-current-track
 Start playing the track under point. Note that this is also available
 with @kbd{<mouse-2>}.
+
 @item SPC
 @findex scroll-up
 Scroll up a near full page.
+
 @item M-<
 @findex emms-playlist-mode-first
 Go to the first track in the playlist.
+
 @item M->
 @findex emms-playlist-mode-last
 Go to the last track in the playlist.
+
 @item r
 @findex emms-random
 Go to a randomly selected track in the playlist.
+
 @item q
 @findex bury-buffer
 Put the interactive playlist buffer at the end of the list of all
 buffers.
+
 @item C-x C-s
 @findex emms-playlist-save
 Save the current playlist buffer to a file. By default, Emms will ask
 you for confirmation before overwriting an existing playlist. You can
 silently overwrite existing playlist by setting
 @var{emms-source-playlist-ask-before-overwrite} to nil.
+
 @item ?
 @findex describe-mode
 Describe the mode.
@@ -1425,16 +1443,20 @@ Describe the mode.
 We can also edit the playlist using familiar GNU/Emacs commands:
 
 @table @kbd
+
 @item C-k
 @findex emms-playlist-mode-kill-track
 Remove the track under point from the playlist buffer. Also available
 using the @kbd{d} key.
+
 @item C-y
 @findex emms-playlist-mode-yank
 See the command @command{yank}
+
 @item M-y
 @findex emms-playlist-mode-yank-pop
 See the command @command{yank-pop}.
+
 @item C-j
 @findex emms-playlist-mode-insert-newline
 Insert a newline at point.
@@ -1478,20 +1500,25 @@ following to your @file{.emacs}.
 @end lisp
 
 @table @kbd
+
 @item m
 @findex emms-mark-forward
 Marks the current track and sets point one line forward. If a prefix
 argument ARG is given, it will mark the next ARG tracks and set point
 accordingly. A negative argument marks backward.
+
 @item U
 @findex emms-mark-unmark-all
 Unmarks all tracks in the playlist.
+
 @item t
 @findex emms-mark-toggle
 Toggles mark on the current track.
+
 @item u
 @findex emms-mark-unmark-forward
 Unmarks same way as @command{emms-mark-forward} marks.
+
 @item % m
 @findex emms-mark-regexp
 Marks all tracks in the playlist matching the given regular
@@ -1501,13 +1528,16 @@ expression. A prefix argument means to unmark them instead.
 When tracks are marked you can operate on them:
 
 @table @kbd
+
 @item D
 @findex emms-mark-delete-marked-tracks
 Deletes the marked tracks from the playlist.
+
 @item K
 @findex  emms-mark-kill-marked-tracks
 Deletes the marked tracks from the playlist and places them in the
 kill-ring, so that you can @command{yank} in into another playlist.
+
 @item W
 @findex emms-mark-copy-marked-tracks
 Adds the marked tracks to the kill-ring, so that you can @command{yank}
@@ -2110,24 +2140,34 @@ could do:
 The format specifiers available include:
 
 @itemize @w{}
+
 @item
 %i    indent relative to the current level
+
 @item
 %n    the value of the item - eg -info-artist might be ``pink floyd''
+
 @item
 %y    the album year
+
 @item
 %A    the album name
+
 @item
 %a    the artist name of the track
+
 @item
 %t    the title of the track
+
 @item
 %T    the track number
+
 @item
 %cS   a small album cover
+
 @item
 %cM   a medium album cover
+
 @item
 %cL   a big album cover
 @end itemize
@@ -2523,8 +2563,11 @@ The advantages of using MusicPD as an Emms backend include the
 following.
 
 @itemize @bullet
+
 @item minimal CPU usage
+
 @item fast access of track information
+
 @item optional crossfade
 @end itemize
 
