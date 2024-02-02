@@ -124,9 +124,16 @@ Return nil otherwise."
 
 (defun emms-info-track-description (track)
   "Return a description of TRACK."
-  (let ((artist (emms-track-get track 'info-artist))
-        (title  (emms-track-get track 'info-title)))
+  (let ((artist    (emms-track-get track 'info-artist))
+	(album     (emms-track-get track 'info-album))
+	(composer  (emms-track-get track 'info-composer))
+        (title     (emms-track-get track 'info-title)))
     (cond
+     ((and composer artist title album)
+      (concat (if (string= composer artist)
+		  artist
+		(concat  artist " - " composer))
+	      " - " album " - " title))
      ((and artist title)
       (concat artist " - " title))
      (title
