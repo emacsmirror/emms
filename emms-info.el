@@ -1,6 +1,6 @@
 ;;; emms-info.el --- Retrieving track information  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2005-2021  Free Software Foundation, Inc.
+;; Copyright (C) 2005-2024  Free Software Foundation, Inc.
 
 ;; Author: Jorgen Schaefer <forcer@forcix.cx>
 
