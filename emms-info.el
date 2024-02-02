@@ -134,6 +134,8 @@ Return nil otherwise."
 		  artist
 		(concat  artist " - " composer))
 	      " - " album " - " title))
+     ((and artist title album)
+      (concat artist " - " album " - " title))
      ((and artist title)
       (concat artist " - " title))
      (title
