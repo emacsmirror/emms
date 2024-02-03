@@ -135,19 +135,16 @@ from the \"items\" table of the database."
                        (replace-match "" nil nil type))
                       ((member type '("track" "disc"))
                        (setq type (concat type "number"))))
-                (cond ((and (string= type "length")
-                            (numberp val))
-                       (setq val (ceiling val))
-                       (emms-dictionary-set
-                        track 'info-playing-time-min (/ val 60))
-                       (emms-dictionary-set
-                        track 'info-playing-time-sec (% val 60))
-                       (emms-dictionary-set
-                        track 'info-playing-time val))
-                      (t (and (numberp val)
-                              (setq val (number-to-string val)))
-                         (emms-dictionary-set
-                          track (intern (concat "info-" type)) val)))))
+                (if (and (string= type "length") (numberp val))
+                    (progn (setq val (ceiling val))
+                           (emms-dictionary-set
+                            track 'info-playing-time-min (/ val 60))
+                           (emms-dictionary-set
+                            track 'info-playing-time-sec (% val 60))
+                           (emms-dictionary-set track 'info-playing-time val))
+                  (emms-dictionary-set
+                   track (intern (concat "info-" type))
+                   (if (numberp val) (setq val (number-to-string val)) val)))))
             emms-source-beets--items-columns)
       (when path
         (run-hook-with-args (remq 'emms-info-initialize-track
