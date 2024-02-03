@@ -88,6 +88,10 @@ from the \"items\" table of the database."
                                "Filter by: "
                                emms-source-beets--items-columns nil t)
                           filter)
+                  ;; For each column chosen to filter by, only allow
+                  ;; choosing between distinct values which correspond
+                  ;; to items which matched distinct values chosen for
+                  ;; previously processed columns.
                   (when-let ((dist (sqlite-select
                                     db (format "select distinct %s from items%s"
                                                col (if (string-empty-p where) ""
