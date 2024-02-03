@@ -149,10 +149,10 @@ from the \"items\" table of the database."
                          (emms-dictionary-set
                           track (intern (concat "info-" type)) val)))))
             emms-source-beets--items-columns)
-      (run-hook-with-args (remq 'emms-info-initialize-track
-                                emms-track-initialize-functions)
-                          track)
       (when path
+        (run-hook-with-args (remq 'emms-info-initialize-track
+                                  emms-track-initialize-functions)
+                            track)
         (emms-playlist-insert-track track)
         (when (fboundp emms-cache-modified-function)
           (funcall emms-cache-modified-function track))
