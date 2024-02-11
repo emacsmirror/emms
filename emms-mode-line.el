@@ -1,6 +1,6 @@
 ;;; emms-mode-line.el --- Mode-Line and titlebar infos for emms  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2004-2021  Free Software Foundation, Inc.
+;; Copyright (C) 2004-2024  Free Software Foundation, Inc.
 
 ;; Author: Mario Domgörgen <kanaldrache@gmx.de>
 ;; Keywords: multimedia
@@ -51,10 +51,23 @@
   :type 'string
   :group 'emms)
 
+(defcustom emms-mode-line-length-limit 70
+  "Maximum length before track information is truncated."
+  :type 'natnum
+  :group 'emms)
+
+
 (defun emms-mode-line-playlist-current ()
   "Format the currently playing song."
-  (format emms-mode-line-format (emms-track-description
-				 (emms-playlist-current-selected-track))))
+  (let ((track-desc (emms-track-description
+		     (emms-playlist-current-selected-track))))
+    (format emms-mode-line-format
+	    (if (< (string-width track-desc) emms-mode-line-length-limit)
+		track-desc
+	      (concat
+	       (seq-subseq track-desc 0 emms-mode-line-length-limit)
+	       "...")))))
+
 
 (define-obsolete-variable-alias 'emms-mode-line-active-p
   'emms-mode-line-mode "Apr 2021")
