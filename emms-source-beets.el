@@ -142,9 +142,10 @@ from the \"items\" table of the database."
                            (emms-dictionary-set
                             track 'info-playing-time-sec (% val 60))
                            (emms-dictionary-set track 'info-playing-time val))
-                  (emms-dictionary-set
-                   track (intern (concat "info-" type))
-                   (if (numberp val) (setq val (number-to-string val)) val)))))
+                  (when (numberp val) (setq val (number-to-string val)))
+                  (unless (string-blank-p val)
+                    (emms-dictionary-set
+                     track (intern (concat "info-" type)) val)))))
             emms-source-beets--items-columns)
       (when path
         (run-hook-with-args (remq 'emms-info-initialize-track
