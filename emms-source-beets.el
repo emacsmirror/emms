@@ -123,7 +123,10 @@ from the \"items\" table of the database."
                                 (if (cdr col) (concat (car col) " desc")
                                   (car col)))
                               emms-source-beets-sort-columns ", "))
-                  (unless (eq filter t) filter) 'set)))
+                  (unless (eq filter t) filter) 'set))
+             (init (gensym)))
+    (set init (remq 'emms-info-initialize-track
+                    emms-track-initialize-functions))
     (while-let ((item (sqlite-next db))
                 (track (emms-dictionary '*track))
                 (path (decode-coding-string (car item) 'utf-8 t)))
@@ -149,9 +152,7 @@ from the \"items\" table of the database."
                      track (intern (concat "info-" type)) val)))))
             emms-source-beets--items-columns)
       (when path
-        (run-hook-with-args (remq 'emms-info-initialize-track
-                                  emms-track-initialize-functions)
-                            track)
+        (run-hook-with-args init track)
         (emms-playlist-insert-track track)
         (when (fboundp emms-cache-modified-function)
           (funcall emms-cache-modified-function track))
