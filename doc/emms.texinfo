@@ -874,6 +874,11 @@ An Emms source for a pls playlist file.
 An Emms source that will find files in @var{dir} or
 @var{emms-source-file-default-directory} that match @var{regexp}.
 @end defun
+@defun emms-source-beets filter
+An Emms source that will read a @command{beets} library database
+(requires Emacs to be built with SQLite support).  With prefix
+argument @var{filter}, interactively filter the database.
+@end defun
 @defun emms-source-file-directory-tree &optional dir
 Return a list of all files under @var{dir} which match @var{regex}.
 @end defun

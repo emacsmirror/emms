@@ -71,8 +71,34 @@ for the column."
 ;;;###autoload (autoload 'emms-add-beets "emms-source-beets" nil t)
 (define-emms-source beets (filter)
   "An EMMS source for beets library databases.
+
 With prefix argument FILTER, filter added tracks according to columns
-from the \"items\" table of the database."
+from the \"items\" table of the database.
+Filtering is done in two steps:
+- Choose column(s) (with completion).
+- For each chosen column (in order), choose from its unique values
+  (with completion) which match any row which hasn't been filtered by
+  a previous choice.
+
+For example, if you have 5 albums:
+Nice Band - Nice Album (2001)
+Nice Band - Good Album (2002)
+Cool Band - Cool Album (2001)
+Cool Band - Hot Album (2002)
+Cool Band - Warm Album (2003)
+
+Then:
+
+\\[universal-argument] \\[emms-play-beets] year \\`RET' 2001 \\`RET'
+
+will play \"Nice Album\" and \"Cool Album\".  The year chosen must be
+one of 2001, 2002 or 2003 (or any combination of them).
+
+\\[universal-argument] \\[emms-add-beets] albumartist,year \
+\\`RET' Nice Band \\`RET' 2002 \\`RET'
+
+will add only \"Good Album\".  Since the first choice was \"Nice
+Band\", the choice of year is restricted to 2001 to 2002 (or both)."
   (interactive (list (prog1 current-prefix-arg (setq current-prefix-arg nil
                                                      prefix-arg nil))))
   (unless (and (fboundp 'sqlite-available-p)
