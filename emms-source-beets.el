@@ -67,13 +67,23 @@ for the column."
                                   emms-source-beets--items-columns))
                  (boolean :tag "Descending"))))
 
+(defun emms-source-beets--ensure-sqlite ()
+  "Emit a user error if SQLite support is not available."
+  (or (and (fboundp 'sqlite-available-p)
+           (sqlite-available-p))
+      (user-error
+       "SQLite support is not available (required to read beets databases)")))
+
 ;;;###autoload (autoload 'emms-play-beets "emms-source-beets" nil t)
 ;;;###autoload (autoload 'emms-add-beets "emms-source-beets" nil t)
-(define-emms-source beets (filter)
+(define-emms-source beets (&optional database filter)
   "An EMMS source for beets library databases.
 
-With prefix argument FILTER, filter added tracks according to columns
-from the \"items\" table of the database.
+DATABASE should be a path to a beets library database
+\(`emms-source-beets-database' is used by default).
+When called interactively, prefix argument FILTER will cause added
+tracks to be filtered according to unique values from columns in the
+\"items\" table of the database.
 Filtering is done in two steps:
 - Choose column(s) (with completion).
 - For each chosen column (in order), choose from its unique values
@@ -99,44 +109,41 @@ one of 2001, 2002 or 2003 (or any combination of them).
 
 will add only \"Good Album\".  Since the first choice was \"Nice
 Band\", the choice of year is restricted to 2001 to 2002 (or both)."
-  (interactive (list (prog1 current-prefix-arg (setq current-prefix-arg nil
-                                                     prefix-arg nil))))
-  (unless (and (fboundp 'sqlite-available-p)
-               (sqlite-available-p))
-    (user-error
-     "SQLite support is not available (required to read beets databases)"))
-  (when-let ((db (sqlite-open emms-source-beets-database))
-             (where "")
-             (filter
-              (if (null filter) t
-                (setq filter nil)
-                (dolist ( col (completing-read-multiple
-                               "Filter by: "
-                               emms-source-beets--items-columns nil t)
-                          filter)
-                  ;; For each column chosen to filter by, only allow
-                  ;; choosing between distinct values which correspond
-                  ;; to items which matched distinct values chosen for
-                  ;; previously processed columns.
-                  (when-let ((dist (sqlite-select
-                                    db (format "select distinct %s from items%s"
-                                               col (if (string-empty-p where) ""
-                                                     (concat " where" where)))
-                                    filter))
-                             (dist (if (stringp (caar dist)) dist
-                                     (mapcar (lambda (val)
-                                               (number-to-string (car val)))
-                                             dist))))
-                    (setq where (format " %s in (%s)%s" col
-                                        (mapconcat
-                                         (lambda (_) "?")
-                                         (mapcar
-                                          (lambda (val) (push val filter))
-                                          (completing-read-multiple
-                                           (concat col ": ") dist nil t))
-                                         ", ")
-                                        (if (string-empty-p where) ""
-                                          (concat " and " where))))))))
+  (interactive
+   (when-let (((emms-source-beets--ensure-sqlite))
+              (filter (prog1 (and current-prefix-arg '(nil . ""))
+                        (setq current-prefix-arg nil prefix-arg nil)))
+              (db (sqlite-open emms-source-beets-database)))
+     (dolist ( col (completing-read-multiple
+                    "Filter by: "
+                    emms-source-beets--items-columns nil t)
+               (list db filter))
+       ;; For each column chosen to filter by, only allow
+       ;; choosing between distinct values which correspond
+       ;; to items which matched distinct values chosen for
+       ;; previously processed columns.
+       (when-let ((where (cdr filter))
+                  (dist (sqlite-select
+                         db (format "select distinct %s from items%s"
+                                    col (if (string-empty-p where)
+                                            "" (concat " where" where)))
+                         (car filter)))
+                  (dist (if (stringp (caar dist)) dist
+                          (mapcar (lambda (val) (number-to-string (car val)))
+                                  dist))))
+         (setcdr filter (format " %s in (%s)%s" col
+                                (mapconcat
+                                 (lambda (_) "?")
+                                 (mapcar (lambda (val) (push val (car filter)))
+                                         (completing-read-multiple
+                                          (concat col ": ") dist nil t))
+                                 ", ")
+                                (if (string-empty-p where) ""
+                                  (concat " and " where))))))))
+  (when-let (((emms-source-beets--ensure-sqlite))
+             (db (or database (sqlite-open emms-source-beets-database)))
+             (filter (or filter '(nil . "")))
+             (where (cdr filter))
              (db (sqlite-select
                   db (format "select path, %s from items%s order by %s"
                              (mapconcat #'identity
@@ -149,7 +156,7 @@ Band\", the choice of year is restricted to 2001 to 2002 (or both)."
                                 (if (cdr col) (concat (car col) " desc")
                                   (car col)))
                               emms-source-beets-sort-columns ", "))
-                  (unless (eq filter t) filter) 'set))
+                  (car filter) 'set))
              (init (gensym)))
     (set init (remq 'emms-info-initialize-track
                     emms-track-initialize-functions))
