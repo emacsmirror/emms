@@ -1420,6 +1420,17 @@ which is exactly what `emms-source-NAME' will do.  The other two
 functions will be simple wrappers around `emms-source-NAME'; any
 `interactive' form that you specify in BODY will end up in these.
 See emms-source-file.el for some examples."
+  (declare
+   (debug (&define [&name "emms-" symbolp ; name all generated functions
+                          (lambda (_ prefix name)
+                            (mapconcat (lambda (type)
+                                         (concat prefix type
+                                                 (symbol-name name)))
+                                       '("add-" "insert-" "play-" "source-")
+                                       " "))]
+                   lambda-list [&optional stringp]
+                   [&optional ("interactive" interactive)] def-body))
+   (doc-string 3) (indent defun))
   (let ((source-name (intern (format "emms-source-%s" name)))
 	(source-play (intern (format "emms-play-%s" name)))
 	(source-add (intern (format "emms-add-%s" name)))
