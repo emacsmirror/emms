@@ -94,7 +94,7 @@ For example, if you have 5 albums:
 Nice Band - Nice Album (2001)
 Nice Band - Good Album (2002)
 Cool Band - Cool Album (2001)
-Cool Band - Hot Album (2002)
+Cool Band - Cold Album (2002)
 Cool Band - Warm Album (2003)
 
 Then:
