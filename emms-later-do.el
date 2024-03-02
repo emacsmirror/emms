@@ -77,10 +77,10 @@ empty."
             (let ((fun (caar emms-later-do-list))
                   (args (cdar emms-later-do-list)))
               (setq emms-later-do-list (cdr emms-later-do-list))
-              (setq res (apply fun args)))))
-      (setq emms-later-do-timer (run-with-timer emms-later-do-interval
-                                           nil
-                                           'emms-later-do-timer)))))
+              (setq res (apply fun args))))
+        (setq emms-later-do-timer (run-with-timer emms-later-do-interval
+                                                  nil
+                                                  'emms-later-do-timer))))))
 
 (provide 'emms-later-do)
 ;;; emms-later-do.el ends here
