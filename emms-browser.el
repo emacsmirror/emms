@@ -282,7 +282,12 @@ Can be either a list of small, medium and large images (large
 currently not used), a function which takes a directory and one
 of the symbols `small', `medium' or `large', and should return a
 path to the cover, or nil to turn off cover loading."
-  :type '(choice list function boolean))
+  :type '(choice (list :tag "Cover image names"
+                       (string :tag "Small cover")
+                       (string :tag "Medium cover")
+                       (string :tag "Large cover"))
+                 function
+                 (const :tag "No cover loading")))
 
 (defcustom emms-browser-covers-file-extensions
   '("jpg" "jpeg" "png" "gif" "bmp")
@@ -296,7 +301,13 @@ emms-browser is required."
 
 (defcustom emms-browser-default-covers nil
   "A list of default images to use if a cover isn't found."
-  :type 'list)
+  :type '(choice (const :tag "No defaults" nil)
+                 (list (radio :tag "Small cover" (file :must-match t)
+                              (const :tag "No default" nil))
+                       (radio :tag "Medium cover" (file :must-match t)
+                              (const :tag "No default" nil))
+                       (radio :tag "Large cover" (file :must-match t)
+                              (const :tag "No default" nil)))))
 
 (defcustom emms-browser-comparison-test
   (if (fboundp 'define-hash-table-test)

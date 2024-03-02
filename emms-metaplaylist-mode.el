@@ -47,7 +47,7 @@
 
 (defcustom emms-metaplaylist-mode-hooks nil
   "List of hooks to run on entry to emms-metaplaylist-mode."
-  :type 'list)
+  :type 'hook)
 
 (defface emms-metaplaylist-mode-face
   '((((class color) (background dark))
