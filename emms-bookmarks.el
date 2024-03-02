@@ -72,8 +72,9 @@
 TIME should be a reference point in seconds.
 TRACK should be an Emms track.
 TEST should be a numerical comparator predicate."
-  (let ((s (append (list (cons "time" time)) (copy-sequence (emms-bookmarks-get track)))))
-    (sort s #'(lambda (a b) (funcall test (cdr a) (cdr b))))
+  (let* ((s (append (list (cons "time" time))
+                    (copy-sequence (emms-bookmarks-get track))))
+         (s (sort s #'(lambda (a b) (funcall test (cdr a) (cdr b))))))
     (while (not (= time (cdar s)))
       (setq s (cdr s)))
     (when (cdr s)
