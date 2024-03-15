@@ -1,6 +1,6 @@
 ;;; emms-playing-time.el --- Display emms playing time on mode line  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2005-2021  Free Software Foundation, Inc.
+;; Copyright (C) 2005-2024  Free Software Foundation, Inc.
 
 ;; Author: William Xu <william.xwl@gmail.com>, Yoni Rabkin (yrk@gnu.org)
 
@@ -39,7 +39,6 @@
 
 ;;; Code:
 
-(require 'cl-lib)
 (require 'emms-info)
 (require 'emms-player-simple)
 
@@ -52,6 +51,11 @@
 (defcustom emms-playing-time-display-short-p nil
   "Non-nil will only display elapsed time.
 e.g., display 02:37 instead of 02:37/05:49."
+  :type 'boolean)
+
+(defcustom emms-playing-time-display-hours-p t
+  "Non-nil will display hours in all times sixty minutes or longer.
+e.g., display 1:19:55 instead of 79:55."
   :type 'boolean)
 
 (defcustom emms-playing-time-display-format " %s "
@@ -187,28 +191,21 @@ could call `emms-playing-time-enable-display' and
   (setq emms-playing-time-string
         (if (null emms-playing-time-display-mode)
             ""
-          (let* ((min (/ emms-playing-time 60))
-                 (sec (% emms-playing-time 60))
-                 (total-playing-time
+          (let* ((total-playing-time
                   (or (emms-track-get
                        (emms-playlist-current-selected-track)
                        'info-playing-time)
                       0))
-                 (total-min-only (/ total-playing-time 60))
-                 (total-sec-only (% total-playing-time 60))
                  (string
-	          (cl-case emms-playing-time-style
-	            ((downtime)         ; `downtime' style
-	             (emms-replace-regexp-in-string
-                      " " "0"
-                      (if (or emms-playing-time-display-short-p
-                              ;; unable to get total playing-time
-                              (eq total-playing-time 0))
-                          (format "%2d:%2d" min sec)
-                        (format "-%2d:%2d"
-			        (/ (- total-playing-time emms-playing-time) 60)
-			        (% (- total-playing-time sec) 60)))))
-		    ((bar)              ; `bar' style
+	          (pcase emms-playing-time-style
+	            ('downtime         ; `downtime' style
+	             (if (or emms-playing-time-display-short-p
+                             ;; unable to get total playing-time
+                             (eq total-playing-time 0))
+                         (emms-playing-time-format-time emms-playing-time)
+                       (concat "-" (emms-playing-time-format-time
+				    (- total-playing-time emms-playing-time)))))
+		    ('bar              ; `bar' style
 		     (if (zerop total-playing-time)
 		         "[==>........]"
                        (let (;; percent based on 10
@@ -219,17 +216,27 @@ could call `emms-playing-time-enable-display' and
                                  ">"
                                  (make-string (- 10 percent) ?\s)
                                  "]"))))
-                    (t                  ; `time' style
-                     (emms-replace-regexp-in-string
-                      " " "0"
-                      (if (or emms-playing-time-display-short-p
-                              ;; unable to get total playing-time
-                              (eq total-playing-time 0))
-                          (format "%2d:%2d" min sec)
-                        (format "%2d:%2d/%2s:%2s"
-                                min sec total-min-only total-sec-only)))))))
+                    (_                 ; `time' style
+                     (concat
+                      (emms-playing-time-format-time emms-playing-time)
+                      (unless (or emms-playing-time-display-short-p
+                                  ;; unable to get total playing-time
+                                  (eq total-playing-time 0))
+                        (concat "/" (emms-playing-time-format-time total-playing-time))))))))
             (format emms-playing-time-display-format string))))
   (force-mode-line-update))
+
+(defun emms-playing-time-format-time (duration)
+  "Format DURATION, a positive number of seconds, into a string.
+
+The string will show the minutes and seconds and, if
+`emms-playing-time-display-hours-p' is non-nil and the duration is
+sixty minutes or more, the hours."
+  (let ((minutes (/ duration 60))
+        (seconds (% duration 60)))
+    (if (and emms-playing-time-display-hours-p (>= minutes 60))
+        (format "%d:%02d:%02d" (/ minutes 60) (% minutes 60) seconds)
+      (format "%02d:%02d" minutes seconds))))
 
 (defun emms-playing-time-mode-line ()
   "Add playing time to the mode line."
