@@ -70,11 +70,11 @@ See full list of devices on your system by running
               emms-volume-pulse-sink
             (string-trim
              (shell-command-to-string
-              "pactl info | grep 'Default Sink: ' | cut -d ' ' -f3-"))))
+              "LC_ALL=C pactl info | grep 'Default Sink: ' | cut -d ' ' -f3-"))))
          (sink-number-p (numberp emms-volume-pulse-sink))
          (output
           (shell-command-to-string
-           (concat "pactl list sinks" "|"
+           (concat "LC_ALL=C pactl list sinks" "|"
                    "grep -E -e 'Sink' -e 'Name' -e '^[^a-zA-Z]*Volume'")))
 	 (volume-string
 	  (car
