@@ -76,14 +76,17 @@ for the column."
 
 ;;;###autoload (autoload 'emms-play-beets "emms-source-beets" nil t)
 ;;;###autoload (autoload 'emms-add-beets "emms-source-beets" nil t)
-(define-emms-source beets (&optional database filter)
+(define-emms-source beets (&optional database filter sort)
   "An EMMS source for beets library databases.
 
 DATABASE should be a path to a beets library database
 \(`emms-source-beets-database' is used by default).
 When called interactively, prefix argument FILTER will cause added
 tracks to be filtered according to unique values from columns in the
-\"items\" table of the database.
+\"items\" table of the database; with a double prefix argument (or
+more), SORT will also be set interactively, defaulting to the value of
+`emms-source-beets-sort-columns' otherwise.
+
 Filtering is done in two steps:
 - Choose column(s) (with completion).
 - For each chosen column (in order), choose from its unique values
@@ -108,16 +111,23 @@ one of 2001, 2002 or 2003 (or any combination of them).
 \\`RET' Nice Band \\`RET' 2002 \\`RET'
 
 will add only \"Good Album\".  Since the first choice was \"Nice
-Band\", the choice of year is restricted to 2001 to 2002 (or both)."
+Band\", the choice of year is restricted to 2001 to 2002 (or both).
+
+Sorting occurs after filtering, and allows selecting multiple columns
+to sort by."
   (interactive
    (when-let (((emms-source-beets--ensure-sqlite))
-              (filter (prog1 (and current-prefix-arg '(nil . ""))
+              (filter (and current-prefix-arg '(nil . "")))
+              (sort (prog1 (or current-prefix-arg t)
+                        ;; Unset after use unconditionally to prevent
+                        ;; EMMS's default behavior when source
+                        ;; commands are called with a prefix argument.
                         (setq current-prefix-arg nil prefix-arg nil)))
-              (db (sqlite-open emms-source-beets-database)))
+              (db (sqlite-open emms-source-beets-database))
+              (dec " (descending)"))
      (dolist ( col (completing-read-multiple
                     "Filter by: "
-                    emms-source-beets--items-columns nil t)
-               (list db filter))
+                    emms-source-beets--items-columns nil t))
        ;; For each column chosen to filter by, only allow
        ;; choosing between distinct values which correspond
        ;; to items which matched distinct values chosen for
@@ -139,11 +149,25 @@ Band\", the choice of year is restricted to 2001 to 2002 (or both)."
                                           (concat col ": ") dist nil t))
                                  ", ")
                                 (if (string-empty-p where) ""
-                                  (concat " and " where))))))))
+                                  (concat " and " where))))))
+     (list db filter
+           (and (> (prefix-numeric-value sort) 4) ; more than one C-u
+                (mapcan
+                 (lambda (c)
+                   (list (if (string-suffix-p dec c)
+                             (cons (string-remove-suffix dec c) t)
+                           (list c))))
+                 (completing-read-multiple
+                  "Sort added tracks by: "
+                  `(,@emms-source-beets--items-columns
+                    ,@(mapcar (lambda (c) (concat c dec))
+                              emms-source-beets--items-columns))
+                  nil t))))))
   (when-let (((emms-source-beets--ensure-sqlite))
              (db (or database (sqlite-open emms-source-beets-database)))
              (filter (or filter '(nil . "")))
              (where (cdr filter))
+             (sort (or sort emms-source-beets-sort-columns))
              (db (sqlite-select
                   db (format "select path, %s from items%s order by %s"
                              (mapconcat #'identity
@@ -155,7 +179,7 @@ Band\", the choice of year is restricted to 2001 to 2002 (or both)."
                               (lambda (col)
                                 (if (cdr col) (concat (car col) " desc")
                                   (car col)))
-                              emms-source-beets-sort-columns ", "))
+                              sort ", "))
                   (car filter) 'set))
              (init (gensym)))
     (set init (remq 'emms-info-initialize-track
