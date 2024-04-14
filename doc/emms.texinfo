@@ -85,7 +85,8 @@ Modules and Extensions
 * Bookmarks::            Saving a place in a media file.
 * Managing Playlists::   Managing multiple playlists.
 * GNU FM::               Connect to music community websites.
-* D-Bus::                Control Emms over D-Bus
+* Listenbrainz::         Notify listenbrainz of tracks played.
+* D-Bus::                Control Emms over D-Bus.
 
 Copying and license
 * Copying::             The GNU General Public License gives you permission to
@@ -3081,6 +3082,44 @@ setup level.
 
 Then invoke @kbd{emms-librefm-stream} and enter the URL of the station
 you wish to listen to, for example ``librefm://globaltags/Classical''.
+
+@c -------------------------------------------------------------------
+@node Listenbrainz
+@chapter Listenbrainz
+
+@cindex Listenbrainz
+
+Listenbrainz offers an alternative store of listening habits
+using information sent by the Emms.
+
+To use this service, you will need to obtain a user token
+from @url{https://listenbrainz.org/settings/}.  You
+should store this token in @file{ ~/.authinfo.gpg} or an
+equivalent file understood by auth-source with a line like
+this:
+
+@smallexample
+machine api.listenbrainz.org password 0abc1de2-245-67fa-8906b-bc123d4dbdaa
+@end smallexample
+
+Alternatively, you can store the token in plain-text in your
+init file by setting the variable
+@kbd{emms-listenbrainz-scrobbler-token}:
+
+@lisp
+(setq emms-listenbrainz-scrobbler-token "0abc1de2-245-67fa-8906b-bc123d4dbdaa")
+@end lisp
+
+Once this is done, you can load the feature with
+
+@lisp
+(require 'emms-listenbrainz-scrobbler)
+@end lisp
+
+Enable uploading the details of the tracks Emms plays to the listenbrainz
+server with @kbd{emms-listenbrainz-scrobbler-enable}. The track's details
+will be uploaded to the server when the track's playback ends. You can
+disable this behavior with @kbd{emms-listenbrainz-scrobbler-disable}.
 
 @c -------------------------------------------------------------------
 @node D-Bus
