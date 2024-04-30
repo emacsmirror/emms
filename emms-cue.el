@@ -22,8 +22,8 @@
 
 ;;; Commentary:
 
-;; By parsing cue file, we will be able to play next/previous track from a
-;; single .ape or .flac file.
+;; By parsing cue file, we will be able to jump to arbitary track or
+;; play next/previous track from a single .ape or .flac file.
 
 ;;; Code:
 
@@ -44,6 +44,16 @@
   "Play previous track from .cue file."
   (interactive)
   (let ((cue-track (emms-cue-previous-track)))
+    (if (cdr cue-track)
+        (progn
+          (emms-seek-to (cdr cue-track))
+          (message "Will play: %s" (car cue-track)))
+      (message "Nothing to seek or missing .cue file?"))))
+
+(defun emms-cue-jump ()
+  "Select a track from .cue file to play using completion."
+  (interactive)
+  (let ((cue-track (emms-cue-select-track)))
     (if (cdr cue-track)
         (progn
           (emms-seek-to (cdr cue-track))
@@ -89,6 +99,34 @@ When PREVIOUS-P is t, get previous track info instead."
 (defun emms-cue-previous-track ()
   "See `emms-cue-next-track'."
   (emms-cue-next-track t))
+
+(defun emms-cue-select-track ()
+  "Get a list of title and offset of tracks from .cue file and call
+completing-read to select one"
+  (let* ((track (emms-playlist-current-selected-track))
+         (name (emms-track-get track 'name))
+         (cue (concat (file-name-sans-extension name)".cue"))
+         (tracks-found '()))
+    (when (file-exists-p cue)
+      (with-temp-buffer
+        (emms-insert-file-contents cue)
+        (save-excursion
+          (goto-char (point-max))       ; search backwards
+          (while (search-backward-regexp "INDEX 01 \\([0-9][0-9]\\):\\([0-9][0-9]\\):\\([0-9][0-9]\\)" nil t 1)
+            (let* ((min (string-to-number (match-string-no-properties 1)))
+                   (sec (string-to-number (match-string-no-properties 2)))
+                   (msec (string-to-number (match-string-no-properties 3)))
+                   (total-sec (+ (* min 60) sec (/ msec 100.0)))
+                   (title ""))
+              (when (search-backward-regexp "TITLE \"\\(.*\\)\"" nil t 1)
+                (setq title (match-string-no-properties 1)))
+              (push (cons title total-sec) tracks-found)))))
+      (let* ((tracks-complete-table (lambda (string pred action)
+                                      (if (eq action 'metadata)
+                                          `(metadata (display-sort-function . ,#'identity)) ; don't sort
+                                        (complete-with-action action (mapcar #'car tracks-found) string pred))))
+             (selection (completing-read "Select a track to play: " tracks-complete-table nil t)))
+        (assoc selection tracks-found)))))
 
 (defun emms-info-cueinfo (track)
   "Add track information to TRACK.
