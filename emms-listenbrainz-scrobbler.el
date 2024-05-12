@@ -94,9 +94,9 @@ Note that the preferred way of authenticating is using authinfo.")
 
 (defun emms-listenbrainz-scrobbler-make-query (track &optional playing-now)
   "Collect the data from TRACK.  No timestamp when PLAYING-NOW is non-nil."
-  (let ((artist (substring-no-properties (emms-track-get track 'info-artist)))
-	(title (substring-no-properties (emms-track-get track 'info-title)))
-	(album (substring-no-properties (emms-track-get track 'info-album)))
+  (let ((artist (emms-track-get track 'info-artist))
+	(title (emms-track-get track 'info-title))
+	(album (emms-track-get track 'info-album))
 	(track-number (emms-track-get track 'info-tracknumber))
 	;; (musicbrainz-id "")
 	(track-length (emms-track-get track
@@ -104,9 +104,9 @@ Note that the preferred way of authenticating is using authinfo.")
 	payload metadata extra-data data)
     (unless (and title artist) (error "Track title and artist must be known"))
     ;; assemble metadata
-    (push (cons "artist_name" artist) metadata)
-    (push (cons "track_name" title) metadata)
-    (when album (push (cons "release_name" album) metadata))
+    (push (cons "artist_name" (substring-no-properties artist)) metadata)
+    (push (cons "track_name" (substring-no-properties title)) metadata)
+    (when album (push (cons "release_name" (substring-no-properties album)) metadata))
     ;; additional data
     (when track-number (push (cons "tracknumber" (string-to-number track-number))
 			     extra-data))
