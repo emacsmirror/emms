@@ -2277,6 +2277,14 @@ Sort by track name.
 Sort by file mtime.
 @end defun
 
+@defun emms-playlist-sort-by-random
+Sort randomly. Alias for `emms-shuffle'.
+@end defun
+
+@defun emms-playlist-shuffle
+Alias for `emms-playlist-sort-by-random' and `emms-shuffle'.
+@end defun
+
 
 @c -------------------------------------------------------------------
 @node Persistent Playlists
