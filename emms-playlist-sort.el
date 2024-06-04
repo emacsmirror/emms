@@ -82,6 +82,16 @@ The sort will be carried out until comparsion succeeds, increasingly."
   (interactive)
   (emms-playlist-sort 'emms-playlist-sort-by-list-p))
 
+(defun emms-playlist-shuffle ()
+  "Sort emms playlist randomly."
+  (interactive)
+  (emms-shuffle))
+
+(defun emms-playlist-sort-by-random ()
+  "Sort emms playlist randomly."
+  (interactive)
+  (emms-shuffle))
+
 (defun emms-playlist-sort-by-last-played ()
   "Sort emms playlist by last played time, increasingly.
 With a prefix argument, decreasingly."
@@ -148,6 +158,7 @@ With a prefix argument, oldest first."
           (define-key map (kbd "y") #'emms-playlist-sort-by-info-year)
           (define-key map (kbd "o") #'emms-playlist-sort-by-info-note)
           (define-key map (kbd "C") #'emms-playlist-sort-by-info-composer)
+	  (define-key map (kbd "r") #'emms-playlist-sort-by-random)
           (define-key map (kbd "L") #'emms-playlist-sort-by-list)
           (define-key map (kbd "N") #'emms-playlist-sort-by-name)
 	  (define-key map (kbd "T") #'emms-playlist-sort-by-file-mtime)
