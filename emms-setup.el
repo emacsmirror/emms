@@ -128,7 +128,9 @@ the stable features which come with the Emms distribution."
     (require 'emms-playlist-limit)
     (require 'emms-librefm-scrobbler)
     (require 'emms-librefm-stream)
-    (require 'emms-mpris))
+    (require 'emms-mpris)
+    (require 'emms-idapi-musicbrainz)
+    (require 'emms-idapi-browser))
   ;; setup
   (setq emms-playlist-default-major-mode #'emms-playlist-mode)
   (add-to-list 'emms-track-initialize-functions #'emms-info-initialize-track)
