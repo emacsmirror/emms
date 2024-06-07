@@ -1,3 +1,12 @@
+New in 20
+
+    * emms-volume-pulse.el: Deal with pactl being translated correctly.
+    * beets: Add `sort' argument controlling sorting of added tracks.
+    * emms-listenbrainz-scrobbler.el: new feature.
+    * emms-cue.el: Use completing-read to jump to tracks in cue file.
+    * emms-playlist-sort.el: `..-sort-shuffle' and `..-sort-by-random' aliases.
+
+
 New in 19
 
     * emms-source-beets.el: EMMS source utilizing a beets library database.
@@ -7,6 +16,7 @@ New in 19
     * emms-info.el: Better default display of tracks with composer, artist, title, and album fields.
     * emms-mode-line.el: truncate overly long descriptions.
     * Documentation updates.
+
 
 New in 18
 
