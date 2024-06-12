@@ -26,6 +26,14 @@
 ;;; Commentary:
 ;;
 
+(defvar emms-idapi-browser-debug-name
+  " *Emms Search Debug Browser*"
+  "Name of the search browser debug buffer")
+
+(defvar emms-idapi-browser-debug-buffer
+  nil
+  "Search browser debug buffer")
+
 (defvar emms-idapi-browser-name
   "Emms Search Browser"
   "Name of the search browser buffer")
@@ -91,6 +99,21 @@
       (error "could not read Emms track at point"))
     track))
 
+(defun emms-idapi-browser-search-recording-artist (track)
+  "Search for the recording and artist of TRACK."
+  (let ((recording (alist-get 'info-title track))
+	(artist (or (alist-get 'info-artist track)
+		    (alist-get 'info-albumartist track))))
+    (list
+     (cons 'info-title (read-string "search for recording (track): " recording))
+     (cons 'info-artist (read-string "search for artist: " artist)))))
+
+(defun emms-idapi-browser-search-recording (track)
+  "Search for the recording of TRACK."
+  (let ((recording (alist-get 'info-title track)))
+    (list
+     (cons 'info-title (read-string "search for recording (track): " recording)))))
+
 (defun emms-idapi-browser-search-artist (track)
   "Search for the artist of TRACK."
   (let ((artist (or (alist-get 'info-artist track)
@@ -116,6 +139,22 @@
      (cons 'info-artist (read-string
 			 (format "search for album \"%s\" by artist: " search-album)
 			 artist)))))
+
+(defun emms-idapi-browser-search-recording-artist-at ()
+  "Search for the recording and artist of the track at point."
+  (interactive)
+  (emms-idapi-browser-show
+   (emms-idapi-search emms-idapi-service
+		      (emms-idapi-browser-search-recording-artist
+		       (emms-playlist-track-at (point))))))
+
+(defun emms-idapi-browser-search-recording-at ()
+  "Search for the recording of the track at point."
+  (interactive)
+  (emms-idapi-browser-show
+   (emms-idapi-search emms-idapi-service
+		      (emms-idapi-browser-search-recording
+		       (emms-playlist-track-at (point))))))
 
 (defun emms-idapi-browser-search-artist-at ()
   "Search for the artist of the track at point."
@@ -144,12 +183,21 @@
 ;;; ------------------------------------------------------------------
 ;;; Response
 ;;; ------------------------------------------------------------------
+(defun emms-idapi-browser-write-debug (response)
+  "Write RESPONSE to the browser debug buffer."
+  (let ((buffer (get-buffer-create emms-idapi-browser-debug-name)))
+    (with-current-buffer buffer
+      (erase-buffer)
+      (insert (format "%s" response))
+      (setq emms-idapi-browser-debug-buffer buffer))))
+
 (defun emms-idapi-browser-print-header (header)
   "Print the material for the search HEADER."
   (let ((artist (alist-get 'info-artist header))
-	(album (alist-get 'info-album header))
+	(album  (alist-get 'info-album header))
+	(title  (alist-get 'info-title header))
 	(service (alist-get emms-idapi-service emms-idapi-services-alist)))
-    (when (not (or artist album))
+    (when (not (or artist album title))
       (error "could not read header: %s" header))
     (insert (format "service: %s (%s)\n"
 		    (alist-get 'name service)
@@ -158,6 +206,8 @@
       (insert (format "artist:  %s\n" artist)))
     (when album
       (insert (format "album:   %s\n" album)))
+    (when title
+      (insert (format "title:   %s\n" title)))
     (insert "\n")))
 
 (defun emms-idapi-browser-entry-packaging (entry)
@@ -168,36 +218,44 @@
 	(format ", %s" packaging)
       "")))
 
+(defun emms-idapi-browser-print-entry-artist (entry)
+  "Return artist ENTRY."
+  (format "%s%s%s\n\n"
+	  (alist-get 'info-artist entry)
+	  (if (alist-get 'info-country entry)
+	      (format " (%s) " (alist-get 'info-country entry))
+	    "")
+	  (let ((begin (alist-get 'begin (alist-get 'info-time entry)))
+		(end (alist-get 'end (alist-get 'info-time entry))))
+	    (format "%s%s"
+		    (if begin begin "")
+		    (if end (format " - %s, " end) "")))))
+
 (defun emms-idapi-browser-print-entry (entry)
   "Print ENTRY."
-  (cond ((equal 'info-release (alist-get 'type entry))
+  (cond ((equal 'idapi-release (alist-get 'type entry))
 	 (insert (format "\"%s\" by %s%s\n"
 			 (alist-get 'info-album entry)
 			 (alist-get 'info-artist entry)
 			 (if (alist-get 'info-date entry)
 			     (format ", released on %s" (alist-get 'info-date entry))
 			   "")))
+
 	 (insert (format "%s tracks%s%s\n\n"
 			 (alist-get 'info-track-count entry)
 			 (emms-idapi-browser-entry-packaging entry)
 			 (if (alist-get 'info-country entry)
 			     (format ", (%s)" (alist-get 'info-country entry))
 			   ""))))
-	((equal 'info-track-artist (alist-get 'type entry))
-	 (insert (format "%s%s%s\n\n"
-			 (alist-get 'info-artist entry)
-			 (if (alist-get 'info-country entry)
-			     (format " (%s) " (alist-get 'info-country entry))
-			   "")
-			 (let ((begin (alist-get 'begin (alist-get 'info-time entry)))
-			       (end (alist-get 'end (alist-get 'info-time entry))))
-			   (format "%s%s"
-				   (if begin begin "")
-				   (if end (format " - %s, " end) ""))))))
-	(t (insert (format  "%s\n" entry)))))
+
+	((equal 'idapi-artist (alist-get 'type entry))
+	 (insert (emms-idapi-browser-print-entry-artist entry)))
+
+	(t (insert (format  "unhandled entry:\n\n%s\n" entry)))))
 
 (defun emms-idapi-browser-show (response)
   "Display RESPONSE in a search buffer."
+  (emms-idapi-browser-write-debug response)
   (let ((buffer (emms-idapi-browser-get-buffer)))
     (pop-to-buffer buffer)
     (let ((inhibit-read-only t))

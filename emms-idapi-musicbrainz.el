@@ -39,7 +39,7 @@
 (defvar emms-idapi-musicbrainz-url-buffer nil
   "Buffer to store `url' response.")
 
-(defvar emms-idapi-musicbrainz-response-limit 30
+(defvar emms-idapi-musicbrainz-response-limit 100
   "Maximum number of responses to ask for. Maximum is 100.")
 
 (defconst emms-idapi-musicbrainz-root-url "https://musicbrainz.org/ws/2/"
@@ -48,6 +48,14 @@
 (defvar emms-idapi-query-local nil
   "Cross-call storage for search query.")
 (make-variable-buffer-local 'emms-idapi-query-local)
+
+(defvar emms-idapi-musicbrainz-debug-buffer-name
+  " *Emms MusicBrainz Debug Buffer*"
+  "Name of debug buffer for MusicBrainz url responses.")
+
+(defvar emms-idapi-musicbrainz-debug-buffer nil
+  "Debug buffer for MusicBrainz url responses.")
+
 
 (defconst emms-idapi-musicbrainz-search-string-map
   '((info-artist      . "artist")
@@ -72,23 +80,38 @@
   "Return a track from the MusicBrainz ARTIST."
   (when (not (alist-get 'id artist))
     (error "could not parse from: %s" artist))
-  `(*track* (search-backend . musicbrainz)
-            (type           . info-track-artist)
-	    (name           . nil)
-	    (info-arid      . ,(alist-get 'id artist))
-	    (info-artist    . ,(alist-get 'name artist))
-	    (info-type      . ,(alist-get 'type artist))
-	    (info-country   . ,(alist-get 'country artist))
-	    (info-time      . ,(alist-get 'life-span artist))))
+  `(*track* (search-backend    . musicbrainz)
+            (type              . idapi-artist)
+	    (name              . nil)
+	    (idapi-artist-id   . ,(list (cons 'musicbrainz (alist-get 'id artist))))
+	    (info-artist       . ,(alist-get 'name artist))
+	    (info-gender       . ,(alist-get 'gender artist))
+	    (info-type         . ,(alist-get 'type artist))
+	    (info-country      . ,(alist-get 'country artist))
+	    (info-area-type    . ,(alist-get 'type (cddr (assoc 'area artist))))
+	    (info-area-country . ,(alist-get 'name (cddr (assoc 'area artist))))
+	    (info-aliases      . ,(list
+				   (seq-map
+				    (lambda (elt)
+				      (mm-decode-string
+				       (alist-get 'sort-name elt) 'utf-8))
+				    (alist-get 'aliases artist))))
+	    (info-tags         . ,(list
+				   (seq-map
+				    (lambda (elt)
+				      (mm-decode-string
+				       (alist-get 'name elt) 'utf-8))
+				    (alist-get 'tags artist))))
+	    (info-time         . ,(alist-get 'life-span artist))))
 
 (defun emms-idapi-musicbrainz-read-release (release)
   "Return a track from the MusicBrainz RELEASE."
   (when (not (alist-get 'id release))
     (error "could not parse from: %s" release))
   `(*track* (search-backend . musicbrainz)
-	    (type                . info-release)
+	    (type                . idapi-release)
 	    (name                . nil)
-	    (info-release-id     . ,(alist-get 'id release))
+	    (idapi-release-id    . ,(list (cons 'musicbrainz (alist-get 'id release))))
 	    (info-artist         . ,(alist-get 'name (elt (alist-get 'artist-credit release) 0)))
 	    (info-album          . ,(alist-get 'title release))
 	    (info-status         . ,(alist-get 'status release))
@@ -102,15 +125,18 @@
   "Return a track from the MusicBrainz RECORDING."
   (when (not (alist-get 'id recording))
     (error "could not parse from: %s" recording))
-  (let ((length-ms (alist-get 'length recording)))
+  (let ((length-ms (or (alist-get 'length recording) 0)))
     `(*track* (search-backend . musicbrainz)
-	      (type                  . info-recording)
+	      (type                  . idapi-recording)
 	      (name                  . ,(alist-get 'title recording))
 	      (info-playing-time     . ,(floor (/ length-ms 1000)))
 	      (info-playing-time-min . ,(floor (/ (/ length-ms 1000) 60)))
 	      (info-playing-time-sec . ,(% (floor (/ length-ms 1000)) 60))
 	      (info-recording-id     . ,(alist-get 'id recording))
-	      (info-album            . ,(alist-get 'title recording))
+	      (idapi-releases 	     . ,(seq-map
+					 (lambda (elt)
+					   (emms-idapi-musicbrainz-read-release elt))
+					 (alist-get 'releases recording)))
 	      (info-length-ms        . ,length-ms))))
 
 (defun emms-idapi-musicbrainz-process-type-dispatch (response)
@@ -120,7 +146,12 @@
 			 ((alist-get 'recordings response) #'emms-idapi-musicbrainz-read-recording)
 			 (t (error "unhandled response type %s" response))))
 	;; the actual items without header data
-	(elements (cdr (nth 3 response))))
+	(elements (cdr (nth 3 response)))
+	(debug-buffer (get-buffer-create emms-idapi-musicbrainz-debug-buffer-name)))
+    (setq emms-idapi-musicbrainz-debug-buffer debug-buffer)
+    (with-current-buffer debug-buffer
+      (erase-buffer)
+      (insert (format "%s" response)))
     (append (alist-get 'query response)
 	    (mapcar
 	     #'(lambda (e)
@@ -188,24 +219,32 @@
   (let ((artist  (or (alist-get 'info-artist term-alist)
 		     (alist-get 'info-albumartist term-alist)))
 	(release (alist-get 'info-album  term-alist))
-	(track   (alist-get 'info-title  term-alist))
+	(title   (alist-get 'info-title  term-alist))
 	(reid    (alist-get 'reid        term-alist))
 	(arid    (alist-get 'arid        term-alist)))
     (concat emms-idapi-musicbrainz-root-url
 
-	    (cond ((and artist (not release))
-		   (format "artist/?query=%s" (url-encode-url (concat "\"" artist "\""))))
-		  (release
-		   (format "release/?query=release:%s%s%s"
-			   (url-encode-url (concat "\"" release "\""))
-			   (if artist (url-encode-url (concat " AND artist:\"" artist "\"")) "")
-			   (if arid (concat (url-encode-url " AND ") "arid:" arid) "")))
-		  (track
-		   (format "recording?query=%sreid:%s"
-			   (url-encode-url (concat "\"" track "\""))
-			   reid))
-		  (t (error "unhandled field %s" term-alist)))
+	    (cond ((and title
+			artist)
+		   (format "recording/?query=recording:%s%sartist:%s"
+			   (url-encode-url (concat "\"" title "\""))
+			   (url-encode-url " AND ")
+			   (url-encode-url (concat "\"" artist "\""))))
 
+		  ((and artist
+			(not release)
+			(not title))
+		   (format "artist/?query=%s" (url-encode-url (concat "\"" artist "\""))))
+
+		  ;; Will only work if the browser supplies a meaningful musicbrainz ARID
+		  ;;
+		  ;; (release
+		  ;;  (format "release/?query=release:%s%s%s"
+		  ;; 	   (url-encode-url (concat "\"" release "\""))
+		  ;; 	   (if artist (url-encode-url (concat " AND artist:\"" artist "\"")) "")
+		  ;; 	   (if arid (concat (url-encode-url " AND ") "arid:" arid) "")))
+
+		  (t (error "unhandled field %s" term-alist)))
 	    (format "&limit=%d&fmt=json" emms-idapi-musicbrainz-response-limit))))
 
 
