@@ -71,6 +71,10 @@ This variable is only used when adding tracks asynchronously."
 Each is called with a track as argument."
   :type 'hook)
 
+(defcustom emms-info-init-done-hook nil
+  "Called after asynchronously initializing all tracks."
+  :type 'hook)
+
 (defvar emms-info-asynchronous-tracks 0
   "Number of tracks we're waiting for to be done.")
 
@@ -106,7 +110,9 @@ Return t when the track got changed."
     (when emms-info-asynchronously
       (setq emms-info-asynchronous-tracks (1- emms-info-asynchronous-tracks))
       (if (zerop emms-info-asynchronous-tracks)
-          (message "EMMS: All track information loaded.")
+	  (progn
+	    (run-hook-with-args 'emms-info-init-done-hook)
+            (message "EMMS: All track information loaded."))
         (unless (zerop emms-info-report-each-num-tracks)
           (if (zerop
                (mod emms-info-asynchronous-tracks
