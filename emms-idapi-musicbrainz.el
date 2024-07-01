@@ -220,8 +220,9 @@
 		     (alist-get 'info-albumartist term-alist)))
 	(release (alist-get 'info-album  term-alist))
 	(title   (alist-get 'info-title  term-alist))
-	(reid    (alist-get 'reid        term-alist))
-	(arid    (alist-get 'arid        term-alist)))
+	;; (reid    (alist-get 'reid        term-alist))
+	;; (arid    (alist-get 'arid        term-alist))
+	)
     (concat emms-idapi-musicbrainz-root-url
 
 	    (cond ((and title
