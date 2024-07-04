@@ -4,7 +4,7 @@
 
 ;; Author: Jorgen Schäfer <forcer@forcix.cx>, the Emms developers (see AUTHORS file)
 ;; Maintainer: Yoni Rabkin <yrk@gnu.org>
-;; Version: 20
+;; Version: 20.1
 ;; Keywords: emms, mp3, ogg, flac, music, mpeg, video, multimedia
 ;; Package-Type: multi
 ;; Package-Requires: ((cl-lib "0.5") (nadvice "0.3") (seq))
@@ -46,7 +46,7 @@
 (require 'emms-compat)
 (require 'seq)
 
-(defvar emms-version "20"
+(defvar emms-version "20.1"
   "EMMS version string.")
 
 ;;; User Customization

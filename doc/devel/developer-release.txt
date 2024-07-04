@@ -43,15 +43,10 @@ version of the manual if it has changed in this release:
     $ cvs commit -m "update website" index.html
 
 
-* tag release
+* tag release and push the tag
 Tag the release in git, for example:
 
     $ git tag -a 4.2 -m "4.2"
-
-
-* push tag
-Push the tag to the git repo, for example:
-
     $ git push --tags origin "4.2"
 
 

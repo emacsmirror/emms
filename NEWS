@@ -1,3 +1,8 @@
+New in 20.1
+
+    * emms-info.el: add `emms-info-init-done-hook'.
+
+
 New in 20
 
     * emms-volume-pulse.el: Deal with pactl being translated correctly.
