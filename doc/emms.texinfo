@@ -722,7 +722,7 @@ player is playing. This is a good function to put in
 @code{emms-player-finished-hook}.
 @end defun
 @defun emms-playlist-next
-Move to the previous track in the current buffer.
+Move to the next track in the current buffer.
 @end defun
 @defun emms-playlist-previous
 Move to the previous track in the current buffer.
