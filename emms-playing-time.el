@@ -31,7 +31,7 @@
 
 ;; Note: `(emms-playing-time -1)' will disable emms-playing-time module
 ;; completely, and is not recommended. (since some other emms modules
-;; may rely on it, such as `emms-lastfm.el')
+;; may rely on it')
 
 ;; Instead, to toggle displaying playing time on mode line, one could
 ;; call `emms-playing-time-enable-display' and
@@ -133,7 +133,7 @@ and `downtime' (e.g. -03:58)."
 
 Note: `(emms-playing-time -1)' will disable emms-playing-time
 module completely, and is not recommended. (since some other emms
-modules may rely on it, such as `emms-lastfm.el')
+modules may rely on it.)
 
 Instead, to toggle displaying playing time on mode line, one
 could call `emms-playing-time-enable-display' and
