@@ -1118,43 +1118,36 @@ positive or negative."
 	 (name (cdr (assoc "name" info))) ; radio feeds sometimes set this
 	 (file (cdr (assoc "file" info)))
 	 (desc nil))
-    ;; if we are playing lastfm radio, use its show function instead
-    (if (and (boundp 'emms-lastfm-radio-stream-url)
-	     (stringp emms-lastfm-radio-stream-url)
-	     (string= emms-lastfm-radio-stream-url file))
-	(with-current-buffer buffer
-	  (and (fboundp 'emms-lastfm-np)
-	       (emms-lastfm-np insertp callback)))
-      ;; otherwise build and show the description
-      (when info
-	(when name
-	  (setq desc name))
-	(when file
-	  (let ((track (emms-dictionary '*track*))
-		track-desc)
-	    (if (emms-player-mpd-remote-filenamep file)
-		(emms-track-set track 'type 'url)
-	      (emms-track-set track 'type 'file))
-	    (emms-track-set track 'name file)
-	    (emms-info-mpd track info)
-	    (run-hook-with-args 'emms-track-info-filters track)
-	    (setq track-desc (emms-track-description track))
-	    (when (and (stringp track-desc) (not (string= track-desc "")))
-	      (setq desc (if desc
-			     (concat desc ": " track-desc)
-			   track-desc))))))
-      (if (not desc)
-	  (unless (functionp callback)
-	    (message "Nothing playing right now"))
-	(setq desc (format emms-show-format desc))
-	(cond ((functionp callback)
-	       (funcall callback buffer desc))
-	      (insertp
-	       (when (buffer-live-p buffer)
-		 (with-current-buffer buffer
-		   (insert desc))))
-	      (t
-	       (message "%s" desc)))))))
+    ;; otherwise build and show the description
+    (when info
+      (when name
+	(setq desc name))
+      (when file
+	(let ((track (emms-dictionary '*track*))
+	      track-desc)
+	  (if (emms-player-mpd-remote-filenamep file)
+	      (emms-track-set track 'type 'url)
+	    (emms-track-set track 'type 'file))
+	  (emms-track-set track 'name file)
+	  (emms-info-mpd track info)
+	  (run-hook-with-args 'emms-track-info-filters track)
+	  (setq track-desc (emms-track-description track))
+	  (when (and (stringp track-desc) (not (string= track-desc "")))
+	    (setq desc (if desc
+			   (concat desc ": " track-desc)
+			 track-desc))))))
+    (if (not desc)
+	(unless (functionp callback)
+	  (message "Nothing playing right now"))
+      (setq desc (format emms-show-format desc))
+      (cond ((functionp callback)
+	     (funcall callback buffer desc))
+	    (insertp
+	     (when (buffer-live-p buffer)
+	       (with-current-buffer buffer
+		 (insert desc))))
+	    (t
+	     (message "%s" desc))))))
 
 ;;;###autoload
 (defun emms-player-mpd-show (&optional insertp callback)
