@@ -117,7 +117,7 @@ Sorting occurs after filtering, and allows selecting multiple columns
 to sort by."
   (interactive
    (when-let (((emms-source-beets--ensure-sqlite))
-              (filter (and current-prefix-arg '(nil . "")))
+              (filter (and current-prefix-arg (cons nil "")))
               (sort (prog1 (or current-prefix-arg t)
                         ;; Unset after use unconditionally to prevent
                         ;; EMMS's default behavior when source
@@ -165,7 +165,7 @@ to sort by."
                   nil t))))))
   (when-let (((emms-source-beets--ensure-sqlite))
              (db (or database (sqlite-open emms-source-beets-database)))
-             (filter (or filter '(nil . "")))
+             (filter (or filter (cons nil "")))
              (where (cdr filter))
              (sort (or sort emms-source-beets-sort-columns))
              (db (sqlite-select
