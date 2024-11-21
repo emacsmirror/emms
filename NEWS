@@ -1,3 +1,11 @@
+New in 20.2
+
+    * Fix `emms-single-track' not working with mpv.
+    * emms-source-beets.el: Fix filter not cleared over multiple calls
+    * emms-player-mpd: fixed albumartist not being recorded from mpd.
+    * Remove references in code to defunct services.
+
+
 New in 20.1
 
     * emms-info.el: add `emms-info-init-done-hook'.
