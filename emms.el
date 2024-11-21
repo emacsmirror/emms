@@ -1637,7 +1637,10 @@ This should only be done by the current player itself."
       (run-hooks 'emms-player-stopped-hook)
     (sleep-for emms-player-delay)
     (run-hooks 'emms-player-finished-hook)
-    (funcall emms-player-next-function)))
+    ;; switch to the current playlist to pick up the values of
+    ;; buffer-local variables
+    (with-current-emms-playlist
+      (funcall emms-player-next-function))))
 
 (defun emms-player-pause ()
   "Pause the current EMMS player."
