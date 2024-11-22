@@ -1312,6 +1312,22 @@ ignore this."
   (ignore track) ;; explicit ignore
   t)
 
+(defun emms-playlist-length ()
+  "Display the total playing time of the current playlist."
+  (interactive)
+  (let ((acc 0))
+    (with-current-emms-playlist
+      (goto-char (point-min))
+      (emms-walk-tracks
+	(setq acc (+ acc (emms-track-get (emms-playlist-track-at (point)) 'info-playing-time)))))
+    (let ((minutes (/ acc 60))
+          (seconds (% acc 60)))
+      (message (if (>= minutes 60)
+		   (format "%d:%02d:%02d" (/ minutes 60) (% minutes 60) seconds)
+		 (format "%02d:%02d" minutes seconds))))))
+
+(defalias 'emms-playlist-total-playing-time 'emms-playlist-length)
+
 
 ;;; ------------------------------------------------------------------
 ;;; Helper functions
