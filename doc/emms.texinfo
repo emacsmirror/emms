@@ -2735,6 +2735,24 @@ To add this feature we invoke:
 (emms-lyrics 1)
 @end lisp
 
+Synchronized lyrics files can be obtained manually from various
+sources, or fetched automatically for new tracks from an LRCLIB server
+(@url{https://lrclib.net}) by adding the following function to
+@var{emms-track-initialize-functions}:
+
+@defun emms-lyrics-lrclib-get &optional track force interactive
+Search for synchronized lyrics for @var{track} through LRCLIB’s API.
+If @var{track} is omitted or nil, use the selected track in the
+current playlist.
+When used as a track initialization function, @var{track} is set to
+the track being initialized.
+The lyrics are saved in an ``.lrc'' file alongside the track, unless
+the file already exists (in which case the search isn’t performed).
+When called interactively (non-nil INTERACTIVE), display informative
+messages, and with prefix argument FORCE, ask to overwrite existing
+``.lrc'' files.
+@end defun
+
 There are a number of variables we can set to define the way that
 `emms-lyrics' behaves, we can set these directly or by using the
 Customize feature in Emacs.
@@ -2768,6 +2786,10 @@ Non-nil value will enable lyrics scrolling.
 
 @defvr {User Option} emms-lyrics-scroll-timer-interval
 Interval between scroller timers. The shorter, the faster.
+@end defvr
+
+@defvr {User Option} emms-lyrics-lrclib-url
+Base URL for LRCLIB API requests.
 @end defvr
 
 We can control `emms-lyrics' with the help of the following functions:
