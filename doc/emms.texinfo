@@ -2748,9 +2748,9 @@ When used as a track initialization function, @var{track} is set to
 the track being initialized.
 The lyrics are saved in an ``.lrc'' file alongside the track, unless
 the file already exists (in which case the search isn’t performed).
-When called interactively (non-nil INTERACTIVE), display informative
-messages, and with prefix argument FORCE, ask to overwrite existing
-``.lrc'' files.
+When called interactively (non-nil @var{interactive}), display
+informative messages, and with prefix argument @var{force}, ask to
+overwrite existing ``.lrc'' files.
 @end defun
 
 There are a number of variables we can set to define the way that
