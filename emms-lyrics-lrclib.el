@@ -56,24 +56,27 @@
 If TRACK is the selected track in the current playlist, catch up.
 When INTERACTIVE is non-nil, display messages and confirm overwrite."
   (unwind-protect
-      (progn
+      (let (lyrics)
         (search-forward "\n\n")
-        (let* ((p (json-parse-buffer))
-               (lyrics (and (hash-table-p p) (gethash "syncedLyrics" p))))
-          (if (not (stringp lyrics))
-              (when interactive (message "No lyrics found"))
-            (or
-             (and (file-exists-p file) interactive
-                  (not (y-or-n-p
-                        (format "Overwrite existing file (\"%s\")?" file))))
-             (with-temp-file file
-               (insert (gethash "syncedLyrics" p))
-               (when interactive
-                 (message "Saves synced lyrics at \"%s\"" file))
-               (and (boundp 'emms-lyrics-display-p)
-                    emms-lyrics-display-p emms-player-playing-p
-                    (equal track (emms-playlist-current-selected-track))
-                    (emms-lyrics-catchup file)))))))
+        (if-let* (((functionp 'json-available-p))
+                   ((json-available-p))
+                   (p (json-parse-buffer)))
+            (and (hash-table-p p) (setq lyrics (gethash "syncedLyrics" p)))
+          (when-let* ((beg (search-forward "\"syncedLyrics\":\"" nil t))
+                      (end (1- (search-forward-regexp "[^\\]\"" nil t))))
+            (replace-string-in-region "\\n" "\n" beg end)
+            (setq lyrics (buffer-substring-no-properties
+                          beg (1- (point))))))
+        (and lyrics interactive (file-exists-p file)
+             (not (y-or-n-p (format "Overwrite existing file (\"%s\")?" file)))
+             (setq lyrics nil))
+        (when lyrics
+          (with-temp-file file (insert lyrics))
+          (when interactive (message "Saved synced lyrics at \"%s\"" file))
+          (and (boundp 'emms-lyrics-display-p)
+               emms-lyrics-display-p emms-player-playing-p
+               (equal track (emms-playlist-current-selected-track))
+               (emms-lyrics-catchup file))))
     (setq emms-lyrics-lrclib-requests (1- emms-lyrics-lrclib-requests))))
 
 ;;;###autoload
