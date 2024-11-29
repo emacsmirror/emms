@@ -30,7 +30,6 @@
 ;;; Code:
 
 (eval-when-compile
-  (require 'subr-x)
   (declare-function json-parse-buffer "json.c"))
 
 (require 'emms-lyrics)
