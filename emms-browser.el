@@ -2165,7 +2165,7 @@ will always use the same cover per folder.
                  ;; TODO: Add image resizing support to Emacs.
                  (setq msg (with-output-to-string
                              (with-current-buffer standard-output
-                               (setq err (call-process (executable-find "convert") nil '(t t) nil
+                               (setq err (call-process emms-browser-thumbnail-convert-program nil '(t t) nil
                                                        "-resize" (format "%sx%s" size-value size-value)
                                                        cover
                                                        cache-dest-file)))))
