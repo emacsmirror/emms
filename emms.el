@@ -103,11 +103,9 @@ are played sequentially."
            (setq emms-player-next-function #'emms-next-noerror)))
   :type 'boolean)
 
-(defcustom emms-repeat-track nil
+(defvar-local emms-repeat-track nil
   "Non-nil, playback will repeat current track.  If nil, EMMS will play
-track by track normally."
-  :group 'emms
-  :type 'boolean)
+track by track normally.")
 
 (defvar-local emms-single-track nil
   "Non-nil, play the current track and then stop.")
