@@ -1,6 +1,6 @@
 ;;; emms-info-native-mp3.el --- EMMS info functions for MP3 files  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2020-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 ;; Author: Petteri Hintsanen <petterih@iki.fi>
 
@@ -573,7 +573,7 @@ See `emms-info-native-id3v2--frame-to-info' for recognized fields."
   "Decode or estimate stream duration for MP3 file FILENAME.
 Start looking for necessary headers from byte offset OFFSET.
 
-Return the duration in secods, or nil in case of errors."
+Return the duration in seconds, or nil in case of errors."
   (with-temp-buffer
     (set-buffer-multibyte nil)
     (insert-file-contents-literally filename nil offset (+ offset 1024))
@@ -588,7 +588,7 @@ Return the duration in secods, or nil in case of errors."
            (frames
             (or (emms-info-native-mp3--find-and-decode-xing-header)
                 (emms-info-native-mp3--find-and-decode-vbri-header))))
-      (cond ((and frames samples-per-frame sample-rate)
+      (cond ((and frames samples-per-frame (numberp sample-rate))
              ;; The file has a usable VBR (Xing, Info or VBRI) header.
              (/ (* frames samples-per-frame) sample-rate))
             (bit-rate
@@ -710,7 +710,8 @@ of errors."
   (let ((size
          (file-attribute-size
           (file-attributes (file-chase-links filename)))))
-    (when bitrate (/ (* 8 size) (* 1000 bitrate)))))
+    (when (and size (numberp bitrate))
+      (/ (* 8 size) (* 1000 bitrate)))))
 
 (defun emms-info-native-mp3--decode-bit-rate (version layer bits)
   "Return the bit rate for MPEG VERSION/LAYER combination.
