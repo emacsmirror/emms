@@ -63,7 +63,7 @@ When INTERACTIVE is non-nil, display messages and confirm overwrite."
         (search-forward "\n\n")
         (if-let* (((functionp 'json-available-p))
                    ((json-available-p))
-                   (p (json-parse-buffer)))
+                   (p (json-parse-buffer :null-object nil)))
             (and (hash-table-p p) (setq lyrics (gethash "syncedLyrics" p)))
           (when-let* ((beg (search-forward "\"syncedLyrics\":\"" nil t))
                       (end (1- (search-forward-regexp "[^\\]\"" nil t))))
