@@ -829,38 +829,56 @@ for that purpose.")
   "Non-nil if the current buffer is an EMMS playlist.")
 (make-variable-buffer-local 'emms-playlist-buffer-p)
 
+(defvar emms-queue-lock nil
+  "The playlist name the active playlist queue is locked to, if any.")
+
 (defun emms-playlist-ensure-playlist-buffer ()
   "Throw an error if we're not in a playlist-buffer."
   (when (not emms-playlist-buffer-p)
     (error "Not an EMMS playlist buffer")))
 
+(defun emms-lock-queue ()
+  "Lock the current active playlist."
+  (interactive)
+  (setq emms-queue-lock (buffer-name emms-playlist-buffer))
+  (message (concat "Active queue playlist is locked to " emms-queue-lock)))
+
+(defun emms-unlock-queue ()
+  "Unlock the current active playlist."
+  (interactive)
+  (setq emms-queue-lock nil)
+  (message "Active queue playlist is unlocked."))
+
 (defun emms-playlist-set-playlist-buffer (&optional buffer)
-  "Set the current playlist buffer."
+  "Set the current playlist buffer if the queue is not locked to it's playlist."
   (interactive
-   (list (let* ((buf-list (mapcar #'(lambda (buf)
-				      (list (buffer-name buf)))
-				  (emms-playlist-buffer-list)))
-		(sorted-buf-list (sort buf-list
-				       #'(lambda (lbuf rbuf)
-					   (< (length (car lbuf))
-					      (length (car rbuf))))))
-		(default (or (and emms-playlist-buffer-p
-				  ;; default to current buffer
-				  (buffer-name))
-			     ;; pick shortest buffer name, since it is
-			     ;; likely to be a shared prefix
-			     (car sorted-buf-list))))
-	   (emms-completing-read "Playlist buffer to make current: "
-				 sorted-buf-list nil t default))))
-  (let ((buf (if buffer
-		 (get-buffer buffer)
-	       (current-buffer))))
-    (with-current-buffer buf
-      (emms-playlist-ensure-playlist-buffer))
-    (setq emms-playlist-buffer buf)
-    (when (called-interactively-p 'interactive)
-      (message "Set current EMMS playlist buffer"))
-    buf))
+   (if (not emms-queue-lock)
+       (list (let* ((buf-list (mapcar #'(lambda (buf)
+				          (list (buffer-name buf)))
+				      (emms-playlist-buffer-list)))
+		    (sorted-buf-list (sort buf-list
+				           #'(lambda (lbuf rbuf)
+					       (< (length (car lbuf))
+					          (length (car rbuf))))))
+		    (default (or (and emms-playlist-buffer-p
+				      ;; default to current buffer
+				      (buffer-name))
+			         ;; pick shortest buffer name, since it is
+			         ;; likely to be a shared prefix
+			         (car sorted-buf-list))))
+	       (emms-completing-read "Playlist buffer to make current: "
+				     sorted-buf-list nil t default)))))
+  (if (not emms-queue-lock)
+      (let ((buf (if buffer
+		     (get-buffer buffer)
+	           (current-buffer))))
+        (with-current-buffer buf
+          (emms-playlist-ensure-playlist-buffer))
+        (setq emms-playlist-buffer buf)
+        (when (called-interactively-p 'interactive)
+          (message "Set current EMMS playlist buffer"))
+        buf)
+    (message (concat "The active playlist queue is locked to " emms-queue-lock))))
 
 (defun emms-playlist-new (&optional name)
   "Create a new playlist buffer.

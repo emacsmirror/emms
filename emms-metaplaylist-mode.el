@@ -85,6 +85,7 @@
     (define-key map (kbd "C-k") #'emms-metaplaylist-mode-kill-buffer)
     (define-key map (kbd "c")   #'emms-metaplaylist-mode-center-current)
     (define-key map (kbd "q")   #'kill-this-buffer)
+    (define-key map (kbd "v")   #'emms-metaplaylist-mode-goto)
     (define-key map (kbd "?")   #'describe-mode)
     map)
   "Keymap for `emms-metaplaylist-mode'.")
@@ -99,8 +100,16 @@
   (let ((buffer (get-buffer
 		 (buffer-substring (line-beginning-position)
 				   (line-end-position)))))
-  (emms-playlist-set-playlist-buffer buffer)
-  (switch-to-buffer buffer)))
+    (emms-playlist-set-playlist-buffer buffer)
+    (switch-to-buffer buffer)))
+
+(defun emms-metaplaylist-mode-goto ()
+  "Visit the playlist without making it current."
+  (interactive)
+  (let ((buffer (get-buffer
+	         (buffer-substring (line-beginning-position)
+				   (line-end-position)))))
+    (switch-to-buffer buffer)))
 
 (defun emms-metaplaylist-mode-write (playlists)
   "Print the sorted list of PLAYLISTS."
@@ -122,7 +131,7 @@
 (defun emms-metaplaylist-mode-sorted-buffer-list ()
   "Return a sorted list of playlist buffers."
   (sort
-   (copy-tree		    
+   (copy-tree
     (emms-playlist-buffer-list))
    #'(lambda (a b)
        (string< (buffer-name a)
@@ -202,7 +211,7 @@
 (defun emms-metaplaylist-mode-set-active ()
   "Set the buffer at point to be the active playlist."
   (interactive)
-  (emms-playlist-set-playlist-buffer 
+  (emms-playlist-set-playlist-buffer
    (get-buffer (buffer-substring (line-beginning-position) (line-end-position))))
   (emms-metaplaylist-mode-update))
 

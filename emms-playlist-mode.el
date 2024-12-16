@@ -147,6 +147,7 @@ This is true for every invocation of `emms-playlist-mode-go'."
     (define-key map (kbd "d") #'emms-playlist-mode-goto-dired-at-point)
     (define-key map (kbd "<mouse-2>") #'emms-playlist-mode-play-current-track)
     (define-key map (kbd "RET") #'emms-playlist-mode-play-smart)
+    (define-key map (kbd "i") #'emms-playlist-playlist-insert-track)
     map)
   "Keymap for `emms-playlist-mode'.")
 
@@ -542,6 +543,14 @@ When NO-NEWLINE is non-nil, do not insert a newline after the track."
                             'face 'emms-playlist-track-face))
    (unless no-newline
      (insert "\n"))))
+
+(defun emms-playlist-playlist-insert-track ()
+  "Insert the track in playlist at point into the active playlist buffer."
+  (interactive)
+  (let ((track (emms-playlist-track-at)))
+    (with-current-emms-playlist
+      (goto-char (point-max))
+      (emms-playlist-insert-track track))))
 
 (defun emms-playlist-mode-update-track-function ()
   "Update the track display at point."
