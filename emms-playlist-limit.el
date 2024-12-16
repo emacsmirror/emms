@@ -42,6 +42,7 @@
 ;;  ------------------------------------------------------------------
 
 ;; / /		emms-playlist-limit-to-all
+;; / A		emms-playlist-limit-to-info-albumartist
 ;; / a		emms-playlist-limit-to-info-artist
 ;; / b		emms-playlist-limit-to-info-album
 ;; / c		emms-playlist-limit-to-info-composer
@@ -102,6 +103,7 @@ the current playlist." attribute attribute)
 	 (emms-playlist-limit-do (quote ,attribute) regexp)
        (message "Limit cancelled: no regexp."))))
 
+(define-emms-playlist-limit info-albumartist)
 (define-emms-playlist-limit info-artist)
 (define-emms-playlist-limit info-composer)
 (define-emms-playlist-limit info-performer)
@@ -132,6 +134,7 @@ If this playlist is current, make the playlist we switch to current."
       (bury-buffer old-buf))))
 
 (define-key emms-playlist-mode-map (kbd "/ n") #'emms-playlist-limit-to-name)
+(define-key emms-playlist-mode-map (kbd "/ A") #'emms-playlist-limit-to-info-albumartist)
 (define-key emms-playlist-mode-map (kbd "/ a") #'emms-playlist-limit-to-info-artist)
 (define-key emms-playlist-mode-map (kbd "/ c") #'emms-playlist-limit-to-info-composer)
 (define-key emms-playlist-mode-map (kbd "/ p") #'emms-playlist-limit-to-info-performer)

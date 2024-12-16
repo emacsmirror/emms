@@ -157,7 +157,7 @@ See also `emms-tag-editor-tag-file' and `emms-tag-editor-tag-ogg'.")
   "Commit changes to an FLAC file according to TRACK."
   (require 'emms-info-metaflac)
   (with-temp-buffer
-    (let ((tags '("artist" "composer" "performer" "title" "album" "tracknumber" "discnumber" "date" "genre" "note"))
+    (let ((tags '("albumartist" "artist" "composer" "performer" "title" "album" "tracknumber" "discnumber" "date" "genre" "note"))
 	  val)
       (mapc (lambda (tag)
               (let ((info-tag (intern (concat "info-" tag))))

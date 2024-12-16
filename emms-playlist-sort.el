@@ -56,12 +56,13 @@ With a prefix argument, decreasingly." attribute)
      (interactive)
      (emms-playlist-sort
       '(lambda (a b)
-         (funcall 
+         (funcall
           (if current-prefix-arg 'emms-string> 'emms-string<)
           (emms-track-get a (quote ,attribute))
           (emms-track-get b (quote ,attribute)))))))
 
 (define-emms-playlist-sort name)
+(define-emms-playlist-sort info-albumartist)
 (define-emms-playlist-sort info-artist)
 (define-emms-playlist-sort info-composer)
 (define-emms-playlist-sort info-performer)
@@ -98,7 +99,7 @@ With a prefix argument, decreasingly."
   (interactive)
   (emms-playlist-sort
    '(lambda (a b)
-      (funcall 
+      (funcall
        (if current-prefix-arg 'not 'identity)
        (time-less-p
         (or (emms-track-get a 'last-played) '(0 0 0))
@@ -110,7 +111,7 @@ With a prefix argument, decreasingly."
   (interactive)
   (emms-playlist-sort
    '(lambda (a b)
-      (funcall 
+      (funcall
        (if current-prefix-arg 'not 'identity)
        (< (or (emms-track-get a 'play-count) 0)
           (or (emms-track-get b 'play-count) 0))))))
@@ -121,7 +122,7 @@ With a prefix argument, decreasingly."
   (interactive)
   (emms-playlist-sort
    '(lambda (a b)
-      (funcall 
+      (funcall
        (if current-prefix-arg 'emms-string> 'emms-string<)
        (file-name-extension (emms-track-get a 'name))
        (file-name-extension (emms-track-get b 'name))))))
@@ -148,6 +149,7 @@ With a prefix argument, oldest first."
         (let ((map (make-sparse-keymap)))
           (define-key map (kbd "n") #'emms-playlist-sort-by-natural-order)
           (define-key map (kbd "a") #'emms-playlist-sort-by-info-artist)
+          (define-key map (kbd "A") #'emms-playlist-sort-by-info-albumartist)
           (define-key map (kbd "c") #'emms-playlist-sort-by-play-count)
           (define-key map (kbd "b") #'emms-playlist-sort-by-info-album)
           (define-key map (kbd "l") #'emms-playlist-sort-by-last-played)
@@ -165,7 +167,7 @@ With a prefix argument, oldest first."
           map))
 
   (define-key emms-playlist-mode-map
-    emms-playlist-sort-prefix emms-playlist-sort-map))
+              emms-playlist-sort-prefix emms-playlist-sort-map))
 
 (setq emms-playlist-sort-map (emms-playlist-sort-map-setup))
 
