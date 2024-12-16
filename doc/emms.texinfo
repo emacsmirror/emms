@@ -599,12 +599,19 @@ Shuffle the current playlist. This uses
 Sort the current playlist. This uses
 @var{emms-playlist-sort-function}.
 @end defun
+@defun emms-lock-queue
+Lock the current active playlist to its playlist.
+@var{emms-playlist-sort-function}.
+@end defun
+@defun emms-unlock-queue
+Unlock the current active playlist from its playlist.
+@var{emms-playlist-sort-function}.
+@end defun
 @defun emms-show &optional insertp
 Describe the current Emms track in the minibuffer. If @var{insertp} is
 non-nil, insert the description into the current buffer instead. This
 function uses @var{emms-show-format} to format the current track.
 @end defun
-
 The command @command{emms-show-all} will pop up a window with the
 complete information about the track being
 played. @command{emms-show-all} is provided by
@@ -1374,6 +1381,10 @@ on the current playlist.
 Add files in the playlist at point to the current playlist buffer.
 If we are in the current playlist, make a new playlist buffer and
 set it as current.
+
+@item i
+@findex emms-playlist-playlist-insert-track
+Insert track at point into active playlist.
 
 @item b
 @findex emms-playlist-set-playlist-buffer
@@ -2233,6 +2244,10 @@ prefix. `emms-playlist-sort' can be loaded by invoking:
 Sort by artist name.
 @end defun
 
+@defun emms-playlist-sort-by-info-albumartist
+Sort by albumartist name.
+@end defun
+
 @defun emms-playlist-sort-by-play-count
 Sort by number of times the track has been played.
 @end defun
@@ -2510,6 +2525,14 @@ playlist then the derived playlist becomes current.
 Create a new playlist buffer and populate it with tracks
 whose artist info field matches the given regular
 expression (default: the artist info field of the
+track at point).
+
+@item / A
+@kindex / A
+@findex emms-playlist-limit-to-info-albumartist
+Create a new playlist buffer and populate it with tracks
+whose album artist info field matches the given regular
+expression (default: the album artist info field of the
 track at point).
 
 @item / b
@@ -2982,6 +3005,11 @@ available:
 @kindex RET
 @findex emms-metaplaylist-mode-goto-current
 Make the buffer at point the Emms playlist buffer and switch to it.
+
++@item V
+@kindex v
+@findex emms-metaplaylist-mode-goto
+Visit the playlist at point.
 
 @item SPC
 @kindex SPC
