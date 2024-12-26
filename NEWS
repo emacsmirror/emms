@@ -1,3 +1,14 @@
+New in 21
+
+    * emms.el: new function `emms-playlist-length' and `emms-playlist-total-playing-time'.
+    * emms.el: `emms-repeat-track' is now buffer local.
+    * emms-lyrics-lrclib.el New module for fetching synchronized lyrics from LRCLIB.
+    * emms-browser.el: Use pre-defined convert when caching thumbnails.
+    * emms-info-native-mp3.el: Fix possible type error in MP3 duration decoding.
+    * Add album artist to metaflac, tag editor, playlist sort and limit.
+    * Add active playlist lock, browse and send songs from other playlists.
+
+
 New in 20.2
 
     * Fix `emms-single-track' not working with mpv.
