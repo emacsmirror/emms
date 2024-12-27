@@ -961,6 +961,9 @@ by track. A saved playlist can be added to the current buffer by
 calling @kbd{M-x emms-add-playlist} or @kbd{M-x emms-play-playlist},
 which also plays the tracks immediately.
 
+The current Emms playlist buffer is stored in the variable
+@var{emms-playlist-buffer}.
+
 @defun emms-playlist-new &optional name
 Create a new playlist buffer.
 The buffer is named @var{name}, but made unique. @var{name} defaults
@@ -973,8 +976,26 @@ Store the current playlist to FILE as the type FORMAT.  The default
 format is specified by @var{emms-source-playlist-default-format}.
 @end defun
 
-The current Emms playlist buffer is stored in the variable
-@var{emms-playlist-buffer}.
+@defun emms-playlist-clear
+Clears the playlist buffer.
+@end defun
+
+@defun emms-playlist-current-clear
+Clear the current playlist. If no current playlist exists, a new one
+is generated.
+@end defun
+
+@defun emms-playlist-current-kill
+Kill the current EMMS playlist buffer and switch to the next one.
+@end defun
+
+@defun emms-playlist-length
+Display the total playing time of the current playlist.
+@end defun
+
+@defun emms-playlist-total-playing-time
+Alias for @code{emms-playlist-length}.
+@end defun
 
 
 @c -------------------------------------------------------------------

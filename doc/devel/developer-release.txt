@@ -28,6 +28,11 @@ good chance to make sure we are releasing everything with proper
 copyleft.
 
 
+* copyleft notices
+Check that any new files have correct copyright notices, and that all
+modified files have updated years reflecting when they were changed.
+
+
 * update the manual
 Update the manual:
 
