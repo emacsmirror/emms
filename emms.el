@@ -838,16 +838,17 @@ for that purpose.")
     (error "Not an EMMS playlist buffer")))
 
 (defun emms-lock-queue ()
-  "Lock the current active playlist."
+  "Lock the current active playlist queue to it's playlist.
+This allows for uninterrupted playlist playback while browsing other playlists."
   (interactive)
   (setq emms-queue-lock (buffer-name emms-playlist-buffer))
-  (message (concat "Active queue playlist is locked to " emms-queue-lock)))
+  (message (concat "Active playlist queue is locked to " emms-queue-lock)))
 
 (defun emms-unlock-queue ()
-  "Unlock the current active playlist."
+  "Unlock the current active playlist queue from its playlist."
   (interactive)
   (setq emms-queue-lock nil)
-  (message "Active queue playlist is unlocked."))
+  (message "Active playlist queue is unlocked."))
 
 (defun emms-playlist-set-playlist-buffer (&optional buffer)
   "Set the current playlist buffer if the queue is not locked to it's playlist."

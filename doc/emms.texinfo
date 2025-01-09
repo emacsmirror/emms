@@ -522,6 +522,12 @@ the playlist but do not start playing it immediately. Conversely, the
 commands with the ``emms-play-'' prefix begin playing the track
 immediately.
 
+This creates the active playlist and queue as needed. The active queue will automatically switch to any playlists that are browsed to such that the next song played will come from the currently viewed playlist.
+
+Locking the active playlist queue to its playlist will prevent it from changing, allowing for browsing other playlists and sending songs to the current active playlist from them.
+
+Locking the queue to its playlist allows for live creation of a curated playlist by browsing other playlists as well as the music database and files.
+
 @defun emms-play-file file
 A source for a single file - either @var{file}, or queried from the
 user. If called with a prefix the file will be added like
@@ -600,11 +606,11 @@ Sort the current playlist. This uses
 @var{emms-playlist-sort-function}.
 @end defun
 @defun emms-lock-queue
-Lock the current active playlist to its playlist.
+Lock the current active playlist queue to its playlist.
 @var{emms-playlist-sort-function}.
 @end defun
 @defun emms-unlock-queue
-Unlock the current active playlist from its playlist.
+Unlock the current active playlist queue from its playlist.
 @var{emms-playlist-sort-function}.
 @end defun
 @defun emms-show &optional insertp
