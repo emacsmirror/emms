@@ -1,6 +1,6 @@
 ;;; emms-show-all.el --- Detailed track information for Emms.  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2016-2021  Free Software Foundation, Inc.
+;; Copyright (C) 2016-2021, 2025  Free Software Foundation, Inc.
 
 ;; Author: Yoni Rabkin <yrk@gnu.org>
 
@@ -99,8 +99,8 @@
 	  ((eq 'url type)
 	   (insert
 	    (emms-format-url-track-name (emms-track-name track))))
-	  (t (concat (symbol-name type)
-		     ": " (emms-track-name track))))))
+	  (t (insert (concat (symbol-name type)
+			     ": " (emms-track-name track)))))))
 
 (defun emms-show-all-track (track)
   "Display information for TRACK."
