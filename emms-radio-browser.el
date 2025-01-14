@@ -233,8 +233,90 @@ Switches to an EMMS playlist containing the results."
   (interactive (list (transient-args transient-current-command)))
   (message "%S" args))
 
-;; Look in the "Entry points" section for the prefix that uses all
-;; this.
+;; Finally, we define the prefix.  Sadly emacs-29, ships with a
+;; prehistoric version of transient which misses both a level-toggling
+;; command and the transient-information class.  So we use a macro to
+;; give different defintions of the prefix accordinding to emacs version.
+
+(defmacro emms-radio-browser--make-full-search ()
+  "Define a transient with features conditional on Emacs version."
+  (if (< emacs-major-version 30)
+      '(transient-define-prefix emms-radio-browser-full-search-prefix ()
+	 "Construct a search query by filling in a form.
+
+Optionally dispatch it to the radio-browser server and switch to an
+EMMS playlist of results."
+	 ["EMMS radio browser full search: hit coloured letters to set/unset fields\n"
+	  ["Search terms:"
+	   ("n" "Name" "Station name" :alist-key name :class emms-radio-browser-field)
+	   ("t" "Tags" "Tags (comma separated)" :alist-key tagList :class emms-radio-browser-field)
+	   ("c" "Country" "Country" :alist-key country :class emms-radio-browser-field)
+	   ("l" "Language" "Language" :alist-key language :class emms-radio-browser-field)]
+	  ["Exact matches for:"
+	   ("xn" "Name" "Exact names" :alist-key nameExact :class emms-radio-browser-bool)
+	   ("xt" "Tags" "Exact tags" :alist-key tagExact :class emms-radio-browser-bool)
+	   ("xc" "Country" "Exact country" :alist-key countryExact :class emms-radio-browser-bool)
+	   ("xl" "Language" "Exact language" :alist-key languageExact :class emms-radio-browser-bool)]
+	  ["Advanced search terms:" :pad-keys t
+	   ("C" "Codec" "Codec" :alist-key codec :class emms-radio-browser-field)
+	   ("bn" "Minimum bitrate" "Minimum bitrate (kb/s)" :alist-key bitrateMin :class emms-radio-browser-field
+	    :reader transient-read-number-N0)
+	   ("bz" "Maximum bitrate" "Maximum bitrate (kb/s)" :alist-key bitrateMin :class emms-radio-browser-field
+	    :reader transient-read-number-N0)
+	   ("k" "Country code" "Country code" :alist-key countrycode :class emms-radio-browser-field)]]
+	 ["Search parameters:"
+	  ("m" "Maximum hits" "Maximum Hits" :alist-key limit :class emms-radio-browser-field
+	   :reader transient-read-number-N+ :always-read t)
+	  ("o" "Order by" "Order by" :alist-key order :class emms-radio-browser-field
+	   :choices (lambda () emms-radio-browser-order-fields) :always-read t)
+	  ("d" "Descending" "Descending order" :alist-key reverse :class emms-radio-browser-bool)]
+	 [:class transient-row "Actions:"
+		 ("C-c C-c" "Execute search" emms-radio-browser-execute-full-search)
+		 ("C-c C-k" "Abandon search" ignore)
+		 ])
+    '(transient-define-prefix emms-radio-browser-full-search-prefix ()
+       "Construct a search query by filling in a form.
+
+Optionally dispatch it to the radio-browser server and switch to an
+EMMS playlist of results."
+       :column-widths '(30 20 30)
+       [:description "EMMS radio browser full search"
+		     (:info "Hit coloured letters to set/unset fields")
+		     (:info '(lambda () (concat (propertize "C-x a" 'face 'help-key-binding)
+						" to toggle advanced search")))
+		     (:info '(lambda () (concat (propertize "C-c C-c" 'face 'help-key-binding)
+						" to execute the search")))
+		     (:info '(lambda () (concat (propertize "C-c C-k" 'face 'help-key-binding)
+						" to abandon the search")))]
+       [["Search terms:"
+	 ("n" "Name" "Station name" :alist-key name :class emms-radio-browser-field)
+	 ("t" "Tags" "Tags (comma separated)" :alist-key tagList :class emms-radio-browser-field)
+	 ("c" "Country" "Country" :alist-key country :class emms-radio-browser-field)
+	 ("l" "Language" "Language" :alist-key language :class emms-radio-browser-field)]
+	[5 "Exact matches for:"
+	   ("xn" "Name" "Exact names" :alist-key nameExact :class emms-radio-browser-bool)
+	   ("xt" "Tags" "Exact tags" :alist-key tagExact :class emms-radio-browser-bool)
+	   ("xc" "Country" "Exact country" :alist-key countryExact :class emms-radio-browser-bool)
+	   ("xl" "Language" "Exact language" :alist-key languageExact :class emms-radio-browser-bool)]
+	[5 "Advanced search terms:" :pad-keys t
+	   ("C" "Codec" "Codec" :alist-key codec :class emms-radio-browser-field)
+	   ("bn" "Minimum bitrate" "Minimum bitrate (kb/s)" :alist-key bitrateMin :class emms-radio-browser-field
+	    :reader transient-read-number-N0)
+	   ("bz" "Maximum bitrate" "Maximum bitrate (kb/s)" :alist-key bitrateMin :class emms-radio-browser-field
+	    :reader transient-read-number-N0)
+	   ("k" "Country code" "Country code" :alist-key countrycode :class emms-radio-browser-field)]]
+       ["Search parameters:"
+	("m" "Maximum hits" "Maximum Hits" :alist-key limit :class emms-radio-browser-field
+	 :reader transient-read-number-N+ :always-read t)
+	("o" "Order by" "Order by" :alist-key order :class emms-radio-browser-field
+	 :choices (lambda () emms-radio-browser-order-fields) :always-read t)
+	("d" "Descending" "Descending order" :alist-key reverse :class emms-radio-browser-bool)]
+       [:class transient-row "Actions:"
+	       ("C-c C-c" "Execute search" emms-radio-browser-execute-full-search)
+	       ("C-c C-k" "Abandon search" ignore)
+	       (6 "s" "Show search" emms-radio-browser-show-full-search)])))
+
+(emms-radio-browser--make-full-search)
 
 ;;** Query the server
 
@@ -331,49 +413,17 @@ Switches to an EMMS playlist containing the results."
   (emms-radio-browser-query-api (list (cons 'url url))
 				emms-radio-browser-url-endpoint))
 
-;; Finally here is the transient prefix for making a full search.
+;; Finally load the transient for making a full search.  This was
+;;conditionally defined above.  We wrap in in a function to get the autoload.
 ;;;###autoload
-(transient-define-prefix emms-radio-browser-full-search ()
+(defun emms-radio-browser-full-search ()
   "Construct a search query by filling in a form.
 
 Optionally dispatch it to the radio-browser server and switch to an
 EMMS playlist of results."
-  :column-widths '(30 20 30)
-  [:description "EMMS radio browser full search"
-		(:info "Hit coloured letters to set/unset fields")
-		(:info '(lambda () (concat (propertize "C-x a" 'face 'help-key-binding)
-					   " to toggle advanced search")))
-		(:info '(lambda () (concat (propertize "C-c C-c" 'face 'help-key-binding)
-					   " to execute the search")))
-		(:info '(lambda () (concat (propertize "C-c C-k" 'face 'help-key-binding)
-					   " to abandon the search")))]
-  [["Search terms:"
-    ("n" "Name" "Station name" :alist-key name :class emms-radio-browser-field)
-    ("t" "Tags" "Tags (comma separated)" :alist-key tagList :class emms-radio-browser-field)
-    ("c" "Country" "Country" :alist-key country :class emms-radio-browser-field)
-    ("l" "Language" "Language" :alist-key language :class emms-radio-browser-field)]
-   [5 "Exact matches for:"
-      ("xn" "Name" "Exact names" :alist-key nameExact :class emms-radio-browser-bool)
-      ("xt" "Tags" "Exact tags" :alist-key tagExact :class emms-radio-browser-bool)
-      ("xc" "Country" "Exact country" :alist-key countryExact :class emms-radio-browser-bool)
-      ("xl" "Language" "Exact language" :alist-key languageExact :class emms-radio-browser-bool)]
-   [5 "Advanced search terms:" :pad-keys t
-      ("C" "Codec" "Codec" :alist-key codec :class emms-radio-browser-field)
-      ("bn" "Minimum bitrate" "Minimum bitrate (kb/s)" :alist-key bitrateMin :class emms-radio-browser-field
-       :reader transient-read-number-N0)
-      ("bz" "Maximum bitrate" "Maximum bitrate (kb/s)" :alist-key bitrateMin :class emms-radio-browser-field
-       :reader transient-read-number-N0)
-      ("k" "Country code" "Country code" :alist-key countrycode :class emms-radio-browser-field)]]
-  ["Search parameters:"
-   ("m" "Maximum hits" "Maximum Hits" :alist-key limit :class emms-radio-browser-field
-    :reader transient-read-number-N+ :always-read t)
-   ("o" "Order by" "Order by" :alist-key order :class emms-radio-browser-field
-    :choices (lambda () emms-radio-browser-order-fields) :always-read t)
-   ("d" "Descending" "Descending order" :alist-key reverse :class emms-radio-browser-bool)]
-  [:class transient-row "Actions:"
-	  ("C-c C-c" "Execute search" emms-radio-browser-execute-full-search)
-	  ("C-c C-k" "Abandon search" ignore)
-	  (6 "s" "Show search" emms-radio-browser-show-full-search)])
+  (interactive)
+  (call-interactively #'emms-radio-browser-full-search-prefix t))
+
 
 (provide 'emms-radio-browser)
 ;;; emms-radio-browser.el ends here
