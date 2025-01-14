@@ -240,7 +240,7 @@ Switches to an EMMS playlist containing the results."
 
 (defmacro emms-radio-browser--make-full-search ()
   "Define a transient with features conditional on Emacs version."
-  (if (< emacs-major-version 30)
+  (if (and (< emacs-major-version 30) (not (boundp 'transient-version)))
       '(transient-define-prefix emms-radio-browser-full-search-prefix ()
 	 "Construct a search query by filling in a form.
 
