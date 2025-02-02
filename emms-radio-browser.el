@@ -1,22 +1,24 @@
 ;;; emms-radio-browser.el --- EMMS client for radio-brower API  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2025  Fran Burstall
+;; Copyright (C) 2025  Free Software Foundation, Inc.
 
 ;; Author: Fran Burstall <fran.burstall@gmail.com>
-;; Keywords: multimedia
+;; Keywords: emms, multimedia
 
-;; This program is free software; you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation, either version 3 of the License, or
-;; (at your option) any later version.
-
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
-
+;; EMMS is free software; you can redistribute it and/or modify it
+;; under the terms of the GNU General Public License as published by
+;; the Free Software Foundation; either version 3, or (at your option)
+;; any later version.
+;;
+;; EMMS is distributed in the hope that it will be useful, but WITHOUT
+;; ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+;; or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+;; License for more details.
+;;
 ;; You should have received a copy of the GNU General Public License
-;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
+;; along with EMMS; see the file COPYING.  If not, write to the Free
+;; Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+;; MA 02110-1301, USA.
 
 ;;; Commentary:
 
@@ -97,7 +99,7 @@
 ;; The API asks us to get a list of servers from a DNS lookup on
 ;; all.api.radio-browser.info, do reverse DNS on the IP
 ;; addresses so found and then choose one at random.  In fact, there
-;; are only three servers but we want play nice and do as we are
+;; are only three servers but we want play nice and so do as we are
 ;; asked.
 (defun emms-radio-browser-get-server-list ()
   "Get the list of radio-browser servers.
