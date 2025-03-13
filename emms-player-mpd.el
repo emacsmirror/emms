@@ -180,14 +180,14 @@ or nil if we cannot figure it out."
 	;; Create regexp
 	(when (and (stringp supported)
 		   (not (string= supported "")))
-	  (concat "\\`http://\\|\\.\\(m3u\\|pls\\|"
+	  (concat "\\`http[s]?://\\|\\.\\(m3u\\|pls\\|"
 		  (regexp-opt (delq nil (split-string supported)))
 		  "\\)\\'"))))))
 
 (defcustom emms-player-mpd-supported-regexp
   ;; Use a sane default, just in case
   (or (emms-player-mpd-get-supported-regexp)
-      (concat "\\`http://\\|"
+      (concat "\\`http[s]?://\\|"
 	      (emms-player-simple-regexp
 	       "m3u" "ogg" "flac" "mp3" "wav" "mod" "au" "aiff")))
   "Formats supported by MusicPD."
@@ -279,7 +279,7 @@ return at the end of a request.")
 
 (defun emms-player-mpd-remote-filenamep (filename)
   "Return t if FILENAME is a remote file."
-  (string-match "\\`http://" filename))
+  (string-match "\\`http[s]?://" filename))
 
 (defun emms-player-mpd-sentinel (proc event)
   "The process sentinel for MusicPD."
