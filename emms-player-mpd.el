@@ -1,6 +1,6 @@
 ;;; emms-player-mpd.el --- MusicPD support for EMMS  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2005-2024  Free Software Foundation, Inc.
+;; Copyright (C) 2005-2025  Free Software Foundation, Inc.
 
 ;; Author: Michael Olson <mwolson@gnu.org>, Jose Antonio Ortega Ruiz
 ;; <jao@gnu.org>

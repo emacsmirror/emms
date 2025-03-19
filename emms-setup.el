@@ -1,6 +1,6 @@
 ;;; emms-setup.el --- Setup script for EMMS  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2005-2022  Free Software Foundation, Inc.
+;; Copyright (C) 2005-2022, 2025  Free Software Foundation, Inc.
 
 ;; Author: Yoni Rabkin <yrk@gnu.org>
 ;; Keywords: emms setup multimedia
@@ -55,7 +55,7 @@
     emms-player-vlc
     emms-player-vlc-playlist)
   "Default list of players for emms-setup."
-  :type 'list)
+  :type '(repeat symbol))
 
 (defvar emms-setup-discover-player-alist
   '((emms-player-mpg321  . "mpg123")

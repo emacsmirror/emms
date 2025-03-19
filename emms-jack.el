@@ -49,7 +49,7 @@
 
 (defcustom emms-jack-rc '("~/.jackdrc" "/etc/jackd.conf")
   "JACK run control paths."
-  :type 'repeat)
+  :type '(repeat string))
 
 (defcustom emms-jack-use-jack-rc t
   "If non-nil, try to retrieve jack startup arguments from run control files
