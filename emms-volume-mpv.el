@@ -1,7 +1,5 @@
 ;;; emms-volume-mpv.el --- Volume function to adjust mpv volume easily  -*- lexical-binding: t; -*-
 
-;; FIXME Copyright assignment
-
 ;; Author: Richard Sent <richard@freakingpenguin.com>
 
 ;; This file is part of EMMS.
