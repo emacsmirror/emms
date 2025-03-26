@@ -49,7 +49,8 @@ version of the manual if it has changed in this release:
 
 
 * tag release and push the tag
-Tag the release in git, for example:
+Commit and push all of the above changes, then tag the release in git,
+for example:
 
     $ git tag -a 4.2 -m "4.2"
     $ git push --tags origin "4.2"
