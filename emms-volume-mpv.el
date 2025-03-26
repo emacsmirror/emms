@@ -1,5 +1,7 @@
 ;;; emms-volume-mpv.el --- Volume function to adjust mpv volume easily  -*- lexical-binding: t; -*-
 
+;; Copyright (C) 2025  Free Software Foundation, Inc.
+
 ;; Author: Richard Sent <richard@freakingpenguin.com>
 
 ;; This file is part of EMMS.

@@ -1,3 +1,12 @@
+New in 22
+
+    * emms-volume-mpv.el: raise or lower the volume of mpv (new file).
+    * emms-player-mpd.el: Match HTTPS URLs in MPD player.
+    * emms-mode-line.el: Use character width to display the track description.
+    * emms-info-exiftool.el: ensure numeric album titles and info are strings.
+    * Exanded documentation for playlist lock functions.
+
+
 New in 21
 
     * emms.el: new function `emms-playlist-length' and `emms-playlist-total-playing-time'.

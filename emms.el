@@ -1,10 +1,10 @@
 ;;; emms.el --- The Emacs Multimedia System  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2003-2022  Free Software Foundation, Inc.
+;; Copyright (C) 2003-2025  Free Software Foundation, Inc.
 
 ;; Author: Jorgen Schäfer <forcer@forcix.cx>, the Emms developers (see AUTHORS file)
 ;; Maintainer: Yoni Rabkin <yrk@gnu.org>
-;; Version: 21
+;; Version: 22
 ;; Keywords: emms, mp3, ogg, flac, music, mpeg, video, multimedia
 ;; Package-Type: multi
 ;; Package-Requires: ((cl-lib "0.5") (nadvice "0.3") (seq))
@@ -46,7 +46,7 @@
 (require 'emms-compat)
 (require 'seq)
 
-(defvar emms-version "21"
+(defvar emms-version "22"
   "EMMS version string.")
 
 ;;; User Customization
