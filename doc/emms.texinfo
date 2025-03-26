@@ -441,8 +441,9 @@ filter for the @xref{The Browser}, persistent playlist via
 
 
 In the following it is possible to see how some of defaults are set
-regarding saving playlists, playlist interaction, as well as adding
-special arguments to a specific player backend.
+regarding saving playlists, playlist interaction, adding special
+arguments to a specific player backend and configuring player-specific
+volume control options enabled via @file{emms-volume.el}.
 
 @lisp
   (setq-default
@@ -455,7 +456,10 @@ special arguments to a specific player backend.
 
    emms-player-list '(emms-player-mpv)
    emms-player-mpv-environment '("PULSE_PROP_media.role=music")
-   emms-player-mpv-parameters '("--quiet" "--really-quiet" "--no-audio-display" "--force-window=no" "--vo=null"))
+   emms-player-mpv-parameters '("--quiet" "--really-quiet" "--no-audio-display" "--force-window=no" "--vo=null")
+
+   emms-volume-change-function 'emms-volume-mpv-change
+   emms-volume-mpv-method 'smart)
 @end lisp
 
 
@@ -2930,8 +2934,8 @@ value. So instead of pressing @kbd{C-c +} six times to increase volume
 by six steps of @code{emms-volume-change-amount}, you would simply type
 @kbd{C-c + + + + + +}.
 
-Emms can change volume with amixer, mpd, PulseAudio and mixerctl out
-of the box, see @var{emms-volume-change-function}.
+Emms can change volume with amixer, mpd, mpv, PulseAudio and mixerctl
+out of the box, see @var{emms-volume-change-function}.
 
 
 @c -------------------------------------------------------------------
