@@ -37,6 +37,8 @@
 
 ;;; Code:
 
+(require 'emms-player-mpv)
+
 (defcustom emms-volume-mpv-method 'native
   "How Emms should attempt to adjust mpv's volume.
 
@@ -64,10 +66,10 @@ changed.
 Additionally, the percentage provided by and set for ao-volume
 and thus this module may not match what is reported by the system
 audio program."
-  :type
-  '(choice (const :tag "MPV Volume" native)
-           (const :tag "System Volume" system)
-           (const :tag "Smart" smart)))
+  :type '(choice (const :tag "MPV Volume" native)
+                 (const :tag "System Volume" system)
+                 (const :tag "Smart" smart))
+  :group 'emms-volume)
 
 (defvar emms-volume-mpv--volume-sync (make-mutex "emms-volume-mpv--volume-sync")
   "Ensure only one volume-change function runs to completion at a
