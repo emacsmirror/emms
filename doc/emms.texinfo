@@ -81,6 +81,7 @@ Modules and Extensions
 * Lyrics::               Displaying lyrics synchronously.
 * Volume::               Changing the volume.
 * Streaming Audio::      Interface to streaming audio.
+* Radio Browser::        Search for internet radio stations
 * APE / FLAC Commands::  How to play next or previous track in these files.
 * Bookmarks::            Saving a place in a media file.
 * Managing Playlists::   Managing multiple playlists.
@@ -2969,6 +2970,43 @@ station provides that information) by configuring:
   (customize-set-variable 'emms-player-mpv-update-metadata t)
 @end lisp
 
+
+@c -------------------------------------------------------------------
+@node Radio Browser
+@chapter Radio Browser
+
+@cindex streaming audio
+@cindex internet radio
+
+We can find new internet radio stations to stream by
+searching the database at
+@url{https://www.radio-browser.info}.  The
+@file{emms-radio-browser.el} package provides the following commands
+to do this:
+
+@defun emms-radio-browser-search-by-name
+Prompts for a station NAME and returns a playlist of
+matching streams.
+@end defun
+
+@defun emms-radio-browser-search-by-url
+Prompts for a station URL and returns a playlist of
+matching streams.
+@end defun
+
+@defun emms-radio-browser-full-search
+Pops up a form to search by name, tags, country or language.
+Returns a playlist of matching streams.
+@end defun
+
+To activate @file{emms-radio-browser.el}, do
+
+@lisp
+(require 'emms-radio-browser)
+@end lisp
+
+You will the @file{transient.el} package to be installed
+(this is built-in since emacs v28.1).
 
 @c -------------------------------------------------------------------
 @node APE / FLAC Commands
