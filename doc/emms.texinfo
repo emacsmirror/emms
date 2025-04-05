@@ -3005,8 +3005,8 @@ To activate @file{emms-radio-browser.el}, do
 (require 'emms-radio-browser)
 @end lisp
 
-You will the @file{transient.el} package to be installed
-(this is built-in since emacs v28.1).
+You will need the @file{transient.el} package to be installed (this is
+built-in since emacs v28.1).
 
 @c -------------------------------------------------------------------
 @node APE / FLAC Commands
