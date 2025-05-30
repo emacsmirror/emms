@@ -1327,11 +1327,11 @@ Filter should be a filter cons in the form of '(name . function)."
   (setq emms-filters-current-filter-name (car filter))
   (setq emms-filters-current-filter filter))
 
-;; (defun emms-filters-browse-by ()
-;;   "The single interface to emms-browser. Re-render please.
-;; Uses the top level type, or the default browse type."
-;;   (emms-browse-by (or emms-browser-top-level-type
-;;                       emms-browser-default-browse-type)))
+(defun emms-filters-browse-by ()
+  "The single interface to emms-browser. Re-render please.
+Uses the top level type, or the default browse type."
+  (emms-browse-by (or emms-browser-top-level-type
+                      emms-browser-default-browse-type)))
 
 (defun  emms-filters-refilter ()
   "Make a multi-filter function from the current meta-filter and set it.
@@ -1339,10 +1339,11 @@ Run the filter changed hook. Ask the browser to re-render."
   (emms-filters-set-filter (cons (caar emms-filters-stack)
                      (emms-filters-make-multi-filter (cdar emms-filters-stack))))
   (run-hooks 'emms-filters-filter-changed-hook)
-  ;; emms-filters-render-hash
-  (emms-browser-browse-by)
+  ;; emms-filters-make-and-render-hash
+  (emms-filters-browse-by)
   ;; If it is a search or a filter expand the results.
   (when (or emms-filters-stack emms-filters-search-caches)
+    ;; emms-filters-expand-render
     (emms-browser-expand-all)))
 
 (defun emms-filters-ensure-metafilter (filter)
