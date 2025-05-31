@@ -106,7 +106,7 @@
 ;;       (ad-activate 'emms-browser-next-mapping-type)
 ;;     (ad-deactivate 'emms-browser-next-mapping-type)))
 
-;; (add-hook 'emms-browser-filter-changed-hook 'toggle-album-display)
+;; (add-hook 'emms-filters-filter-changed-hook 'toggle-album-display)
 
 ;; Changing display format
 ;; -------------------------------------------------------------------
@@ -191,7 +191,6 @@
 
 ;;; Code:
 
-(require 'cl-lib)
 (require 'emms)
 (require 'emms-cache)
 (require 'emms-volume)
@@ -199,6 +198,7 @@
 (require 'emms-playlist-sort)
 (require 'sort)
 (require 'seq)
+(require 'emms-filters)
 
 
 ;; --------------------------------------------------
@@ -296,6 +296,7 @@ Use nil for no sorting."
   "Given a track, return t if the track should be ignored."
   :type 'hook)
 
+;; Deprecated. See emms-filters-filter-changed-hook.
 (defcustom emms-browser-filter-changed-hook nil
   "Hook run after the filter has changed."
   :type 'hook)
@@ -321,6 +322,14 @@ Called once for each directory."
 
 (defvar emms-browser-current-indent nil
   "Used to override the current indent, for the playlist, etc.")
+
+;; Set the hooks for Emms-filters to say when to re-render.
+;; this is just a variable to mirror the browser's hook.
+;; It should probably just be set directly, and the browser's
+;; hook be deprecated. It will have to be set if anyone changes it...
+;; Potential problem if someone us using this hook.
+(add-hook 'emms-filters-make-and-render-hash-hook 'emms-browse-by)
+(add-hook 'emms-filters-expand-render-hook 'emms-browser-expand-all)
 
 (defvar emms-browser-tree-node-map-default
   '((info-albumartist . info-artist)
@@ -357,6 +366,7 @@ Called once for each directory."
 
 (defvar emms-browser-mode-map
   (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "Q") #'emms-filters-pop-cache)
     (define-key map (kbd "q") #'emms-browser-bury-buffer)
     (define-key map (kbd "/") #'emms-isearch-buffer)
     (define-key map (kbd "r") #'emms-browser-goto-random)
@@ -393,6 +403,55 @@ Called once for each directory."
     (define-key map (kbd "W a w") #'emms-browser-lookup-album-on-wikipedia)
     (define-key map (kbd "+") #'emms-volume-raise)
     (define-key map (kbd "-") #'emms-volume-lower)
+
+    (define-key map (kbd ">") #'emms-filters-next-ring-filter)
+    (define-key map (kbd "<") #'emms-filters-previous-ring-filter)
+    (define-key map (kbd "f !") #'emms-filters-clear-ring-filter)
+    (define-key map (kbd "f >") #'emms-filters-next-ring-filter)
+    (define-key map (kbd "f <") #'emms-filters-previous-ring-filter)
+
+    (define-key map (kbd "i s") #'emms-filters-status-print)
+    (define-key map (kbd "i f") #'emms-filters-show-filters)
+    (define-key map (kbd "i m") #'emms-filters-show-filter-menu)
+    (define-key map (kbd "i F") #'emms-filters-show-filter-factories)
+    (define-key map (kbd "i r") #'emms-filters-show-filter-ring)
+    (define-key map (kbd "i c") #'emms-filters-show-cache-stack)
+    (define-key map (kbd "i S") #'emms-filters-show-cache-stash)
+
+    (define-key map (kbd "f q") #'emms-filters-pop)
+    (define-key map (kbd "f h") #'emms-filters-hard-filter)
+    (define-key map (kbd "f r") #'emms-filters-swap) ; rotate ?
+    (define-key map (kbd "f R") #'emms-filters-swap-pop) ; rotate-eject, ,pop-previous
+    (define-key map (kbd "f f") #'emms-filters-squash) ;flatten
+    (define-key map (kbd "f k") #'emms-filters-keep)
+    (define-key map (kbd "f C") #'emms-filters-clear-all)
+    (define-key map (kbd "f c") #'emms-filters-clear)
+    (define-key map (kbd "f p") #'emms-filters-push)
+    (define-key map (kbd "f s") #'emms-filters-smash)
+    (define-key map (kbd "f o") #'emms-filters-or)
+    (define-key map (kbd "f a") #'emms-filters-and)
+    (define-key map (kbd "f n") #'emms-filters-and-not)
+
+    (define-key map (kbd "c p") #'emms-filters-push-cache)
+    (define-key map (kbd "c z") #'emms-filters-stash-pop-cache)
+    (define-key map (kbd "c Z") #'emms-filters-stash-cache)
+    (define-key map (kbd "c q") #'emms-filters-pop-cache)
+    (define-key map (kbd "c h") #'emms-filters-hard-filter)
+    (define-key map (kbd "c r") #'emms-filters-swap-cache)
+    (define-key map (kbd "c R") #'emms-filters-swap-pop-cache)
+    (define-key map (kbd "c S") #'emms-filters-squash-caches)
+    (define-key map (kbd "c c") #'emms-filters-clear-caches)
+
+    (define-key map (kbd "s o") #'emms-filters-search-by-albumartist)
+    (define-key map (kbd "s a") #'emms-filters-search-by-artist)
+    (define-key map (kbd "s c") #'emms-filters-search-by-composer)
+    (define-key map (kbd "s p") #'emms-filters-search-by-performer)
+    (define-key map (kbd "s A") #'emms-filters-search-by-album)
+    (define-key map (kbd "s t") #'emms-filters-search-by-title)
+    (define-key map (kbd "s T") #'emms-filters-search-by-titles)
+    (define-key map (kbd "s n") #'emms-filters-search-by-names)
+    (define-key map (kbd "s s") #'emms-filters-search-by-names-and-titles)
+    (define-key map (kbd "s e") #'emms-filters-search-by-all-text) ;everything.
     map)
   "Keymap for `emms-browser-mode'.")
 
@@ -519,8 +578,13 @@ Does not set the browser buffer to current unless NO-UPDATE is set.
        (interactive)
        (emms-browse-by ,type))))
 
-(defun emms-browse-by (type)
-  "Render a top level buffer based on TYPE."
+(defun emms-browse-by (&optional type)
+  "Render a top level buffer based on TYPE.
+If TYPE is not given default to top-level-type
+or the default-browse-type"
+  (if (not type)
+      (setq type (or emms-browser-top-level-type
+                     emms-browser-default-browse-type)))
   ;; FIXME: assumes we only browse by info-*
   (let* ((name (substring (symbol-name type) 5))
          (modedesc (concat "Browsing by: " name))

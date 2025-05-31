@@ -481,7 +481,6 @@
 
 ;;; Code:
 (require 'cl-lib)  ; for lexical-let
-(require 'emms-browser)
 
 (defvar  emms-filters-stack nil
   "A history of multi-filters. Our working stack.")
@@ -513,9 +512,34 @@
 (defvar emms-filters-filter-menu '("no filter" "new filter")
   "A list of available filters grouped by factory.")
 
-;; for backwards compatibility with emms-browser
-(defvar emms-filters-filter-changed-hook emms-browser-filter-changed-hook
-  "Hook to run after the filter has changed.")
+(defgroup emms-filters nil
+  "*The Emacs Multimedia System filter system"
+  :prefix "emms-filters-"
+  :group 'multimedia
+  :group 'applications)
+
+;; For backwards compatibility with emms-browser
+;; This is really just a mirror of the browser's hook.
+(defcustom emms-filters-filter-changed-hook nil
+  "Hook to run after the filter has changed."
+  :type 'hook)
+
+;; Emms-filters is agnostic about the renderer.
+;;
+;; These are to be set by the rendererer so that emms-filters
+;; can ask for a new render of the results when
+;; new a new filter has been created.
+
+(defvar emms-filters-make-and-render-hash-hook nil
+  "This function applies the filters, creates a hash,
+and then populates and renders a tree of data,
+For the Emms-browser this should be emms-browse-by.")
+
+;; emms-filters-expand-render-hook
+(defvar emms-filters-expand-render-hook nil
+  "To be set by the renderer so that the results tree
+can be expanded when a filter or search exists,
+For the Emms-Browser this is the emms-browser-expand-all function.")
 
 (defvar emms-filters-multi-filter-save-file nil
   "A file name to write the kept meta-filters from the session to.")
@@ -556,7 +580,7 @@ then we combine with the result of the emms-filters-current-filter."
 
 (defun emms-filters-add-to-filter-menu-from-filter-list (folder filters)
   "Add a FOLDER and FILTERS to the filter select list menu."
-  (emms-filters-add-to-filter-menu folder (mapcar 'cadr tango-filters)))
+  (emms-filters-add-to-filter-menu folder (mapcar 'cadr filters)))
 
 (defun emms-filters-add-to-filter-menu (folder-name filter-or-list)
   "Add to a FOLDER-NAME in the filter select menu creating it as needed.
@@ -1327,24 +1351,26 @@ Filter should be a filter cons in the form of '(name . function)."
   (setq emms-filters-current-filter-name (car filter))
   (setq emms-filters-current-filter filter))
 
-(defun emms-filters-browse-by ()
-  "The single interface to emms-browser. Re-render please.
-Uses the top level type, or the default browse type."
-  (emms-browse-by (or emms-browser-top-level-type
-                      emms-browser-default-browse-type)))
+;; (defun emms-filters-browse-by ()
+;;   "The single interface to emms-browser. Re-render please.
+;; Uses the top level type, or the default browse type."
+;;   (emms-browse-by (or emms-browser-top-level-type
+;;                       emms-browser-default-browse-type)))
 
 (defun  emms-filters-refilter ()
   "Make a multi-filter function from the current meta-filter and set it.
-Run the filter changed hook. Ask the browser to re-render."
+Run the filter changed hooks. Ask the Browser/renderer to re-render with
+the render and expand hooks."
   (emms-filters-set-filter (cons (caar emms-filters-stack)
                      (emms-filters-make-multi-filter (cdar emms-filters-stack))))
+
+  ;; filter-changed-hook is a defcustom for users.
   (run-hooks 'emms-filters-filter-changed-hook)
-  ;; emms-filters-make-and-render-hash
-  (emms-filters-browse-by)
-  ;; If it is a search or a filter expand the results.
+  ;; this hook is for renderers.
+  (run-hooks 'emms-filters-make-and-render-hash-hook)
+  ;; If it is a search ora filter expand the results.
   (when (or emms-filters-stack emms-filters-search-caches)
-    ;; emms-filters-expand-render
-    (emms-browser-expand-all)))
+    (run-hooks 'emms-filters-expand-render-hook)))
 
 (defun emms-filters-ensure-metafilter (filter)
   "Ensure that FILTER is a meta-filter."
@@ -1594,7 +1620,6 @@ Creates a new 'AND-NOT' list of filters."
 
 (defun emms-filters-full-name ()
   "Give a full name for the current filtering.
-Used by emms-browser mode description.
 Includes the ring filter name plus current filter name.
 Does not show the current cache name.
 Only show the ring filter name if its function is not nil.
@@ -1681,9 +1706,8 @@ Use the current filter name so that 'no filter' shows."
 
 (defun emms-filters-browser-search (fields)
   "Search track FIELDS in the cache for a compare string.
-An exact replacement for emms-browser-search.
 Prompt for the value to search, emulate
-the behavior of emms-browser-search using the filter and cache stacks
+the behavior of former emms-browser-search using the filter and cache stacks
 with the 'fields search' filter factory.
 
  1. Make a filter function,
@@ -1829,7 +1853,7 @@ and cache the results to the cache stack."
   (interactive)
   (emms-filters-quick-one-shot filter-factory-name))
 
-;; replacements for emms-browser and then some.
+;; replacements for emms-browser search and then some.
 (defun emms-filters-search-by-albumartist ()
   "A fields search quick one shot for Album Artist."
   (interactive)
@@ -1880,60 +1904,6 @@ and cache the results to the cache stack."
   (interactive)
   (emms-filters-quick-one-shot "All text"))
 
-(setq emms-browser-mode-map
-      (let ((map emms-browser-mode-map))
-        (define-key map (kbd "Q") #'emms-filters-pop-cache)
-        ;; (define-key map (kbd "h") #'hydra-emms/body)
-        (define-key map (kbd ">") #'emms-filters-next-ring-filter)
-        (define-key map (kbd "<") #'emms-filters-previous-ring-filter)
-        (define-key map (kbd "f !") #'emms-filters-clear-ring-filter)
-        (define-key map (kbd "f >") #'emms-filters-next-ring-filter)
-        (define-key map (kbd "f <") #'emms-filters-previous-ring-filter)
-
-        (define-key map (kbd "i s") #'emms-filters-status-print)
-        (define-key map (kbd "i f") #'emms-filters-show-filters)
-        (define-key map (kbd "i m") #'emms-filters-show-filter-menu)
-        (define-key map (kbd "i F") #'emms-filters-show-filter-factories)
-        (define-key map (kbd "i r") #'emms-filters-show-filter-ring)
-        (define-key map (kbd "i c") #'emms-filters-show-cache-stack)
-        (define-key map (kbd "i S") #'emms-filters-show-cache-stash)
-
-        (define-key map (kbd "f q") #'emms-filters-pop)
-        (define-key map (kbd "f h") #'emms-filters-hard-filter)
-        ;; (define-key map (kbd "f H") #'hydra-emms-filters/body)
-        (define-key map (kbd "f r") #'emms-filters-swap) ; rotate ?
-        (define-key map (kbd "f R") #'emms-filters-swap-pop) ; rotate-eject, ,pop-previous
-        (define-key map (kbd "f f") #'emms-filters-squash) ;flatten
-        (define-key map (kbd "f k") #'emms-filters-keep)
-        (define-key map (kbd "f C") #'emms-filters-clear-all)
-        (define-key map (kbd "f c") #'emms-filters-clear)
-        (define-key map (kbd "f p") #'emms-filters-push)
-        (define-key map (kbd "f s") #'emms-filters-smash)
-        (define-key map (kbd "f o") #'emms-filters-or)
-        (define-key map (kbd "f a") #'emms-filters-and)
-        (define-key map (kbd "f n") #'emms-filters-and-not)
-
-        (define-key map (kbd "c p") #'emms-filters-push-cache)
-        (define-key map (kbd "c z") #'emms-filters-stash-pop-cache)
-        (define-key map (kbd "c Z") #'emms-filters-stash-cache)
-        (define-key map (kbd "c q") #'emms-filters-pop-cache)
-        (define-key map (kbd "c h") #'emms-filters-hard-filter)
-        (define-key map (kbd "c r") #'emms-filters-swap-cache)
-        (define-key map (kbd "c R") #'emms-filters-swap-pop-cache)
-        (define-key map (kbd "c S") #'emms-filters-squash-caches)
-        (define-key map (kbd "c c") #'emms-filters-clear-caches)
-
-        (define-key map (kbd "s o") #'emms-filters-search-by-albumartist)
-        (define-key map (kbd "s a") #'emms-filters-search-by-artist)
-        (define-key map (kbd "s c") #'emms-filters-search-by-composer)
-        (define-key map (kbd "s p") #'emms-filters-search-by-performer)
-        (define-key map (kbd "s A") #'emms-filters-search-by-album)
-        (define-key map (kbd "s t") #'emms-filters-search-by-title)
-        (define-key map (kbd "s T") #'emms-filters-search-by-titles)
-        (define-key map (kbd "s n") #'emms-filters-search-by-names)
-        (define-key map (kbd "s s") #'emms-filters-search-by-names-and-titles)
-        (define-key map (kbd "s e") #'emms-filters-search-by-all-text) ;everything.
-        map))
 
 ;;; Testing
 ;;; -------------------------------------------------------------------
@@ -2112,6 +2082,8 @@ Returns a list of cons with the filter result and the track."
     (emms-filters-test-factory-interactive "Genre" first-test-track)
     (emms-filters-test-factory-interactive "Titles" first-test-track)))
 
+;; Testing Backward compatibility with the emms-browser.
+;; -------------------------------------------------------
 ;; Make some old style browser filters to test
 ;; the filter-ring backward compatibility.
 ;; Steps to test:

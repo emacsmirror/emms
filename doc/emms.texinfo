@@ -2406,7 +2406,9 @@ artist->album->track when you switch to the 'singles' filter:
       (ad-activate 'emms-browser-next-mapping-type)
     (ad-deactivate 'emms-browser-next-mapping-type)))
 
-(add-hook 'emms-browser-filter-changed-hook 'toggle-album-display)
+;; Deprecated use the emms-filters hook instead.
+;; (add-hook 'emms-browser-filter-changed-hook 'toggle-album-display)
+(add-hook 'emms-filters-filter-changed-hook 'toggle-album-display)
 @end lisp
 
 Furthermore, you can customize
@@ -2676,11 +2678,59 @@ could work against anything but the Emms-cache-db. The equivalent to the
 emms-browser search-by is just a one shot interactive 'new fields-search'
 filter factory that saves a cache and then removes itself.
 
+Emms-Filters is agnostic about the renderer. Currently there has been a
+lot of effor to maintain backward compatibity with the Emms-browser as
+its functionality was replaced. There are the following hooks that any
+renderer could use in order to leverage Emms-Filters.
+
+To maintain independence there are three hook variables which allow
+emms-filters to interact with the Emms-Browsers functionality.
+
+The first is a defcustom hook to mirror the browser's deprecated hook
+of the same name.
+The second hook happens just after, and is for any renderer
+that wishes to re-render when a filter changes.
+The third hook is to tell any renderer to expand its render if there is
+a filter or cache stack entry present.
+
+This a defcustom hook that is run anytime the filters change
+@var{emms-filters-filter-changed-hook}
+
+@lisp
+(add-hook 'emms-filters-filter-changed-hook 'my-filters-have-changed-function)
+@end lisp
+
+The following two hooks are for the renderers which is currently
+just the Emms-Browser. These hooks are the mechanism used to
+actually filter and render the tracks.
+
+When the filter or cache changes Emms-Filters needs to
+tell the renderer to re-build its hash and display it.
+For this purpose there is another hook, the
+@var{emms-filters-make-and-render-hash-hook}.
+
+The Emms-browser function for this is emms-browse-by.
+This function applies the filters, creates a hash,
+and then populates and renders a tree of data.
+@lisp
+(add-hook 'emms-filters-make-and-render-hash-hook 'emms-browse-by)
+@end lisp
+
+The last hook is the @var{emms-filters-expand-render-hook}.
+This is just so that Emms-Filters can tell the renderer to
+expand its tree when there is a filter or cache stack present
+and something has changed.
+For Emms-Browser this is the function emms-browser-expand-all
+
+@lisp
+;; (add-hook 'emms-filters-expand-render-hook 'emms-browser-expand-all)
+@end lisp
+
 The filter system is much more powerful than the previous system of
 filtering and searching and is much easier to use both in code and interactively
 while searching your tracks.
 
-A summary of differences and features of the filter system.
+Here is a summary of differences and features of the filter system.
 
 @itemize @bullet
 @item Filters, no matter the complexity, are defined entirely as data.
