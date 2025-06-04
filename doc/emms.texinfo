@@ -2738,7 +2738,7 @@ Here is a summary of differences and features of the filter system.
 @item Filters return true if they match the tracks.
 @item Filters are lambda functions created with factories from data.
 @item There is no difference between a search function and a filter function.
-@item The factory should wrap the lambda in a lexical-let.
+@item The factory should wrap the lambda in a let with lexical-binding t.
 @item The factories and the filters must both be registered with Emms-filters.
 @item Registered factories have a built in interactive prompting system.
 @item Any results can be pushed to the cache stack for future filters and searches.
@@ -2786,9 +2786,9 @@ order to create new filters at any time.
 
 Filter factories depend upon lexical context of their parameters. In
 order to have data values that stick after function creation there
-is lexical-let to ensure the factory behaves as expected.
+is let with lexical-binding to ensure the factory behaves as expected.
 This transfers the values to local values and uses them as normal
-in the returned #'(lambda (track)...) anonymous function.
+within the returned #'(lambda (track)...) anonymous function.
 
 As an example, here is the generic field-compare function.
 It takes an operator function, a field name and the value to compare.
@@ -2801,7 +2801,7 @@ using any comparison function we would like.
 Works for number fields and string fields provided the appropriate
 type match between values and the comparison function. Partials can
 easily make more specific factory functions from this one."
-  (lexical-let ((local-operator operator-func)
+  (let ((local-operator operator-func)
                 (local-field field)
                 (local-compare-val compare-val))
     #'(lambda (track)

@@ -133,7 +133,7 @@
 ;;
 ;; Filters are slightly different when coded for emms-filters.
 ;; 1. They should return true if they match the tracks
-;; 2. The factory should wrap the lambda in a lexical-let.
+;; 2. The factory should wrap the lambda in a let with lexical-binding t.
 ;; 3. The factory and the filters must both be registered with emms-filters.
 ;;    This provides a higher level of interaction with the filters.
 ;; 4. There is no difference between a search function and a filter function.
@@ -194,16 +194,16 @@
 ;;
 ;; Filter factories depend upon lexical context of their parameters. In
 ;; order to have data values that stick after function creation there
-;; is lexical-let to ensure the factory behaves as expected.
-;; This transfers the values to local values and uses them as normal
-;; in the returned #'(lambda (track)...).
+;; is let using lexical binding to ensure the factory behaves as expected.
+;; This transfers the values to local values and uses them as local
+;; within the returned #'(lambda (track)...).
 ;;
 ;; (defun emms-filters-make-filter-field-compare (operator-func field compare-val)
 ;;   "Make a filter that compares FIELD to COMPARE-VALUE with OPERATOR-FUNC.
 ;; Works for number fields and string fields provided the appropriate
 ;; type match between values and the comparison function. Partials can
 ;; easily make more specific factory functions from this one."
-;;   (lexical-let ((local-operator operator-func)
+;;   (let ((local-operator operator-func)
 ;;                 (local-field field)
 ;;                 (local-compare-val compare-val))
 ;;     #'(lambda (track)
