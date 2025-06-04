@@ -480,7 +480,7 @@
 ;; (emms-filters-make-filter-ring '("Tango" "Vals" "Milonga"))
 
 ;;; Code:
-;;; (require 'cl)  ; for lexical-let
+
 
 (defvar  emms-filters-stack nil
   "A history of multi-filters. Our working stack.")
