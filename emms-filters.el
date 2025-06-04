@@ -480,7 +480,7 @@
 ;; (emms-filters-make-filter-ring '("Tango" "Vals" "Milonga"))
 
 ;;; Code:
-(require 'cl-lib)  ; for lexical-let
+;;; (require 'cl)  ; for lexical-let
 
 (defvar  emms-filters-stack nil
   "A history of multi-filters. Our working stack.")
@@ -844,7 +844,7 @@ and type is :number :function :symbol or :string"
   "Generate a function to check if a track is in DIRNAME.
 If the track is not in DIRNAME, return t.
 Uses a regex anchoring dirname to the beginning of the expanded path."
-  (lexical-let ((re (concat "^" (expand-file-name dirname))))
+  (let ((re (concat "^" (expand-file-name dirname))))
     #'(lambda (track)
         (string-match re (emms-track-get track 'name)))))
 
@@ -855,7 +855,7 @@ Uses a regex anchoring dirname to the beginning of the expanded path."
 ;; seconds in a day (* 60 60 24) = 86400
 (defun emms-filters-make-filter-played-within (days)
   "Show only tracks played within the last number of DAYS."
-  (lexical-let ((seconds-to-time (seconds-to-time (* days 86400))))
+  (let ((seconds-to-time (seconds-to-time (* days 86400))))
     #'(lambda (track)
         (let ((min-date (time-subtract
                          (current-time)
@@ -890,8 +890,8 @@ Returns a number"
 
 (defun emms-filters-make-filter-year-range (y1 y2)
   "Make a date range filter from Y1 and Y2."
-  (lexical-let ((local-y1 y1)
-                (local-y2 y2))
+  (let ((local-y1 y1)
+        (local-y2 y2))
     #'(lambda (track)
         (let ((year (emms-filters-get-year track)))
           (and
@@ -906,7 +906,7 @@ Returns a number"
 
 (defun emms-filters-make-filter-year-greater (year)
   "Make a Greater than year filter from YEAR."
-  (lexical-let ((local-year year))
+  (let ((local-year year))
     #'(lambda (track)
         (let ((year (emms-filters-get-year track)))
           (and
@@ -919,7 +919,7 @@ Returns a number"
 
 (defun emms-filters-make-filter-year-less (year)
   "Make a Less than year filter from YEAR."
-  (lexical-let ((local-year year))
+  (let ((local-year year))
     #'(lambda (track)
         (let ((year (emms-filters-get-year track)))
           (and
@@ -936,8 +936,8 @@ Returns a number"
 (defun emms-filters-make-filter-fields-search (fields compare-value)
   "Make a filter that can look in multiple track FIELDS for COMPARE-VALUE.
 This replaces the original emms-browser search match-p functionality."
-  (lexical-let ((local-fields fields)
-                (local-compare-value compare-value))
+  (let ((local-fields fields)
+        (local-compare-value compare-value))
     #'(lambda (track)
         (cl-reduce
          (lambda (result field)
@@ -1010,9 +1010,9 @@ So we can continue with the language of
 Works for number fields and string fields provided the appropriate
 type match between values and the comparison function. Partials can
 easily make more specific factory functions from this one."
-  (lexical-let ((local-operator operator-func)
-                (local-field field)
-                (local-compare-val compare-val))
+  (let ((local-operator operator-func)
+        (local-field field)
+        (local-compare-val compare-val))
     #'(lambda (track)
         (let ((track-val (emms-track-get track local-field)))
           (and
@@ -1162,7 +1162,7 @@ easily make more specific factory functions from this one."
  '(("Search names and titles: " (:string . nil))))
 
 (emms-filters-register-filter-factory
- "All text fields"
+ "All text"
  (apply-partially 'emms-filters-make-filter-fields-search
                   '(info-albumartist
                     info-artist
@@ -1221,8 +1221,8 @@ A multi-filter is a list of lists of filter names.
 The track is checked against each filter, each list of filters is
 reduced with or. The lists are reduced with and.
 Returns True if the track should be filtered out."
-  (lexical-let ((local-multi-funcs
-                 (emms-filters-meta-filter->multi-funcs meta-filter)))
+  (let ((local-multi-funcs
+         (emms-filters-meta-filter->multi-funcs meta-filter)))
     #'(lambda (track)
         (cl-reduce
          (lambda (result funclist)
@@ -1857,7 +1857,7 @@ and cache the results to the cache stack."
 (defun emms-filters-search-by-albumartist ()
   "A fields search quick one shot for Album Artist."
   (interactive)
-  (emms-filters-quick-one-shot "Album artist"))
+  (emms-filters-quick-one-shot "Album-artist"))
 
 (defun emms-filters-search-by-artist ()
   "A fields search quick one shot for Artist."
