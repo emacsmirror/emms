@@ -675,10 +675,10 @@ Pass functions through untouched."
   "Create a string format from a list of FIELDS and a compare VALUE."
   (format "%s : %s"
           (mapconcat
-           `(lambda (info)
-              (if (symbolp info)
-                  (substring (symbol-name info)  5)
-                info))
+           #'(lambda (info)
+               (if (symbolp info)
+                   (substring (symbol-name info)  5)
+                 info))
            fields " | ")
           value))
 
@@ -1768,10 +1768,10 @@ or the emms-filters-filter-factory 'search-fields'."
         (svalue (cdar search-list)))
     (format "%s - %s"
             (mapconcat
-             `(lambda (info)
-                (if (symbolp info)
-                    (substring (symbol-name info)  5)
-                  info))
+             #'(lambda (info)
+                 (if (symbolp info)
+                     (substring (symbol-name info)  5)
+                   info))
              infos " | ")
             svalue)))
 
