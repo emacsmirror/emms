@@ -1558,7 +1558,7 @@ This is like browser-search, but with more choices.
   (interactive)
   (let ((fname
          (or filter-name
-             (emms-filters-chooose-filter))))
+             (emms-filters-choose-filter))))
     (emms-filters-push fname)
     (emms-filters-hard-filter)
     (emms-filters-pop)))
