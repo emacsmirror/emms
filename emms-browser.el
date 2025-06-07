@@ -339,6 +339,7 @@ Called once for each directory."
 ;; It should probably just be set directly, and the browser's
 ;; hook be deprecated. It will have to be set if anyone changes it...
 ;; Potential problem if someone us using this hook.
+(add-hook 'emms-browser-filter-tracks-hook 'emms-filters-browser-filter-hook-function)
 (add-hook 'emms-filters-make-and-render-hash-hook 'emms-browse-by)
 (add-hook 'emms-filters-expand-render-hook 'emms-browser-expand-all)
 

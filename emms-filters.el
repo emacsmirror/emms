@@ -481,6 +481,7 @@
 
 ;;; Code:
 
+(require 'ring)
 
 (defvar  emms-filters-stack nil
   "A history of multi-filters. Our working stack.")
@@ -547,7 +548,7 @@ For the Emms-Browser this is the emms-browser-expand-all function.")
 (defvar emms-filters-cache-stash '(("Emms DB" . emms-cache-db))
   "A list of cons (name . cache).")
 
-(defun emms-filters-browser-filter-hook (track)
+(defun emms-filters-browser-filter-hook-function (track)
   "A hook function for the browser. Freewill here for TRACK filtering.
 First we test the track against the current ring filter if we have one,
 then we combine with the result of the emms-filters-current-filter."
@@ -557,10 +558,6 @@ then we combine with the result of the emms-filters-current-filter."
        (if (cdr emms-filters-current-filter)
            (funcall (cdr emms-filters-current-filter) track)
          t)))
-
-;; We set this and forget it.
-;; This and 'emms-filters-refilter() are the interfaces to emms-browser.
-(setq emms-browser-filter-tracks-hook 'emms-filters-browser-filter-hook)
 
 (defun emms-filters-register-filter (filter-name filter)
   "Put our new FILTER function named FILTER-NAME in our filter list."
@@ -1492,7 +1489,7 @@ See also: ems-pop-cache."
                                   'string-hash
                                 'equal))))
     (maphash (lambda (path track)
-               (when (emms-filters-browser-filter-hook track)
+               (when (emms-filters-browser-filter-hook-function track)
                  (puthash path track search-cache)))
              (emms-filters-last-search-cache))
 
@@ -2051,36 +2048,36 @@ Returns a list of cons with the filter result and the track."
   (mapconcat (lambda (str) (format "%s\n" str))
              cons-list))
 
-(defun emms-filters-do-tests ()
-  "A function for isolating and running some tests."
-  ;; Make some sample data from the first few tracks from the cache.
-  (let  ((emms-filters-test-tracks-sample
-          (emms-filters-test-get-track-samples emms-cache-db))
-         (first-test-track (car emms-filters-test-tracks))
-         (second-test-track (cadr emms-filters-test-tracks)))
+;; (defun emms-filters-do-tests ()
+;;   "A function for isolating and running some tests."
+;;   ;; Make some sample data from the first few tracks from the cache.
+;;   (let  ((emms-filters-test-tracks-sample
+;;           (emms-filters-test-get-track-samples emms-cache-db))
+;;          (first-test-track (car emms-filters-test-tracks))
+;;          (second-test-track (cadr emms-filters-test-tracks)))
 
-    ;; A direct use of the generated filter.
+;; A direct use of the generated filter.
 
-    ;; Create a filter from a factory and test it against a single track.
-    (emms-filters-test-factory "Genre" '("vals") first-test-track)
-    (emms-filters-test-factory "Genre" '("vals") second-test-track)
+;; ;; Create a filter from a factory and test it against a single track.
+;; (emms-filters-test-factory "Genre" '("vals") first-test-track)
+;; (emms-filters-test-factory "Genre" '("vals") second-test-track)
 
-    (emms-filters-test-factory "Titles" "Some" first-test-track)
-    (emms-filters-test-factory "Titles" "Some" second-test-track)
+;; (emms-filters-test-factory "Titles" "Some" first-test-track)
+;; (emms-filters-test-factory "Titles" "Some" second-test-track)
 
-    ;; Test a few tracks against it.
-    (pretty-cons (emms-filters-test-filter-tracks "Genre" '("vals") emms-filters-test-tracks))
-    (pretty-cons (emms-filters-test-filter-tracks "Genre" '("vals") emms-filters-test-tracks-sample))
-    (pretty-cons (emms-filters-test-filter-tracks "Titles" '("Some") emms-filters-test-tracks))
-    (pretty-cons (emms-filters-test-filter-tracks "Titles" '("Some") emms-filters-test-tracks-sample))
-    (pretty-cons (emms-filters-test-filter-tracks "Titles" '("Viv") emms-filters-test-tracks-sample))
+;; ;; Test a few tracks against it.
+;; (pretty-cons (emms-filters-test-filter-tracks "Genre" '("vals") emms-filters-test-tracks))
+;; (pretty-cons (emms-filters-test-filter-tracks "Genre" '("vals") emms-filters-test-tracks-sample))
+;; (pretty-cons (emms-filters-test-filter-tracks "Titles" '("Some") emms-filters-test-tracks))
+;; (pretty-cons (emms-filters-test-filter-tracks "Titles" '("Some") emms-filters-test-tracks-sample))
+;; (pretty-cons (emms-filters-test-filter-tracks "Titles" '("Viv") emms-filters-test-tracks-sample))
 
-    (emms-filters-test-find-tracks emms-cache-db (emms-filters-make--filter "Titles" '("sollo")))
+;; (emms-filters-test-find-tracks emms-cache-db (emms-filters-make--filter "Titles" '("sollo")))
 
-    ;; Test interactive creation of a filter from a factory.
-    ;; create a filter from a factory and test it against a single track.
-    (emms-filters-test-factory-interactive "Genre" first-test-track)
-    (emms-filters-test-factory-interactive "Titles" first-test-track)))
+;; ;; Test interactive creation of a filter from a factory.
+;; ;; create a filter from a factory and test it against a single track.
+;; (emms-filters-test-factory-interactive "Genre" first-test-track)
+;; (emms-filters-test-factory-interactive "Titles" first-test-track)))
 
 ;; Testing Backward compatibility with the emms-browser.
 ;; -------------------------------------------------------
