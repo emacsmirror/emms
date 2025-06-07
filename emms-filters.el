@@ -481,6 +481,7 @@
 
 ;;; Code:
 
+(require 'emms-cache)
 (require 'ring)
 
 (defvar  emms-filters-stack nil
