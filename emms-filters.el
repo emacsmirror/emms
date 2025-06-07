@@ -1830,7 +1830,7 @@ or the emms-filters-filter-factory 'search-fields'."
   (interactive)
   (let* ((current (pop emms-filters-search-caches)))
     (pop emms-filters-search-caches)
-    (push current search-caches-stack)))
+    (push current search-caches)))
 
 (defun  emms-filters-squash-caches ()
   "Squash the cache stack, keep the top entry."
