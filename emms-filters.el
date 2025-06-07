@@ -2024,37 +2024,37 @@ Returns a list of cons with the filter result and the track."
              cache)
     tracks))
 
-;;; Testing
-;;; Some actual testing.
-;;; Some sample tracks to use for data.
-(setq emms-filters-test-tracks
-      '((*track* (type . file)
-                 (name . "/Someone/Some-album/Some-song/track0001")
-                 (info-playing-time . 180)
-                 (info-discnumber . "1")
-                 (info-artist . "Someone-else")
-                 (info-title . "Some-song")
-                 (info-tracknumber . "01")
-                 (info-album . "Some-album")
-                 (info-albumartist . "Someone")
-                 (info-year . 1940)
-                 (info-genre . "vals"))
-        (*track* (type . file)
-                 (name . "/Another-one/Another-album/Another-song/track0002")
-                 (info-playing-time . 180)
-                 (info-discnumber . "1")
-                 (info-artist . "Another-Someone-else")
-                 (info-title . "Another-song")
-                 (info-tracknumber . "02")
-                 (info-album . "Another-album")
-                 (info-albumartist . "Another-one")
-                 (info-year . 1935)
-                 (info-genre . "tango"))))
+;; ;;; Testing
+;; ;;; Some actual testing.
+;; ;;; Some sample tracks to use for data.
+;; (setq emms-filters-test-tracks
+;;       '((*track* (type . file)
+;;                  (name . "/Someone/Some-album/Some-song/track0001")
+;;                  (info-playing-time . 180)
+;;                  (info-discnumber . "1")
+;;                  (info-artist . "Someone-else")
+;;                  (info-title . "Some-song")
+;;                  (info-tracknumber . "01")
+;;                  (info-album . "Some-album")
+;;                  (info-albumartist . "Someone")
+;;                  (info-year . 1940)
+;;                  (info-genre . "vals"))
+;;         (*track* (type . file)
+;;                  (name . "/Another-one/Another-album/Another-song/track0002")
+;;                  (info-playing-time . 180)
+;;                  (info-discnumber . "1")
+;;                  (info-artist . "Another-Someone-else")
+;;                  (info-title . "Another-song")
+;;                  (info-tracknumber . "02")
+;;                  (info-album . "Another-album")
+;;                  (info-albumartist . "Another-one")
+;;                  (info-year . 1935)
+;;                  (info-genre . "tango"))))
 
-(defun pretty-cons (cons-list)
-  "pretty print a list of cons."
-  (mapconcat (lambda (str) (format "%s\n" str))
-             cons-list))
+;; (defun pretty-cons (cons-list)
+;;   "pretty print a list of cons."
+;;   (mapconcat (lambda (str) (format "%s\n" str))
+;;              cons-list))
 
 ;; (defun emms-filters-do-tests ()
 ;;   "A function for isolating and running some tests."
