@@ -343,6 +343,7 @@ Called once for each directory."
 (add-hook 'emms-filters-make-and-render-hash-hook 'emms-browse-by)
 (add-hook 'emms-filters-expand-render-hook 'emms-browser-expand-all)
 
+
 (defvar emms-browser-tree-node-map-default
   '((info-albumartist . info-artist)
     (info-artist      . info-album)
@@ -788,18 +789,22 @@ artist1 -> album1 -> *track* 1.."
 
 (defun emms-browser-make-name (entry type)
   "Return a name for ENTRY and TYPE, used for making a bdata object."
-  (let ((key (car entry))
-        (track (cadr entry))
-        artist title) ;; only the first track
-    (cond
-     ((eq type 'info-title)
-      (setq aartist (emms-track-get track 'info-albumartist))
-      (setq artist (emms-track-get track 'info-artist))
-      (setq title (emms-track-get track 'info-title))
-      (if (not (and (or aartist artist) title))
-          key
-	(concat aartist " : " artist " - " title)))
-     (t key))))
+
+  (if (eq type 'info-title)
+      (let* ((track (cadr entry))
+             (artist (emms-track-get track 'info-artist))
+             (aartist (emms-track-get track 'info-albumartist))
+             (title  (emms-track-get track 'info-title))
+
+             (artist (if (and artist aartist)
+                         (concat aartist " : " artist)
+                       (if (and (not artist) aartist)
+                           artist
+                         artist))))
+
+        (concat artist " - " title))
+    (car entry)))
+
 
 (defun emms-browser-track-number (track)
   "Return a string representation of a track number.
@@ -1389,12 +1394,12 @@ Return the playlist buffer point-max before adding."
 
 (defun emms-browser-remove-tracks (&optional delete start end)
   "Remove all tracks at point or in region if active.
-Unless DELETE is non-nil or with prefix argument, this only acts on the browser,
-files are untouched.
-Optionally with line number at position START and position of END within the region.
-If caching is enabled, files are removed from the cache as well.
-When the region is not active, a numeric prefix argument remove that many
-tracks from point, it does not delete files."
+Unless DELETE is non-nil or with prefix argument, this only acts on the
+browser,files are untouched. Optionally with line number at position
+START and position of END within the region. If caching is enabled,
+files are removed from the cache as well. When the region is not active,
+a numeric prefix argument remove that many tracks from point, it does
+not delete files."
   (interactive "P\nr")
   (let ((count (cond
                 ((use-region-p)
@@ -1948,13 +1953,13 @@ exists.
 
 Deprecated. See emms-filters.
 
-Equivalent to '(emms-filters-push filter-name)' when using a registered
+Equivalent to `(emms-filters-push filter-name)' when using a registered
 emf filter directly.
 
 The FILTER will be registered with emms-filters if it is
 a cons filter and its name is not already taken.
 
-The filter name will be pushed to the 'emms-filters-filter-stack, making
+The filter name will be pushed to the emms-filters-filter-stack, making
 it the active filter."
   (when (not (stringp filter))
     (emms-filters-register-if-missing filter))
@@ -1967,7 +1972,7 @@ it the active filter."
   "Make a user-level function for filtering tracks and put
 it into the emms-filters-filter-ring.
 
-Deprecated: See 'emms-filters-make-filter
+Deprecated: See emms-filters-make-filter
 
 Altered from the original to invert the return value of the filter.
 The resulting inverted filter is used directly in emms-filters like any
@@ -1976,7 +1981,7 @@ other emf filter.
 This:
  - Defines a filter cons variable emms-browser-filter-NAME of (name . func).
  - The filter is registered into emms-filters-filters.
- - Added to the emf filter menus under 'browser-filters'.
+ - Added to the emf filter menus under `browser-filters'.
  - Added to the emms-filters-filter-ring.
  - Defines an interactive function emms-browser-show-NAME."
   (let ((funcnam (intern (concat "emms-browser-show-" name)))
@@ -2032,7 +2037,7 @@ If the track is not of TYPE, return t."
   "Search in the cache searching FIELDS in the track for a compare string.
 Prompt for the value to search otherwise emulate
 the behavior of emms-browser-search using the filter and cache stacks
-with the 'fields search' filter factory."
+with the `fields search' filter factory."
   (emms-filters-browser-search fields))
 
 (defun emms-browser-search-by-albumartist ()
