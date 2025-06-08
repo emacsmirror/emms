@@ -734,17 +734,6 @@ filter name and then creates and registers a new filter,then returns its name."
     (emms-filters-make-filter factory-name filter-name parameters)
     filter-name))
 
-(defun emms-filters-fields-search-quick-one-shot (fields compare-value)
-  "Make and register a fields-search filter, searching FIELDS for COMPARE-VALUE.
-Push the filter onto the filter stack.
-Push matching tracks to the cache stack, then pop the filter."
-  (let ((filter-name (emms-filters-format-search fields compare-value)))
-    (emms-filters-register-filter
-     filter-name
-     (emms-filters-make-filter-fields-search fields compare-value))
-    (emms-filters-add-to-filter-menu "fields-search" filter-name)
-    (emms-filters-one-shot filter-name)))
-
 (defun emms-filters-register-filter-factory (name func prompt-list)
   "Register FUNC as NAME with PROMPT-LIST into a filter choice.
 Give it the shape: (name . (func . prompt-list))."
@@ -766,7 +755,6 @@ Give it the shape: (name . (func . prompt-list))."
 (defun emms-filters-clear-filter-factories ()
   "Reset the filter factory list."
   (setq emms-filters-filter-factories nil))
-
 
 
 ;;; Factory Prompting.
@@ -926,14 +914,14 @@ Returns a number"
            (>= local-year year))))))
 
 (emms-filters-register-filter-factory "Less than Year"
-                             'emms-filters-make-filter-year-less
-                             '(("Less than year: " (:number . nil))))
+                          'emms-filters-make-filter-year-less
+                          '(("Less than year: " (:number . nil))))
 
 ;; fields-search
 ;; -------------
 ;; A replacement filter factory for the emms-browser-fields-search filter.
 (defun emms-filters-make-filter-fields-search (fields compare-value)
-  "Make a filter that can look in multiple track FIELDS for COMPARE-VALUE.
+  "Make a filter to search in a list of track FIELDS for COMPARE-VALUE.
 This replaces the original emms-browser search match-p functionality."
   (let ((local-fields fields)
         (local-compare-value compare-value))
@@ -1239,7 +1227,8 @@ Returns True if the track should be filtered out."
 ;; A simple not a filter, So we have a default of no filters to choose/return to.
 (emms-filters-register-filter "No filter" nil)
 
-;; It might be that we should make these defcustoms. I'm not sure.
+;; The variables are simply organizational so they can
+;; be created and added to the filter ring.
 
 ;;             factory      name        factory arg
 (defvar emms-filters-decade-filters
