@@ -315,7 +315,7 @@
 ;; The function; emms-filters-hard-filter creates a cache from the current filter
 ;; and cache, and pushes it to the stack.
 ;;
-;; By using emms-filters-one-shot, emms-filters-quick-one-shot and emms-filters-browser-search
+;; By using emms-filters-one-shot, emms-filters-quick-one-shot
 ;; also create caches on the stack. These functions allow effective
 ;; emulation of the previous EMMS-Browser search functionalities.
 ;;
@@ -327,9 +327,6 @@
 ;; for the push-cache command.
 ;;
 ;; A one-shot filter combined with a factory name is 'emms-filters-quick-one-shot.
-;;
-;; The function 'emms-filters-browser-search is a 'emms-filters-quick-one-shot with the
-;; fields-search filter factory.
 ;;
 ;; This effectively emulates the former emms-browser search behavior of
 ;; quickly prompting, filtering and saving a cache by pushing a filter,
@@ -483,9 +480,13 @@
 
 (require 'emms-cache)
 (require 'ring)
+(require 'cl-lib)
 
 (defvar  emms-filters-stack nil
   "A history of multi-filters. Our working stack.")
+
+(defvar emms-filters-search-caches '()
+  "The stack of search result caches.")
 
 (defvar  emms-filters-filter-ring nil
   "A ring of filter names for quick access with next and previous.")
@@ -740,7 +741,7 @@ Push matching tracks to the cache stack, then pop the filter."
   (let ((filter-name (emms-filters-format-search fields compare-value)))
     (emms-filters-register-filter
      filter-name
-     (emms-filters-make-filter-fields-search (fields compare-value)))
+     (emms-filters-make-filter-fields-search fields compare-value))
     (emms-filters-add-to-filter-menu "fields-search" filter-name)
     (emms-filters-one-shot filter-name)))
 
@@ -1706,29 +1707,7 @@ Creates a new `AND-NOT' list of filters."
 ;; This effectively emulates the former emms-browser search behavior of
 ;; filtering and saving a cache by pushing a filter, hard-filter, pop.
 
-(defvar emms-filters-search-caches '()
-  "The stack of search result caches.")
 
-(defun emms-filters-browser-search (fields)
-  "Search track FIELDS in the cache for a compare string.
-Prompt for the value to search, emulate
-the behavior of former emms-browser-search using the filter and cache stacks
-with the `fields search' filter factory.
-
- 1. Make a filter function,
- 2. Push the filter function to the filter stack,
- 3. Hard filter the results to the cache stack,
- 4. Pop the filter.
-Leaving the search cache on the stack, the filter stack how it was,
-and a new filter in the `Fields search' factory choices menu."
-  (let* ((prompt (format "Searching with %S: " fields))
-         (compare-value (read-string prompt))
-         (filter-name (emms-filters-format-search fields compare-value)))
-
-    (emms-filters-register-filter
-     filter-name
-     (emms-filters-make-filter-fields-search (fields compare-value)))
-    (emms-filters-add-to-filter-menu "Fields search" filter-name)))
 
 (defun emms-filters-push-cache (&optional filter-name cache)
   "Cache/Store FILTER-NAME and CACHE in a stack.
@@ -1830,7 +1809,7 @@ or the emms-filters-filter-factory `search-fields'."
   (interactive)
   (let* ((current (pop emms-filters-search-caches)))
     (pop emms-filters-search-caches)
-    (push current search-caches)))
+    (push current emms-filters-search-caches)))
 
 (defun  emms-filters-squash-caches ()
   "Squash the cache stack, keep the top entry."
@@ -2006,8 +1985,7 @@ Returns a list of cons with the filter result and the track."
 
 (defun emms-filters-test-find-tracks (cache filter)
   "Return a list of tracks from the CACHE filtered by function FILTER."
-  (let* ((tracks (list))
-         (counter 0))
+  (let* ((tracks (list)))
     (maphash (lambda (_path track)
                (when (funcall filter track)
                  (push track tracks)))
@@ -2016,8 +1994,7 @@ Returns a list of cons with the filter result and the track."
 
 (defun emms-filters-test-find-tracks-with-name (cache filter-name)
   "Return a list of tracks from the CACHE filtered by function FILTER."
-  (let* ((tracks (list))
-         (counter 0))
+  (let* ((tracks (list)))
     (maphash (lambda (_path track)
                (when (funcall (cdr (assoc filter-name emms-filters-filters)) track)
                  (push track tracks)))

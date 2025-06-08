@@ -2033,12 +2033,6 @@ If the track is not of TYPE, return t."
 ;; --------------------------------------------------
 ;; These functions are here for backward compatibility.
 ;; See emms-filters.el.
-(defun emms-browser-search (fields)
-  "Search in the cache searching FIELDS in the track for a compare string.
-Prompt for the value to search otherwise emulate
-the behavior of emms-browser-search using the filter and cache stacks
-with the `fields search' filter factory."
-  (emms-filters-browser-search fields))
 
 (defun emms-browser-search-by-albumartist ()
   (interactive)
