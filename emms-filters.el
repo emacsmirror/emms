@@ -614,7 +614,7 @@ of the filter select menu tree."
 
 (defun emms-filters-make-filter-ring (list-of-filter-names)
   "Make a ring of filter names from the LIST-OF-FILTER-NAMES.
-Appends the 'no filter' filter."
+Appends the `no filter' filter."
   (setq emms-filters-filter-ring
         (make-ring
          (+ 1 (length list-of-filter-names))))
@@ -636,7 +636,7 @@ This creates the filter ring as needed."
   "Integrate Emms browser filters into emms-filters-filters.
 Register a FILTER to emms-filters-filters if it's name is missing.
 Add its name to the filter ring and filter menu in
-the 'browser-filters' selection menu."
+the `browser-filters' selection menu."
   (emms-filters-register-if-missing filter)
   (let ((name (car filter)))
     (emms-filters-append-to-filter-ring name)
@@ -704,7 +704,7 @@ look for the function in emms-filters-filter-factories."
 (defun emms-filters-make-filters (filter-list)
   "Make filters in FILTER-LIST into filter functions.
 The filter list holds entries specified as
-  '(factory-name filter-name factory-arguments)."
+  (factory-name filter-name factory-arguments)."
   (mapcar (lambda (filter)
             (emms-filters-make-filter
              (car filter)
@@ -778,7 +778,7 @@ Give it the shape: (name . (func . prompt-list))."
   "Recursively PROMPT for elements of a list.
 Prompt must define a select list. The only usage example so
 far is the field-search list which is all symbols.
- info-artist, info-genre, 'intern-soft' works for those."
+ info-artist, info-genre, `intern-soft' works for those."
   (let* ((prompt-string (car prompt))
          (selections (cdar (cdr prompt)))
          (value
@@ -997,10 +997,10 @@ This replaces the original emms-browser search match-p functionality."
 (defun emms-filters-match-string (string1 string2)
   "Check to see if STRING2 is in STRING1.
 
-This is the inverse parameter list of 'string-match'.
+This is the inverse parameter list of `string-match'.
 So we can continue with the language of
-'filter track where field contains string'
-'filter track where field > value'."
+`filter track where field contains string'
+`filter track where field > value'."
   (string-match string2 string1))
 
 (defun emms-filters-make-filter-field-compare (operator-func field compare-val)
@@ -1352,7 +1352,7 @@ Returns True if the track should be filtered out."
 
 (defun emms-filters-set-filter (filter)
   "Set the current filter to FILTER.
-Filter should be a filter cons in the form of '(name . function)."
+Filter should be a filter cons in the form of `(name . function)."
   (setq emms-filters-current-filter-name (car filter))
   (setq emms-filters-current-filter filter))
 
@@ -1455,21 +1455,22 @@ it a meta-filter, if it is a meta-filter use it."
   (append-to-file string nil filename))
 
 (defun emms-filters-format-multi-filter (meta-filter)
-  "Format the META-FILTER as Lisp code to use with 'emms-filters-make-filters'."
+  "Format the META-FILTER as Lisp code to use with `emms-filters-make-filters'."
   (format "(\"Multi-filter\"\n %S\n %S)\n\n"
           (car meta-filter)
           (cdr meta-filter)))
 
 (defun emms-filters-save-meta-filter (meta-filter)
-  "Save the META-FILTER  to the  'emms-filters-multi-filter-save-file' if set."
+  "Save the META-FILTER  to the  `emms-filters-multi-filter-save-file' if set."
   (when emms-filters-multi-filter-save-file
     (append-to-file
      (emms-filters-format-multi-filter meta-filter)
      nil emms-filters-multi-filter-save-file)))
 
 (defun  emms-filters-keep ()
-  "Register the current filter into the list of filters for the session.
-If emms-filters-multi-filter-save-file is set, append the filter definition there."
+  "Register the current filter into the list of filters for the
+  session. If emms-filters-multi-filter-save-file is set, append the
+  filter definition there."
   (interactive)
   (message "Registering the current meta-filter as a filter for the session")
   (emms-filters-status)
@@ -1477,7 +1478,7 @@ If emms-filters-multi-filter-save-file is set, append the filter definition ther
   (when (and emms-filters-stack (consp (car emms-filters-stack)))
     (emms-filters-save-meta-filter (car emms-filters-stack))
     (emms-filters-register-filter (caar emms-filters-stack)
-                         (emms-filters-make-multi-filter (cdar emms-filters-stack)))
+                      (emms-filters-make-multi-filter (cdar emms-filters-stack)))
     (emms-filters-add-to-filter-menu "Kept filters" (caar emms-filters-stack))))
 
 (defun emms-filters-hard-filter ()
@@ -1505,9 +1506,9 @@ See also: ems-pop-cache."
   (emms-filters-refilter))
 
 (defun emms-filters-choose-filter-recursive (&optional choices)
-  "Choose a filter from emms-filters-filter-menu tree or the alist given as CHOICES.
-Requires that the lists of filter names be lists of cons (name . name).
-Allows for tree structures of any depth."
+  "Choose a filter from emms-filters-filter-menu tree or the alist given
+  as CHOICES. Requires that the lists of filter names be lists of cons
+  (name . name). Allows for tree structures of any depth."
   (let* ((choices (or choices emms-filters-filter-menu))
          (choice (assoc (completing-read
                          "Choose a filter or group:" choices nil t)
@@ -1589,7 +1590,7 @@ This imitates the emms browser search."
 
 (defun  emms-filters-or ()
   "Add filter to current/last filter list in the current filter.
-Creates an 'OR' filter."
+Creates an `OR' filter."
   (interactive)
   (let ((fname (emms-filters-choose-filter)))
     (emms-filters-push
@@ -1602,7 +1603,7 @@ Creates an 'OR' filter."
 
 (defun  emms-filters-and ()
   "Select a filter to start a new list of filters.
-Creates a new 'AND' list of filters."
+Creates a new `AND' list of filters."
   (interactive)
   (let ((fname (emms-filters-choose-filter)))
     (emms-filters-push
@@ -1611,7 +1612,7 @@ Creates a new 'AND' list of filters."
 
 (defun  emms-filters-and-not ()
   "Select a filter to start a new list of filters.
-Creates a new 'AND-NOT' list of filters."
+Creates a new `AND-NOT' list of filters."
   (interactive)
   (let ((fname (emms-filters-choose-filter)))
     (emms-filters-push
@@ -1624,11 +1625,10 @@ Creates a new 'AND-NOT' list of filters."
   (format  "\t%s" (mapconcat 'car emms-filters-stack "\n\t")))
 
 (defun emms-filters-full-name ()
-  "Give a full name for the current filtering.
-Includes the ring filter name plus current filter name.
-Does not show the current cache name.
-Only show the ring filter name if its function is not nil.
-Use the current filter name so that 'no filter' shows."
+  "Give a full name for the current filtering. Includes the ring
+  filter name plus current filter name. Does not show the current cache
+  name. Only show the ring filter name if its function is not nil. Use
+  the current filter name so that `no filter' shows."
   (let ((ring (when (cdr emms-filters-current-ring-filter)
                 (car emms-filters-current-ring-filter)))
         (current (car emms-filters-current-filter)))
@@ -1713,14 +1713,14 @@ Use the current filter name so that 'no filter' shows."
   "Search track FIELDS in the cache for a compare string.
 Prompt for the value to search, emulate
 the behavior of former emms-browser-search using the filter and cache stacks
-with the 'fields search' filter factory.
+with the `fields search' filter factory.
 
  1. Make a filter function,
  2. Push the filter function to the filter stack,
  3. Hard filter the results to the cache stack,
  4. Pop the filter.
 Leaving the search cache on the stack, the filter stack how it was,
-and a new filter in the 'Fields search' factory choices menu."
+and a new filter in the `Fields search' factory choices menu."
   (let* ((prompt (format "Searching with %S: " fields))
          (compare-value (read-string prompt))
          (filter-name (emms-filters-format-search fields compare-value)))
@@ -1768,7 +1768,7 @@ allow selection of a cache from the cache stash."
 (defun emms-filters-format-search-list (search-list)
   "Create a string format of a SEARCH-LIST.
 Search lists are what is used by the old emms-browser search function,
-or the emms-filters-filter-factory 'search-fields'."
+or the emms-filters-filter-factory `search-fields'."
   (let ((infos (append (car (car search-list))))
         (svalue (cdar search-list)))
     (format "%s - %s"
@@ -1967,11 +1967,11 @@ the result with the result of the filter."
          t)))
 
 (defun emms-filters-test-filter-tracks-direct (factory-name parms tracks)
-  "Test a list of TRACKS against a filter created from FACTORY-NAME and PARMS.
-Uses emms-filters-test-factory directly rather than emulating the browser-hook-function.
-Test it against some portion starting with START records and stopping
-at STOP records of the existing cache-db.
-Returns a list of cons with the filter result and the track."
+  "Test a list of TRACKS against a filter created from FACTORY-NAME and
+  PARMS. Uses emms-filters-test-factory directly rather than emulating the
+  browser-hook-function. Test it against some portion starting with START
+  records and stopping at STOP records of the existing cache-db. Returns
+  a list of cons with the filter result and the track."
   (mapcar (lambda (track)
             (cons
              (emms-filters-test-factory factory-name parms track)
