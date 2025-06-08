@@ -802,9 +802,11 @@ artist1 -> album1 -> *track* 1.."
                            artist
                          artist))))
 
-        (concat artist " - " title))
+        ;; return a title or the car of entry
+        (if (and artist title)
+            (concat artist " - " title)
+          (car entry)))
     (car entry)))
-
 
 (defun emms-browser-track-number (track)
   "Return a string representation of a track number.
