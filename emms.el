@@ -1522,8 +1522,7 @@ See emms-source-file.el for some examples."
 
 (defun emms-source-insert (source &rest args)
   "Insert the tracks from SOURCE in the current buffer."
-  (if (not emms-playlist-buffer-p)
-      (error "Not in an EMMS playlist buffer")
+  (with-current-emms-playlist
     (apply #'emms-playlist-insert-source source args)))
 
 ;;; User-defined playlists
