@@ -1468,6 +1468,7 @@ See emms-source-file.el for some examples."
 	(source-play (intern (format "emms-play-%s" name)))
 	(source-add (intern (format "emms-add-%s" name)))
 	(source-insert (intern (format "emms-insert-%s" name)))
+	(source-insert-current (intern (format "emms-insert-current-%s" name)))
 	(docstring "A source of tracks for EMMS.")
 	(interactive nil)
 	(call-args (delete '&rest
@@ -1500,7 +1501,11 @@ See emms-source-file.el for some examples."
        (defun ,source-insert ,arglist
 	 ,docstring
 	 ,interactive
-	 (emms-source-insert ',source-name ,@call-args)))))
+	 (emms-source-insert ',source-name ,@call-args))
+       (defun ,source-insert-current ,arglist
+	 ,docstring
+	 ,interactive
+	 (emms-source-insert-current ',source-name ,@call-args)))))
 
 (defun emms-source-play (source &rest args)
   "Play the tracks of SOURCE, after first clearing the EMMS playlist."
@@ -1523,6 +1528,15 @@ See emms-source-file.el for some examples."
 (defun emms-source-insert (source &rest args)
   "Insert the tracks from SOURCE in the current buffer."
   (with-current-emms-playlist
+    (apply #'emms-playlist-insert-source source args)))
+
+(defun emms-source-insert-current (source &rest args)
+  "Insert from SOURCE into buffer at current track."
+  (with-current-emms-playlist
+    (if (not emms-playlist-selected-marker)
+	(error "no current playlist track")
+      (goto-char emms-playlist-selected-marker)
+      (forward-line))
     (apply #'emms-playlist-insert-source source args)))
 
 ;;; User-defined playlists
