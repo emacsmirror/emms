@@ -585,7 +585,7 @@ See `emms-random-playlist'."
   (interactive)
   (customize-set-variable 'emms-random-playlist (not emms-random-playlist))
   (if emms-random-playlist
-	  (message "Will play the tracks randomly.")
+      (message "Will play the tracks randomly.")
     (message "Will play the tracks sequentially.")))
 
 (defun emms-toggle-repeat-playlist ()
