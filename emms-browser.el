@@ -1232,7 +1232,8 @@ After expanding, jump to the currently marked entry."
           (emms-with-inhibit-read-only-t
            (remove-text-properties (line-beginning-position)
                                    (line-end-position)
-                                   (list 'emms-browser-mark)))))))
+                                   (list 'emms-browser-mark))))
+      (emms-message "No mark saved!"))))
 
 (defun emms-browser-go-to-parent ()
   "Move point to the parent of the current node.
