@@ -1200,7 +1200,6 @@ After expanding, jump to the currently marked entry."
     (recenter '(4))))
 
 (defun emms-browser-mark-and-collapse ()
-  (emms-browser-mark-and-collapse)
   "Save the current top level element, and collapse."
   (emms-browser-mark-entry)
   (goto-char (point-max))
@@ -1343,6 +1342,7 @@ Return the playlist buffer point-max before adding."
 (defun emms-browser-expand-all ()
   "Expand everything."
   (interactive)
+  (emms-browser-mark-and-collapse)
   (emms-browser-expand-to-level 99))
 
 (defun emms-browser-expand-to-level-2 ()
