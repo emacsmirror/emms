@@ -748,9 +748,12 @@ Give it the shape: (name . (func . prompt-list))."
 (defun emms-filters-show-filter-factories ()
   "Show the filter factories we have."
   (interactive)
-  (when emms-filters-filter-factories
-    (message "Emf Filter Factories:\n%s"
-             (mapconcat 'identity "\n" emms-filters-filter-factories))))
+  (when (> (length emms-filters-filter-factories) 0)
+    (message "Filter Factories:\n%s"
+             (mapconcat #'identity (emms-filters-list-filter-factories) "\n  "))))
+
+;; (message "Emms Cache stack:\n  %s\n"
+;;          (mapconcat #'identity (emms-filters-get-search-keys) "\n  "))
 
 (defun emms-filters-clear-filter-factories ()
   "Reset the filter factory list."
@@ -1400,6 +1403,7 @@ it a meta-filter, if it is a meta-filter use it."
 
 (defun  emms-filters-clear ()
   "Clear the meta filter stack and the current filter function."
+  (interactive)
   (setq emms-filters-stack nil)
   (emms-filters-refilter))
 
@@ -1631,7 +1635,7 @@ Creates a new `AND-NOT' list of filters."
 (defun emms-filters-status ()
   "Format what we know into something readable."
   (interactive)
-  (format "Ring: %s\nCurrent: %s\nFilter Stack:\n%s\nCache stack:\n %s"
+  (format "Ring: %s\nMeta Filter: %s\nFilter stack:\n%s\nCache stack:\n %s"
           (car emms-filters-current-ring-filter)
           (emms-filters-current-meta-filter)
           (emms-filters-format-stack)
@@ -1726,12 +1730,12 @@ allow selection of a cache from the cache stash."
 (defun emms-filters-get-search-keys ()
   "Return the search-list keys for the current search cache."
   (if (< 0 (length emms-filters-search-caches))
-      (reverse (mapcar #'car emms-filters-search-caches))
+      (mapcar #'car emms-filters-search-caches)
     '()))
 
 (defun emms-filters-current-cache-name ()
   "Return the name of the current search cache."
-  (car (emms-filters-get-search-keys)))
+  (car (reverse (emms-filters-get-search-keys))))
 
 (defun emms-filters-format-search-list (search-list)
   "Create a string format of a SEARCH-LIST.
@@ -1750,21 +1754,21 @@ or the emms-filters-filter-factory `search-fields'."
 
 (defun emms-filters-format-cache-stack ()
   "Create a list of search crumb strings for the current search cache."
-  (mapconcat #'identity (emms-filters-get-search-keys) "\n"))
+  (format "\t%s" (mapconcat #'identity (emms-filters-get-search-keys) " \n\t")))
 
 (defun emms-filters-show-cache-stack ()
   "Message the current search cache stack."
   (interactive)
-  (message "Emms Cache stack:\n%s\n"
-           (mapconcat #'identity (emms-filters-get-search-keys) "\n")))
+  (message "Emms Cache stack:\n  %s\n"
+           (mapconcat #'identity (emms-filters-get-search-keys) "\n  ")))
 
 (defun emms-filters-show-cache-stash ()
-  "Show the cache names in the stash."
-  (interactive)
-  (message "Emms cache stash:\n%s\n"
-           (mapconcat 'identity
-                      (reverse (mapcar #'car emms-filters-cache-stash))
-                      ", ")))
+"Show the cache names in the stash."
+(interactive)
+(message "Emms cache stash:\n  %s\n"
+         (mapconcat 'identity
+                    (reverse (mapcar #'car emms-filters-cache-stash))
+                    "\n  ")))
 
 (defun emms-filters-last-search-cache ()
   "Return the cache portion of the last search cache entry."
