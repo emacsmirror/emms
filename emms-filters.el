@@ -748,7 +748,7 @@ Give it the shape: (name . (func . prompt-list))."
 (defun emms-filters-show-filter-factories ()
   "Show the filter factories we have."
   (interactive)
-  (when (> (length emms-filters-filter-factories) 0)
+  (when emms-filters-filter-factories
     (message "Filter Factories:\n%s"
              (mapconcat #'identity (emms-filters-list-filter-factories) "\n  "))))
 

@@ -611,7 +611,6 @@ or the default-browse-type"
     (emms-browser-render-hash hash type)
     (setq emms-browser-top-level-hash hash)
     (setq emms-browser-top-level-type type)
-    (message (string (hash-table-count hash)))
 
     (goto-char (point-min))
     (unless (> (hash-table-count hash) 0)
@@ -728,7 +727,12 @@ For \\='info-year TYPE, use \\='info-originalyear, \\='info-originaldate and
   (emms-with-inhibit-read-only-t
    (insert (emms-filters-empty-result-message))
    (insert "
-Welcome to EMMS.
+You may have created a filter with no results found.
+If this is the case you may return to your previous
+filter by popping the current filter with 'f q'.
+
+
+Otherwise, Welcome to EMMS.
 
 There are currently no files in the EMMS database.
 To browse music, you need to tell EMMS where your
@@ -1233,7 +1237,7 @@ After expanding, jump to the currently marked entry."
            (remove-text-properties (line-beginning-position)
                                    (line-end-position)
                                    (list 'emms-browser-mark))))
-      (emms-message "No mark saved!"))))
+      (message "No mark saved!"))))
 
 (defun emms-browser-go-to-parent ()
   "Move point to the parent of the current node.
@@ -1341,10 +1345,13 @@ Return the playlist buffer point-max before adding."
   (emms-browser-next-non-track -1))
 
 (defun emms-browser-expand-all ()
-  "Expand everything."
+  "Expand everything.
+This function is used by Emms-filters as the expand-render-hook, it must
+must be certain that there is a bdata tree to expand."
   (interactive)
-  (emms-browser-mark-and-collapse)
-  (emms-browser-expand-to-level 99))
+  (when (emms-browser-level-at-point)
+    (emms-browser-mark-and-collapse)
+    (emms-browser-expand-to-level 99)))
 
 (defun emms-browser-expand-to-level-2 ()
   "Expand all top level items one level."
