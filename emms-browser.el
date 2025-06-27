@@ -730,6 +730,8 @@ For \\='info-year TYPE, use \\='info-originalyear, \\='info-originaldate and
 You may have created a filter with no results found.
 If this is the case you may return to your previous
 filter by popping the current filter with 'f q'.
+If you happen to have an empty search cache on
+the cache stack you can pop it from the stack with 'c q'.
 
 
 Otherwise, Welcome to EMMS.
