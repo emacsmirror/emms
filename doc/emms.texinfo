@@ -72,6 +72,7 @@ Advanced Features
 
 Modules and Extensions
 * The Browser::          Advanced metadata browsing.
+* The Filter System::    Advanced metadata filtering.
 * Sorting Playlists::    Sorting the order of the tracks.
 * Persistent Playlists:: Restoring playlists on emacs startup.
 * Editing Tracks::       Editing track information from within Emms.
@@ -1832,9 +1833,9 @@ once so that the cache is fully populated.
 
 @menu
 * Browser Interface::     The interactive browser interface.
-* Filtering Tracks::      Displaying a subset of the tracks.
 * Displaying Covers::     Displaying album covers in the browser interface.
 * Changing Looks::        Changing the tree structure, display format and faces.
+* Filtering Tracks - deprecated::  Displaying a subset of the tracks.
 @end menu
 
 
@@ -1866,6 +1867,14 @@ Display the browser and order the tracks by genre.
 
 @defun emms-browse-by-year
 Display the browser and order the tracks by year.
+@end defun
+
+@defun emms-browser-show-searches
+Show Search crumbs of the active searches.
+@end defun
+
+@defun emms-browser-render-last-search
+Render the results for the last search with current settings.
 @end defun
 
 Once the Browser is displayed you can use it to managed your track
@@ -1941,12 +1950,12 @@ Isearch through the buffer.
 
 @item <
 @kindex < (emms-browser)
-@findex emms-browser-previous-filter
+@findex emms-filters-previous-ring-filter
 Redisplay with the previous filter.
 
 @item >
 @kindex > (emms-browser)
-@findex emms-browser-next-filter
+@findex emms-filters-next-ring-filter
 Redisplay with the next filter.
 
 @item ?
@@ -1979,6 +1988,11 @@ Jump to the next non-track element.
 @findex emms-browser-search-by-album
 Search the collection by album.
 
+@item s o
+@kindex s o (emms-browser)
+@findex emms-browser-search-by-albumartist
+Search the collection by artist.
+
 @item s a
 @kindex s a (emms-browser)
 @findex emms-browser-search-by-artist
@@ -1993,6 +2007,11 @@ Search the collection by names.
 @kindex s t (emms-browser)
 @findex emms-browser-search-by-title
 Search the collection by title.
+
+@item s h
+@kindex s h (emms-browser)
+@findex emms-browser-show-searches
+Show the currently active searches in the search cache.
 
 @item b 1
 @kindex b 1 (emms-browser)
@@ -2014,21 +2033,476 @@ Browse the collection by genre.
 @findex emms-browse-by-year
 Browse the collection by year.
 
+@item b 5
+@kindex b 5 (emms-browser)
+@findex emms-browse-by-composer
+Browse the collection by composer.
+
+@item b 6
+@kindex b 6 (emms-browser)
+@findex emms-browse-by-performer
+Browse the collection by performer.
+
+@item b 7
+@kindex b 5 (emms-browser)
+@findex emms-browse-by-albumartist
+Browse the collection by albumartist.
+
 @item W a p
 @kindex W a p (emms-browser)
 @findex emms-browser-lookup-album-on-pitchfork
 Lookup the album using Pitchfork.
 
+@item W o w
+@kindex W o w (emms-browser)
+@findex emms-browser-lookup-albumartist-on-wikipedia
+Lookup the album artist using Wikipedia.
+
+@item W A w
+@kindex W A w (emms-browser)
+@findex emms-browser-lookup-artist-on-wikipedia
+Lookup the artist using Wikipedia.
+
+@item W c w
+@kindex W c w (emms-browser)
+@findex emms-browser-lookup-composer-on-wikipedia
+Lookup the composer using Wikipedia.
+
+@item W p w
+@kindex W p w (emms-browser)
+@findex emms-browser-lookup-performer-on-wikipedia
+Lookup the performer using Wikipedia.
+
 @item W a w
 @kindex W a w (emms-browser)
 @findex emms-browser-lookup-album-on-wikipedia
 Lookup the album using Wikipedia.
+
+@item +
+@kindex + (emms-browser)
+@findex emms-volume-raise
+Raise the volume
+
+@item -
+@kindex - (emms-browser)
+@findex emms-volume-lower
+Lower the volume
+
+@item i s
+@kindex i s (emms-browser)
+@findex emms-filters-status-print
+Print what is known about the filters and cache
+
+@item i c
+@kindex i c (emms-browser)
+@findex emms-filters-show-cache-stack
+Show the current search cache stack.
+
+@item i S
+@kindex i S (emms-browser)
+@findex emms-filters-show-cache-stash
+Show the cache names in the stash.
+
+@item i f
+@kindex i f (emms-browser)
+@findex emms-filters-show-filters
+Show the filters there are.
+
+@item i m
+@kindex i m (emms-browser)
+@findex emms-filters-show-filter-menu
+Show the menu tree of filters as a menu.
+
+@item i F
+@kindex i F (emms-browser)
+@findex emms-filters-show-filter-factories
+Show the filter factories we have.
+
+@item i r
+@kindex i r (emms-browser)
+@findex emms-filters-show-filter-ring
+Show the filters in the filter ring.
+
+@item f q
+@kindex f q (emms-browser)
+@findex emms-filters-pop
+Pop the filter stack returning to last filter.
+
+@item f r
+@kindex f r
+@findex emms-filters-swap (emms-browser)
+Reverse the last two entries in the filter stack.
+
+@item f R
+@kindex f R (emms-browser)
+@findex emms-filters-swap-pop ; rotate-eject, ,pop-previous
+Reverse the last two entries in the filter stack, and pop the top one.
+
+@item f S
+@kindex f S (emms-browser)
+@findex emms-filters-squash
+Squash the filter stack, keep the top entry.
+
+@item f k
+@kindex f k (emms-browser)
+@findex emms-filters-keep
+Register the current filter into the list of filters for the session.
+If @var{emms-filters-multi-filter-save-file} is set, append the filter definition there.
+
+@item f h
+@kindex f h (emms-browser)
+@findex emms-filters-hard-filter
+Build a cache from the current filter and push it to the cache stack.
+
+@item f c
+@kindex f c (emms-browser)
+@findex emms-filters-clear
+Clear the meta filter stack and the current filter function.
+
+@item >
+@kindex > (emms-browser)
+@findex emms-filters-next-ring-filter
+Move to the next filter in the filter ring.
+
+@item <
+@kindex < (emms-browser)
+@findex emms-filters-previous-ring-filter
+Move to the previous filter in the filter ring.
+
+@item f !
+@kindex f ! (emms-browser)
+@findex emms-filters-clear-ring-filter
+Set the ring filter to no filter.
+
+@item f p
+@kindex f p (emms-browser)
+@findex emms-filters-push
+Push a filter to the meta-filter stack.
+
+@item f s
+@kindex f s (emms-browser)
+@findex emms-filters-smash
+Clear the stack and select a filter to push to the stack.
+
+@item f o
+@kindex f o (emms-browser)
+@findex emms-filters-or
+Add a filter to the current/last filter list in the current filter.
+Creates an OR.
+
+@item f a
+@kindex f a (emms-browser)
+@findex emms-filters-and
+Select a filter to start a new list of filters, creates an AND.
+
+@item f n
+@kindex f n (emms-browser)
+@findex emms-filters-and-not
+Select a filter to start a new list of filters, creates an AND-NOT list of filters.
+
+@item c C
+@kindex c C (emms-browser)
+@findex emms-filters-clear-all
+Reset the cache stack, the filter stack and the filter-ring.
+
+@item c p
+@kindex c p (emms-browser)
+@findex emms-filters-push-cache
+Cache/Store a filter and cache to the stack.
+
+@item c z
+@kindex c z (emms-browser)
+@findex emms-filters-stash-pop-cache
+Stash the current cache for later, pop it from the stack.
+
+@item c Z
+@kindex c Z (emms-browser)
+@findex emms-filters-stash-cache
+Stash the current cache for later.
+
+@item c P
+@kindex c P (emms-browser)
+@findex emms-filters-pop-cache
+Pop the current cache from the stack.
+
+@item c h
+@kindex c h (emms-browser)
+@findex emms-filters-hard-filter
+Create a cache from the current filter and push to the stack.
+
+@item c r
+@kindex c r (emms-browser)
+@findex emms-filters-swap-cache
+Swap the top two caches on the stack.
+
+@item c q
+@kindex c q (emms-browser)
+@findex emms-filters-pop-cache
+Pop the top cache from the stack.
+
+@item c R
+@kindex c R (emms-browser)
+@findex emms-filters-swap-pop-cache
+Swap the top two caches on the stack, then pop the top one.
+
+@item c S
+@kindex c S (emms-browser)
+@findex emms-filters-squash-caches
+Squash the cache stack, keep the top entry.
+
+@item c c
+@kindex c c (emms-browser)
+@findex emms-filters-clear-caches
+Clear all the caches down to the main cache.
+
+@item s o
+@kindex s o (emms-browser)
+@findex emms-filters-search-by-albumartist
+A fields search, quick one-shot for Album artist, push results to the cache stack.
+
+@item s a
+@kindex s a (emms-browser)
+@findex mf-search-by-artist
+A fields search, quick one-shot for Artist, push results to the cache stack.
+
+@item s c
+@kindex s c (emms-browser)
+@findex emms-filters-search-by-composer
+A fields search, quick one-shot for Composer, push results to the cache stack.
+
+@item s p
+@kindex s p (emms-browser)
+@findex emms-filters-search-by-performer
+A fields search, quick one-shot for Permformer, push results to the cache stack.
+
+@item s A
+@kindex s A (emms-browser)
+@findex emms-filters-search-by-album
+A fields search, quick one-shot for Album title, push results to the cache stack.
+
+@item s t
+@kindex s t (emms-browser)
+@findex emms-filters-search-by-title
+A fields search, quick one-shot for Song title, push results to the cache stack.
+
+@item s T
+@kindex s T (emms-browser)
+@findex emms-filters-search-by-titles
+A fields search, quick one-shot for Album and song titles, push results to the cache stack.
+
+@item s n
+@kindex s n (emms-browser)
+@findex emms-filters-search-by-names
+A fields search, quick one-shot for all names, push results to the cache stack.
+
+@item s s
+@kindex s s (emms-browser)
+@findex emms-filters-search-by-names-and-title
+A fields search, quick one-shot for all names and titles, push results to the cache stack.
+
+@item s e
+@kindex s e (emms-browser)
+@findex emms-filters-search-by-all-text
+A fields search, quick one-shot in all text fields, push results to the cache stack.
+
 @end table
 
+@node Displaying Covers
+@section Displaying Covers
+
+The browser will attempt to display cover images if they're
+available.
+
+Customize @var{emms-browser-covers} to configure how EMMS should retrieve the
+covers.
+
+By default it looks for images @file{cover_small.jpg}, @file{cover_med.jpg},
+etc. Note that you'll probably want to resize your existing covers to particular
+sizes. Suggested sizes are 100x100 for small, and 200x200 for medium.
+
+The above behaviour demands manual processing on behalf of the user.  Instead,
+you might prefer to automate the process by setting @var{emms-browser-covers} to
+'emms-browser-cache-thumbnail': covers matching 'emms-browser-thumbnail-filter'
+will be automatically resized if necessary and cached to
+@var{emms-browser-thumbnail-directory}.  The cache gets automatically updated
+upon change in the source folder.
+
+Customize @var{emms-browser-covers-file-extensions} to include or exclude
+specific extensions.
+
+'emms-browser-cache-thumbnail' might be everytime a cover is queried, so
+to help with performance you can also set @var{emms-browser-covers} to
+'emms-browser-cache-thumbnail-async'.  The latter is like the former
+except that it caches queries: every subsequent query will be much
+faster.  The drawback is that it won't see changes made to covers after
+the first query.  To force-refresh the thumbnail cache, you can run
+'emms-browser-clear-cache-hash'.
+
+Also, Emacs by default will jump around a lot when scrolling a buffer
+with images. In order to prevent that, you can set
+@var{scroll-up-aggressively} and @var{scroll-down-aggressively} to the
+number ``0.0''.
+
+To show a 'no cover' image for albums which don't have a cover, add
+the following code to your .emacs:
+
+@lisp
+(setq emms-browser-default-covers
+  (list "/path/to/cover_small.jpg" nil nil)
+@end lisp
+
+The medium and large images can be set as well.
+
+You can download an example @uref{http://repose.cx/cover_small.jpg,
+`no cover' image}.
 
 
-@node Filtering Tracks
-@section Filtering Tracks
+
+@node Changing Looks
+@section Changing Looks
+
+The Browser's look can be customised. You can change the way the tree
+structure looks, the display format and display faces.
+
+@subheading Changing Tree Structure
+
+You can change the way the tree is displayed by setting the value of
+@var{emms-browser-tree-node-map}
+
+@lisp
+(setq emms-browser-tree-node-map emms-browser-tree-node-map-default)
+@end lisp
+
+The node map specifies the tree as an alist.
+Follow the chain of fields from the starting browse type
+to see how the browser tree will be built. ie. Starting with
+album artist yields a tree with album artist, artist and album as nodes.
+
+@lisp
+(defvar emms-browser-tree-node-map-default
+      '((info-albumartist . info-artist)
+        (info-artist      . info-album)
+        (info-composer    . info-album)
+        (info-performer   . info-album)
+        (info-album       . info-title)
+        (info-genre       . info-artist)
+        (info-year        . info-artist)))
+@end lisp
+
+
+The following code displays artist->track instead of
+artist->album->track when you switch to the 'singles' filter:
+
+@lisp
+(defadvice emms-browser-next-mapping-type
+                                (after no-album (current-mapping))
+  (when (eq ad-return-value 'info-album)
+    (setq ad-return-value 'info-title)))
+@end lisp
+
+@lisp
+(defun toggle-album-display ()
+  (if (string= emms-browser-current-filter-name "singles")
+      (ad-activate 'emms-browser-next-mapping-type)
+    (ad-deactivate 'emms-browser-next-mapping-type)))
+
+;; Deprecated use the emms-filters hook instead.
+;; (add-hook 'emms-browser-filter-changed-hook 'toggle-album-display)
+(add-hook 'emms-filters-filter-changed-hook 'toggle-album-display)
+@end lisp
+
+Furthermore, you can customize
+@var{emms-browser-get-track-field-function} to choose which the metadata
+fields used for the different tree nodes (@code{'info-artist},
+@code{info-year}, etc.).  For instance, you can choose whether to
+organize the tree by artist, album artist or performer.
+
+@subheading Changing Display Format
+
+Format strings govern the way items are displayed in the browser and
+playlist. You can customize these if you wish.
+
+@var{emms-browser-default-format} controls the format to use when no
+other format has been explicitly defined. By default, only track and
+albums deviate from the default.
+
+To customise the format of a particular type, find the name of the
+field you want to use (eg `info-artist', `info-title', etc), and
+insert that into emms-browser-<type>-format or
+emms-browser-playlist-<type>-format. For example, if you wanted to
+remove track numbers from tracks in both the browser and playlist, you
+could do:
+
+@lisp
+(defvar emms-browser-info-title-format "%i%n")
+(defvar emms-browser-playlist-info-title-format
+  emms-browser-info-title-format)
+@end lisp
+
+The format specifiers available include:
+
+@itemize @w{}
+
+@item
+%i    indent relative to the current level
+
+@item
+%n    the value of the item - eg -info-artist might be ``pink floyd''
+
+@item
+%y    the album year
+
+@item
+%A    the album name
+
+@item
+%a    the artist name of the track
+
+%o    the album artist name
+@item
+
+@item
+%t    the title of the track
+
+@item
+%o    the genre of the track
+
+@item
+%T    the track number
+
+@item
+%cS   a small album cover
+
+@item
+%cM   a medium album cover
+
+@item
+%cL   a big album cover
+@end itemize
+
+Note that if you use track-related items like %t, it will take the
+data from the first track.
+
+@subheading Changing Display Faces
+
+The faces used to display the various fields are also customizable.
+They are in the format emms-browser-<type>-face, where type is one of
+"year/genre", "artist", "album" or "track". Note that faces lack the
+initial "info-" part. For example, to change the artist face, type M-x
+@command{customize-face} @command{emms-browser-artist-face}.
+
+@node Filtering Tracks - deprecated
+@section Filtering Tracks - deprecated
+
+Note that these are the directions for creating filters from the browser
+API which now works through the Emms-filters system.
+
+The Emms-filter system obsoletes this method of creating filters.
+However, it is still valid, and will work if you have filters defined
+in this way.
+
+It is recommended that the new filter system is used directly rather
+than building filters in this way.
 
 If you want to display a subset of your collection (such as a
 directory of 80s music, only avi files, etc.) then you can extend the
@@ -2097,161 +2571,617 @@ Show all files that are not in the pending directory:
 @end lisp
 
 
+@c -------------------------------------------------------------------
+@node The Filter System
+@chapter The Filter System
 
-@node Displaying Covers
-@section Displaying Covers
+The filter system allows you to filter the metadata cache in order search
+and narrow your track data. It is based on a very powerful interactive
+system consistenting of filter and cache stacks which allow
+the creation and manipulation of complex filters and results caches.
 
-The browser will attempt to display cover images if they're
-available.
+The Filter system is defined in @file{emms-filters.el} and is included as
+part of the Emms-Browser.
 
-Customize @var{emms-browser-covers} to configure how EMMS should retrieve the
-covers.
+Emms-Filters allows you to filter and search the metadata cache.
+This manages the search and filter functionalities of emms-browser.
 
-By default it looks for images @file{cover_small.jpg}, @file{cover_med.jpg},
-etc. Note that you'll probably want to resize your existing covers to particular
-sizes. Suggested sizes are 100x100 for small, and 200x200 for medium.
+@menu
+* Filters and Searches::   A simple overview of the filter system.
+* Backward Compatibility:: Backward compatibility with the Emms Browser.
+* Filter Components::      Definitions of basic terminology used by the filter system.
+* Filter Factories::       Defining filter factories.
+* Factory Registration::   Registering Factories and using the prompting system.
+* Defined Factories::      The built-in factories available
+* Defining Filters::       Defining filters.
+* The Filter Stack::       The filter stack, how it works, how to use it.
+* The Cache Stack::        The cache stack, how to use it.
+* Showing State::          Showing the current state of the filter system.
+@end menu
 
-The above behaviour demands manual processing on behalf of the user.  Instead,
-you might prefer to automate the process by setting @var{emms-browser-covers} to
-'emms-browser-cache-thumbnail': covers matching 'emms-browser-thumbnail-filter'
-will be automatically resized if necessary and cached to
-@var{emms-browser-thumbnail-directory}.  The cache gets automatically updated
-upon change in the source folder.
+@node Filters and Searches
+@section Filters and Searches
 
-Customize @var{emms-browser-covers-file-extensions} to include or exclude
-specific extensions.
+There is little difference between filtering and searching. Searching
+simply results in a data-cache which is smaller than the original.
 
-'emms-browser-cache-thumbnail' might be everytime a cover is queried, so
-to help with performance you can also set @var{emms-browser-covers} to
-'emms-browser-cache-thumbnail-async'.  The latter is like the former
-except that it caches queries: every subsequent query will be much
-faster.  The drawback is that it won't see changes made to covers after
-the first query.  To force-refresh the thumbnail cache, you can run
-'emms-browser-clear-cache-hash'.
+The filter system has a cache stack where cached results are kept. All
+subsequent filters and searches use the most current cache.
 
-Also, Emacs by default will jump around a lot when scrolling a buffer
-with images. In order to prevent that, you can set
-@var{scroll-up-aggressively} and @var{scroll-down-aggressively} to the
-number ``0.0''.
+Filtering results in a rendered view for a subset of what is in the
+data-cache. Complex filters are built interactively on a filter stack
+by combining existing filters and interactively created filters.
 
-To show a 'no cover' image for albums which don't have a cover, add
-the following code to your .emacs:
+A small group of filter factories are used to create filter functions
+which are defined entirely as data. Those filters can be combined with
+each other and with interactively created filters on the filter stack
+with OR, AND, as well as AND-NOT. These more complex filters may also
+be saved and coded entirely as data. In addition the filter stack has
+various commands to manipulate it. Pop, swap, swap-pop, squash and clear,
+among others.
+
+For the concept of searches there is a search cache stack which is a
+stack of emms-cache-db hash tables. The emms-cache-db is always present at
+the base of this stack. Any filtered result may be pushed to this stack
+at any time. Filters always operate against the cache at the top of the
+stack. A cache may be stashed for later, and the usual stack manipulation
+functions exist. Pop, swap, swap-pop, squash, clear, stash, and push.
+
+Factories define filters from data and interactively.
+Factories are kept in a ring, and each has a ring of its filters.
+Interactively creating a new filter adds it to the ring for the session.
+Personal filter rings can also be easily added to the filter menu ring.
+
+There is another filter ring, which can have any filters you like, and is
+selectable with < and >.  The active filter on the ring combines with
+the filter stack to show the rendered results.
+
+@node Backward Compatibility
+@section Backward Compatibility
+
+Maintaining backward compatibily with the Emmms-browser's previous
+functionality was a prime goal in creating the filter system. Very little
+is left in common, but the Browser's search-by and filtering API remains
+intact and continues to behave as before. Anyone who has made filter
+functions will notice no change in behavior other than there is more
+flexibility in using their functions.
+
+The filter system replaces both emms-browser filters and search-by
+functionalities. The Emms-browser API remains in place, however underneath
+the API it uses the filter system for all of its purposes.
+
+Emms-browser-make-filter and emms-browser-search-by use emms-filters
+for their current functionality. The search-by functionality is quite
+simple. Emulating the browser filters was more complicated and has a
+thin compatibility layer in @file{emms-browser.el}.
+
+In all cases, obtaining the same functionalities soley within emms-filters is
+simpler and and more powerful.
+
+Emms-browser-filter functions are specified to return an
+inverted value. the old @command{emms-browser-make-filter}
+had a slightly different mechanism from the filter system's
+@command{emms-filters-make-filter}. emms-browser-make-filter has been modified to
+pass its filters to the emms-filter system. Those filters will be properly
+inverted and added to the known emms-filters-filters and to the emms-filters-filter-ring
+which emulates the original browser filter ring. This provides a
+seamless experience for previous users of emms-browser filtering. As
+the @var{emms-filters-filter-ring} is functionally equivalent to the browser's
+filter ring.
+
+The browser's 'Search-by' was just one filter factory, which corresponds
+to the filter system's 'fields search' factory, and searches are not
+inverted. The only real difference between the browser's filter and a
+search was that a filter was rendered and a search was saved to a hash
+for subsequent filtering. Filters couldn't filter a search, and neither
+could work against anything but the Emms-cache-db. The equivalent to the
+emms-browser search-by is just a one shot interactive 'new fields-search'
+filter factory that saves a cache and then removes itself.
+
+Emms-Filters is agnostic about the renderer. Currently there has been a
+lot of effor to maintain backward compatibity with the Emms-browser as
+its functionality was replaced. There are the following hooks that any
+renderer could use in order to leverage Emms-Filters.
+
+To maintain independence there are three hook variables which allow
+emms-filters to interact with the Emms-Browsers functionality.
+
+The first is a defcustom hook to mirror the browser's deprecated hook
+of the same name.
+The second hook happens just after, and is for any renderer
+that wishes to re-render when a filter changes.
+The third hook is to tell any renderer to expand its render if there is
+a filter or cache stack entry present.
+
+This a defcustom hook that is run anytime the filters change
+@var{emms-filters-filter-changed-hook}
 
 @lisp
-(setq emms-browser-default-covers
-  (list "/path/to/cover_small.jpg" nil nil)
+(add-hook 'emms-filters-filter-changed-hook 'my-filters-have-changed-function)
 @end lisp
 
-The medium and large images can be set as well.
+The following two hooks are for the renderers which is currently
+just the Emms-Browser. These hooks are the mechanism used to
+actually filter and render the tracks.
 
-You can download an example @uref{http://repose.cx/cover_small.jpg,
-`no cover' image}.
+When the filter or cache changes Emms-Filters needs to
+tell the renderer to re-build its hash and display it.
+For this purpose there is another hook, the
+@var{emms-filters-make-and-render-hash-hook}.
 
+The Emms-browser function for this is emms-browse-by.
+This function applies the filters, creates a hash,
+and then populates and renders a tree of data.
+@lisp
+(add-hook 'emms-filters-make-and-render-hash-hook 'emms-browse-by)
+@end lisp
 
-
-@node Changing Looks
-@section Changing Looks
-
-The Browser's look can be customised. You can change the way the tree
-structure looks, the display format and display faces.
-
-@subheading Changing Tree Structure
-
-You can change the way the tree is displayed by modifying the function
-@command{emms-browser-next-mapping-type}.
-
-The following code displays artist->track instead of
-artist->album->track when you switch to the 'singles' filter:
+The last hook is the @var{emms-filters-expand-render-hook}.
+This is just so that Emms-Filters can tell the renderer to
+expand its tree when there is a filter or cache stack present
+and something has changed.
+For Emms-Browser this is the function emms-browser-expand-all
 
 @lisp
-(defadvice emms-browser-next-mapping-type
-                                (after no-album (current-mapping))
-  (when (eq ad-return-value 'info-album)
-    (setq ad-return-value 'info-title)))
+;; (add-hook 'emms-filters-expand-render-hook 'emms-browser-expand-all)
 @end lisp
 
-@lisp
-(defun toggle-album-display ()
-  (if (string= emms-browser-current-filter-name "singles")
-      (ad-activate 'emms-browser-next-mapping-type)
-    (ad-deactivate 'emms-browser-next-mapping-type)))
+The filter system is much more powerful than the previous system of
+filtering and searching and is much easier to use both in code and interactively
+while searching your tracks.
 
-(add-hook 'emms-browser-filter-changed-hook 'toggle-album-display)
-@end lisp
+Here is a summary of differences and features of the filter system.
 
-Furthermore, you can customize
-@var{emms-browser-get-track-field-function} to choose which the metadata
-fields used for the different tree nodes (@code{'info-artist},
-@code{info-year}, etc.).  For instance, you can choose whether to
-organize the tree by artist, album artist or performer.
-
-@subheading Changing Display Format
-
-Format strings govern the way items are displayed in the browser and
-playlist. You can customize these if you wish.
-
-@var{emms-browser-default-format} controls the format to use when no
-other format has been explicitly defined. By default, only track and
-albums deviate from the default.
-
-To customise the format of a particular type, find the name of the
-field you want to use (eg `info-artist', `info-title', etc), and
-insert that into emms-browser-<type>-format or
-emms-browser-playlist-<type>-format. For example, if you wanted to
-remove track numbers from tracks in both the browser and playlist, you
-could do:
-
-@lisp
-(defvar emms-browser-info-title-format "%i%n")
-(defvar emms-browser-playlist-info-title-format
-  emms-browser-info-title-format)
-@end lisp
-
-The format specifiers available include:
-
-@itemize @w{}
-
-@item
-%i    indent relative to the current level
-
-@item
-%n    the value of the item - eg -info-artist might be ``pink floyd''
-
-@item
-%y    the album year
-
-@item
-%A    the album name
-
-@item
-%a    the artist name of the track
-
-@item
-%t    the title of the track
-
-@item
-%T    the track number
-
-@item
-%cS   a small album cover
-
-@item
-%cM   a medium album cover
-
-@item
-%cL   a big album cover
+@itemize @bullet
+@item Filters, no matter the complexity, are defined entirely as data.
+@item Filters can be combined with AND, OR as well as AND-NOT.
+@item Filters return true if they match the tracks.
+@item Filters are lambda functions created with factories from data.
+@item There is no difference between a search function and a filter function.
+@item The factory should wrap the lambda in a let with lexical-binding t.
+@item The factories and the filters must both be registered with Emms-filters.
+@item Registered factories have a built in interactive prompting system.
+@item Any results can be pushed to the cache stack for future filters and searches.
+@item Complex filters are created interactively on the filter stack.
+@item Searches are interactively created filters which leave a cache on the stack.
+@item Interactively created filters can be saved as data for later use.
+@item Interactively created filters remain in the filter selection menu for the session.
 @end itemize
 
-Note that if you use track-related items like %t, it will take the
-data from the first track.
+@node Filter Components
+@section Filter Components
+-------------------------------------------------------------------
+The filter system consists of a few different mechanisms.
+There are factories to make filters. There is the filter stack
+to manage the creation and use of filters. Filters can be made of filters.
 
-@subheading Changing Display Faces
+There is the cache stack to handle the saving of a set of filtered results
+into a reduced database cache for subsequent filters.
 
-The faces used to display the various fields are also customizable.
-They are in the format emms-browser-<type>-face, where type is one of
-"year/genre", "artist", "album" or "track". Note that faces lack the
-initial "info-" part. For example, to change the artist face, type M-x
-@command{customize-face} @command{emms-browser-artist-face}.
+There is the filter ring for quickly switching between commonly used filters.
+This filter is combined with the current filter stack to render results.
+
+@itemize @bullet
+@item Filter Factories - To make filter functions.
+@item Filters          - Defined as data. Dynamically created lambda functions.
+@item Filter menu      - A customizable ring of factories and their rings of filters.
+@item Multi-filter     - A filter factory to create filters made of filters.
+@item Meta-filter      - A multi-filter data definition.
+@item The filter stack - A meta-filter manipulator and multi-filter creator.
+@item The cache stack  - A stack of database caches.
+@item The filter ring  - A subset of convenient to use filters.
+@end itemize
+
+@node Filter Factories
+@section Filter Factories
+-------------------------------------------------------------------
+Filter factories make filters which are simply test functions which
+take a track and return true or false.
+
+Factories are registered with the Emms-filter system so that they have
+names that can be referenced later. Additionally, registration includes a
+prompt and parameter definition. This allows the Emms-filters prompting
+system to provide an interactive interface to any filter factory in
+order to create new filters at any time.
+
+Filter factories depend upon lexical context of their parameters. In
+order to have data values that stick after function creation there
+is let with lexical-binding to ensure the factory behaves as expected.
+This transfers the values to local values and uses them as normal
+within the returned #'(lambda (track)...) anonymous function.
+
+As an example, here is the generic field-compare function.
+It takes an operator function, a field name and the value to compare.
+This single function can be a new factory for any data field
+using any comparison function we would like.
+
+@lisp
+(defun emms-filters-make-filter-field-compare (operator-func field compare-val)
+  "Make a filter that compares FIELD to COMPARE-VALUE with OPERATOR-FUNC.
+Works for number fields and string fields provided the appropriate
+type match between values and the comparison function. Partials can
+easily make more specific factory functions from this one."
+  (let ((local-operator operator-func)
+                (local-field field)
+                (local-compare-val compare-val))
+    #'(lambda (track)
+        (let ((track-val (emms-track-get track local-field)))
+          (and
+           track-val
+           (funcall local-operator local-compare-val track-val))))))
+@end lisp
+
+
+@node Factory Registration
+@section Factory Registration
+
+Registering a factory associates a name, a function and a list of prompt
+definitions so that we may create filters interactively by name. The
+prompting system will coerce the values given to the specified type
+providing select lists as indicated.
+
+The factory prompt data is used to interactively create new filters.
+A prompt is  (prompt (type . select-list)) if there is no
+select list we read the value and coerce the value to the
+type as needed.
+
+These are the known coercion types.
+
+@itemize @bullet
+@item :number
+@item :string
+@item :list
+@item :symbol
+@item :function
+@end itemize
+
+Here is the Genre Factory which is actually made from the field-compare
+factory. This is a common pattern to create a simpler factory from a
+more complex one. It is simply a partial that is registered directly
+with a different set of prompts. In this case 'Genre:' is the prompt
+and it is expected to be a string.
+
+@lisp
+(emms-filters-register-filter-factory
+ "Genre"
+ (apply-partially 'emms-filters-make-filter-field-compare
+                  'string-equal-ignore-case 'info-genre)
+ '(("Genre: " (:string . nil))));;
+@end lisp
+
+The registration for the compare field factory is more complex because of
+the prompting for all the parameters. By changing just the registration
+name and the prompts we can create two factories, one for numbers and
+one for strings. Note the use of the ` and , to force the select lists
+to resolve within the lambda.
+
+Here is the registration for the number field compare factory. The
+operator function has a select list of number comparison functions. The
+field name has a select list of known numeric field names and the value
+to compare must be a number and will be coerced as needed.
+
+@lisp
+(emms-filters-register-filter-factory "Number field compare"
+                             'emms-filters-make-filter-field-compare
+                             ;; prompts
+                             `(("Compare Function: "
+                                (:function . ,emms-filters-number-compare-functions))
+                               ("Field name: "
+                                (:symbol . ,emms-filters-number-field-names))
+                               ("Compare to: "
+                                (:number . nil))))
+@end lisp
+
+
+@node Defined Factories
+@section Defined Factories
+
+There are a number of defined factories derived from just a few functions.
+Most common filters can be easily made with these.
+There are a few predifined filters, but that has been kept to a minimum
+as filters can be a very personal thing. There are already filters for every
+track type and there many common genres and year range filters by decade.
+
+Filter factories like artist, album artist, composer, Names, etc.
+are all just specialized field compare or the fields search factories.
+
+Filter factories include the following.
+
+@itemize @bullet
+@item Album
+@item Album-artist
+@item All text fields
+@item Artist
+@item Artists
+@item Artists and composer
+@item Composer
+@item Directory
+@item Duration less
+@item Duration more
+@item Fields search
+@item Genre
+@item Greater than Year
+@item Less than Year
+@item Multi-filter
+@item Names
+@item Names and titles
+@item Not played since
+@item Notes
+@item Number field compare
+@item Orchestra
+@item Performer
+@item Played since
+@item String field compare
+@item Title
+@item Titles
+@item Track type
+@item Year range
+@end itemize
+
+
+@node Defining Filters
+@section Defining Filters
+
+Making a filter in elisp from a factory is easy.
+
+(emms-filters-make-filter <Factory Name> <Filter Name> <Factory Parameters>)
+
+The Genre Factory takes one string argument.
+@lisp
+(emms-filters-make-filter "Genre" "My Genre filter" "Somevalue")
+@end lisp
+
+Make a lot of filters at once with emms-filters-make-filters.
+
+@lisp
+(emms-filters-make-filters '(("Genre" "Waltz"      "waltz")
+                    ("Genre" "Salsa"      "salsa")
+                    ("Genre" "Blues"      "blues")
+                    ("Genre" "Jazz"       "jazz")))
+@end lisp
+
+Filters can be easily created interactivly.
+Just push a filter onto the stack with @command{emms-filters-push},
+@command{emms-filters-and}, @command{emms-filters-or}, @command{emms-filters-and-not},
+or @command{emms-filters-squash},
+select 'new filter' then your factory and follow the prompts.
+
+Filters are added by name to their respective factory's filter ring.
+Here are some more complex filter definitions including some
+Multi-filter definitions, or meta-filters which are simply lists
+of filters by name, they are functionally equivalent to what
+is being built by the filter stack.
+
+@lisp
+(setq tango-filters
+      '(("Year range" "1900-1929" 1900 1929)
+        ("Year range" "1929-1937" 1929 1937)
+
+        ("Directory" "tangotunes" "tangotunesflac")
+
+        ("Genre" "Vals"    "vals")
+        ("Genre" "Tango"   "tango")
+        ("Genre" "Milonga" "milonga")
+
+        ("Multi-filter"
+         "1900-1937"
+         (("1900-1929" "1929-1937")))
+
+        ("Multi-filter"
+         "Vals | milonga"
+         (("Vals" "Milonga")))
+
+        ("Multi-filter"
+         "Vals 1900-1929"
+         (("Vals") ("1900-1929")))
+
+        ("Multi-filter"
+         "Not vals"
+         ((:not "Vals")))
+
+        ("Multi-filter"
+         "Vals or milonga 1900-1937"
+         (("Vals" "Milonga")
+          ("1900-1929" "1929-1937")))
+        ))
+
+(emms-filters-make-filters tango-filters)
+@end lisp
+
+A new entry in the Factory ring along with it's filters
+can also be easily added. This function deconstructs the definitions
+to facilitate the ease of addition. It can also be made from a
+simple list of names as well. The filters will appear both under their
+respective factories, and under this new menu item 'Tango'.
+They are not recreated, but simply listed by their names to be chosen.
+
+@lisp
+(emms-filters-add-filter-menu-from-filter-list "Tango" tango-filters)
+@end lisp
+
+Here is the easiest way to make the filter ring as used by the Browser.
+It is just a list of filter names.
+
+@lisp
+(emms-filters-make-filter-ring '("Tango" "Vals" "Milonga"))
+@end lisp
+
+The filter menu is automatically constructed as a ring of factory names
+as 'folders' that have a ring of filters. This filter menu tree can be
+added to in various ways. 'Keeping' a filter on the filter stack will
+temporarily add the multi-filter defined by the filter stack to the
+multi-filter ring.
+
+There are other ways to add to the filter menu tree.
+@command{emms-filters-add-to-filter-menu-from-filter-list} is used to deconstruct
+a variable holding filter defintions as in the example above in order
+to create a new ring in the menu tree.
+
+In turn that function uses @command{emms-filters-add-to-filter-menu} which takes
+a folder name and a filter or list of filters to place in the ring.
+The function @command{emms-filters-add-name-to-filter-menu} will add a filter by
+name to an existing filter folder/factory.
+
+It is also possible to view the filter menu tree as a message with
+@command{emms-filters-show-filter-menu}
+
+
+@node The Filter Stack
+@section The Filter Stack
+
+The filter stack builds more complex filters as you push filters to
+it. Adding to the filter or replacing it with another push creates a new
+meta-filter and it's multi-filter function to the filter stack. To return
+to the previous filter simply pop the stack. Each change to the stack, creates
+a meta-filter and it's corresponding constructed meta-filter. Any change
+results in a new 'current' multi-filter. The filters are represesented
+as are constructed names of the filters that created it.
+
+The filter stack uses meta-filters in a cons
+like this; (name . meta-filter).
+Filter names for meta-filters can be easily constructed from the filters
+they are made from. They aren't short but they work well enough.
+
+To use a filter, @command{emms-filters-push} it to create a new current filter
+on the stack. It will become a meta-filter on the filter stack and the
+current active filter will be a multi-filter version of it. The functions
+required to construct the current multi-filter are resolved at this time
+in a new multi-filter lambda function.
+
+The filter ring works independently of the filter stack. Each re-filtering
+of tracks uses the current ring filter and the current filter together.
+
+A filter on the stack can be 'kept'. The function @command{emms-filters-keep}
+will create and register a multi-filter of the current filter, adding
+it to the multi-filter menu. This only lasts until the current Emacs
+session ends. If @var{emms-filters-multi-filter-save-file} is set, keep will
+append a usable filter definition to the file for reuse as you wish.
+
+Other commands for manipulating the stack are listed here. Most
+should be self explanatory, Squash clears the stack, leaving the
+topmost filter. Smash is a clear followed by a push.
+
+@itemize @bullet
+@item @command{emms-filters-pop}
+@item @command{emms-filters-squash}
+@item @command{emms-filters-smash}
+@item @command{emms-filters-clear}
+@item @command{emms-filters-swap}
+@item @command{emms-filters-swap-pop}
+@item @command{emms-filters-keep}
+@end itemize
+
+An initial filter can be created with
+@command{emms-filters-push} or @command{emms-filters-smash} which is a clear followed by a push.
+
+Adding to the filter stack is done with
+@command{emms-filters-and}, @command{emms-filters-or}, @command{emms-filters-and-not},
+
+@node The Cache Stack
+@section The Cache Stack
+
+The cache stack is a simply a stack of emms-cache-db style hash tables.
+The full emms-cache-db is at the base of the stack and is always there.
+Each entry in the stack is a subset of the cache below it as a result
+of filtering. The stack entry names are constructed from the filters
+which created them.
+
+Filtering and displaying of tracks is done against the top cache on the stack.
+
+The function, @command{emms-filters-hard-filter} is the most common way to create
+an entry on the cache stack. It creates a cache from the current filter
+and cache, and pushes it to the stack. This does render the current filter
+as non-effective, so it can be cleared, or continue to grow depending
+on your desires.  It can be useful to just keep going so that returning
+to the previous state is possible.
+
+One of the driving forces with creating cache entries was the way that
+the Emms-browser has always done searching.  To this end, additional
+functionality was created to better emulate the browser's way of doing
+things. However the cache stack provides a lot of flexibility and power
+in how you navigate and search your music. Simply being able to repeatedly
+search and narrow the data is quite powerful all by itself.
+
+One-Shot filtering allows behavioral backward compatibility with the
+browser. One shots were created to emulate the browser's behavior of
+creating a subset cache from search-by. One shots push a filter, save
+to the cache stack and pop the filter, leaving only the cache.
+
+Using @command{emms-filters-one-shot} will push a filter, push a cache,
+then pop the filter. It will interactively prompt for a factory, the
+filter, and then the filter parameters to create a filter if none is
+given. @command{emms-filters-quick-one-shot} takes a factory name, and invokes
+the interactive creation of a new filter with that factory directly.
+The command @command{emms-filters-fields-search-quick-one-shot} is a one-shot
+using the fields-search filter factory, while adding to the fields-search
+ring in the filter menu-tree. The fields-search factory is the filter
+system's way of emulating browser's search-by functionality.
+
+These functions effectively allow the emulation of the browser's search
+behavior of quickly prompting, filtering and pushing a cache followed
+by a pop of the filter used. By the grace of that, simple wrapper
+functions for each of the browser's search functions were created
+using emms-filters-quick-one-shot. These functions are named after their browser
+equivalents as emms-filters-search-by-<field-names>. The browser search functions
+now call these filter system functions directly.
+
+Manipulating the cache stack is similar to manipulating the filter stack,
+The usual stack commands are:
+@itemize @bullet
+@item @command{emms-filters-pop-cache}
+@item @command{emms-filters-squash-caches}
+@item @command{emms-filters-clear-caches}
+@item @command{emms-filters-swap-cache}
+@item @command{emms-filters-swap-pop-cache}
+@item @command{emms-filters-push-cache}
+@item @command{emms-filters-stash-cache}
+@item @command{emms-filters-stash-pop-cache}
+@end itemize
+
+The functions @command{emms-filters-push-cache}, @command{emms-filters-stash-cache} and
+@command{emms-filters-stash-pop-cache} allow for a cache to be stashed and then
+later pushed back to the stack. The current cache on the stack can be
+stashed at anytime. The stashed caches will be a selection ring
+for @command{emms-filters-push-cache}.
+
+
+@node Showing State
+@section Showing State
+
+There are various functions that enable a view of all that is going
+on within the filter system. At the top level these are simply emacs
+messages which can be easily dismissed. Just below them, are equivalent
+functions that give formatted string versions for use as you like.
+
+The registered filter factories can be shown with
+@command{emms-filters-show-filter-factories}, the registered
+filters can be shown with @command{emms-filters-show-filters}.
+The @command{emms-filters-show-filter-menu} will show the current filter menu tree.
+
+The current filter ring can be shown with @command{emms-filters-show-filter-ring}
+and the filter stack can be shown with  @command{emms-filters-current-meta-filter}.
+
+In code, the current filter name can be obtained with the
+@command{emms-filters-current-meta-filter-name}.
+The current ring filter name can be obtained with
+@command{emms-filters-current-ring-filter-name}
+
+Showing the cache stack is done with @command{emms-filters-show-cache-stack}.
+Any stashed caches can be seen with @command{emms-filters-show-cache-stash}
+which will also appear in the menu invoked by @command{emms-filters-push-cache}.
+
+Finally for a more complete report of the system use @command{emms-filters-status-print}
+which is a message of the formatted string given by @command{emms-filters-status}.
+
+In turn, the @command{emms-filters-status} is simply a format of the following four
+functions that give formatted strings of the moving parts of the filter system.
+
+@itemize @bullet
+@item @command{emms-filters-current-ring-filter}
+@item @command{emms-filters-current-meta-filter}
+@item @command{emms-filters-format-stack}
+@item @command{emms-filters-format-cache-stack}
+@end itemize
 
 
 @c -------------------------------------------------------------------
@@ -2935,8 +3865,8 @@ value. So instead of pressing @kbd{C-c +} six times to increase volume
 by six steps of @code{emms-volume-change-amount}, you would simply type
 @kbd{C-c + + + + + +}.
 
-Emms can change volume with amixer, mpd, mpv, PulseAudio and mixerctl
-out of the box, see @var{emms-volume-change-function}.
+Emms can change volume with amixer, mpd, PulseAudio and mixerctl out
+of the box, see @var{emms-volume-change-function}.
 
 
 @c -------------------------------------------------------------------
