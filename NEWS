@@ -1,3 +1,13 @@
+New in 23
+
+    * emms-radio-browser.el: an EMMS client for radio-brower API.
+    * emms.el: add `insert-current' to `define-emms-source' macro.
+    * emms-filters.el: filter and search the metadata cache.
+    * emms-browser.el: filter and search using emms-filters.el.
+
+    Special thank you to Fran Burstall and Erica Lina Qi
+
+
 New in 22
 
     * emms-volume-mpv.el: raise or lower the volume of mpv (new file).
