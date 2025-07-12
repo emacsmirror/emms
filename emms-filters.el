@@ -1815,13 +1815,36 @@ or the emms-filters-filter-factory `search-fields'."
   "Give the current length of the search cache stack."
   (length emms-filters-search-caches))
 
+(defun emms-filters-is-filtering ()
+  "True if there is a search stack or a filter stack or a ring-filter."
+  (if (or (> (length emms-filters-search-caches) 0)
+          (> (length emms-filters-stack) 0)
+          (if emms-filters-current-ring-filter t nil))
+      t
+    nil))
+
 (defun emms-filters-empty-result-message ()
   "Display some help if the results are empty."
-  (concat "No records match with the current search cache and filters.\n"
-          (format "Cache: %s\n Ring: %s\n Filter: %s\n"
+  (concat "No records match with the current search cache and filters.\n\n"
+          (format "Cache: %s\nRing: %s\nFilter: %s\n\nEMMS Cache size: %s \n"
                   (emms-filters-current-cache-name)
                   (emms-filters-current-ring-filter-name)
-                  (car emms-filters-current-filter))))
+                  (car emms-filters-current-filter)
+                  (hash-table-count emms-cache-db))
+          "
+You may have created a filter with no results found.
+If this is the case you may return to your previous
+filter by popping the current filter.
+
+You may also have an empty search cache on
+the cache stack, popping or stashing and popping
+the current searche cache may yield results.
+
+You may also have selected a filter
+in the filter ring which has no matches.
+Move your filter ring selection to 'no filter'
+or select a different filter for different results."))
+
 
 (defun emms-filters-search-by (filter-factory-name)
   "Search using FILTER-FACTORY-NAME to create a filter.

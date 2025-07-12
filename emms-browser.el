@@ -199,6 +199,7 @@
 (require 'sort)
 (require 'seq)
 (require 'emms-filters)
+(require 'emms-cache)
 
 
 ;; --------------------------------------------------
@@ -613,8 +614,11 @@ or the default-browse-type"
     (setq emms-browser-top-level-type type)
 
     (goto-char (point-min))
-    (unless (> (hash-table-count hash) 0)
-      (emms-browser-show-empty-cache-message)) ))
+
+    (if (not (> (hash-table-count hash) 0))
+        (if (emms-filters-is-filtering)
+            (emms-browser-show-empty-result-message)
+          (emms-browser-show-empty-cache-message)))))
 
 (emms-browser-add-category "albumartist" 'info-albumartist)
 (emms-browser-add-category "artist" 'info-artist)
@@ -722,19 +726,16 @@ For \\='info-year TYPE, use \\='info-originalyear, \\='info-originaldate and
   (let ((bdata (emms-browser-make-bdata-tree type 1 tracks name)))
     (emms-browser-insert-format bdata)))
 
+(defun emms-browser-show-empty-result-message ()
+  "Display some help if the cache-db exists but the result hash is empty."
+  (emms-with-inhibit-read-only-t
+   (insert (emms-filters-empty-result-message))))
+
 (defun emms-browser-show-empty-cache-message ()
   "Display some help if the cache is empty."
   (emms-with-inhibit-read-only-t
-   (insert (emms-filters-empty-result-message))
    (insert "
-You may have created a filter with no results found.
-If this is the case you may return to your previous
-filter by popping the current filter with 'f q'.
-If you happen to have an empty search cache on
-the cache stack you can pop it from the stack with 'c q'.
-
-
-Otherwise, Welcome to EMMS.
+Welcome to EMMS.
 
 There are currently no files in the EMMS database.
 To browse music, you need to tell EMMS where your
