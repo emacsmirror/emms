@@ -3381,7 +3381,6 @@ variable.
 @end defvr
 
 @heading Renaming Files
-
 The tag editor is also capable to rename the file of the track at point
 or all files of the marked tracks according to the value this variable.
 
@@ -3397,6 +3396,13 @@ The default value is "%a - %l - %n - %t", so that files are named
   <Artist> - <Album> - <Tracknumber> - <Title>.<extension>
 
 after renaming.
+@end defopt
+
+@defopt emms-tag-editor-file-rename-alist
+For each pair in this alist, the first string will replaced by the
+second. This can be used to replace filename elements, spaces, or
+other unwanted strings or characters automatically whenever renaming a
+file.
 @end defopt
 
 To perform the renaming put point on the track you want to rename or

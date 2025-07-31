@@ -343,6 +343,16 @@ program for writing tags to the specified track or tracks."
   "Major mode to edit track tags.
 \\{emms-tag-editor-mode-map}")
 
+(defvar emms-tag-editor-file-rename-alist
+  '(("/" "⁄") ;; avoid characters reserved for filenames
+    ;; (" " "_") ;; example of another substitution
+    )
+  "Alist with replacement pairs for filename renaming.
+
+For each pair the first element is the string to be replaced, and the
+second element is the replacement string.")
+
+
 (defun emms-tag-editor-set-all (tag value)
   "Set TAG to VALUE in all tracks.
 If transient-mark-mode is turned on, you can apply the command to
@@ -487,21 +497,21 @@ C-u M-x emms-tag-editor-guess-tag-filename RET
 			  (let ((map (make-sparse-keymap)))
 			    (set-keymap-parent map minibuffer-local-map)
 			    (define-key map "\C-h"
-			      (lambda ()
-				(interactive)
-				(with-output-to-temp-buffer "*Help*"
-				  (princ
-				   "A pattern is a string like \"%a-%t-%y\" which stand for
+					(lambda ()
+					  (interactive)
+					  (with-output-to-temp-buffer "*Help*"
+					    (princ
+					     "A pattern is a string like \"%a-%t-%y\" which stand for
 the file name is constructed by artist, title, year with seperator '-'.
 see `emms-tag-editor-compile-pattern' for detail about pattern syntax.
 
 Available tags are:
 ")
-				  (mapc (lambda (tag)
-					  (princ (format "\t%s - %S\n" (cdr tag) (car tag))))
-					emms-tag-editor-tags)
-				  (with-current-buffer standard-output
-				    (help-mode)))))
+					    (mapc (lambda (tag)
+						    (princ (format "\t%s - %S\n" (cdr tag) (car tag))))
+						  emms-tag-editor-tags)
+					    (with-current-buffer standard-output
+					      (help-mode)))))
 			    map))
     current-prefix-arg))
   (setq pattern (emms-tag-editor-compile-pattern pattern))
@@ -775,6 +785,18 @@ tracks according to the value of
       (emms-tag-editor-rename-marked-tracks)
     (emms-tag-editor-rename-track (emms-tag-editor-track-at))))
 
+(defun emms-tag-editor-filename-replace-strings (str)
+  "Replace substrings of STR and then return STR.
+
+Replacement is done according to `emms-tag-editor-file-rename-alist'."
+  (mapc
+   (lambda (pair)
+     (let ((from (car pair))
+	   (to   (cadr pair)))
+       (setq str (string-replace from to str))))
+   emms-tag-editor-file-rename-alist)
+  str)
+
 (defun emms-tag-editor-rename-track (track &optional dont-apply)
   "Rename TRACK's file according `emms-tag-editor-rename-format's
 value.
@@ -795,8 +817,10 @@ Then it's the callers job to apply them afterwards with
                                        (mapcar
                                         (lambda (tag)
                                           (list (string-to-char (cdr tag))
-                                                (or (emms-track-get track (car tag))
-                                                    "")))
+						(let ((filename-element (emms-track-get track (car tag))))
+						  (if filename-element
+						      (emms-tag-editor-filename-replace-strings filename-element)
+						    ""))))
                                         emms-tag-editor-tags))))
 			"." suffix)))
         (emms-track-set track 'newname new-file)
