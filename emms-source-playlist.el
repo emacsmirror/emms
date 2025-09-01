@@ -213,10 +213,11 @@ See `emms-source-playlist-formats' for a list of supported formats."
                  (goto-char (point-min))
                  (read (current-buffer)))))
     (mapc (lambda (track)
-            (funcall emms-cache-set-function
-                     (emms-track-type track)
-                     (emms-track-name track)
-                     track))
+	    (when (fboundp emms-cache-set-function)
+              (funcall emms-cache-set-function
+                       (emms-track-type track)
+                       (emms-track-name track)
+                       track)))
           tracks)
     tracks))
 
