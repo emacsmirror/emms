@@ -2996,7 +2996,7 @@ respective factories, and under this new menu item 'Tango'.
 They are not recreated, but simply listed by their names to be chosen.
 
 @lisp
-(emms-filters-add-filter-menu-from-filter-list "Tango" tango-filters)
+(emms-filters-add-to-filter-menu-from-filter-list "Tango" tango-filters)
 @end lisp
 
 Here is the easiest way to make the filter ring as used by the Browser.
