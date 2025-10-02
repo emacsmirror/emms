@@ -116,11 +116,11 @@ See full list of devices on your system by running
                             (error "pactl is not in PATH")))
                  (next-vol (emms-volume-pulse-limit
 			    (+ (emms-volume--pulse-get-volume) amount))))
-             (when (zerop (shell-command
-                           (format "%s set-sink-volume %s %s%%"
-                                   pactl
-                                   (or emms-volume-pulse-sink "@DEFAULT_SINK@")
-                                   next-vol)))
+             (when (zerop (call-process
+                           pactl nil nil nil
+                           "set-sink-volume"
+                           (or emms-volume-pulse-sink "@DEFAULT_SINK@")
+                           (format "%d%%" next-vol)))
                next-vol))))
 
 (provide 'emms-volume-pulse)
