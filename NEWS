@@ -1,3 +1,10 @@
+New in 24
+
+    * emms-volume-pulse.el: avoid extra mini-buffer messages on volume change.
+    * emms-source-playlist.el: Check that `emms-cache-set-function' is bound.
+    * emms-tag-editor.el: replace strings in filename when renaming.
+
+
 New in 23
 
     * emms-radio-browser.el: an EMMS client for radio-brower API.
