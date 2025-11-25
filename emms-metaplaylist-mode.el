@@ -84,7 +84,7 @@
     (define-key map (kbd "C")   #'emms-metaplaylist-mode-new-buffer)
     (define-key map (kbd "C-k") #'emms-metaplaylist-mode-kill-buffer)
     (define-key map (kbd "c")   #'emms-metaplaylist-mode-center-current)
-    (define-key map (kbd "q")   #'kill-this-buffer)
+    (define-key map (kbd "q")   #'kill-current-buffer)
     (define-key map (kbd "v")   #'emms-metaplaylist-mode-goto)
     (define-key map (kbd "?")   #'describe-mode)
     map)
