@@ -1,6 +1,6 @@
 ;;; emms-listenbrainz-scrobbler.el --- Listenbrainz Scrobbling API  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2024  Free Software Foundation, Inc.
+;; Copyright (C) 2024-2025  Free Software Foundation, Inc.
 
 ;; Author: Fran Burstall <fran.burstall@gmail.com>
 ;; Keywords: emms, listenbrainz
@@ -233,6 +233,8 @@ That is, if it has been played for 240 seconds or half the length of the track."
 (defun emms-listenbrainz-scrobbler-enable ()
   "Enable the scrobbler and submit played tracks."
   (interactive)
+  ;; We rely on emms-playing-time so check for it!
+  (unless emms-playing-time-mode (error "Listenbrainz scrobbler: please activate emms-playing-time-mode"))
   ;; check we have credentials
   (if (emms-listenbrainz-scrobbler-get-token)
       (unless emms-listenbrainz-scrobbler-running
