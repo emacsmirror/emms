@@ -1,6 +1,6 @@
 ;;; emms-librefm-scrobbler.el --- Libre.FM Scrobbing API  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2014  Free Software Foundation, Inc.
+;; Copyright (C) 2014, 2025  Free Software Foundation, Inc.
 
 ;; Author: Yoni Rabkin <yrk@gnu.org>
 
@@ -306,6 +306,7 @@ seconds or half the length of the track."
 (defun emms-librefm-scrobbler-enable ()
   "Enable the scrobbler and submit played tracks."
   (interactive)
+  (unless emms-playing-time-mode (error "scrobbler: please activate emms-playing-time-mode"))
   (when (not emms-librefm-scrobbler-session-id)
     (emms-librefm-scrobbler-handshake))
   (add-hook 'emms-player-started-hook
