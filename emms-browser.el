@@ -1316,12 +1316,14 @@ Return the playlist buffer point-max before adding."
   (let ((old-pos (emms-browser-add-tracks)))
     (with-current-emms-playlist
       (goto-char old-pos)
+      ;; Stop what we are currently playing to allow `emms-stop'
+      ;; related hooks to run.
+      (when emms-player-playing-p
+	(emms-stop))
       ;; if we're sitting on a group name, move forward
       (unless (emms-playlist-track-at (point))
         (emms-playlist-next))
       (emms-playlist-select (point)))
-    ;; FIXME: is there a better way of doing this?
-    (emms-stop)
     (emms-start)))
 
 (defun emms-isearch-buffer ()
