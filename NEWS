@@ -1,3 +1,10 @@
+New in 25
+
+    * emms-browser.el, bug fix: stop the stop hooks from running too late.
+    * Scrobbers now check for `emms-playing-time-mode'.
+    * emms-metaplaylist-mode.el now uses `kill-current-buffer'.
+
+
 New in 24
 
     * emms-volume-pulse.el: avoid extra mini-buffer messages on volume change.
