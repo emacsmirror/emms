@@ -134,7 +134,7 @@ This is used to cache over emacs sessions.")
       (insert
        (concat ";;; .emms-cache -*- mode: emacs-lisp; coding: "
                (symbol-name emms-cache-file-coding-system)
-               "; -*-\n"))
+               "; lexical-binding: t; -*-\n"))
       (maphash (lambda (k v)
 		 (insert (format
                           "(puthash %S '%S emms-cache-db)\n" k v)))
